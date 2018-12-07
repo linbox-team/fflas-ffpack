@@ -61,7 +61,6 @@ int main(int argc, char** argv){
 	size_t M, N ;
 	bool keepon = true;
 	Givaro::Integer _p,tmp;
-	Field::Element zero,one;
 	cerr<<setprecision(10);
 	size_t TMAX = 100;
 	size_t PRIMESIZE = 23;
@@ -88,8 +87,6 @@ int main(int argc, char** argv){
 		}while( (p <= 2) );
 
 		Field F( p);
-		F.init(zero,0.0);
-		F.init(one,1.0);
 		Field::RandIter RValue( F );
 
 		do{
@@ -135,7 +132,7 @@ int main(int argc, char** argv){
 					RValue.random (*(G+i*M+j));
 			else
 				for (size_t j=0; j < M; ++j)
-					F.assign(*(G+i*M+j), zero);
+					F.assign(*(G+i*M+j), F.zero);
 
 
 
@@ -145,12 +142,13 @@ int main(int argc, char** argv){
 					RValue.random (*(H+i*N+j));
 			else
 				for (size_t i=0; i<M; ++i)
-					F.assign(*(H+i*N+j), zero);
+					F.assign(*(H+i*N+j), F.zero);
 
 // 		FFLAS::WriteMatrix (cerr<<"G = "<<endl,F,M,M,G,M);
 // 		FFLAS::WriteMatrix (cerr<<"H = "<<endl,F,M,N,H,N);
 		A = FFLAS::fflas_new<Field::Element>(M*N);
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, M, one, G, M, H, N, zero, A, N);
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,
+			      N, M, F.one, G, M, H, N, F.zero, A, N);
 		FFLAS::fflas_delete( G);
 		FFLAS::fflas_delete( H);
 
@@ -180,19 +178,19 @@ int main(int argc, char** argv){
 
 			for (size_t i=0; i<R; ++i){
 				for (size_t j=0; j<i; ++j)
-					F.assign ( *(U + i*N + j), zero);
+					F.assign ( *(U + i*N + j), F.zero);
 				for (size_t j=i+1; j<N; ++j)
 					F.assign (*(U + i*N + j), *(A+ i*N+j));
 			}
 			for (size_t i=R;i<M; ++i)
 				for (size_t j=0; j<N; ++j)
-					F.assign(*(U+i*N+j), zero);
+					F.assign(*(U+i*N+j), F.zero);
 			for ( size_t i=0; i<M; ++i ){
 				size_t j=0;
 				for (; j< ((i<R)?i:R) ; ++j )
 					F.assign( *(L + i*M+j), *(A+i*N+j));
 				for (; j<M; ++j )
-					F.assign( *(L+i*M+j), zero);
+					F.assign( *(L+i*M+j), F.zero);
 			}
 
 			//FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,M,M,U,M);
@@ -200,7 +198,7 @@ int main(int argc, char** argv){
 			FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					M,0,(int) R, L, M, Q);
 			for ( size_t  i=0; i<M; ++i )
-				F.assign(*(L+i*(M+1)), one);
+				F.assign(*(L+i*(M+1)), F.one);
 
 			if (diag == FFLAS::FflasNonUnit)
 				for ( size_t  i=0; i<R; ++i )
@@ -209,7 +207,7 @@ int main(int argc, char** argv){
 			else{
 				for (size_t i=0; i<R; ++i ){
 					*(L+Q[i]*(M+1)) = *(A+Q[i]*lda+i);
-					F.assign (*(U+i*(N+1)),one);
+					F.assign (*(U+i*(N+1)), F.one);
 				}
 			}
 
@@ -223,33 +221,33 @@ int main(int argc, char** argv){
 
 			for (size_t i=0; i<R; ++i){
 				for (size_t j=0; j<i; ++j)
-					F.assign ( *(L + i + j*N), zero);
+					F.assign ( *(L + i + j*N), F.zero);
 				for (size_t j=i+1; j<M; ++j)
 					F.assign (*(L + i + j*N), *(A+ i+j*N));
 			}
 
 			for (size_t i=R;i<N; ++i)
 				for (size_t j=0; j<M; ++j)
-					F.assign(*(L+i+j*N), zero);
+					F.assign(*(L+i+j*N), F.zero);
 			for ( size_t i=0; i<N; ++i ){
 				size_t j=0;
 				for (;  j< ((i<R)?i:R) ; ++j )
 					F.assign( *(U + i+j*N), *(A+i+j*N));
 				for (; j<N; ++j )
-					F.assign( *(U+i+j*N), zero);
+					F.assign( *(U+i+j*N), F.zero);
 			}
 
 			FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					N,0,(int) R, U, N, Q);
 			for (size_t i=0; i<N; ++i)
-				F.assign (*(U+i*(N+1)),one);
+				F.assign (*(U+i*(N+1)), F.one);
 			if (diag == FFLAS::FflasNonUnit)
 				for ( size_t i=0; i<R; ++i )
 					F.assign (*(L+i*(N+1)), *(A+i*(lda+1)));
 			else{
 				for ( size_t i=0; i<R; ++i ){
 					*(U+Q[i]*(N+1)) = *(A+Q[i]+i*N);
-					F.assign (*(L+i*(N+1)),one);
+					F.assign (*(L+i*(N+1)), F.one);
 				}
 			}
 			// FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,M,N,L,N);

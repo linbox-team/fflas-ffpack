@@ -135,7 +135,8 @@ namespace FFPACK {
 
 
                 // compute the determinant of A
-            F.init(det,*Ac);
+            F.init(det);
+            F.assign(det, *Ac);
             for (size_t i=1; i<n; ++i)
                 F.mulin(det,*(Ac+i*n+i));
             if (n%2 == 1) F.negin(det); // Ac is A -lambda I

@@ -98,11 +98,13 @@ namespace FFLAS {
 		ConstOtherElement_ptr Yi = Y ;
 
 		if (incX == 1 && incY == 1)
-			for (; Yi < Y + n ; ++Xi, ++Yi)
-				F.init( *Xi , *Yi);
+			for (; Yi < Y + n ; ++Xi, ++Yi) {
+				F.init(*Xi, *Yi);
+			}
 		else
-			for (; Yi < Y+n*incY; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
+			for (; Yi < Y+n*incY; Xi+=incX, Yi += incY ) {
+				F.init(*Xi, *Yi);
+			}
 	}
 
 

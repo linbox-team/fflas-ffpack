@@ -39,7 +39,7 @@ namespace FFPACK {
         if (!N) return;
         if (N <= 1){ // base case TODO: write a basecase with dimension = threshold
             typename Field::Element two;
-            F.init(two,2);
+            F.init(two, 2);
             if(diagA == FFLAS::FflasNonUnit){
                 F.mulin(two,*A);
             }

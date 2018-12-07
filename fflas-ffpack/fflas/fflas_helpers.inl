@@ -177,7 +177,8 @@ namespace FFLAS {
 				return std::numeric_limits<size_t>::max();
 
 			DFElt absbeta;
-			delayedField.init(absbeta,beta);
+			delayedField.init(absbeta);
+			delayedField.assign(absbeta, beta);
 			if (beta < 0) absbeta = -beta;
 			// This cast is needed when Cmin base type is int8/16_t,
 			// getting -Cmin returns a int, not the same base type.

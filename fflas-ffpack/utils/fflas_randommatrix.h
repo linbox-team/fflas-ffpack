@@ -433,12 +433,10 @@ namespace FFPACK{
         typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
         RandomTriangularMatrix (F, N, N, FFLAS::FflasUpper, FFLAS::FflasNonUnit, true, U, N, G);
 
-        typename Field::Element alpha, beta;
-        F.init(alpha,1.0);
-        F.init(beta,0.0);
             // auto sp=SPLITTER(); //CP: broken with Modular<Integer>. Need to reorganize  the helper behaviour with ParSeq and ModeTraits
         auto sp=NOSPLIT();
-        FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, sp);
+        FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, N,
+					  F.one, L, N, U, N, F.zero, A, lda, sp);
 
         FFLAS::fflas_delete(L);
         FFLAS::fflas_delete(U);

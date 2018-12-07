@@ -56,7 +56,7 @@ namespace FFLAS{ namespace Protected {
 		F.convert (tmp, beta);
 		G.init(betaf,tmp);
 		F.convert (tmp, alpha);
-		G.init(alphaf,tmp);
+		G.init(alphaf, tmp);
 		size_t ma, na;
 		if (ta == FflasTrans) { ma = N; na = M; }
 		else { ma = M; na = N; }

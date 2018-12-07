@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 	B = fflas_new(F,3,2);
 	C = fflas_new(F,2,2);  
 
+	F.init(*(A+0));
 	F.assign(*(A+0),F.one);
 	F.init(*(A+1),2);
 	F.init(*(A+2),3);

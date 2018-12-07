@@ -67,8 +67,6 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 	Field F(atoi(argv[1]));
-	Field::Element one;
-	F.init(one, 1U);
 	Field::Element* A;
 	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
@@ -82,7 +80,7 @@ int main(int argc, char** argv){
 	for (size_t i=0; i<m; ++i){
 		for (size_t j=0; j<deg; ++j){
 			if (curr_row < n+m -1){
-				F.assign( *(B + curr_row*n + n-1 - it_idx), one);
+				F.assign( *(B + curr_row*n + n-1 - it_idx), F.one);
 				curr_row++;
 				it_idx++;
 			}

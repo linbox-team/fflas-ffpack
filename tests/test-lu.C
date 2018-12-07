@@ -169,9 +169,6 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	fzero(F, m, R, L, R);
 	fzero(F, R, n, U, n);
 	
-	typename Field::Element zero,one;
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	// FFLAS::WriteMatrix(std::cerr<<"PLUQ = "<<std::endl,F,m,n,PLUQ,ldpluq);
 	getTriangular(F, FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
 	getTriangular(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, 

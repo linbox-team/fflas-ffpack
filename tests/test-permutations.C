@@ -50,14 +50,19 @@ bool checkMonotonicApplyP(FFLAS_SIDE Side, FFLAS_TRANSPOSE trans, size_t * P, si
 	size_t ldb = lda;
 	Field::Element_ptr A = fflas_new(F, M, N);
 	Field::Element_ptr B = fflas_new(F, M, N);
-	if (Side == FflasLeft)
-		for (size_t i = 0; i<N; ++i)
-			for (size_t j = 0; j<M; ++j)
-				F.init(A[i*lda+j],i*10+j);
-	else
-		for (size_t i = 0; i<N; ++i)
-			for (size_t j = 0; j<M; ++j)
-				F.init(A[i+j*lda],i*10+j);
+	if (Side == FflasLeft) {
+		for (size_t i = 0; i<N; ++i) {
+			for (size_t j = 0; j<M; ++j) {
+				F.init(A[i*lda+j], i*10+j);
+			}
+		}
+	} else {
+		for (size_t i = 0; i<N; ++i) {
+			for (size_t j = 0; j<M; ++j) {
+				F.init(A[i+j*lda], i*10+j);
+			}
+		}
+	}
 
 	fassign(F, N,M, A, lda, B, ldb);
 

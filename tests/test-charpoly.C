@@ -102,7 +102,8 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 
 		// Checking trace(A) == charp[n-1]
 	typename Field::Element trace;
-	F.init(trace, F.zero);
+	F.init(trace);
+	F.assign(trace, F.zero);
 	for (size_t i = 0; i < n; i++)
 		F.subin (trace, B [i*(n+1)]);
 	if (!F.areEqual(trace, charp[n-1])){

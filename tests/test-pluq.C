@@ -167,19 +167,16 @@ int main(int argc, char** argv){
 	L = FFLAS::fflas_new<Field::Element>(m*R);
 	U = FFLAS::fflas_new<Field::Element>(R*n);
 
-	Field::Element zero,one;
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	for (size_t  i=0; i<R; ++i){
 		for (size_t j=0; j<i; ++j)
-			F.assign ( *(U + i*n + j), zero);
+			F.assign ( *(U + i*n + j), F.zero);
 		for (int j=i; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
 	}
 	for ( size_t j=0; j<R; ++j ){
 		for (size_t i=0; i<=j; ++i )
-			F.assign( *(L+i*R+j), zero);
-		F.assign(*(L+j*R+j), one);
+			F.assign( *(L+i*R+j), F.zero);
+		F.assign(*(L+j*R+j), F.one);
 		for (size_t i=j+1; i<(size_t)m; i++)
 			F.assign( *(L + i*R+j), *(A+i*n+j));
 	}
