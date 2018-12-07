@@ -323,14 +323,14 @@ namespace FFLAS {
 		if (field_desc ==1) { /*  modulo */
 			T modulo_read ;
 			file.read((char*) &modulo_read, sizeof(T));
-			F.init(modulo,modulo_read);
+			F.init(modulo, modulo_read);
 		}
 		/*  do something with field_desc and multiprec... */
 		T * data_read = fflas_new<T>(dims);
 		file.read((char*)data_read,sizeof(T));
 		/* TODO freduce ? */
 		for (size_t i = 0 ; i< dims ; ++i) {
-			F.init(val[i],data_read[i]);
+			F.init(val[i], data_read[i]);
 		}
 	}
 

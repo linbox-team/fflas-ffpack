@@ -55,7 +55,6 @@ int main(int argc, char** argv){
 	size_t M, N, K ;
 	bool keepon = true;
 	Givaro::Integer _p,tmp;
-	Field::Element zero,one;
 	cerr<<setprecision(10);
 
 	size_t TMAX = 300;
@@ -84,8 +83,6 @@ int main(int argc, char** argv){
 		}while( (p <= 2) );
 
 		Field F (p);
-		F.init (zero,0.0);
-		F.init (one,1.0);
 		Field::RandIter RValue (F);
 
 		do{

@@ -89,35 +89,22 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
   U = FFLAS::fflas_new<Field::Element>(R*n);
   ParSeqHelper::Parallel H;
 
-  PARFOR1D (i,m*R, H,
-    F.init(L[i], 0.0);
-            );
+  PARFOR1D (i,m*R, H, { F.init(L[i]); F.assign(L[i], F.zero); } );
+  PARFOR1D (i,m*R, H, { F.init(U[i]); F.assign(U[i], F.zero); } );
+  PARFOR1D (i,m*n, H, { F.init(X[i]); F.assign(X[i], F.zero); } );
 
 
-  PARFOR1D (i,m*R, H,
-    F.init(U[i], 0.0);
-            );
-
-
-  PARFOR1D (i,m*n, H,
-    F.init(X[i], 0.0);
-            );
-
-
-  Field::Element zero,one;
-  F.init(zero,0.0);
-  F.init(one,1.0);
   PARFOR1D (i,R, H,
     for (size_t j=0; j<i; ++j)
-      F.assign ( *(U + i*n + j), zero);
+      F.assign ( *(U + i*n + j), F.zero);
     for (size_t j=i; j<n; ++j)
       F.assign (*(U + i*n + j), *(A+ i*n+j));
     );
 
   PARFOR1D (j,R, H,
     for (size_t i=0; i<=j; ++i )
-      F.assign( *(L+i*R+j), zero);
-    F.assign(*(L+j*R+j), one);
+      F.assign( *(L+i*R+j), F.zero);
+    F.assign(*(L+j*R+j), F.one);
     for (size_t i=j+1; i<m; i++)
       F.assign( *(L + i*R+j), *(A+i*n+j));
   );
@@ -189,9 +176,6 @@ int main(int argc, char** argv)
 	const Field F((double)p);
 	// Field::RandIter G(F, seed1);
 
-	Field::Element alpha, beta;
-	F.init(alpha,1.0);
-	F.init(beta,0.0);
 	// Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
 
     ParSeqHelper::Parallel H;

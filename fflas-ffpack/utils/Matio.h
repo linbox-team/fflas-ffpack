@@ -75,7 +75,7 @@ typename Field::Element_ptr read_field(const Field& F, const char * mat_file,siz
 		if(fscanf(FileDes,"%ld %ld %ld\n",&i, &j, &val)<0)
 			printf("Read Error\n");
 		while(i && j) {
-			F.init(X[p*(i-1)+j-1],val);
+			F.init(X[p*(i-1)+j-1], val);
 			if(fscanf(FileDes,"%ld %ld %ld\n",&i, &j, &val)<0)
 				printf("Read Error\n");
 		}

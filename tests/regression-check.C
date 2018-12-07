@@ -112,6 +112,7 @@ bool gf2ModularBalanced(){
 
 	for (unsigned i=0; i<21; i++)
         F.init(H[i], h_[i]);
+
 	size_t NSdim;
 	size_t ldn;
 	NullSpaceBasis (F, FflasLeft, 3, 7, H, 7, G, ldn, NSdim);

@@ -85,20 +85,17 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	
 	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );	
 	
-	Field::Element zero,one;
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	PARFOR1D (i,R,H,
               for (size_t j=0; j<i; ++j)
-				  F.assign ( *(U + i*n + j), zero);
+				  F.assign ( *(U + i*n + j), F.zero);
               for (size_t j=i; j<n; ++j)
 				  F.assign (*(U + i*n + j), *(A+ i*n+j));
               );
 	
 	PARFOR1D (j,R,H, 
 			  for (size_t i=0; i<=j; ++i )
-				  F.assign( *(L+i*R+j), zero);
-			  F.assign(*(L+j*R+j), one);
+				  F.assign( *(L+i*R+j), F.zero);
+			  F.assign(*(L+j*R+j), F.one);
 			  for (size_t i=j+1; i<m; i++)
 				  F.assign( *(L + i*R+j), *(A+i*n+j));
 			  );

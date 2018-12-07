@@ -68,9 +68,11 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, u
 		FFLAS::fassign(E,m,k,A,n,B,n);
 
 		chrono.clear();chrono.start();
-		for (size_t i = 0 ; i < m ; ++i)
-			for (size_t j = 0 ; j < k ; ++j)
-				F.init(A[i*n+j],A[i*n+j]);
+		for (size_t i = 0 ; i < m ; ++i) {
+			for (size_t j = 0 ; j < k ; ++j) {
+				F.init(A[i*n+j], A[i*n+j]);
+			}
+		}
 		chrono.stop();
 		tim += chrono ;
 
@@ -105,7 +107,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, u
 
 		chrono.clear();chrono.start();
 		for (size_t i = 1 ; i < m*n ; i += incX) {
-			F.init(A[i],A[i]);
+			F.init(A[i], A[i]);
 		}
 		chrono.stop();
 		tim += chrono ;
@@ -123,7 +125,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, u
 				F.write(std::cout) << std::endl <<  i << " : ";
 				F.write(std::cout, B[i]) << "!= (ref)";
 				F.write(std::cout, A[i]) << std::endl;
-				return false ;
+				return false;
 			}
 #endif
 
