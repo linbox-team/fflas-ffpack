@@ -38,8 +38,8 @@ int main(int argc, char** argv)
     int p = atoi(argv[1]);
     std::string file = argv[2];
 
-    // Creating the finite field Z/pZ
-    typedef Givaro::Modular<double> F_t;
+    // Creating the finite field Z/pZ (assuming p>2, use Modular<float> for p=2)
+    typedef Givaro::ModularBalanced<double> F_t;
 
     // Creating polynomial ring
     typedef Givaro::Poly1Dom<F_t> PolyRing_t;

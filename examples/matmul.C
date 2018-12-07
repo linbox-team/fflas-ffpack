@@ -39,8 +39,8 @@ int main(int argc, char** argv)
     std::string fileA = argv[2];
     std::string fileB = argv[3];
 
-    // Creating the finite field Z/pZ
-    Givaro::Modular<double> F(p);
+    // Creating the finite field Z/pZ (assuming p>2, use Modular<float> for p=2)
+    Givaro::ModularBalanced<double> F(p);
 
     // Reading the matrices
     double* A, *B, *C;

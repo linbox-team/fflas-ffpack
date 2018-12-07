@@ -38,8 +38,8 @@ int main(int argc, char** argv)
     int p = atoi(argv[1]);
     std::string file = argv[2];
 
-    // Creating the finite field Z/pZ
-    Givaro::Modular<double> F(p);
+    // Creating the finite field Z/pZ (assuming p>2, use Modular<float> for p=2)
+    Givaro::ModularBalanced<double> F(p);
 
     // Reading the matrix from a file
     double* A;
