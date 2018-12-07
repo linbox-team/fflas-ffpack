@@ -59,8 +59,8 @@ int main(int argc, char** argv) {
         // Displays L and U separately
     double * L = FFLAS::fflas_new<double>(m * r);
     double * U = FFLAS::fflas_new<double>(r * n);
-    FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, r);
-    FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n);
+    FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, r, true);
+    FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n, true);
     FFLAS::WriteMatrix(std::cout<<"L = "<<std::endl, F, m, r, L, r);
     std::cout<<"modulo "<<p<<std::endl;
     FFLAS::WriteMatrix(std::cout<<"U = "<<std::endl, F, r, n, U, n);
