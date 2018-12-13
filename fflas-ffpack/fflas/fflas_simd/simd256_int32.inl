@@ -244,7 +244,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Return :	[a4, b4, ..., a7, b7] int32_t
 	*/
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-		using Simd256_64 = Simd256<uint64_t>;
+		// using Simd256_64 = Simd256<uint64_t>;
 		// vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
 		// vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
@@ -260,7 +260,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	*			[a4, b4, ..., a7, b7] int32_t
 	*/
 	static INLINE void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
-		using Simd256_64 = Simd256<uint64_t>;
+		// using Simd256_64 = Simd256<uint64_t>;
 		// vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
 		// vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
@@ -321,7 +321,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
-#ifdef 0
+#ifdef __x86_64__
 		typedef Simd256_impl<true, true, true, 8> Simd256_64;
 		Converter ca, cb;
 		ca.v = a;
