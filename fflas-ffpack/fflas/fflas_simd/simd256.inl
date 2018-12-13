@@ -183,7 +183,9 @@ using Simd256 =
 // To many missing insctructions on int8_t
 
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#ifdef __x86_64__
 #include "simd256_int64.inl"
+#endif
 #include "simd256_int32.inl"
 #include "simd256_int16.inl"
 #endif

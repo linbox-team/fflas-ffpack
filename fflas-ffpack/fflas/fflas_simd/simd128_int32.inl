@@ -35,7 +35,9 @@
 #error "You need SSE instructions to perform 128 bits operations on int32"
 #endif
 
+#ifdef __x86_64__
 #include "fflas-ffpack/fflas/fflas_simd/simd128_int64.inl"
+#endif
 
 /*
  * Simd128 specialized for int32_t
@@ -252,7 +254,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		// _mm_mulhi_epi32 emul
 		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
-#if 0
+#ifdef __x86_64__
 		vect_t a1, a2, b1, b2;
 		a1 = set(_mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 2), 0);
 		a2 = set(_mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3), 0);
