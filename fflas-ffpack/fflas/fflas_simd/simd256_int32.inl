@@ -35,7 +35,9 @@
 #error "You need AVX2 instructions to perform 256bits operations on int32_t"
 #endif
 
+#ifdef __x86_64__
 #include "fflas-ffpack/fflas/fflas_simd/simd256_int64.inl"
+#endif
 
 /*
  * Simd256 specialized for int32_t
@@ -321,7 +323,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
-#ifdef __x86_64__
+#ifndef __x86_64__
 		typedef Simd256_impl<true, true, true, 8> Simd256_64;
 		Converter ca, cb;
 		ca.v = a;
