@@ -254,7 +254,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		// _mm_mulhi_epi32 emul
 		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
-#ifdef __x86_64__
+#ifndef __x86_64__
 		vect_t a1, a2, b1, b2;
 		a1 = set(_mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 2), 0);
 		a2 = set(_mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3), 0);
