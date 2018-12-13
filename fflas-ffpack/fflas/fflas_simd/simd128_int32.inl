@@ -576,6 +576,17 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		// _mm_mulhi_epi32 emul
 		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+#ifndef __x86_64__
+		vect_t a1, a2, b1, b2;
+		a1 = set(_mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 2), 0);
+		a2 = set(_mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3), 0);
+		b1 = set(_mm_extract_epi32(b, 0), 0, _mm_extract_epi32(b, 2), 0);
+		b2 = set(_mm_extract_epi32(b, 1), 0, _mm_extract_epi32(b, 3), 0);
+		a1 = _mm_mul_epi32(a1, b1);
+		a2 = _mm_mul_epi32(a2, b2);
+		return set(_mm_extract_epi32(a1, 1), _mm_extract_epi32(a2, 1), _mm_extract_epi32(a1, 3),
+				   _mm_extract_epi32(a2, 3));
+#else
 		typedef Simd128_impl<true, true, false, 8> Simd128_64;
 		vect_t C,A1,B1;
 		C  = Simd128_64::mulx(a,b);
@@ -586,6 +597,7 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 		A1 = Simd128_64::srl(A1,32);
 		A1 = Simd128_64::sll(A1,32);
 		return Simd128_64::vor(C,A1);
+#endif
 	}
 
 	/*
