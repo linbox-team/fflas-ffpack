@@ -39,7 +39,7 @@
 #include <cmath>
 
 #include "fflas-ffpack/field/field-traits.h"
-#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and defined(__x86_64__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 
@@ -297,7 +297,7 @@ namespace FFLAS {
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
 		
-#if defined (__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and defined(__x86_64__)
 		igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
 #else
 		for (size_t i=0; i<m; i++){

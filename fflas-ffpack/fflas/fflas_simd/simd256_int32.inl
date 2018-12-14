@@ -231,7 +231,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Return :	[a0, b0, ..., a3, b3] int32_t
 	*/
 	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-		using Simd256_64 = Simd256<uint64_t>;
+			//using Simd256_64 = Simd256<uint64_t>;
 			//Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
 			//Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
