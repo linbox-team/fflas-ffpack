@@ -34,71 +34,71 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-  
-	size_t iter = 3;
-	int    q    = 131071;
-	size_t    m    = 2000 ;
-	size_t    n    = 1000;
-	std::string file1 = "";
-	std::string file2 = "";
+
+    size_t iter = 3;
+    int    q    = 131071;
+    size_t    m    = 2000 ;
+    size_t    n    = 1000;
+    std::string file1 = "";
+    std::string file2 = "";
     bool v=false;
 
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
-		{ 'm', "-m M", "Set the row dimension of the RHS matrix.", TYPE_INT , &m },
-		{ 'n', "-n N", "Set the col dimension of the RHS matrix.", TYPE_INT , &n },
-		{ 'i', "-i R", "Set number of repetitions.",               TYPE_INT , &iter },
-		{ 'f', "-f FILE", "Set the first input file (empty for random).", TYPE_STR, &file1 },
-		{ 'g', "-g FILE", "Set the second input file (empty for random).", TYPE_STR, &file2 },
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+        { 'm', "-m M", "Set the row dimension of the RHS matrix.", TYPE_INT , &m },
+        { 'n', "-n N", "Set the col dimension of the RHS matrix.", TYPE_INT , &n },
+        { 'i', "-i R", "Set number of repetitions.",               TYPE_INT , &iter },
+        { 'f', "-f FILE", "Set the first input file (empty for random).", TYPE_STR, &file1 },
+        { 'g', "-g FILE", "Set the second input file (empty for random).", TYPE_STR, &file2 },
         { 'v', "-v V", "Whether to run the verification of the solution.", TYPE_BOOL, &v },
-		END_OF_ARGUMENTS
-	};
+        END_OF_ARGUMENTS
+    };
 
-	FFLAS::parseArguments(argc,argv,as);
-	
-	typedef Givaro::ModularBalanced<double> Field;
+    FFLAS::parseArguments(argc,argv,as);
 
-	Field F(q);
+    typedef Givaro::ModularBalanced<double> Field;
+
+    Field F(q);
     Field::Element_ptr  A, Ac, B, Bc;
 
-	FFLAS::Timer chrono;
-	double time=0.0;
-	Field::RandIter G(F);
+    FFLAS::Timer chrono;
+    double time=0.0;
+    Field::RandIter G(F);
 
-	if (!file1.empty()){
-	    FFLAS::ReadMatrix (file1.c_str(),F,m,m,A);
-	}
-	else{
-		A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
-		FFPACK::RandomMatrixWithRank (F, m,m, m, A, m);
+    if (!file1.empty()){
+        FFLAS::ReadMatrix (file1.c_str(),F,m,m,A);
+    }
+    else{
+        A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
+        FFPACK::RandomMatrixWithRank (F, m,m, m, A, m);
     }
 
-	if (!file2.empty()){
-	    FFLAS::ReadMatrix (file2.c_str(),F,m,n,B);
-	}
-	else{
-		B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
-		FFPACK::RandomMatrix(F, m, n, B, n, G);
-	}
+    if (!file2.empty()){
+        FFLAS::ReadMatrix (file2.c_str(),F,m,n,B);
+    }
+    else{
+        B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+        FFPACK::RandomMatrix(F, m, n, B, n, G);
+    }
 
     Bc = FFLAS::fflas_new(F,m,n);
     Ac = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
-    
-	for (size_t i=0;i<=iter;++i){
+
+    for (size_t i=0;i<=iter;++i){
         FFLAS::fassign (F,m,m,A,m,Ac,m);
         FFLAS::fassign (F,m,n,B,n,Bc,n);
-		int info;
+        int info;
         chrono.clear();
-		if (i) chrono.start();
+        if (i) chrono.start();
         FFPACK::fgesv (F, FFLAS::FflasLeft, m,n, Ac, m, Bc, n, &info);
-		if (i) {chrono.stop(); time+=chrono.realtime();}
-	}
-	
-        // -----------
-		// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cout << "Time: " << time / double(iter)
-			  << " Gfops: " << (double(m*m)/1000000.*(2*double(m)/3000.+2*double(n)/1000.0)) / time * double(iter);
-	FFLAS::writeCommandString(std::cout, as) << std::endl;
+        if (i) {chrono.stop(); time+=chrono.realtime();}
+    }
+
+    // -----------
+    // Standard output for benchmark
+    std::cout << "Time: " << time / double(iter)
+              << " Gfops: " << (double(m*m)/1000000.*(2*double(m)/3000.+2*double(n)/1000.0)) / time * double(iter);
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
 
     if (v){
         FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,m,F.one,A,m,Bc,n,F.mOne,B,n);
@@ -113,8 +113,8 @@ int main(int argc, char** argv) {
         }
     }
     FFLAS::fflas_delete( A);
-	FFLAS::fflas_delete( B);
-	
+    FFLAS::fflas_delete( B);
 
-	return 0;
+
+    return 0;
 }
