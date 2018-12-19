@@ -428,8 +428,8 @@ namespace FFPACK {
     public:
         rnsRandIter(const RNS& R, size_t size=0, uint64_t seed=0)
                 : _domain(R) {
-            for(auto & iter : R._field_rns)
-                _RNS_rand.push_back( typename RNS::ModField::RandIter(iter,size,seed) );
+            for(const auto& F : R._field_rns)
+                _RNS_rand.emplace_back(F,size,seed);
         }
 		
         /** RNS ring Element random assignement.
