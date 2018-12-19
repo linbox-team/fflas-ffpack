@@ -63,8 +63,8 @@ int main(int argc, char** argv) {
         { 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 'c', "-c C", "Set the cross-over point to the base case.",            TYPE_INT , &threshold },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
-  		{ 'p', "-p P", "whether to run or not the parallel PLUQ", TYPE_BOOL , &par },
- 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+        { 'p', "-p P", "whether to run or not the parallel PLUQ", TYPE_BOOL , &par },
+        { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
      END_OF_ARGUMENTS
     };
 
