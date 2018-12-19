@@ -35,7 +35,9 @@
 #error "You need AVX2 instructions to perform 256bits operations on int32_t"
 #endif
 
+#ifdef __x86_64__
 #include "fflas-ffpack/fflas/fflas_simd/simd256_int64.inl"
+#endif
 
 /*
  * Simd256 specialized for int32_t
@@ -229,9 +231,11 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Return :	[a0, b0, ..., a3, b3] int32_t
 	*/
 	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-		using Simd256_64 = Simd256<uint64_t>;
-		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
-		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+			//using Simd256_64 = Simd256<uint64_t>;
+			//Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
+			//Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
+		vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
 		return unpacklo_twice(a1, b1);
 	}
 
@@ -242,9 +246,11 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Return :	[a4, b4, ..., a7, b7] int32_t
 	*/
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-		using Simd256_64 = Simd256<uint64_t>;
-		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		// using Simd256_64 = Simd256<uint64_t>;
+		// vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
+		// vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
+		vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
 		return unpackhi_twice(a1, b1);
 	}
 
@@ -256,9 +262,11 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	*			[a4, b4, ..., a7, b7] int32_t
 	*/
 	static INLINE void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
-		using Simd256_64 = Simd256<uint64_t>;
-		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		// using Simd256_64 = Simd256<uint64_t>;
+		// vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
+		// vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
+		vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
 		s1 = unpacklo_twice(a1, b1);
 		s2 = unpackhi_twice(a1, b1);
 	}
@@ -325,22 +333,30 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 		a2 = set(ca.t[4], 0, ca.t[5], 0, ca.t[6], 0, ca.t[7], 0);
 		b1 = set(cb.t[0], 0, cb.t[1], 0, cb.t[2], 0, cb.t[3], 0);
 		b2 = set(cb.t[4], 0, cb.t[5], 0, cb.t[6], 0, cb.t[7], 0);
-		c1 = Simd256_64::mulx(a1, b1);
-		c2 = Simd256_64::mulx(a2, b2);
+		c1 = _mm256_mul_epi32(a1, b1); //Simd256_64::mulx(a1, b1);
+		c2 = _mm256_mul_epi32(a1, b2); //Simd256_64::mulx(a2, b2);
 		ca.v = c1;
 		cb.v = c2;
 		return set(ca.t[1], ca.t[3], ca.t[5], ca.t[7], cb.t[1], cb.t[3], cb.t[5], cb.t[7]);
 #else
-		typedef Simd256_impl<true, true, true, 8> Simd256_64;
+			//typedef Simd256_impl<true, true, true, 8> Simd256_64;
 		vect_t C,A1,B1;
-		C  = Simd256_64::mulx(a,b);
-		A1 = Simd256_64::srl(a,32);
-		B1 = Simd256_64::srl(b,32);
-		A1 = Simd256_64::mulx(A1,B1);
-		C  = Simd256_64::srl(C,32);
-		A1 = Simd256_64::srl(A1,32);
-		A1 = Simd256_64::sll(A1,32);
-		return Simd256_64::vor(C,A1);
+			//C  = Simd256_64::mulx(a,b);
+		C  = _mm256_mul_epi32(a,b);
+			//A1 = Simd256_64::srl(a,32);
+		A1 = _mm256_srli_epi64(a, 32);
+			//B1 = Simd256_64::srl(b,32);
+		B1 = _mm256_srli_epi64(b, 32);
+			//A1 = Simd256_64::mulx(A1,B1);
+		A1 =  _mm256_mul_epi32(A1,B1);
+			//C  = Simd256_64::srl(C,32);
+		C  = _mm256_srli_epi64(C, 32);
+			//A1 = Simd256_64::srl(A1,32);
+		A1 = _mm256_srli_epi64(A1, 32);
+			//A1 = Simd256_64::sll(A1,32);
+		A1 = _mm256_slli_epi64(A1, 32);
+			//return Simd256_64::vor(C,A1);
+		return _mm256_or_si256(A1, C);
 #endif
 	}
 
@@ -654,17 +670,34 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a7*b7/2^32)] uint32_t
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
-		typedef Simd256_impl<true, true, false, 8> Simd256_64;
+		// //#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+		// typedef Simd256_impl<true, true, false, 8> Simd256_64;
+		// vect_t C,A1,B1;
+		// C  = Simd256_64::mulx(a,b);
+		// A1 = Simd256_64::srl(a,32);
+		// B1 = Simd256_64::srl(b,32);
+		// A1 = Simd256_64::mulx(A1,B1);
+		// C  = Simd256_64::srl(C,32);
+		// A1 = Simd256_64::srl(A1,32);
+		// A1 = Simd256_64::sll(A1,32);
+		// return Simd256_64::vor(C,A1);
 		vect_t C,A1,B1;
-		C  = Simd256_64::mulx(a,b);
-		A1 = Simd256_64::srl(a,32);
-		B1 = Simd256_64::srl(b,32);
-		A1 = Simd256_64::mulx(A1,B1);
-		C  = Simd256_64::srl(C,32);
-		A1 = Simd256_64::srl(A1,32);
-		A1 = Simd256_64::sll(A1,32);
-		return Simd256_64::vor(C,A1);
+			//C  = Simd256_64::mulx(a,b);
+		C  = _mm256_mul_epi32(a,b);
+			//A1 = Simd256_64::srl(a,32);
+		A1 = _mm256_srli_epi64(a, 32);
+			//B1 = Simd256_64::srl(b,32);
+		B1 = _mm256_srli_epi64(b, 32);
+			//A1 = Simd256_64::mulx(A1,B1);
+		A1 =  _mm256_mul_epi32(A1,B1);
+			//C  = Simd256_64::srl(C,32);
+		C  = _mm256_srli_epi64(C, 32);
+			//A1 = Simd256_64::srl(A1,32);
+		A1 = _mm256_srli_epi64(A1, 32);
+			//A1 = Simd256_64::sll(A1,32);
+		A1 = _mm256_slli_epi64(A1, 32);
+			//return Simd256_64::vor(C,A1);
+		return _mm256_or_si256(A1, C);
 	}
 
 	/*
