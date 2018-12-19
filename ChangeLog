@@ -1,3 +1,16 @@
+2017-12-21 v2.4.0
+	New features:
+	* fsytrf: a symmetric triangular factorization, revealign the RPM
+	* fsyrk, fsyr2k, ftrssyr2k, ftrstr: subroutines for symmetric operations
+	* support for AVX512 vectorization
+	* parallelization of fgemm-rns, fsytrf
+	Improvements:
+	* more examples
+	* more benchmarks: fgesv
+	* many bug fixes
+	* improved testsuite
+	* update to the Givaro's revamped modular fields
+
 2017-12-21 v2.3.2
 	Improvements:
 	* minor bug fixes in the build system and with GF2

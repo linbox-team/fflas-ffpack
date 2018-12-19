@@ -24,7 +24,7 @@
 AC_PREREQ([2.67])
 
 
-AC_INIT([FFLAS-FFPACK], [2.3.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.4.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
 
@@ -233,7 +233,7 @@ echo "-----------------------------------------------"
 # Getting GMP from Givaro - AB 2014-12-12
 #FF_CHECK_GMP
 
-PKG_CHECK_MODULES([GIVARO],[givaro])
+PKG_CHECK_MODULES([GIVARO],[givaro >= 4.1.0])
 
 
 dnl FF_CHECK_GIVARO(,,[
