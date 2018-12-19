@@ -23,9 +23,12 @@
 * ========LICENCE========
 */
 
-#ifndef __FFLASFFPACK_HAVE_DGETRF
-#define __FFLASFFPACK_HAVE_DGETRF 1
-#endif
+// For the moment, please manually uncomment these defines when your BLAS provide these symbols (waiting to autodect them in a near future)
+// #define __FFLASFFPACK_HAVE_LAPACK2_DSYTRF
+// #define __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_AA
+// #define __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_ROOK
+// #define __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_RK
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include <iostream>
@@ -94,22 +97,30 @@ int main(int argc, char** argv) {
         switch(algo) {
             case 0:
                 if (it) chrono.start();
+#ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF
                 LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
+#endif
                 if (it) chrono.stop();
                 break;
             case 1:
                 if (it) chrono.start();
+#ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_AA
                 LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
+#endif
                 if (it) chrono.stop();
                 break;
             case 2:
                 if (it) chrono.start();
+#ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_ROOK
                 LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
+#endif
                 if (it) chrono.stop();
                 break;
             default:
                 if (it) chrono.start();
+#ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_RK
                 LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
+#endif
                 if (it) chrono.stop();
         }
         if (it) time[it-1] = chrono.realtime();
