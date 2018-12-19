@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
         { 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 'c', "-c C", "Set the cross-over point to the base case.",            TYPE_INT , &threshold },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
-        { 'p', "-p P", "whether to run or not the parallel PLUQ", TYPE_BOOL , &par },
+        { 'p', "-p P", "run the parallel fsytrf (only supported when RPM=N)", TYPE_BOOL , &par },
         { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
      END_OF_ARGUMENTS
     };
@@ -117,7 +117,6 @@ int main(int argc, char** argv) {
                 if (i) chrono.start();
                 PAR_BLOCK{
                     FFPACK::fsytrf (F, uplo, n, A, n, SPLITTER(t),threshold);
-
                 }
                 if (i) chrono.stop();
             }
