@@ -57,6 +57,7 @@ benchmarks/benchmark-fgemm
 benchmarks/benchmark-fgemv-mp
 benchmarks/benchmark-dgemm
 benchmarks/benchmark-fgemm-mp
+benchmarks/benchmark-fgemm-rns
 benchmarks/benchmark-pluq
 benchmarks/benchmark-lqup
 benchmarks/benchmark-lqup-mp

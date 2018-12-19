@@ -428,7 +428,7 @@ namespace FFPACK {
     public:
         rnsRandIter(const RNS& R, size_t size=0, uint64_t seed=0)
                 : _domain(R) {
-            for(auto iter : R._field_rns)
+            for(auto & iter : R._field_rns)
                 _RNS_rand.push_back( typename RNS::ModField::RandIter(iter,size,seed) );
         }
 		
@@ -438,7 +438,7 @@ namespace FFPACK {
          */
         typename RNS::Element& random(typename RNS::Element& elt) const {
             auto coefficient(elt._ptr);
-            for(auto iter : _RNS_rand) {
+            for(auto & iter : _RNS_rand) {
                 iter.random( *coefficient );
                 coefficient += elt._stride;
             }
