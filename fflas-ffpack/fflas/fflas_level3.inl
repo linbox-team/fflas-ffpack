@@ -316,6 +316,34 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr D, const size_t incD,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc, const size_t threshold=__FFLASFFPACK_FSYRK_THRESHOLD);
+	template<class Field>
+	typename Field::Element_ptr
+	fsyrk (const Field& F,
+	       const FFLAS_UPLO UpLo,
+	       const FFLAS_TRANSPOSE trans,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr D, const size_t incD,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+	       const ParSeqHelper::Sequential seq,
+	       const size_t threshold=__FFLASFFPACK_FSYRK_THRESHOLD);
+	template<class Field, class Cut, class Param>
+	typename Field::Element_ptr
+	fsyrk (const Field& F,
+	       const FFLAS_UPLO UpLo,
+	       const FFLAS_TRANSPOSE trans,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr D, const size_t incD,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+	       const ParSeqHelper::Parallel<Cut,Param> par,
+	       const size_t threshold=__FFLASFFPACK_FSYRK_THRESHOLD);
 	/** @brief  fsyrk: Symmetric Rank K update with diagonal scaling
 	 *
 	 * Computes the Lower or Upper triangular part of

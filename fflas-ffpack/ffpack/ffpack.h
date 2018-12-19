@@ -45,6 +45,8 @@
 #endif
 
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/fflas/fflas_helpers.inl"
+
 //#include "parallel.h"
 #include <list>
 #include <vector>
@@ -537,6 +539,18 @@ namespace FFPACK {
 	template <class Field>
 	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 				 typename Field::Element_ptr A, const size_t lda,
+				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
+
+	template <class Field>
+	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+				 typename Field::Element_ptr A, const size_t lda,
+				 const FFLAS::ParSeqHelper::Sequential seq,
+				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
+
+	template <class Field, class Cut, class Param>
+	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+				 typename Field::Element_ptr A, const size_t lda,
+				 const FFLAS::ParSeqHelper::Parallel<Cut,Param> par,
 				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 
 		/* LDLT or UTDU factorizations */
