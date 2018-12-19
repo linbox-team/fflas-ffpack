@@ -134,10 +134,10 @@ struct Simd256i_base {
 	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm256_xor_si256(b, a); }
 
 	/*
-	* Compute the bitwise AND NOT and store the results in vect_t.
+	* Compute the bitwise NOT AND and store the results in vect_t.
 	* Args   : [a0, ..., a255]
 	*		   [b0, ..., b255]
-	* Return : [a0 AND (NOT b0), ..., a255 AND (NOT b255)]
+	* Return : [(NOT a0) AND b0, ..., (NOT a255) AND b255]
 	*/
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
 
@@ -183,7 +183,9 @@ using Simd256 =
 // To many missing insctructions on int8_t
 
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#ifdef __x86_64__
 #include "simd256_int64.inl"
+#endif
 #include "simd256_int32.inl"
 #include "simd256_int16.inl"
 #endif

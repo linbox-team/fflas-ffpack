@@ -31,6 +31,7 @@
 
 #include <fflas-ffpack/fflas/fflas_enum.h>
 #include <math.h>
+#include <cassert>
 
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 

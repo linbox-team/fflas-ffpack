@@ -101,8 +101,10 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
         cerr<<setprecision(10);
 	Field::Element alpha,beta;
 
-        F.init( alpha, Field::Element(atoi(argv[6])));
-        F.init( beta, Field::Element(atoi(argv[7])));
+        F.init( alpha);
+        F.assign( alpha, Field::Element(atoi(argv[6])));
+        F.init( beta);
+        F.assign( beta, Field::Element(atoi(argv[7])));
 
         size_t lda=m;
         size_t ldb=n;
@@ -154,12 +156,10 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 
 #if __FFLASFFPACK_DEBUG
         bool wrong = false;
-	Field::Element zero;
-        F.init(zero, 0.0);
 	Field::Element * Cd;
 	Cd  = FFLAS::fflas_new<Field::Element>(m*n);
 	for (int i=0; i<m*n; ++i)
-		F.assign (*(Cd+i), zero);
+		F.assign (*(Cd+i), F.zero);
 
 	Field::Element aij, bij,  tmp;
         // Field::Element beta_alpha;                                                                                                                                           
@@ -167,7 +167,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
         for (int i = 0; i < m; ++i)
                 for (int j = 0; j < n; ++j){
                         F.mulin(*(Cd+i*n+j),beta);
-                        F.assign (tmp, zero);
+                        F.assign (tmp, F.zero);
                         for ( int l = 0; l < k ; ++l ){
                                 if ( ta == FFLAS::FflasNoTrans )
                                         aij = *(A+i*lda+l);

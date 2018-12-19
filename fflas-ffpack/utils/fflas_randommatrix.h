@@ -204,10 +204,13 @@ namespace FFPACK {
                            typename Field::Element_ptr A, size_t lda, RandIter& G) {
         RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasNonUnit, nonsingular, A, lda, G);
         for (size_t i=0; i<n; i++){
-            typename Field::Element inv;
-            F.init(inv);
-            F.inv(inv, A[i*(lda+1)]);
-            FFLAS::fscal(F, n-i-1, inv, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
+            typename Field::Element piv = A[i*(lda+1)];
+            if (!F.isZero(piv)){
+                    typename Field::Element inv;
+                    F.init(inv);
+                    F.inv(inv, A[i*(lda+1)]);
+                    FFLAS::fscal(F, n-i-1, inv, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
+            }
         }
         ftrtrm (F, FFLAS::FflasRight, FFLAS::FflasNonUnit, n, A, lda);
         return A;
@@ -430,12 +433,10 @@ namespace FFPACK{
         typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
         RandomTriangularMatrix (F, N, N, FFLAS::FflasUpper, FFLAS::FflasNonUnit, true, U, N, G);
 
-        typename Field::Element alpha, beta;
-        F.init(alpha,1.0);
-        F.init(beta,0.0);
             // auto sp=SPLITTER(); //CP: broken with Modular<Integer>. Need to reorganize  the helper behaviour with ParSeq and ModeTraits
         auto sp=NOSPLIT();
-        FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, sp);
+        FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, N,
+					  F.one, L, N, U, N, F.zero, A, lda, sp);
 
         FFLAS::fflas_delete(L);
         FFLAS::fflas_delete(U);

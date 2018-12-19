@@ -84,10 +84,10 @@ struct Simd128i_base {
 	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm_xor_si128(b, a); }
 
 	/*
-	* Compute the bitwise AND NOT and store the results in vect_t.
+	* Compute the bitwise NOT AND and store the results in vect_t.
 	* Args   : [a0, ..., a127]
 	*		   [b0, ..., b127]
-	* Return : [a0 AND (NOT b0), ..., a127 AND (NOT b127)]
+	* Return : [NOT(a0) AND b0, ..., NOT(a127) AND b127]
 	*/
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(b, a); }
 
@@ -107,8 +107,9 @@ Simd128_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_s
 
 #include "simd128_int16.inl"
 #include "simd128_int32.inl"
+#ifdef __x86_64__
 #include "simd128_int64.inl"
-
+#endif
 #endif //#ifdef SIMD_INT
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_INL

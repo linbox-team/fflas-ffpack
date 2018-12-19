@@ -83,7 +83,7 @@ namespace FFPACK {
 				integer::seeding(_seed);
 				integer tmp;
 				integer::random_exact<true>(tmp,_F._p);
-				_F.init(elt,tmp);
+				_F.init(elt, tmp);
 				return elt;
 			}
 		};

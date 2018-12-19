@@ -140,29 +140,41 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 	Ai= FFLAS::fflas_new(F,ldA,k);
 	Bi= FFLAS::fflas_new(F,ldB,n);
 
-	for (size_t i=0;i<m;++i)
-		for (size_t j=0;j<k;++j)
-			F.init(Ai[j*ldA+i],A[i*lda+j]);
-	for (size_t i=0;i<k;++i)
-		for (size_t j=0;j<n;++j)
-			F.init(Bi[j*ldB+i],B[i*ldb+j]);
-	for (size_t i=0;i<m;++i)
-		for (size_t j=0;j<n;++j)
-			F.init(Ci[j*ldC+i],D[i*n+j]);
+	for (size_t i=0;i<m;++i) {
+		for (size_t j=0;j<k;++j) {
+			F.init(Ai[j*ldA+i], A[i*lda+j]);
+        }
+    }
+	for (size_t i=0;i<k;++i) {
+		for (size_t j=0;j<n;++j) {
+			F.init(Bi[j*ldB+i], B[i*ldb+j]);
+        }
+    }
+	for (size_t i=0;i<m;++i) {
+		for (size_t j=0;j<n;++j) {
+			F.init(Ci[j*ldC+i], D[i*n+j]);
+        }
+    }
 #else
 	Ci= FFLAS::fflas_new(F,m,ldC);
 	Ai= FFLAS::fflas_new(F,ra,ldA);
 	Bi= FFLAS::fflas_new(F,rb,ldB);
 
-	for (size_t i=0;i<ra;++i)
-		for (size_t j=0;j<ca;++j)
-			F.init(Ai[i*ldA+j],A[i*lda+j]);
-	for (size_t i=0;i<rb;++i)
-		for (size_t j=0;j<cb;++j)
-			F.init(Bi[i*ldB+j],B[i*ldb+j]);
-	for (size_t i=0;i<m;++i)
-		for (size_t j=0;j<n;++j)
-			F.init(Ci[i*ldC+j],D[i*n+j]);
+	for (size_t i=0;i<ra;++i) {
+		for (size_t j=0;j<ca;++j) {
+			F.init(Ai[i*ldA+j], A[i*lda+j]);
+        }
+    }
+	for (size_t i=0;i<rb;++i) {
+		for (size_t j=0;j<cb;++j) {
+			F.init(Bi[i*ldB+j], B[i*ldb+j]);
+        }
+    }
+	for (size_t i=0;i<m;++i) {
+		for (size_t j=0;j<n;++j) {
+			F.init(Ci[i*ldC+j], D[i*n+j]);
+        }
+    }
 
 #endif
 
@@ -231,23 +243,29 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 		// Givaro::Modular<double> G(65537);
 		Givaro::ZRing<double> G;
 		double af, bf ;
-		G.init(af,alpha);
-		G.init(bf,beta);
+		G.init(af, alpha);
+		G.init(bf, beta);
 
 		double *Cf,*Af,*Bf;
 		Cf= FFLAS::fflas_new(G,m,ldC);
 		Af= FFLAS::fflas_new(G,ra,ldA);
 		Bf= FFLAS::fflas_new(G,rb,ldB);
 
-		for (size_t i=0;i<ra;++i)
-			for (size_t j=0;j<ca;++j)
-				G.init(Af[i*ldA+j],A[i*lda+j]);
-		for (size_t i=0;i<rb;++i)
-			for (size_t j=0;j<cb;++j)
-				G.init(Bf[i*ldB+j],B[i*ldb+j]);
-		for (size_t i=0;i<m;++i)
-			for (size_t j=0;j<n;++j)
-				G.init(Cf[i*ldC+j],D[i*n+j]);
+		for (size_t i=0;i<ra;++i) {
+			for (size_t j=0;j<ca;++j) {
+				G.init(Af[i*ldA+j], A[i*lda+j]);
+            }
+        }
+		for (size_t i=0;i<rb;++i) {
+			for (size_t j=0;j<cb;++j) {
+				G.init(Bf[i*ldB+j], B[i*ldb+j]);
+            }
+        }
+		for (size_t i=0;i<m;++i) {
+			for (size_t j=0;j<n;++j) {
+				G.init(Cf[i*ldC+j], D[i*n+j]);
+            }
+        }
 
 
 		tom.clear(); tom.start();

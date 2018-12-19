@@ -100,7 +100,8 @@ bool test_fscal(const Field & F,  size_t m, size_t k, size_t n, bool timing, uin
 	typename Field::RandIter G(F,0,seed);
 	bool pass = true ;
 	typename Field::Element  alpha;
-	F.init(alpha,F.one);
+	F.init(alpha);
+	F.assign(alpha,F.one);
 	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
 	F.assign (alpha,F.mOne);
 	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
@@ -170,7 +171,8 @@ bool test_fscalin(const Field & F,  size_t m, size_t k, size_t n, bool timing, u
 	typename Field::RandIter G(F,0,seed);
 	bool pass = true ;
 	typename Field::Element  alpha;
-	F.init (alpha,F.one);
+	F.init(alpha);
+	F.assign(alpha,F.one);
 	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);
 	F.assign (alpha,F.mOne);
 	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);

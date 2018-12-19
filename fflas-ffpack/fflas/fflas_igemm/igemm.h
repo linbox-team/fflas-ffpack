@@ -41,10 +41,8 @@ namespace FFLAS {
 
 } // FFLAS
 
-#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #include "igemm_kernels.h"
 #include "igemm_tools.h"
-#endif 
 #include "fflas-ffpack/utils/fflas_memory.h"
 
 namespace FFLAS { namespace Protected {
@@ -89,8 +87,7 @@ namespace FFLAS { /*  igemm */
 
 
 } // FFLAS
-#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
+
 #include "igemm.inl"
-#endif
 #endif // __FFLASFFPACK_fflas_igemm_igemm_H
 
