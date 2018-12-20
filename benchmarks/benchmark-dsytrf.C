@@ -72,70 +72,72 @@ int main(int argc, char** argv) {
 
     FFLAS::parseArguments(argc,argv,as);
 
-	typedef Givaro::Modular<double> Field;
-	typedef Field::Element Element;
+    typedef Givaro::Modular<double> Field;
+    typedef Field::Element Element;
 
-	Field F(q);
-	Field::Element * A;
+    Field F(q);
+    Field::Element * A;
 
-	TTimer chrono;
-	double *time=new double[iter];
+    TTimer chrono;
+    double *time=new double[iter];
 
-	std::vector<int> Piv(n,0);
-	std::vector<double> Diag(n,0.0);
-	for (size_t it=0;it <= iter;++it){
-		if (!file.empty()){
-			FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
-		}
-		else {
-			A = FFLAS::fflas_new<Element>(n*n);
-			Field::RandIter G(F);
-			PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
-		}
+    std::vector<int> Piv(n,0);
+    std::vector<double> Diag(n,0.0);
+    for (size_t it=0;it <= iter;++it){
+        if (!file.empty()){
+            FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+        }
+        else {
+            A = FFLAS::fflas_new<Element>(n*n);
+            Field::RandIter G(F);
+            PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
+        }
 
-		chrono.clear();
-		switch(algo) {
-		    case 0:
-			    if (it) chrono.start();
+        chrono.clear();
+        switch(algo) {
+            case 0:
+                if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF
-			    LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
+                LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
 #endif
-			    if (it) chrono.stop();
-			    break;
-		    case 1:
-			    if (it) chrono.start();
+                if (it) chrono.stop();
+                break;
+            case 1:
+                if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_AA
-			    LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
+                LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
 #endif
-			    if (it) chrono.stop();
-			    break;
-		    case 2:
-			    if (it) chrono.start();
+                if (it) chrono.stop();
+                break;
+            case 2:
+                if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_ROOK
-			    LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
+                LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
 #endif
-			    if (it) chrono.stop();
-			    break;
-		    default:
-			    if (it) chrono.start();
+                if (it) chrono.stop();
+                break;
+            default:
+                if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_RK
-			    LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
+                LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
 #endif
-			    if (it) chrono.stop();
-		}
-		if (it) time[it-1] = chrono.realtime();
-		FFLAS::fflas_delete( A);
-	}
+                if (it) chrono.stop();
+        }
+        if (it) time[it-1] = chrono.realtime();
+        FFLAS::fflas_delete( A);
+    }
 
-	std::sort(time, time+iter);
-	double mediantime = time[iter/2];
-	delete[] time;
+    std::sort(time, time+iter);
+    double mediantime = time[iter/2];
+    delete[] time;
 
-	std::cout << "Time: " << mediantime
-              << " Gfops: " << EFFGFF(n,mediantime,1);
-	FFLAS::writeCommandString(std::cout, as) << std::endl;
+    double gfops = EFFGFF(n,mediantime,1);
+    if (mediantime<0.001){mediantime=0; gfops=0;}
+    std::cout << "Time: " << mediantime
+              << " Gfops: " << gfops;
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
 
-	return 0;
+    return 0;
 }
 
 
