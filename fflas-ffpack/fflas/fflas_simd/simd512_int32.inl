@@ -165,21 +165,24 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
 	* Args   : [a0, a1, ..., a14, a15] int32_t
 	* Return : [a0 << s, a1 << s, ..., a14 << s, a15 << s] int32_t
 	*/
-	static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm512_slli_epi32(a, s); }
+	template <int s>
+	static INLINE CONST vect_t sll(const vect_t a) { return _mm512_slli_epi32(a, s); }
 
 	/*
 	* Shift packed 32-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
 	* Args   : [a0, a1, ..., a14, a15] int32_t
 	* Return : [a0 >> s, a1 >> s, ..., a14 >> s, a15 >> s] int32_t
 	*/
-	static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm512_srli_epi32(a, s); }
+	template <int s>
+	static INLINE CONST vect_t srl(const vect_t a) { return _mm512_srli_epi32(a, s); }
 
 	/*
 	* Shift packed 32-bit integers in a right by s while shifting in sign bits, and store the results in vect_t.
 	* Args   : [a0, a1, ..., a14, a15] int32_t
 	* Return : [a0 >> s, a1 >> s, ..., a14 >> s, a15 >> s] int32_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm512_srai_epi32(a, s); }
+	template <int s>
+	static INLINE CONST vect_t sra(const vect_t a) { return _mm512_srai_epi32(a, s); }
 
 
 	/*
@@ -342,12 +345,12 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
 		typedef Simd256_impl<true, true, true, 8> Simd256_64;
 		vect_t C,A1,B1;
 		C  = Simd256_64::mulx(a,b);
-		A1 = Simd256_64::srl(a,32);
-		B1 = Simd256_64::srl(b,32);
+		A1 = Simd256_64::srl<32>(a);
+		B1 = Simd256_64::srl<32>(b);
 		A1 = Simd256_64::mulx(A1,B1);
-		C  = Simd256_64::srl(C,32);
-		A1 = Simd256_64::srl(A1,32);
-		A1 = Simd256_64::sll(A1,32);
+		C  = Simd256_64::srl<32>(C);
+		A1 = Simd256_64::srl<32>(A1);
+		A1 = Simd256_64::sll<32>(A1);
 		return Simd256_64::vor(C,A1);
 #endif
 	}
@@ -518,7 +521,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
 	static INLINE CONST vect_t round(const vect_t a) { return a; }
 
 	static INLINE CONST vect_t signbits(const vect_t x) {
-		vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
+		vect_t signBits = sub(zero(), srl<4*sizeof(scalar_t)-1>(x));
 		return signBits;
 	}
 
@@ -632,7 +635,8 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	 * Args   : [a0, ..., a7]			int32_t
 	 * Return : [Floor(a0/2^s), ..., Floor(a7/2^s)]	int32_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srli_epi32(a, s); }
+	template<int s>
+	static INLINE CONST vect_t sra(const vect_t a) { return _mm256_srli_epi32(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 		vect_t x;
@@ -666,12 +670,12 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 		typedef Simd256_impl<true, true, false, 8> Simd256_64;
 		vect_t C,A1,B1;
 		C  = Simd256_64::mulx(a,b);
-		A1 = Simd256_64::srl(a,32);
-		B1 = Simd256_64::srl(b,32);
+		A1 = Simd256_64::srl<32>(a);
+		B1 = Simd256_64::srl<32>(b);
 		A1 = Simd256_64::mulx(A1,B1);
-		C  = Simd256_64::srl(C,32);
-		A1 = Simd256_64::srl(A1,32);
-		A1 = Simd256_64::sll(A1,32);
+		C  = Simd256_64::srl<32>(C);
+		A1 = Simd256_64::srl<32>(A1);
+		A1 = Simd256_64::sll<32>(A1);
 		return Simd256_64::vor(C,A1);
 	}
 

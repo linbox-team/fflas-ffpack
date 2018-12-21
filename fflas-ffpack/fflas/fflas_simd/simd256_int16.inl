@@ -169,7 +169,8 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 	* Return : [a0 << s, a1 << s, a2 << s, a3 << s, a4 << s, a5 << s, a6 << s, a7 << s,
 	*	   a8 << s, a9 << s, a10 << s, a11 << s, a12 << s, a13 << s, a14 << s, a15 << s] int16_t
 	*/
-	static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm256_slli_epi16(a, s); }
+	template<int s>
+	static INLINE CONST vect_t sll(const vect_t a) { return _mm256_slli_epi16(a, s); }
 
 	/*
 	* Shift packed 16-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
@@ -177,14 +178,16 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 	* Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s,
 	*	   a8 >> s, a9 >> s, a10 >> s, a11 >> s, a12 >> s, a13 >> s, a14 >> s, a15 >> s] int16_t
 	*/
-	static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm256_srli_epi16(a, s); }
+	template<int s>
+	static INLINE CONST vect_t srl(const vect_t a) { return _mm256_srli_epi16(a, s); }
 
 	/*
 	* Shift packed 16-bit integers in a right by s while shifting in sign bits, and store the results in vect_t.
 	* Args   :	[a0, ..., a15]		int16_t
 	* Return : 	[a0 >> s, ..., a15 >> s] int16_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srai_epi16(a, s); }
+	template<int s>
+	static INLINE CONST vect_t sra(const vect_t a) { return _mm256_srai_epi16(a, s); }
 
 	/*
 	* Shuffle 16-bit integers in a using the control in imm8, and store the results in dst.
@@ -515,7 +518,7 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 	static INLINE CONST vect_t round(const vect_t a) { return a; }
 
 	static INLINE CONST vect_t signbits(const vect_t x) {
-		vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
+		vect_t signBits = sub(zero(), srl<4*sizeof(scalar_t)-1>(x));
 		return signBits;
 	}
 
@@ -634,7 +637,8 @@ template <> struct Simd256_impl<true, true, false, 2> : public Simd256_impl<true
 	 * Args   : [a0, ..., a15]				int16_t
 	 * Return : [Floor(a0/2^s), ..., Floor(a15/2^s)]	int16_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srli_epi16(a, s); }
+	template<int s>
+	static INLINE CONST vect_t sra(const vect_t a) { return _mm256_srli_epi16(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 		vect_t x;
