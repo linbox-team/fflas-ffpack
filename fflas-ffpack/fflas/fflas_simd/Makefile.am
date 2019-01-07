@@ -39,11 +39,18 @@ SIMD256= simd256.inl \
 	 simd256_int32.inl \
 	 simd256_int64.inl
 
+SIMD512= simd512.inl        \
+	 simd512_double.inl \
+	 simd512_float.inl  \
+	 simd512_int32.inl  \
+	 simd512_int64.inl
+
 SIMD_MOD= simd_modular.inl
 
 
-pkgincludesub_HEADERS=            \
+pkgincludesub_HEADERS=  \
 	     $(SIMD128) \
-	     $(SIMD256)\
+	     $(SIMD256) \
+	     $(SIMD512) \
 	     $(SIMD_MOD)
 
