@@ -89,7 +89,7 @@ struct Simd128i_base {
 	*		   [b0, ..., b127]
 	* Return : [NOT(a0) AND b0, ..., NOT(a127) AND b127]
 	*/
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(b, a); }
+	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(a, b); }
 
 };
 
