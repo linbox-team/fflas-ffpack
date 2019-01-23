@@ -330,7 +330,7 @@ namespace FFLAS {
     }
 
 	/** writes the values of all arguments, preceded by the programName */
-	std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName = nullptr)
+	std::ostream& writeCommandString (std::ostream& os, Argument *args, const char* programName = nullptr)
 	{
 		if (programName != nullptr)
 			os << programName;
