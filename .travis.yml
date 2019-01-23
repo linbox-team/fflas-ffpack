@@ -7,11 +7,7 @@ matrix:
       sudo: required
       dist: trusty
       compiler: gcc
-      env: COMPILER=g++-4.9
-      env: CXX=g++-4.9
-      env: CC=gcc-4.9
-      env: FC=gfortran-4.9
-
+      env: GCC_VERSION=4.9
       addons:
         apt:
           sources:
@@ -26,10 +22,7 @@ matrix:
       sudo: required
       dist: trusty
       compiler: gcc
-      env: COMPILER=g++-5
-      env: CXX=g++-5
-      env: CC=gcc-5
-      env: FC=gfortran-5
+      env: GCC_VERSION=5
       addons:
         apt:
           sources:
@@ -44,10 +37,7 @@ matrix:
       sudo: required
       dist: trusty
       compiler: gcc
-      env: COMPILER=g++-6
-      env: CXX=g++-6
-      env: CC=gcc-6
-      env: FC=gfortran-6
+      env: GCC_VERSION=6
       # BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
       addons:
         apt:
@@ -79,7 +69,6 @@ matrix:
 
     - os: osx
       compiler: clang
-      env: COMPILER=clang++
       before_install:
       - brew update
       - brew uninstall automake && brew install automake
@@ -87,7 +76,13 @@ matrix:
 #      - brew install homebrew/science/openblas
 
 install:
-  - export CXX="$COMPILER"
+  - export CC=${CC}${GCC_VERSION:+-${GCC_VERSION}}
+  - echo "CC=${CC}"
+  - export CXX=${CXX}${GCC_VERSION:+-${GCC_VERSION}}
+  - echo "CXX=${CXX}"
+  - export FC=${GCC_VERSION:+gfortran-${GCC_VERSION}}
+  - echo "FC=${FC}"
+
 
 before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
