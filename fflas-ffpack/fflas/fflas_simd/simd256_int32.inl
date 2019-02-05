@@ -166,14 +166,16 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
 	* Return : [a0 << s, a1 << s, a2 << s, a3 << s, a4 << s, a5 << s, a6 << s, a7 << s] int32_t
 	*/
-	static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm256_slli_epi32(a, s); }
+	template<int s>
+	static INLINE CONST vect_t sll(const vect_t a) { return _mm256_slli_epi32(a, s); }
 
 	/*
 	* Shift packed 32-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
 	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
 	* Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s] int32_t
 	*/
-	static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm256_srli_epi32(a, s); }
+	template<int s>
+	static INLINE CONST vect_t srl(const vect_t a) { return _mm256_srli_epi32(a, s); }
 
 	/*
 	* Shift packed 32-bit integers in a right by s while shifting in sign bits, and store the results in vect_t.
@@ -526,7 +528,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	static INLINE CONST vect_t round(const vect_t a) { return a; }
 
 	static INLINE CONST vect_t signbits(const vect_t x) {
-		vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
+		vect_t signBits = sub(zero(), srl<4*sizeof(scalar_t)-1>(x));
 		return signBits;
 	}
 
@@ -640,7 +642,8 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	 * Args   : [a0, ..., a7]			int32_t
 	 * Return : [Floor(a0/2^s), ..., Floor(a7/2^s)]	int32_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srli_epi32(a, s); }
+	template<int s>
+	static INLINE CONST vect_t sra(const vect_t a) { return _mm256_srli_epi32(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 		vect_t x;

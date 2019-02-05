@@ -459,16 +459,16 @@ namespace FFLAS { namespace vectorised {
 		// std::cout << H.P << std::endl;
 		switch (ALGO) {
 		case 0 :
-			C = SimdT::template mod<false,false>( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<false, false, H.shift>( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		case 1 :
-			C = SimdT::template mod<true,false> ( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<true, false, H.shift> ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		case 2 :
-			C = SimdT::template mod<false,true> ( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<false, true, H.shift> ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		case 3 :
-			C = SimdT::template mod<true,true>  ( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<true, true, H.shift>  ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		}
 	}

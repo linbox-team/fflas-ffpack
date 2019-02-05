@@ -120,7 +120,8 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	 *  Extract one 64-bit integer from src at index idx
 	 *  Return v[idx] int64_t
 	 */
-	static INLINE CONST scalar_t get(vect_t v, const scalar_t idx) {
+	template<int idx>
+	static INLINE CONST scalar_t get(vect_t v) {
 		return _mm256_extract_epi64(v, idx);
 	}
 
@@ -171,27 +172,29 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	 * Args   : [a0, a1, a2, a3]	int64_t
 	 * Return : [a0 << s, a1 << s, a2 << s, a3 << s] int64_t
 	 */
-	static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm256_slli_epi64(a, s); }
+	template <int s>
+	static INLINE CONST vect_t sll(const vect_t a) { return _mm256_slli_epi64(a, s); }
 
 	/*
 	 * Shift packed 64-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
 	 * Args   : [a0, a1, a2, a3]	int64_t
 	 * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int64_t
 	 */
-	static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm256_srli_epi64(a, s); }
+	template<int s>
+	static INLINE CONST vect_t srl(const vect_t a) { return _mm256_srli_epi64(a, s); }
 
 	/*
 	* Shift packed 64-bit integers in a right by s while shifting in sign bits, and store the results in vect_t.
 	 * Args   : [a0, a1, a2, a3]	int64_t
 	 * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int64_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) {
+	template <int s>
+	static INLINE CONST vect_t sra(const vect_t a) {
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 		return _mm256_srai_epi64(a, s);
 #else
-		const int b = 63 - s;
-		vect_t m = sll(set1(1), b);
-		vect_t x = srl(a, s);
+		vect_t m = sll<63-s>(set1(1));
+		vect_t x = srl<s>(a);
 		vect_t result = sub(vxor(x, m), m); // result = x^m - m
 		return result;
 #endif
@@ -485,17 +488,17 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	static INLINE CONST vect_t round(const vect_t a) { return a; }
 
 	static INLINE CONST vect_t signbits(const vect_t x) {
-		vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
+		vect_t signBits = sub(zero(), srl< 4*sizeof(scalar_t)-1>(x));
 		return signBits;
 	}
 
 	// mask the high 32 bits of a 64 bits, that is 00000000FFFFFFFF
-	static INLINE CONST vect_t mask_high() { return srl(_mm256_set1_epi8(-1), 32); }
+	static INLINE CONST vect_t mask_high() { return srl<32>(_mm256_set1_epi8(-1)); }
 
 	static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
-	template <bool overflow, bool poweroftwo>
-	static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
+	template <bool overflow, bool poweroftwo, int8_t shifter>
+	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
 							 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
 }; // Simd256_impl<true, true, true, 8>
 
@@ -595,7 +598,8 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 * Args   : [a0, ..., a3]			uint64_t
 	 * Return : [Floor(a0/2^s), ..., Floor(a3/2^s)]	uint64_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srli_epi64(a, s); }
+	template <int s>
+	static INLINE CONST vect_t sra(const vect_t a) { return _mm256_srli_epi64(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 		vect_t x;
@@ -693,16 +697,16 @@ INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
 	// x1 = xy_high = mulhiu_fast(x,y)
 	const vect_t mask = mask_high();
 
-	vect_t x0 = vand(x, mask), x1 = srl(x, 32);
-	vect_t y0 = vand(y, mask), y1 = srl(y, 32);
+	vect_t x0 = vand(x, mask), x1 = srl<32>(x);
+	vect_t y0 = vand(y, mask), y1 = srl<32>(y);
 
 	x0 = Simd256_impl<true, true, false, 8>::mulx(x0, y1); // x0y1
 	y0 = Simd256_impl<true, true, false, 8>::mulx(x1, y0); // x1y0
 	y1 = Simd256_impl<true, true, false, 8>::mulx(x1, y1); // x1y1
 
 	x1 = vand(y0, mask);
-	y0 = srl(y0, 32); // x1y0_lo = x1 // y1yo_hi = y0
-	x1 = srl(add(x1, x0), 32);
+	y0 = srl<32>(y0); // x1y0_lo = x1 // y1yo_hi = y0
+	x1 = srl<32>(add(x1, x0));
 	y0 = add(y1, y0);
 
 	x1 = add(x1, y0);
@@ -717,19 +721,19 @@ INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
 	return x1;
 }
 
-template <bool overflow, bool poweroftwo>
-INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
+template <bool overflow, bool poweroftwo, int8_t shifter>
+INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
 													 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 	// Works fine with ICC 15.0.1 - A.B.
 	C = _mm256_rem_epi64(C, P);
 #else
 	if (poweroftwo) {
-			Q = srl(C, 63);
+		Q = srl<63>(C);
 			vect_t un = set1(1);
-			T = sub(sll(un, shifter), un);
+			T = sub(sll<shifter>(un), un);
 			Q = add(C, vand(Q, T));
-			Q = sll(srl(Q, shifter), shifter);
+			Q = sll<shifter>(srl<shifter>(Q));
 			C = sub(C, Q);
 			Q = vand(greater(zero(), Q), P);
 			C = add(C, Q);
@@ -738,9 +742,9 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P,
 			if (overflow) {
 					Q = add(Q, C);
 				}
-			Q = sra(Q, shifter);
+			Q = sra<shifter>(Q);
 			vect_t q1 = Simd256_impl<true, true, false, 8>::mulx(Q, P);
-			vect_t q2 = sll(Simd256_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
+			vect_t q2 = sll<32>(Simd256_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
 			C = sub(C, add(q1, q2));
 			T = greater_eq(C, P);
 			C = sub(C, vand(T, P));

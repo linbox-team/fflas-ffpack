@@ -420,10 +420,10 @@ namespace FFLAS { namespace details { /*  kernels */
 			blA++;
 			blB+=4;
 		}
-		r0[0]     = simd::get(R0, 0);
-		r1[0]     = simd::get(R0, 1);
-		r2[0]     = simd::get(R0, 2);
-		r3[0]     = simd::get(R0, 3);
+		r0[0]     = simd::get<0>(R0);
+		r1[0]     = simd::get<1>(R0);
+		r2[0]     = simd::get<2>(R0);
+		r3[0]     = simd::get<3>(R0);
 #else
 		vect_t R0,R1;
 		R0 = simd::set(r0[0], r1[0]);
@@ -456,10 +456,10 @@ namespace FFLAS { namespace details { /*  kernels */
 			blA++;
 			blB+=4;
 		}
-		r0[0] = simd::get(R0, 0);
-		r1[0] = simd::get(R0, 1);
-		r2[0] = simd::get(R1, 0);
-		r3[0] = simd::get(R1, 1);
+		r0[0] = simd::get<0>(R0);
+		r1[0] = simd::get<1>(R0);
+		r2[0] = simd::get<0>(R1);
+		r3[0] = simd::get<1>(R1);
 #endif
 #endif
 	}
