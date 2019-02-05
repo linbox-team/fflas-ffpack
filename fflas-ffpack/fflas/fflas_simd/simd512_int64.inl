@@ -539,8 +539,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 
 	static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
-	template <bool overflow, bool poweroftwo>
-	static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
+	template <bool overflow, bool poweroftwo, int8_t shifter>
+	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
 							 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
 }; // Simd512_impl<true, true, true, 8>
 
