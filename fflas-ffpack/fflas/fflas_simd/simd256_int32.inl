@@ -336,7 +336,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 		b1 = set(cb.t[0], 0, cb.t[1], 0, cb.t[2], 0, cb.t[3], 0);
 		b2 = set(cb.t[4], 0, cb.t[5], 0, cb.t[6], 0, cb.t[7], 0);
 		c1 = _mm256_mul_epi32(a1, b1); //Simd256_64::mulx(a1, b1);
-		c2 = _mm256_mul_epi32(a1, b2); //Simd256_64::mulx(a2, b2);
+		c2 = _mm256_mul_epi32(a2, b2); //Simd256_64::mulx(a2, b2);
 		ca.v = c1;
 		cb.v = c2;
 		return set(ca.t[1], ca.t[3], ca.t[5], ca.t[7], cb.t[1], cb.t[3], cb.t[5], cb.t[7]);
