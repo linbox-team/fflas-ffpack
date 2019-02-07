@@ -237,7 +237,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 			//Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
 			//Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-		vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
+		vect_t b1 = _mm256_permute4x64_epi64(b, 0xD8);
 		return unpacklo_twice(a1, b1);
 	}
 
@@ -252,7 +252,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 		// vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
 		// vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-		vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
+		vect_t b1 = _mm256_permute4x64_epi64(b, 0xD8);
 		return unpackhi_twice(a1, b1);
 	}
 
@@ -268,7 +268,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 		// vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
 		// vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-		vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
+		vect_t b1 = _mm256_permute4x64_epi64(b, 0xD8);
 		s1 = unpacklo_twice(a1, b1);
 		s2 = unpackhi_twice(a1, b1);
 	}
