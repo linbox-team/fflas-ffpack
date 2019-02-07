@@ -139,7 +139,7 @@ struct Simd256i_base {
 	*		   [b0, ..., b255]
 	* Return : [(NOT a0) AND b0, ..., (NOT a255) AND b255]
 	*/
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
+	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(a, b); }
 
 	/*
 	* Shuffle 128-bit integers in a and b using the control in imm8, and store the results in dst.
