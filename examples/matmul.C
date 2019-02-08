@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     }
 
     FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mA, nB, nA,
-            F.one, A, mA, B, mB, F.zero, C, mA);
+                 F.one, A, mA, B, mB, F.zero, C, mA);
 
     FFLAS::WriteMatrix(std::cout << "Result" << std::endl, F, mA, nB, C, mA) << std::endl;
 
@@ -65,3 +65,5 @@ int main(int argc, char** argv)
 
     return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
