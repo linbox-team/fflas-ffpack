@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2017 FFLAS-FFACK group
  *
@@ -32,9 +30,9 @@
 namespace FFPACK {
     template<class Field>
     inline void ftrssyr2k (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-                    const FFLAS::FFLAS_DIAG diagA, const size_t N,
-                    typename Field::ConstElement_ptr A, const size_t lda,
-                    typename Field::Element_ptr B, const size_t ldb, const size_t threshold){
+                           const FFLAS::FFLAS_DIAG diagA, const size_t N,
+                           typename Field::ConstElement_ptr A, const size_t lda,
+                           typename Field::Element_ptr B, const size_t ldb, const size_t threshold){
 
         if (!N) return;
         if (N <= 1){ // base case TODO: write a basecase with dimension = threshold
@@ -56,29 +54,29 @@ namespace FFPACK {
             else { A2 = A + N1*lda; B2 = B + N1*ldb;}
             typename Field::ConstElement_ptr A3 = A + N1*(lda+1);
             typename Field::Element_ptr B3 = B + N1*(ldb+1);
-            
-                /* Solving [ A1^T      ] [ X1 X2 ] + [ X1^T      ] [ A1 A2 ] = [ B1   B2 ]
-                 *         [ A2^T A3^T ] [    X3 ]   [ X2^T X3^T ] [    A3 ]   [ B2^T B3 ]
-                 */
 
-                // Solving  A1^T X1 + X1^T A1 = B1 in B1
+            /* Solving [ A1^T      ] [ X1 X2 ] + [ X1^T      ] [ A1 A2 ] = [ B1   B2 ]
+             *         [ A2^T A3^T ] [    X3 ]   [ X2^T X3^T ] [    A3 ]   [ B2^T B3 ]
+             */
+
+            // Solving  A1^T X1 + X1^T A1 = B1 in B1
             ftrssyr2k (F, Uplo, diagA, N1, A, lda, B, ldb, threshold);
             if (Uplo == FFLAS::FflasUpper){
-                    // B2 <- B2 - X1^T . A2
+                // B2 <- B2 - X1^T . A2
                 ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasTrans, FFLAS::FflasNonUnit, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
-                    // B2 <- A1^-T B2
+                // B2 <- A1^-T B2
                 ftrsm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
             } else {
-                    // B2 <- B2 - A2 . X1^T
+                // B2 <- B2 - A2 . X1^T
                 ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasTrans, FFLAS::FflasNonUnit, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb); // To be checked
-                    // B2 <- B2 A1^-T
+                // B2 <- B2 A1^-T
                 ftrsm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
             }
 
-                // B3 <- B3 - A2^T X2 - X2^T A2
+            // B3 <- B3 - A2^T X2 - X2^T A2
             fsyr2k (F, Uplo, Uplo==FFLAS::FflasUpper?FFLAS::FflasTrans:FFLAS::FflasNoTrans, N2, N1, F.mOne, A2, lda, B2, ldb, F.one, B3, ldb);
 
-              // Solving  A3^T X3 + X3^T A3 = B3 in B3
+            // Solving  A3^T X3 + X3^T A3 = B3 in B3
             ftrssyr2k (F, Uplo, diagA, N2, A3, lda, B3, ldb, threshold);
         }
     }
@@ -86,3 +84,5 @@ namespace FFPACK {
 } // FFPACK
 
 #endif // __FFLASFFPACK_ffpack_ftrssyr2k_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
