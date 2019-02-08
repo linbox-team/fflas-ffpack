@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2018 the FFLAS-FFPACK group
  *
@@ -33,19 +31,19 @@ namespace FFLAS {
     template<class Field>
     inline typename Field::Element_ptr
     fsyr2k (const Field& F,
-			const FFLAS_UPLO UpLo,
-			const FFLAS_TRANSPOSE trans,
-			const size_t N,
-			const size_t K,
-			const typename Field::Element alpha,
-			typename Field::ConstElement_ptr A, const size_t lda,
-			typename Field::ConstElement_ptr B, const size_t ldb,
-			const typename Field::Element beta,
-			typename Field::Element_ptr C, const size_t ldc){
-        
+            const FFLAS_UPLO UpLo,
+            const FFLAS_TRANSPOSE trans,
+            const size_t N,
+            const size_t K,
+            const typename Field::Element alpha,
+            typename Field::ConstElement_ptr A, const size_t lda,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            const typename Field::Element beta,
+            typename Field::Element_ptr C, const size_t ldc){
+
         if (!N) return C;
         if (!K) FFLAS::fscalin(F, N,N, beta, C, ldc);
-            //@TODO: write an optimized iterative basecase
+        //@TODO: write an optimized iterative basecase
         if (N==1){ // Base case
             F.mulin (*C, beta);
             size_t incA = (trans==FFLAS::FflasNoTrans)?1:lda;
@@ -58,7 +56,7 @@ namespace FFLAS {
         } else {
             size_t N1 = N>>1;
             size_t N2 = N - N1;
-                // Comments written for the case UpLo==FflasUpper, trans==FflasNoTrans
+            // Comments written for the case UpLo==FflasUpper, trans==FflasNoTrans
             FFLAS_TRANSPOSE oppTrans;
             if (trans==FflasNoTrans) {oppTrans=FflasTrans;}
             else {oppTrans=FflasNoTrans;}
@@ -68,24 +66,26 @@ namespace FFLAS {
             typename Field::Element_ptr C12 = C + N1;
             typename Field::Element_ptr C21 = C + N1*ldc;
             typename Field::Element_ptr C22 = C12 + N1*ldc;
-                // C11 <- alpha (A1 x B1^T + B1 x A1^T) + beta C11
+            // C11 <- alpha (A1 x B1^T + B1 x A1^T) + beta C11
             fsyr2k (F, UpLo, trans, N1, K, alpha, A, lda, B, ldb, beta, C, ldc);
-                // C22 <- alpha (A2 x B2^T +B2 x A2^T) + beta C22
+            // C22 <- alpha (A2 x B2^T +B2 x A2^T) + beta C22
             fsyr2k (F, UpLo, trans, N2, K, alpha, A2, lda, B2, ldb, beta, C22, ldc);
 
             if (UpLo == FflasUpper) {
-					// C12 <- alpha A1 * B2^T + beta C12
-				fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, B2, ldb, beta, C12, ldc);
-					// C12 <- alpha B1 * A2^T + C12
-				fgemm (F, trans, oppTrans, N1, N2, K, alpha, B, ldb, A2, lda, F.one, C12, ldc);
+                // C12 <- alpha A1 * B2^T + beta C12
+                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, B2, ldb, beta, C12, ldc);
+                // C12 <- alpha B1 * A2^T + C12
+                fgemm (F, trans, oppTrans, N1, N2, K, alpha, B, ldb, A2, lda, F.one, C12, ldc);
             } else {
-					// C21 <- alpha A2 * B1^T + beta C12
-				fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, B, ldb, beta, C21, ldc);
-					// C21 <- alpha B2 * A1^T + C12
-				fgemm (F, trans, oppTrans, N2, N1, K, alpha, B2, ldb, A, lda, F.one, C21, ldc);
+                // C21 <- alpha A2 * B1^T + beta C12
+                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, B, ldb, beta, C21, ldc);
+                // C21 <- alpha B2 * A1^T + C12
+                fgemm (F, trans, oppTrans, N2, N1, K, alpha, B2, ldb, A, lda, F.one, C21, ldc);
             }
             return C;
         }
     }
 } // namespace FFLAS
 #endif //__FFLASFFPACK_fflas_fsyr2k_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

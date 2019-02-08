@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_faxpy.inl
  * Copyright (C) 2005 Clement Pernet
@@ -34,87 +32,89 @@
 
 namespace FFLAS {
 
-template<class Field>
-inline void
-faxpy( const Field& F, const size_t N,
-		      const typename Field::Element a,
-		      typename Field::ConstElement_ptr X, const size_t incX,
-		      typename Field::Element_ptr Y, const size_t incY )
-{
+    template<class Field>
+    inline void
+    faxpy( const Field& F, const size_t N,
+           const typename Field::Element a,
+           typename Field::ConstElement_ptr X, const size_t incX,
+           typename Field::Element_ptr Y, const size_t incY )
+    {
 
-	if (F.isZero(a))
-		return ;
+        if (F.isZero(a))
+            return ;
 
-	if (F.isOne(a))
-		return faddin(F,N,X,incX,Y,incY);
-	//return fassign(F,N,X,incX,Y,incY);
-	
-	if (F.isMOne(a))
-		return fsubin(F,N,X,incX,Y,incY);
-	//return fneg(F,N,X,incX,Y,incY);
+        if (F.isOne(a))
+            return faddin(F,N,X,incX,Y,incY);
+        //return fassign(F,N,X,incX,Y,incY);
 
-	typename Field::ConstElement_ptr Xi = X;
-	typename Field::Element_ptr Yi=Y;
-	for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
-		F.axpyin( *Yi, a, *Xi );
-}
+        if (F.isMOne(a))
+            return fsubin(F,N,X,incX,Y,incY);
+        //return fneg(F,N,X,incX,Y,incY);
 
-template<>
-inline void
-faxpy( const Givaro::DoubleDomain& , const size_t N,
-       const Givaro::DoubleDomain::Element a,
-       Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
-       Givaro::DoubleDomain::Element_ptr y, const size_t incy )
-{
+        typename Field::ConstElement_ptr Xi = X;
+        typename Field::Element_ptr Yi=Y;
+        for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
+            F.axpyin( *Yi, a, *Xi );
+    }
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
-		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
-#endif
-	cblas_daxpy( (int)N, a, x, (int)incx, y, (int)incy);
-}
-
-template<>
-inline void
-faxpy( const Givaro::FloatDomain& , const size_t N,
-       const Givaro::FloatDomain::Element a,
-       Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
-       Givaro::FloatDomain::Element_ptr y, const size_t incy )
-{
+    template<>
+    inline void
+    faxpy( const Givaro::DoubleDomain& , const size_t N,
+           const Givaro::DoubleDomain::Element a,
+           Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
+           Givaro::DoubleDomain::Element_ptr y, const size_t incy )
+    {
 
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
-		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+        openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
-	cblas_saxpy( (int)N, a, x, (int)incx, y, (int)incy);
-}
+        cblas_daxpy( (int)N, a, x, (int)incx, y, (int)incy);
+    }
 
-template<class Field>
-inline void
-faxpy( const Field& F, const size_t m, const size_t n,
-		      const typename Field::Element a,
-		      typename Field::ConstElement_ptr X, const size_t ldX,
-		      typename Field::Element_ptr Y, const size_t ldY )
-{
+    template<>
+    inline void
+    faxpy( const Givaro::FloatDomain& , const size_t N,
+           const Givaro::FloatDomain::Element a,
+           Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
+           Givaro::FloatDomain::Element_ptr y, const size_t incy )
+    {
 
-	if (F.isZero(a))
-		return ;
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+        openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+        cblas_saxpy( (int)N, a, x, (int)incx, y, (int)incy);
+    }
 
-	if (F.isOne(a))
-		return faddin(F,m,n,X,ldX,Y,ldY);
-	//return fassign(F,m,n,X,ldX,Y,ldY);
+    template<class Field>
+    inline void
+    faxpy( const Field& F, const size_t m, const size_t n,
+           const typename Field::Element a,
+           typename Field::ConstElement_ptr X, const size_t ldX,
+           typename Field::Element_ptr Y, const size_t ldY )
+    {
 
-	if (F.isMOne(a))
-		return fsubin(F,m,n,X,ldX,Y,ldY);
-		//return fneg(F,m,n,X,ldX,Y,ldY);
+        if (F.isZero(a))
+            return ;
 
-	if (n == ldX && n == ldY)
-		return faxpy(F,m*n,a,X,1,Y,1);
+        if (F.isOne(a))
+            return faddin(F,m,n,X,ldX,Y,ldY);
+        //return fassign(F,m,n,X,ldX,Y,ldY);
 
-	typename Field::ConstElement_ptr Xi = X;
-	typename Field::Element_ptr Yi=Y;
-	for (; Xi < X+m*ldX; Xi+=ldX, Yi+=ldY )
-		faxpy(F,n,a,Xi,1,Yi,1);
-}
+        if (F.isMOne(a))
+            return fsubin(F,m,n,X,ldX,Y,ldY);
+        //return fneg(F,m,n,X,ldX,Y,ldY);
+
+        if (n == ldX && n == ldY)
+            return faxpy(F,m*n,a,X,1,Y,1);
+
+        typename Field::ConstElement_ptr Xi = X;
+        typename Field::Element_ptr Yi=Y;
+        for (; Xi < X+m*ldX; Xi+=ldX, Yi+=ldY )
+            faxpy(F,n,a,Xi,1,Yi,1);
+    }
 
 } // FFLAS
 
 #endif // __FFLASFFPACK_faxpy_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

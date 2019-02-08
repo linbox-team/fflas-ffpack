@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_pfgemm.inl
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
@@ -51,43 +49,45 @@
 
 namespace FFLAS {
 
-	template<class Field, class ModeTrait, class Strat, class Param>
-	inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
-	fgemm( const Field& F,
-	       const FFLAS::FFLAS_TRANSPOSE ta,
-	       const FFLAS::FFLAS_TRANSPOSE tb,
-	       const size_t m,
-	       const size_t n,
-	       const size_t k,
-	       const typename Field::Element alpha,
-	       typename Field::ConstElement_ptr A, const size_t lda,
-	       typename Field::ConstElement_ptr B, const size_t ldb,
-	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H)
-	{
-		return pfgemm (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-	}
+    template<class Field, class ModeTrait, class Strat, class Param>
+    inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
+    fgemm( const Field& F,
+           const FFLAS::FFLAS_TRANSPOSE ta,
+           const FFLAS::FFLAS_TRANSPOSE tb,
+           const size_t m,
+           const size_t n,
+           const size_t k,
+           const typename Field::Element alpha,
+           typename Field::ConstElement_ptr A, const size_t lda,
+           typename Field::ConstElement_ptr B, const size_t ldb,
+           const typename Field::Element beta,
+           typename Field::Element_ptr C, const size_t ldc,
+           MMHelper<Field, MMHelperAlgo::Winograd, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H)
+    {
+        return pfgemm (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+    }
 
-	// template<class Field, class ModeTrait, class Strat, class Param>
-	// inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
-	// fgemm( const Field& F,
-	//        const FFLAS::FFLAS_TRANSPOSE ta,
-	//        const FFLAS::FFLAS_TRANSPOSE tb,
-	//        const size_t m,
-	//        const size_t n,
-	//        const size_t k,
-	//        const typename Field::Element alpha,
-	//        typename Field::ConstElement_ptr A, const size_t lda,
-	//        typename Field::ConstElement_ptr B, const size_t ldb,
-	//        const typename Field::Element beta,
-	//        typename Field::Element_ptr C, const size_t ldc,
-	//        MMHelper<Field, MMHelperAlgo::WinogradPar, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H) 
-	// {
-	// 	std::cerr<<"coucou"<<std::endl;
-	// 	return BLAS3::WinoPar(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-	// }
+    // template<class Field, class ModeTrait, class Strat, class Param>
+    // inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
+    // fgemm( const Field& F,
+    //        const FFLAS::FFLAS_TRANSPOSE ta,
+    //        const FFLAS::FFLAS_TRANSPOSE tb,
+    //        const size_t m,
+    //        const size_t n,
+    //        const size_t k,
+    //        const typename Field::Element alpha,
+    //        typename Field::ConstElement_ptr A, const size_t lda,
+    //        typename Field::ConstElement_ptr B, const size_t ldb,
+    //        const typename Field::Element beta,
+    //        typename Field::Element_ptr C, const size_t ldc,
+    //        MMHelper<Field, MMHelperAlgo::WinogradPar, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H)
+    // {
+    // 	std::cerr<<"coucou"<<std::endl;
+    // 	return BLAS3::WinoPar(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+    // }
 }
 
 #endif // __FFLASFFPACK_fflas_pfgemm_INL
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
