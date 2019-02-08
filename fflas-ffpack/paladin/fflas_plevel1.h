@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_plevel1.inl
  * Copyright (C) 2015-2017 Jean Guillaume Dumas Clement Pernet Ziad Sultan
@@ -35,120 +33,122 @@
 namespace FFLAS
 {
 
-	template<class Field>
-	void pfzero(const Field& F, 		   
-				size_t m, size_t n, 
-				typename Field::Element_ptr C, 
-				size_t BS=0)
-	{
-		using FFLAS::CuttingStrategy::Block;
-		using FFLAS::StrategyParameter::Grain;
+    template<class Field>
+    void pfzero(const Field& F,
+                size_t m, size_t n,
+                typename Field::Element_ptr C,
+                size_t BS=0)
+    {
+        using FFLAS::CuttingStrategy::Block;
+        using FFLAS::StrategyParameter::Grain;
 
-		BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
+        BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
 
-		SYNCH_GROUP(
-            FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
-                       TASK(MODE(CONSTREFERENCE(F)),
-                       {
-                           fzero(F, 
-                                 iter.iend()-iter.ibegin(),
-                                 iter.jend()-iter.jbegin(),
-                                 C+iter.ibegin()*n+iter.jbegin(),
-                                 n);
-                       }
-                            );
-                       );
-            );
-	}
+        SYNCH_GROUP(
+                    FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
+                               TASK(MODE(CONSTREFERENCE(F)),
+                                    {
+                                    fzero(F,
+                                          iter.iend()-iter.ibegin(),
+                                          iter.jend()-iter.jbegin(),
+                                          C+iter.ibegin()*n+iter.jbegin(),
+                                          n);
+                                    }
+                                   );
+                              );
+                   );
+    }
 
-	template<class Field, class RandIter>
-	void pfrand(const Field& F, 
+    template<class Field, class RandIter>
+    void pfrand(const Field& F,
                 RandIter& G,
-				size_t m, size_t n, 
-				typename Field::Element_ptr C, 
-				size_t BS=0)
-	{
-		using FFLAS::CuttingStrategy::Block;
-		using FFLAS::StrategyParameter::Grain;
+                size_t m, size_t n,
+                typename Field::Element_ptr C,
+                size_t BS=0)
+    {
+        using FFLAS::CuttingStrategy::Block;
+        using FFLAS::StrategyParameter::Grain;
 
-		BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
-		SYNCH_GROUP(
-            FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
-                       TASK(MODE(CONSTREFERENCE(F,G)),
-                       {
-                           frand(F, G, 
-                                 iter.iend()-iter.ibegin(),
-                                 iter.jend()-iter.jbegin(),
-                                 C+iter.ibegin()*n+iter.jbegin(),
-                                 n);
-                       }
-                            );
-                       );
-			);
-	}
+        BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
+        SYNCH_GROUP(
+                    FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
+                               TASK(MODE(CONSTREFERENCE(F,G)),
+                                    {
+                                    frand(F, G,
+                                          iter.iend()-iter.ibegin(),
+                                          iter.jend()-iter.jbegin(),
+                                          C+iter.ibegin()*n+iter.jbegin(),
+                                          n);
+                                    }
+                                   );
+                              );
+                   );
+    }
 
 
-// #include <sstream>
+    // #include <sstream>
 
-		// d <- d + <x,y>
-	template<class Field, class Cut,class Param>
-	inline typename Field::Element& 
-    fdot(const Field& F, const size_t N, 
+    // d <- d + <x,y>
+    template<class Field, class Cut,class Param>
+    inline typename Field::Element&
+    fdot(const Field& F, const size_t N,
          typename Field::ConstElement_ptr x, const size_t incx,
          typename Field::ConstElement_ptr y, const size_t incy,
-         typename Field::Element& d, 
+         typename Field::Element& d,
          const ParSeqHelper::Parallel<Cut,Param> par)
-	{
+    {
         const size_t rs(par.numthreads());
-		typename Field::Element_ptr z(fflas_new(F,rs));
-		for(size_t i=0;i<rs;++i) F.init(z[i]);
+        typename Field::Element_ptr z(fflas_new(F,rs));
+        for(size_t i=0;i<rs;++i) F.init(z[i]);
 
-		SYNCH_GROUP({
-            FORBLOCK1D(iter, N, SPLITTER(rs, Cut, Param), {
-                const size_t i( iter.blockindex() );
+        SYNCH_GROUP({
+                    FORBLOCK1D(iter, N, SPLITTER(rs, Cut, Param), {
+                               const size_t i( iter.blockindex() );
 
-				TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z[i])), {
-//                     std::stringstream berr;
-//                     berr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):"
-//                          << iter.end()-iter.begin() << ", i: " << i 
-//                          << std::endl;
-//                     for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
-//                         F.write(F.write(berr, *(x+itee)) << '.', *(y+itee))
-//                                                          << std::endl;
-//                     std::cerr << berr.str();
+                               TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z[i])), {
+                                    //                     std::stringstream berr;
+                                    //                     berr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):"
+                                    //                          << iter.end()-iter.begin() << ", i: " << i
+                                    //                          << std::endl;
+                                    //                     for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
+                                    //                         F.write(F.write(berr, *(x+itee)) << '.', *(y+itee))
+                                    //                                                          << std::endl;
+                                    //                     std::cerr << berr.str();
 
-					F.assign(z[i], fdot(F, 
-										iter.end()-iter.begin(),
-										x+iter.begin()*incx, incx,
-										y+iter.begin()*incy, incy));
+                                    F.assign(z[i], fdot(F,
+                                                        iter.end()-iter.begin(),
+                                                        x+iter.begin()*incx, incx,
+                                                        y+iter.begin()*incy, incy));
 
-//                     F.write(std::cerr << "pd:", z[i]) << std::endl;
-				});
-			});
-		});
+                                    //                     F.write(std::cerr << "pd:", z[i]) << std::endl;
+                                    });
+                               });
+        });
 
-		for(size_t i=0;i<rs;++i) F.addin(d,z[i]);
+        for(size_t i=0;i<rs;++i) F.addin(d,z[i]);
         fflas_delete(z);
-		return d;
-	}
+        return d;
+    }
 
- 
-	template<class Field, class Cut,class Param>
-	inline typename Field::Element 
-    fdot(const Field& F, const size_t N, 
+
+    template<class Field, class Cut,class Param>
+    inline typename Field::Element
+    fdot(const Field& F, const size_t N,
          typename Field::ConstElement_ptr x, const size_t incx,
          typename Field::ConstElement_ptr y, const size_t incy,
          const ParSeqHelper::Parallel<Cut,Param> par)
-	{
-		typename Field::Element d; F.init(d); F.assign(d,F.zero);
-		
-		PAR_BLOCK {
-			fdot(F, N, x, incx, y, incy, d, par);
-		}
-		
-		return d;
-	}
+    {
+        typename Field::Element d; F.init(d); F.assign(d,F.zero);
+
+        PAR_BLOCK {
+            fdot(F, N, x, incx, y, incy, d, par);
+        }
+
+        return d;
+    }
 
 } // FFLAS
 
 #endif
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
