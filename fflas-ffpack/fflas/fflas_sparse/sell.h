@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -35,31 +33,31 @@
 
 namespace FFLAS { /*  SELL */
 
-template <class _Field> struct Sparse<_Field, SparseMatrix_t::SELL> {
- using Field = _Field;
-    bool delayed = false;
-    int chunk = 0;
-    index_t kmax = 0;
-    index_t m = 0;
-    index_t n = 0;
-    index_t maxrow = 0;
-    index_t sigma = 0;
-    index_t nChunks = 0;
-    uint64_t nnz = 0;
-    uint64_t nElements = 0;
-    index_t *perm = nullptr;
-    uint64_t *st = nullptr;
-    index_t *chunkSize = nullptr;
-    index_t *col = nullptr;
-    typename _Field::Element_ptr dat;
-};
+    template <class _Field> struct Sparse<_Field, SparseMatrix_t::SELL> {
+        using Field = _Field;
+        bool delayed = false;
+        int chunk = 0;
+        index_t kmax = 0;
+        index_t m = 0;
+        index_t n = 0;
+        index_t maxrow = 0;
+        index_t sigma = 0;
+        index_t nChunks = 0;
+        uint64_t nnz = 0;
+        uint64_t nElements = 0;
+        index_t *perm = nullptr;
+        uint64_t *st = nullptr;
+        index_t *chunkSize = nullptr;
+        index_t *col = nullptr;
+        typename _Field::Element_ptr dat;
+    };
 
-template <class _Field>
-struct Sparse<_Field, SparseMatrix_t::SELL_ZO>
+    template <class _Field>
+    struct Sparse<_Field, SparseMatrix_t::SELL_ZO>
     : public Sparse<_Field, SparseMatrix_t::SELL> {
         using Field = _Field;
-    typename _Field::Element cst = 1;
-};
+        typename _Field::Element cst = 1;
+    };
 
 } // FFLAS
 
@@ -72,3 +70,5 @@ struct Sparse<_Field, SparseMatrix_t::SELL_ZO>
 // #include "fflas-ffpack/fflas/fflas_sparse/sell/sell_pspmm.inl"
 
 #endif // __FFLASFFPACK_fflas_sparse_SELL_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
