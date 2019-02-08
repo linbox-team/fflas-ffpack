@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -41,7 +38,7 @@
 #include <typeinfo>
 #include <vector>
 #include <string>
-using namespace std; 
+using namespace std;
 
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -67,16 +64,16 @@ std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_
         out<<std::right<<C[j];
     }
     out<<']';
-    for (size_t i=1;i<m;++i){ 
-	out<<endl<<",[";
-	out.width(www+1);
-	out<<std::right<<C[i*ldc];
-	for (size_t j=1;j<n;++j){
-	    out<<',';
-	    out.width(www);
-	    out<<std::right<<C[i*ldc+j];
-	}
-	out<<']';
+    for (size_t i=1;i<m;++i){
+        out<<endl<<",[";
+        out.width(www+1);
+        out<<std::right<<C[i*ldc];
+        for (size_t j=1;j<n;++j){
+            out<<',';
+            out.width(www);
+            out<<std::right<<C[i*ldc+j];
+        }
+        out<<']';
     }
     return out<<"])";
 }
@@ -105,86 +102,88 @@ int tmain(){
     srand( (int)seed);
     srand48(seed);
     Givaro::Integer::seeding(seed);
-    
-    typedef Givaro::Modular<Ints> Field;	
+
+    typedef Givaro::Modular<Ints> Field;
     Givaro::Integer p;
     FFLAS::Timer chrono, TimFreivalds;
     double time=0.;
     for (size_t loop=0;loop<iters;loop++){
-	Givaro::Integer::random_exact_2exp(p, b);			
-	Givaro::IntPrimeDom IPD;
-	IPD.nextprimein(p);
+        Givaro::Integer::random_exact_2exp(p, b);
+        Givaro::IntPrimeDom IPD;
+        IPD.nextprimein(p);
         Ints ip; Givaro::Caster<Ints,Givaro::Integer>(ip,p);
         Givaro::Caster<Givaro::Integer,Ints>(p,ip); // to check consistency
-	
-	Field F(ip);
-	size_t lda,ldb,ldc;
-	lda=k;
-	ldb=1; 
-	ldc=1;
 
-	typename Field::RandIter Rand(F,seed);
-	typename Field::Element_ptr A,B,C;
-	A= FFLAS::fflas_new(F,m,lda);
-	B= FFLAS::fflas_new(F,k,ldb);
-	C= FFLAS::fflas_new(F,m,ldc);
-	
-// 		for (size_t i=0;i<m;++i)
-// 			for (size_t j=0;j<k;++j)
-// 				Rand.random(A[i*lda+j]);			
-// 		for (size_t i=0;i<k;++i)
-// 			for (size_t j=0;j<n;++j)
-// 				Rand.random(B[i*ldb+j]);				
-// 		for (size_t i=0;i<m;++i)
-// 			for (size_t j=0;j<n;++j)
-// 				Rand.random(C[i*ldc+j]);	 		
+        Field F(ip);
+        size_t lda,ldb,ldc;
+        lda=k;
+        ldb=1;
+        ldc=1;
 
-	PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/size_t(MAX_THREADS)); }	
-	PAR_BLOCK { FFLAS::pfrand(F,Rand, k,1,B,k/MAX_THREADS); }	
-	PAR_BLOCK { FFLAS::pfzero(F, m,1,C,m/MAX_THREADS); }
-		
-	
-	Ints alpha,beta;
-	alpha=F.one;
-	beta=F.zero;
-	   
+        typename Field::RandIter Rand(F,seed);
+        typename Field::Element_ptr A,B,C;
+        A= FFLAS::fflas_new(F,m,lda);
+        B= FFLAS::fflas_new(F,k,ldb);
+        C= FFLAS::fflas_new(F,m,ldc);
 
-	using  FFLAS::CuttingStrategy::Recursive;
-	using  FFLAS::StrategyParameter::TwoDAdaptive;
-	    // RNS MUL_LA
-	chrono.clear();chrono.start();	
-	{ 
-            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc); 
-	}
-	chrono.stop();
-	time+=chrono.realtime();
+        // 		for (size_t i=0;i<m;++i)
+        // 			for (size_t j=0;j<k;++j)
+        // 				Rand.random(A[i*lda+j]);
+        // 		for (size_t i=0;i<k;++i)
+        // 			for (size_t j=0;j<n;++j)
+        // 				Rand.random(B[i*ldb+j]);
+        // 		for (size_t i=0;i<m;++i)
+        // 			for (size_t j=0;j<n;++j)
+        // 				Rand.random(C[i*ldc+j]);
 
-	FFLAS::fflas_delete(A);
-	FFLAS::fflas_delete(B);
-	FFLAS::fflas_delete(C);
+        PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/size_t(MAX_THREADS)); }
+        PAR_BLOCK { FFLAS::pfrand(F,Rand, k,1,B,k/MAX_THREADS); }
+        PAR_BLOCK { FFLAS::pfzero(F, m,1,C,m/MAX_THREADS); }
+
+
+        Ints alpha,beta;
+        alpha=F.one;
+        beta=F.zero;
+
+
+        using  FFLAS::CuttingStrategy::Recursive;
+        using  FFLAS::StrategyParameter::TwoDAdaptive;
+        // RNS MUL_LA
+        chrono.clear();chrono.start();
+        {
+            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc);
+        }
+        chrono.stop();
+        time+=chrono.realtime();
+
+        FFLAS::fflas_delete(A);
+        FFLAS::fflas_delete(B);
+        FFLAS::fflas_delete(C);
 
     }
 
     double Mflops=((2.*double(m)-1)/1000.*double(k)/1000.0) /time * double(iters);
-// 	Mflops*=p.bitsize()/16.;
+    // 	Mflops*=p.bitsize()/16.;
     cout << "Time: "<< (time/double(iters))  <<" Gfops: "<<Mflops*1.0/1000.0
-	 << " (total:" << time <<") "
-	 <<typeid(Ints).name()
-	 <<" perword: "<< (Mflops*double(p.bitsize()))/64. ;
+    << " (total:" << time <<") "
+    <<typeid(Ints).name()
+    <<" perword: "<< (Mflops*double(p.bitsize()))/64. ;
     FFLAS::writeCommandString(std::cout << " | " << p << " (" << p.bitsize()<<")|", as)  << std::endl;
     return 0;
 }
- 
+
 
 
 int main(int argc, char** argv){
     FFLAS::parseArguments(argc,argv,as);
 
     int r1 = tmain<Givaro::Integer>();
- 
+
 #ifdef BENCH_RECINT
     r1 += tmain<RecInt::rint<STD_RECINT_SIZE>>();
 #endif
     return r1;
 }
- 
+
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

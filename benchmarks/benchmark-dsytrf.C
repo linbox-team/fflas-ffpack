@@ -1,7 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Clément Pernet <clement.pernet@imag.fr>
  * ========LICENCE========
@@ -52,15 +48,15 @@ typedef FFLAS::Timer TTimer;
 #define EFFGFF(n,t,i) ( (double(n)/1000.*double(n)/1000.*double(n)/1000.0) / double(t) * double(i) / 3.)
 
 int main(int argc, char** argv) {
-  
+
     size_t iter = 3;
     int    q    = 1009;
     int    algo = 1;
     size_t    n    = 2000;
     std::string file = "";
-        
+
     size_t NBK = MAX_THREADS;
-  
+
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
         { 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
@@ -95,33 +91,33 @@ int main(int argc, char** argv) {
 
         chrono.clear();
         switch(algo) {
-            case 0:
-                if (it) chrono.start();
+        case 0:
+            if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF
-                LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
+            LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
 #endif
-                if (it) chrono.stop();
-                break;
-            case 1:
-                if (it) chrono.start();
+            if (it) chrono.stop();
+            break;
+        case 1:
+            if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_AA
-                LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
+            LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
 #endif
-                if (it) chrono.stop();
-                break;
-            case 2:
-                if (it) chrono.start();
+            if (it) chrono.stop();
+            break;
+        case 2:
+            if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_ROOK
-                LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
+            LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
 #endif
-                if (it) chrono.stop();
-                break;
-            default:
-                if (it) chrono.start();
+            if (it) chrono.stop();
+            break;
+        default:
+            if (it) chrono.start();
 #ifdef __FFLASFFPACK_HAVE_LAPACK2_DSYTRF_RK
-                LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
+            LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
 #endif
-                if (it) chrono.stop();
+            if (it) chrono.stop();
         }
         if (it) time[it-1] = chrono.realtime();
         FFLAS::fflas_delete( A);
@@ -134,12 +130,11 @@ int main(int argc, char** argv) {
     double gfops = EFFGFF(n,mediantime,1);
     if (mediantime<0.001){mediantime=0; gfops=0;}
     std::cout << "Time: " << mediantime
-              << " Gfops: " << gfops;
+    << " Gfops: " << gfops;
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 
     return 0;
 }
 
-
-
-
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

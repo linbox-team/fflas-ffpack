@@ -1,27 +1,23 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
-
 /* Copyright (c) FFLAS-FFPACK
-* Written by Clément Pernet <clement.pernet@imag.fr>
-* ========LICENCE========
-* This file is part of the library FFLAS-FFPACK.
-*
-* FFLAS-FFPACK is free software: you can redistribute it and/or modify
-* it under the terms of the  GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-* ========LICENCE========
-*/
+ * Written by Clément Pernet <clement.pernet@imag.fr>
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ */
 
 //#define __FFPACK_FSYTRF_BC_RL
 #undef __FFPACK_FSYTRF_BC_RL
@@ -40,7 +36,7 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-  
+
     size_t iter = 3;
     int    q    = 131071;
     size_t    n    = 1000;
@@ -50,9 +46,9 @@ int main(int argc, char** argv) {
     bool rpm =true;
     bool grp =true;
     bool par =false;
-  	int t=MAX_THREADS;
+    int t=MAX_THREADS;
     std::string file = "";
-  
+
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
         { 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
@@ -65,7 +61,7 @@ int main(int argc, char** argv) {
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
         { 'p', "-p P", "run the parallel fsytrf (only supported when RPM=N)", TYPE_BOOL , &par },
         { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
-     END_OF_ARGUMENTS
+        END_OF_ARGUMENTS
     };
 
     FFLAS::parseArguments(argc,argv,as);
@@ -102,10 +98,10 @@ int main(int argc, char** argv) {
         }
         size_t*P=FFLAS::fflas_new<size_t>(n);
         if (rpm){
-                chrono.clear();
-                if (i) chrono.start();
-                FFPACK::fsytrf_RPM (F, uplo, n, A, n, P, threshold);
-                if (i) chrono.stop();
+            chrono.clear();
+            if (i) chrono.start();
+            FFPACK::fsytrf_RPM (F, uplo, n, A, n, P, threshold);
+            if (i) chrono.stop();
         }else{
             if (!par){
                 chrono.clear();
@@ -129,8 +125,8 @@ int main(int argc, char** argv) {
     double mediantime = time[iter/2];
     delete[] time;
 
-        // -----------
-        // Standard output for benchmark - Alexis Breust 2014/11/14
+    // -----------
+    // Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
     double gfops = 1.0/3.0*CUBE(double(rank)/1000.0) +n/1000.0*n/1000.0*double(rank)/1000.0  - double(rank)/1000.0*double(rank)/1000.0*n/1000;
 
@@ -139,6 +135,5 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-
-
-
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
