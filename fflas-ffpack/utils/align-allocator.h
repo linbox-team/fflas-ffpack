@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -253,3 +251,5 @@ inline bool operator!=(const AlignedAllocator<T, TAlign>&,
 #endif // C++11
 
 #endif /* _FFLASFFPACK_align_allocator_h */
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

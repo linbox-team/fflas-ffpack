@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* Copyright (C) FFLAS-FFPACK 2017
  * written by Clement Pernet (clement.pernet@univ-grenoble-alpes.fr)
  * ========LICENCE========
@@ -326,3 +324,5 @@ namespace FFLAS{
 } //namespace FFLAS
 
 #endif //__FFLAS_IO_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

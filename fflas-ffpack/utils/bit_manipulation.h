@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2014 FFLAS-FFPACK group
@@ -172,3 +170,5 @@ static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
 
 
 #endif // __FFLASFFPACK_utils_bit_manipulation_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
