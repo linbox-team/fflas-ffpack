@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/checker_det.inl
  * Copyright (C) 2016 Jean-Guillaume Dumas
  *
@@ -36,108 +34,108 @@
 
 namespace FFPACK {
 
-		// Checker for the determinant following [Dumas Lucas Pernet'17].
-		// First implementation, meant to evolve into an RPM checker and/or
-		// and interractive Det checker.
-	template <class Field>
+    // Checker for the determinant following [Dumas Lucas Pernet'17].
+    // First implementation, meant to evolve into an RPM checker and/or
+    // and interractive Det checker.
+    template <class Field>
     class CheckerImplem_Det {
 
         const Field& F;
         typename Field::Element_ptr u,v,w;
-		typename Field::Element du,dv;
+        typename Field::Element du,dv;
         const size_t n;
 #ifdef TIME_CHECKER_Det
         mutable Givaro::Timer _time;
 #endif
 
     public:
-        CheckerImplem_Det(const Field& F_, size_t n_, 
-                     typename Field::ConstElement_ptr A, size_t lda) 
-				: F(F_), 
-                  u(FFLAS::fflas_new(F_,n_,2)), 
-                  v(u+1), 
-                  w(FFLAS::fflas_new(F_,n_)), 
-                  n(n_)
-            {
-                typename Field::RandIter G(F);
-                init(G,A,lda);
-            }
+        CheckerImplem_Det(const Field& F_, size_t n_,
+                          typename Field::ConstElement_ptr A, size_t lda)
+        : F(F_),
+        u(FFLAS::fflas_new(F_,n_,2)),
+        v(u+1),
+        w(FFLAS::fflas_new(F_,n_)),
+        n(n_)
+        {
+            typename Field::RandIter G(F);
+            init(G,A,lda);
+        }
 
-        CheckerImplem_Det(typename Field::RandIter &G, size_t n_, 
-                     typename Field::ConstElement_ptr A, size_t lda)
-				: F(G.ring()), 
-                  u(FFLAS::fflas_new(F,n_,2)), 
-                  v(u+1), 
-                  w(FFLAS::fflas_new(F,n_)), 
-                  n(n_)
-            {
-                init(G,A,lda);
-            }
+        CheckerImplem_Det(typename Field::RandIter &G, size_t n_,
+                          typename Field::ConstElement_ptr A, size_t lda)
+        : F(G.ring()),
+        u(FFLAS::fflas_new(F,n_,2)),
+        v(u+1),
+        w(FFLAS::fflas_new(F,n_)),
+        n(n_)
+        {
+            init(G,A,lda);
+        }
 
         ~CheckerImplem_Det() {
             FFLAS::fflas_delete(u,w);
         }
 
-            /** check if the Det factorization is correct.
-             *  Needs matrix in LU form
-             * @param LU, storage for L and U
-             * @param det
-             * @param P
-             * @param Q
-             */
-        inline bool check(const typename Field::Element& det, 
-						  typename Field::ConstElement_ptr LU, size_t lda, 
+        /** check if the Det factorization is correct.
+         *  Needs matrix in LU form
+         * @param LU, storage for L and U
+         * @param det
+         * @param P
+         * @param Q
+         */
+        inline bool check(const typename Field::Element& det,
+                          typename Field::ConstElement_ptr LU, size_t lda,
                           const FFLAS::FFLAS_DIAG Diag,
                           size_t *P, size_t *Q) const {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer checktime, overhead; checktime.start();
 #endif
-                // u <-- Q.u, v <-- Q.v
+            // u <-- Q.u, v <-- Q.v
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 2, 0, n, u, 2, Q);
 
-				// w <-- w P
+            // w <-- w P
             FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasTrans, 1, 0, n, w, 1, P);
 
 #ifdef TIME_CHECKER_Det
             checktime.stop(); _time += checktime;
-			overhead.start();
+            overhead.start();
 #endif
-				// u <-- U.u, v <-- U.v
-			FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, LU, lda, u, 2);
+            // u <-- U.u, v <-- U.v
+            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, LU, lda, u, 2);
 
             const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
-				// w <-- w.L
-				// Warning: should be ftrmv
+            // w <-- w.L
+            // Warning: should be ftrmv
             FFLAS::ftrmm(F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, oppDiag, 1, n, F.one, LU, lda, w, n);
 
 #ifdef TIME_CHECKER_Det
-			overhead.stop();
-			checktime.start();
+            overhead.stop();
+            checktime.start();
 #endif
-			typename Field::Element zu, zv;
-			zu = FFLAS::fdot(F, n, w, 1, u, 2);
-			zv = FFLAS::fdot(F, n, w, 1, v, 2);
+            typename Field::Element zu, zv;
+            zu = FFLAS::fdot(F, n, w, 1, u, 2);
+            zv = FFLAS::fdot(F, n, w, 1, v, 2);
 
-			bool pass = F.areEqual(zu,du) && F.areEqual(zv,dv);
+            bool pass = F.areEqual(zu,du) && F.areEqual(zv,dv);
             if (!pass) throw FailureDetCheck();
 
-				// Check det
-			typename Field::Element dd;
-			F.init (dd);
-			F.assign (dd,F.one);
-			
-			for (typename Field::ConstElement_ptr Ai(LU); Ai < LU+ n*lda+n; Ai+=lda+1 )
-				F.mulin( dd, *Ai );
+            // Check det
+            typename Field::Element dd;
+            F.init (dd);
+            F.assign (dd,F.one);
 
-			int count=0;
-			for (size_t i=0;i<n;++i)
-				if (P[i] != i) ++count;
-			for (size_t i=0;i<n;++i)
-				if (Q[i] != i) ++count;
-			if ((count&1) == 1)
-				F.negin(dd);
-			
-			pass &= F.areEqual(dd,det);
+            for (typename Field::ConstElement_ptr Ai(LU); Ai < LU+ n*lda+n; Ai+=lda+1 )
+                F.mulin( dd, *Ai );
+
+            int count=0;
+            for (size_t i=0;i<n;++i)
+                if (P[i] != i) ++count;
+            for (size_t i=0;i<n;++i)
+                if (Q[i] != i) ++count;
+            if ((count&1) == 1)
+                F.negin(dd);
+
+            pass &= F.areEqual(dd,det);
             if (!pass) throw FailureDetCheck();
 
 
@@ -149,8 +147,8 @@ namespace FFPACK {
             return pass;
         }
 
-    private:	
-        inline void init(typename Field::RandIter &G, 
+    private:
+        inline void init(typename Field::RandIter &G,
                          typename Field::ConstElement_ptr A, size_t lda) {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer inittime; inittime.start();
@@ -158,13 +156,13 @@ namespace FFPACK {
             FFLAS::frand(F,G,n,2,u,2);
             FFLAS::frand(F,G,n,w,1);
 
-			typename Field::Element_ptr t(FFLAS::fflas_new(F,n));
+            typename Field::Element_ptr t(FFLAS::fflas_new(F,n));
 
-				// t <-- w . A
-			FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);
-			du = FFLAS::fdot(F, n, u, 2, t, 1);
-			dv = FFLAS::fdot(F, n, v, 2, t, 1);
-			
+            // t <-- w . A
+            FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);
+            du = FFLAS::fdot(F, n, u, 2, t, 1);
+            dv = FFLAS::fdot(F, n, v, 2, t, 1);
+
             FFLAS::fflas_delete(t);
 #ifdef TIME_CHECKER_Det
             inittime.stop(); _time += inittime;
@@ -173,3 +171,5 @@ namespace FFPACK {
     };
 }
 #endif // __FFLASFFPACK_checker_det_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
