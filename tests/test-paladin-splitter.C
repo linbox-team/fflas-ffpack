@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) the FFLAS-FFPACK group
@@ -53,7 +51,7 @@ bool tmain(int argc, char** argv, std::string printStrat)
 {
 
     std::cerr << "tmain: " << printStrat << std::endl;
-    
+
 
     size_t n = 2000;
     bool p = true;
@@ -71,120 +69,120 @@ bool tmain(int argc, char** argv, std::string printStrat)
         { 'u', "-u N", "Set the strategy parameter using t: 1 for (t, BLOCK, THREADS), 2 for (t, BLOCK, GRAIN), 3 for (t, BLOCK, FIXED), 4 for (t, ROW, THREADS), 5 for (t, ROW, GRAIN), 6 for (t, ROW, FIXED), 7 for (t, COLUMN, THREADS), 8 for (t, COLUMN, GRAIN), 9 for (t, COLUMN, FIXED), 10 for SINGLE strategy.",            TYPE_INT , &strat },
         { 'p', "-p Y/N", "run the parallel program using Parallel(Y)/Sequential(N).", TYPE_BOOL , &p },
         { 'd', "-d Y/N", "run the parallel program using data parallelism(Y)/task parallelism(N).", TYPE_BOOL , &dataPar },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+        { 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
         END_OF_ARGUMENTS
     };
     parseArguments(argc,argv,as);
 
     size_t m = n; // matrices are square in this test
-    
+
     Field F(q);
     Field::RandIter G(F,0,seed);
 
-// Allocate matrices
-  typename Field::Element_ptr A = fflas_new (F, m, n);
-  typename Field::Element_ptr B = fflas_new (F, m, n);
-  typename Field::Element_ptr C = fflas_new (F, m, n);
-  typename Field::Element_ptr Acop = fflas_new (F, m, n);
+    // Allocate matrices
+    typename Field::Element_ptr A = fflas_new (F, m, n);
+    typename Field::Element_ptr B = fflas_new (F, m, n);
+    typename Field::Element_ptr C = fflas_new (F, m, n);
+    typename Field::Element_ptr Acop = fflas_new (F, m, n);
 
 
-  auto CUTTER = SPLITTER(proc, CutStrat, StratParam);
-  
-// initialize
-  if(dataPar){
-      PARFOR1D(i, m, CUTTER,
-               for (size_t j=0; j<(size_t)n; ++j)
-                   G.random (*(A+i*n+j));
-               );
-      
-      PARFOR1D(i, m, CUTTER,
-               for (size_t j=0; j<(size_t)n; ++j)
-                   G.random (*(B+i*n+j));
-               );
-      
-      PARFOR1D(i, m, CUTTER,
-               for (size_t j=0; j<(size_t)n; ++j)
-                   G.random (*(C+i*n+j));
-               );
-  }
-  else{ // initialize with tasks using FORBLOCK1D
-      PAR_BLOCK{
-          SYNCH_GROUP(
-              FORBLOCK1D(itt, m*n, CUTTER,
-                         TASK(MODE(WRITE(A)),
-                              for(size_t i=itt.begin(); i!=itt.end(); ++i)
-                                  G.random (*(A+i)););
-                         
-                         TASK(MODE(WRITE(B)),
-                              for(size_t i=itt.begin(); i!=itt.end(); ++i)
-                                  G.random (*(B+i)););
-                         
-                         TASK(MODE(WRITE(C)),
-                              for(size_t i=itt.begin(); i!=itt.end(); ++i)
-                                  G.random (*(C+i)););
-                         );// end of FORBLOCK1D
-                      );// end of SYNCH_GROUP
-      }// end of PAR_BLOCK
-  }
-  
-// copy A for verification
+    auto CUTTER = SPLITTER(proc, CutStrat, StratParam);
+
+    // initialize
+    if(dataPar){
+        PARFOR1D(i, m, CUTTER,
+                 for (size_t j=0; j<(size_t)n; ++j)
+                 G.random (*(A+i*n+j));
+                );
+
+        PARFOR1D(i, m, CUTTER,
+                 for (size_t j=0; j<(size_t)n; ++j)
+                 G.random (*(B+i*n+j));
+                );
+
+        PARFOR1D(i, m, CUTTER,
+                 for (size_t j=0; j<(size_t)n; ++j)
+                 G.random (*(C+i*n+j));
+                );
+    }
+    else{ // initialize with tasks using FORBLOCK1D
+        PAR_BLOCK{
+            SYNCH_GROUP(
+                        FORBLOCK1D(itt, m*n, CUTTER,
+                                   TASK(MODE(WRITE(A)),
+                                        for(size_t i=itt.begin(); i!=itt.end(); ++i)
+                                        G.random (*(A+i)););
+
+                                   TASK(MODE(WRITE(B)),
+                                        for(size_t i=itt.begin(); i!=itt.end(); ++i)
+                                        G.random (*(B+i)););
+
+                                   TASK(MODE(WRITE(C)),
+                                        for(size_t i=itt.begin(); i!=itt.end(); ++i)
+                                        G.random (*(C+i)););
+                                  );// end of FORBLOCK1D
+                       );// end of SYNCH_GROUP
+        }// end of PAR_BLOCK
+    }
+
+    // copy A for verification
     fassign(F,m,n,A,n,Acop,n);
 
-// time  
+    // time
     Timer chrono;
     double *time=new double[iters];
 
-// parallel add using PARFOR1D
+    // parallel add using PARFOR1D
     for (size_t it=0;it<=iters;++it){
         chrono.clear();
         if (it) chrono.start();
-        
+
         if(dataPar){
-            
+
             PARFOR1D(i, m, CUTTER,
                      for (size_t j=0; j<(size_t)n; ++j)
-                         A[i*n+j] = B[i*n+j] + C[i*n+j];
-                     );
+                     A[i*n+j] = B[i*n+j] + C[i*n+j];
+                    );
         }
         else{
             PAR_BLOCK{
                 FORBLOCK1D(itt, m*n, CUTTER,
                            TASK(MODE(READ(B,C) WRITE(A)),
                                 for(size_t i=itt.begin(); i!=itt.end(); ++i)
-                                    A[i] = B[i] + C[i];
-                                );
-                           );
+                                A[i] = B[i] + C[i];
+                               );
+                          );
             }
         }
-        
-        
-           if (it) {chrono.stop(); time[it-1]=chrono.realtime();}
-           
-       }
-       std::sort(time, time+iters);
-       double meantime = time[iters/2];
-       delete[] time;  
-    
-// sequential add
-       chrono.clear();
-       chrono.start();
-       for(size_t i=0; i<m*n; ++i)
-           Acop[i]=B[i]+C[i];
-       chrono.stop();
-       double timeseq = chrono.usertime();
-       
-       
-// verification of the parallel result
+
+
+        if (it) {chrono.stop(); time[it-1]=chrono.realtime();}
+
+    }
+    std::sort(time, time+iters);
+    double meantime = time[iters/2];
+    delete[] time;
+
+    // sequential add
+    chrono.clear();
+    chrono.start();
+    for(size_t i=0; i<m*n; ++i)
+        Acop[i]=B[i]+C[i];
+    chrono.stop();
+    double timeseq = chrono.usertime();
+
+
+    // verification of the parallel result
     bool fail = false;
     for(size_t i=0; i<m; ++i)
         for (size_t j=0; j<n; ++j)
             if (!F.areEqual (*(Acop+i*n+j), *(A+i*n+j))){
                 std::cout << " Seq["<<i<<","<<j<<"] = " << (*(Acop+i*n+j))
-                          << " Par["<<i<<","<<j<<"] = " << (*(A+i*n+j))
-                          << std::endl;
+                << " Par["<<i<<","<<j<<"] = " << (*(A+i*n+j))
+                << std::endl;
                 fail=true;
             }
-    
+
     if (fail)
         std::cout<<"FAIL"<<std::endl;
     else
@@ -194,13 +192,13 @@ bool tmain(int argc, char** argv, std::string printStrat)
     std::cout<<"m: "<<m<<" n: "<<n;
     std::cout<<" SeqTime: "<<timeseq;
     std::cout<<" ParTime: " << meantime;
-       
-//       std::cout<<" Strategy:("<<proc<<", "<<CutStrat<<", "<<StratParam<<")";
+
+    //       std::cout<<" Strategy:("<<proc<<", "<<CutStrat<<", "<<StratParam<<")";
     std::cout<<" Strategy:("<<proc<<", "<<printStrat<<")";
-     
+
     std::string dataflow;
-    
-    
+
+
 #ifdef __FFLASFFPACK_USE_DATAFLOW // OMP/KAAPI dataflow option
     dataflow  = " with dataflow synch!";
 #else
@@ -209,16 +207,16 @@ bool tmain(int argc, char** argv, std::string printStrat)
 
     if(dataPar)
         std::cout<<" Data parallelism is used!"<<std::endl;
-    else       
+    else
         std::cout<<" TASK parallelism is used"<<dataflow<<std::endl;
-    
+
     fflas_delete(A);
     fflas_delete(Acop);
     fflas_delete(B);
     fflas_delete(C);
-    
+
     return fail;
-    
+
 }
 
 
@@ -231,7 +229,7 @@ int main(int argc, char** argv)
     size_t iters = 3;
     bool dataPar = true;
     int proc = MAX_THREADS;
-    
+
     int strat = 1;
 
     Argument as[] = {
@@ -246,21 +244,23 @@ int main(int argc, char** argv)
     parseArguments(argc,argv,as);
 
 
-    
+
     bool fail = false;
-    
+
     switch (strat){
-        case 1: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Threads>(argc,argv,std::string("BLOCK, THREADS"));
-        case 2: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Grain>(argc,argv,std::string("BLOCK, GRAIN"));
-        case 3: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Fixed>(argc,argv,std::string("BLOCK, FIXED"));
-        case 4: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Threads>(argc,argv,std::string("ROW, THREADS"));
-        case 5: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Grain>(argc,argv,std::string("ROW, GRAIN"));
-        case 6: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Fixed>(argc,argv,std::string("ROW, FIXED"));
-        case 7: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Threads>(argc,argv,std::string("COLUMN, THREADS"));
-        case 8: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Grain>(argc,argv,std::string("COLUMN, GRAIN"));
-        case 9: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Fixed>(argc,argv,std::string("COLUMN, FIXED"));
-        case 10: fail |= tmain<CuttingStrategy::Single,StrategyParameter::Threads>(argc,argv,std::string("SINGLE, THREADS"));
-      }
+    case 1: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Threads>(argc,argv,std::string("BLOCK, THREADS"));
+    case 2: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Grain>(argc,argv,std::string("BLOCK, GRAIN"));
+    case 3: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Fixed>(argc,argv,std::string("BLOCK, FIXED"));
+    case 4: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Threads>(argc,argv,std::string("ROW, THREADS"));
+    case 5: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Grain>(argc,argv,std::string("ROW, GRAIN"));
+    case 6: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Fixed>(argc,argv,std::string("ROW, FIXED"));
+    case 7: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Threads>(argc,argv,std::string("COLUMN, THREADS"));
+    case 8: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Grain>(argc,argv,std::string("COLUMN, GRAIN"));
+    case 9: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Fixed>(argc,argv,std::string("COLUMN, FIXED"));
+    case 10: fail |= tmain<CuttingStrategy::Single,StrategyParameter::Threads>(argc,argv,std::string("SINGLE, THREADS"));
+    }
 
     return fail;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2014 FFLAS-FFPACK
@@ -55,9 +53,9 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
- FFLAS::Timer tim, tom, tam ;
+	FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
-		if (timing)	F.write(std::cout << "Field ") << std::endl;
+	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		FFPACK::RandomMatrix(F,m,k,A,n,G);
 		FFPACK::RandomMatrix(F,m,k,B,n,G);
@@ -88,10 +86,10 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 				}
 #endif
 	}
-		if (timing)	std::cout << "fadd (___): " << tim.usertime()/(double)iter << 's' << std::endl;
-		if (timing)	std::cout << "fadd (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
+	if (timing)	std::cout << "fadd (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing)	std::cout << "fadd (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
-		if (timing)	std::cout << "<<<" << std::endl;
+	if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( A );
 	FFLAS::fflas_delete( B);
 	FFLAS::fflas_delete( C );
@@ -111,10 +109,10 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing, uin
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-		if (timing)	std::cout << ">>>" << std::endl ;
-		if (timing)	F.write(std::cout << "Field ") << std::endl;
+	if (timing)	std::cout << ">>>" << std::endl ;
+	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	size_t iter = 3 ;
- FFLAS::Timer tim, tom, tam ;
+	FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -138,16 +136,16 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing, uin
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-						if (timing)	std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+					if (timing)	std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
 	}
-		if (timing)	std::cout << "faddin (___): " << tim.usertime()/(double)iter << 's' << std::endl;
-		if (timing)	std::cout << "faddin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
+	if (timing)	std::cout << "faddin (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing)	std::cout << "faddin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 
-		if (timing)	std::cout << "<<<" << std::endl;
+	if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( A );
 	FFLAS::fflas_delete( C );
 	FFLAS::fflas_delete( D );
@@ -167,12 +165,12 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-		if (timing)	std::cout << ">>>" << std::endl ;
+	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
- FFLAS::Timer tim, tom, tam ;
+	FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
-		if (timing)	F.write(std::cout << "Field ") << std::endl;
+	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		FFPACK::RandomMatrix(F,m,k,A,n,G);
 		FFPACK::RandomMatrix(F,m,k,B,n,G);
@@ -195,15 +193,15 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-						if (timing)	std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+					if (timing)	std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
 	}
-		if (timing)	std::cout << "fsub (___): " << tim.usertime()/(double)iter << 's' << std::endl;
-		if (timing)	std::cout << "fsub (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
+	if (timing)	std::cout << "fsub (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing)	std::cout << "fsub (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
-		if (timing)	std::cout << "<<<" << std::endl;
+	if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( A );
 	FFLAS::fflas_delete( B);
 	FFLAS::fflas_delete( C );
@@ -226,7 +224,7 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing, uin
 	if (timing)  std::cout << ">>>" << std::endl ;
 	if (timing)  F.write(std::cout << "Field ") << std::endl;
 	size_t iter = 3 ;
- FFLAS::Timer tim, tom, tam ;
+	FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -255,7 +253,7 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing, uin
 				}
 #endif
 	}
-if (timing)	std::cout << "fsubin (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing)	std::cout << "fsubin (___): " << tim.usertime()/(double)iter << 's' << std::endl;
 	if (timing) std::cout << "fsubin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 
@@ -515,3 +513,5 @@ int main(int ac, char **av) {
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

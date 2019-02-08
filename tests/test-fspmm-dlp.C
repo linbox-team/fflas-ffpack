@@ -1,26 +1,24 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* Copyright (c) FFLAS-FFPACK
-* Written by Bastien Vialla <bastien.vialla@lirmm.fr>
-* ========LICENCE========
-* This file is part of the library FFLAS-FFPACK.
-*
-* FFLAS-FFPACK is free software: you can redistribute it and/or modify
-* it under the terms of the  GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-* ========LICENCE========
-*/
+ * Written by Bastien Vialla <bastien.vialla@lirmm.fr>
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ */
 
 #define __DLP_CHALLENGE
 
@@ -61,35 +59,35 @@ using Coo = typename Data::value_type;
 /*******************************************************************************************************************
  *
  *      Utility functions: sms reader and random field
- *  
+ *
  *******************************************************************************************************************/
 
 void readMat(string path, index_t *& row, index_t *& col, double *&val, index_t &rowdim, index_t &coldim, uint64_t & nnz){
-  std::ifstream file(path, std::ios::out);
-  std::string line, nnz_c;
-  std::getline(file, line);
-  std::istringstream(line) >> rowdim >> coldim >> nnz_c;
-  Data mat;
-  int64_t r, c, v;
-  while(std::getline(file, line)){
-    std::istringstream(line) >> r >> c >> v;
-    if(r!=0)
-      mat.emplace_back(v, r-1,c-1);
-  }
-  std::sort(mat.begin(), mat.end(),
-            [](Coo &a, Coo &b){
-                return (a.row < b.row) || ((a.row == b.row) && (a.col < b.col));
-                ;});
-  mat.shrink_to_fit();
-  nnz = mat.size();
-  val = fflas_new<double>(nnz, Alignment::CACHE_LINE);
-  col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
-  row = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
-  for(size_t i = 0 ; i < nnz ; ++i){
-    val[i] = mat[i].val;
-    col[i] = mat[i].col;
-    row[i] = mat[i].row;
-  }
+    std::ifstream file(path, std::ios::out);
+    std::string line, nnz_c;
+    std::getline(file, line);
+    std::istringstream(line) >> rowdim >> coldim >> nnz_c;
+    Data mat;
+    int64_t r, c, v;
+    while(std::getline(file, line)){
+        std::istringstream(line) >> r >> c >> v;
+        if(r!=0)
+            mat.emplace_back(v, r-1,c-1);
+    }
+    std::sort(mat.begin(), mat.end(),
+              [](Coo &a, Coo &b){
+              return (a.row < b.row) || ((a.row == b.row) && (a.col < b.col));
+              ;});
+    mat.shrink_to_fit();
+    nnz = mat.size();
+    val = fflas_new<double>(nnz, Alignment::CACHE_LINE);
+    col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+    row = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+    for(size_t i = 0 ; i < nnz ; ++i){
+        val[i] = mat[i].val;
+        col[i] = mat[i].col;
+        row[i] = mat[i].row;
+    }
 }
 
 /*************************************************************************************************************/
@@ -106,15 +104,15 @@ int main(int argc, char **argv) {
     int blockSize = 1;
     std::string matrixFile = "";
     int nIter = 100;
-    
+
     static Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",   TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of the random characteristic.",   TYPE_INT , &b },
         { 'k', "-k K", "Set the size of the block (1 by default).",       TYPE_INT, &blockSize },
         { 'n', "-n N", "Number of iterations (1 by default).",       TYPE_INT, &nIter },
         { 'f', "-f FILE", "Set matrix file.",                             TYPE_STR, &matrixFile },
-	{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
-     END_OF_ARGUMENTS };
+        { 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+        END_OF_ARGUMENTS };
 
     parseArguments(argc, argv, as);
 
@@ -124,7 +122,7 @@ int main(int argc, char **argv) {
     Integer p;
     F->cardinality(p);
     cout << "Prime p: " << p << endl;
-    
+
     // Pointers for the matrix
     index_t *row = nullptr, *col = nullptr;
     typename FieldMat::Element_ptr dat;
@@ -132,15 +130,15 @@ int main(int argc, char **argv) {
     uint64_t nnz;
     // Field associate to the matrix
     FieldMat Fword;
-  
+
     // Read the matrix
     readMat(matrixFile, row, col, dat, rowdim, coldim, nnz);
 
     vector<int64_t> rows(rowdim, 0);
     for(size_t i = 0 ; i < nnz ; ++i)
-      rows[row[i]]++;
+        rows[row[i]]++;
     for(size_t i = 0 ; i < 20 ; ++i)
-      cout << "#rows with "<<i<<" nnz: "  << std::count(rows.begin(), rows.end(), i) << endl;
+        cout << "#rows with "<<i<<" nnz: "  << std::count(rows.begin(), rows.end(), i) << endl;
 
     // Build the matrix
     SparseMatrix A;
@@ -180,12 +178,12 @@ int main(int argc, char **argv) {
     cout << endl;
     cout << "RNS Mi: " << endl;
     for(auto &x : RNS._Mi){
-      cout << x << " ";
+        cout << x << " ";
     }
     cout << endl;
     cout << "RNS MMi: " << endl;
     for(auto &x : RNS._MMi){
-      cout << x << " ";
+        cout << x << " ";
     }
     cout << endl;
     // construct RNS field
@@ -195,7 +193,7 @@ int main(int argc, char **argv) {
 
     // Fill X with random values
     for(auto &x: X){
-         Givaro::Integer::random_exact_2exp(x,b);
+        Givaro::Integer::random_exact_2exp(x,b);
         F->init(x, x);
     }
 
@@ -222,7 +220,7 @@ int main(int argc, char **argv) {
     bool bb = true;
     Ttotal.start();
     for(size_t kk = 1 ; kk <= nIter ; ++kk){
-    // perform Yrns = A.Xrns + beta.Yrns over ZZ
+        // perform Yrns = A.Xrns + beta.Yrns over ZZ
         Tspmm.start();
         if(bb){
             pfspmm(Fword, A, blockSize*rnsSize, Xrns, blockSize*rnsSize, 0, Yrns, blockSize*rnsSize);
@@ -233,20 +231,20 @@ int main(int argc, char **argv) {
 
             cout << "after spmm:" << endl;
             for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
-                    cout << Yrns[i] << " ";
-               }
-               cout << endl;
+                cout << Yrns[i] << " ";
+            }
+            cout << endl;
             bb = !bb;
             // if(kk%ld == 0){
-               Tmodp.start();
-               Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Yrns, 1));
-               Tmodp.stop();
-               modpTime += Tmodp.usertime();
-               cout << "after modp:" << endl;
-               for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
-                    cout << Yrns[i] << " ";
-               }
-               cout << endl;
+            Tmodp.start();
+            Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Yrns, 1));
+            Tmodp.stop();
+            modpTime += Tmodp.usertime();
+            cout << "after modp:" << endl;
+            for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+                cout << Yrns[i] << " ";
+            }
+            cout << endl;
             // }
         }else{
             fspmm(Fword, A, blockSize*rnsSize, Yrns, blockSize*rnsSize, 0, Xrns, blockSize*rnsSize);
@@ -256,20 +254,20 @@ int main(int argc, char **argv) {
             spmmTime += Tspmm.usertime();
             bb = !bb;
             for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
-                    cout << Xrns[i] << " ";
-               }
-               cout << endl;
+                cout << Xrns[i] << " ";
+            }
+            cout << endl;
             // if(kk%ld == 0){
-               Tmodp.start();
-               Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Xrns, 1));
-               Tmodp.stop();
-               modpTime += Tmodp.usertime();
+            Tmodp.start();
+            Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Xrns, 1));
+            Tmodp.stop();
+            modpTime += Tmodp.usertime();
             // }
-               cout << "after modp:" << endl;
-               for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
-                    cout << Xrns[i] << " ";
-               }
-               cout << endl;
+            cout << "after modp:" << endl;
+            for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+                cout << Xrns[i] << " ";
+            }
+            cout << endl;
         }
     }
     // if(bb && nIter%ld != 0){
@@ -288,11 +286,11 @@ int main(int argc, char **argv) {
     RNS.convert(rowdim*blockSize, Y.data(), Yrns);
     Ttotal.stop();
     for(size_t i = 0 ; i < rowdim*blockSize ; ++i){
-      if(Y[i] < 0){
-        Integer q = -Y[i] / p;
-        Y[i] = p - (-Y[i] - p*q); 
-      }
-      Y[i] %= p;
+        if(Y[i] < 0){
+            Integer q = -Y[i] / p;
+            Y[i] = p - (-Y[i] - p*q);
+        }
+        Y[i] %= p;
     }
     cout << "Y res:" << endl;
     for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
@@ -309,3 +307,5 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

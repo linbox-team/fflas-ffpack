@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
@@ -44,62 +42,64 @@
 using namespace FFLAS;
 
 int main(int argc, char** argv) {
-	size_t iter = 3 ;
-	Givaro::Integer q = 131071;
-	size_t MAXM = 1000;
-	size_t MAXN = 1000;
-	size_t m=0,n=0;
-	uint64_t seed = getSeed();
-	bool random_dim = false;
+    size_t iter = 3 ;
+    Givaro::Integer q = 131071;
+    size_t MAXM = 1000;
+    size_t MAXN = 1000;
+    size_t m=0,n=0;
+    uint64_t seed = getSeed();
+    bool random_dim = false;
 
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
-		{ 'm', "-m M", "Set the row dimension of A.", TYPE_INT , &m },
-		{ 'n', "-n N", "Set the col dimension of A.", TYPE_INT , &n },
-		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
-		{ 's', "-s N", "Set the seed.", TYPE_UINT64 , &seed },
-		END_OF_ARGUMENTS
-	};
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
+        { 'm', "-m M", "Set the row dimension of A.", TYPE_INT , &m },
+        { 'n', "-n N", "Set the col dimension of A.", TYPE_INT , &n },
+        { 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+        { 's', "-s N", "Set the seed.", TYPE_UINT64 , &seed },
+        END_OF_ARGUMENTS
+    };
 
-	parseArguments(argc,argv,as);
-	if (m == 0 || n == 0) random_dim = true;
+    parseArguments(argc,argv,as);
+    if (m == 0 || n == 0) random_dim = true;
 
-	srandom (seed);
+    srandom (seed);
 
-	typedef Givaro::Modular<double> Field;
-	Field F(q);
+    typedef Givaro::Modular<double> Field;
+    Field F(q);
 
-	Field::RandIter Rand(F,0,seed);
-	
-	size_t pass = 0;	// number of tests that have successfully passed
+    Field::RandIter Rand(F,0,seed);
 
-	FFLAS_DIAG Diag = FflasNonUnit;
-	for(size_t it=0; it<iter; ++it) {
-		if (random_dim) {
-			m = random() % MAXM + 1;
-			n = random() % MAXN + 1;
-		}
-			
-		Field::Element_ptr A = fflas_new(F,m,n);
-		size_t *P = fflas_new<size_t>(m);
-		size_t *Q = fflas_new<size_t>(n);
+    size_t pass = 0;	// number of tests that have successfully passed
 
-		// generate a random matrix A
-		PAR_BLOCK { pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
-  
-		try {
-			FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
-			std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification PASSED\n";
-			pass++;
-		} catch(FailurePLUQCheck &e) {
-			std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification FAILED!\n";
-		}
+    FFLAS_DIAG Diag = FflasNonUnit;
+    for(size_t it=0; it<iter; ++it) {
+        if (random_dim) {
+            m = random() % MAXM + 1;
+            n = random() % MAXN + 1;
+        }
 
-		fflas_delete(A,P,Q);
+        Field::Element_ptr A = fflas_new(F,m,n);
+        size_t *P = fflas_new<size_t>(m);
+        size_t *Q = fflas_new<size_t>(n);
+
+        // generate a random matrix A
+        PAR_BLOCK { pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
+
+        try {
+            FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
+            std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification PASSED\n";
+            pass++;
+        } catch(FailurePLUQCheck &e) {
+            std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification FAILED!\n";
+        }
+
+        fflas_delete(A,P,Q);
         Diag = (Diag == FflasNonUnit) ? FflasUnit : FflasNonUnit;
-	}
+    }
 
     std::cerr << pass << "/" << iter << " tests SUCCESSFUL.\n";
 
-	return (iter-pass);
+    return (iter-pass);
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

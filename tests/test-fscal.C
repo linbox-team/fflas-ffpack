@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2014 FFLAS-FFPACK
@@ -51,10 +49,10 @@ bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m
 	T * C = fflas_new<T>(m*n);
 	T * D = fflas_new<T>(m*n);
 
-if (timing)	std::cout << ">>>" << std::endl ;
+	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
- Timer tim, tom, tam ;
+	Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -78,7 +76,7 @@ if (timing)	std::cout << ">>>" << std::endl ;
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-				if (timing)		std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+					if (timing)		std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
@@ -126,7 +124,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
- Timer tim, tom, tam ;
+	Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -149,7 +147,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-			if (timing)			std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+					if (timing)			std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
@@ -329,3 +327,5 @@ int main(int ac, char **av) {
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

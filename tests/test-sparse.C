@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* Copyright (C) 2014 FFLAS-FFPACK
  * Written by :     Bastien Vialla <bastien.vialla@lirmm.fr>
@@ -173,8 +171,8 @@ int main(int argc, char **argv) {
     readSmsFormat(path, F, row, col, dat, rowdim, coldim, nnz);
     row = fflas_new<index_t>(nnz);
     for (index_t j = 0 ; j < rowdim ; ++j) {
-	    for (index_t k = row[j] ; k < row[j+1] ; ++k)
-		    row[k] = j ;
+        for (index_t k = row[j] ; k < row[j+1] ; ++k)
+            row[k] = j ;
     }
 
 
@@ -203,7 +201,7 @@ int main(int argc, char **argv) {
     cout << "CSR: OK" << endl;
 
     test_spmv<Sparse<Field, SparseMatrix_t::CSR_ZO>>(F, row, col, dat, rowdim,
-                                                  coldim, nnz, x, y1, 1);
+                                                     coldim, nnz, x, y1, 1);
 
     // for(size_t i = 0 ; i < 10 ; ++i)
     // {
@@ -218,7 +216,7 @@ int main(int argc, char **argv) {
     // cout << endl;
 
     cout << "CSR_ZO: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -228,7 +226,7 @@ int main(int argc, char **argv) {
                                                   coldim, nnz, x, y1, 1);
 
     cout << "COO: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -238,7 +236,7 @@ int main(int argc, char **argv) {
                                                   coldim, nnz, x, y1, 1);
 
     cout << "ELL: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -248,7 +246,7 @@ int main(int argc, char **argv) {
                                                        coldim, nnz, x, y1, 1);
 
     cout << "ELL_simd: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -258,7 +256,7 @@ int main(int argc, char **argv) {
                                                       coldim, nnz, x, y1, 1);
 
     cout << "CSR_HYB: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -268,7 +266,7 @@ int main(int argc, char **argv) {
                                                      coldim, nnz, x, y1, 1);
 
     cout << "HYB_ZO: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -278,7 +276,7 @@ int main(int argc, char **argv) {
     test_spmv_sell(F, row, col, dat, rowdim, coldim, nnz, A, x, y1, 1);
 
     cout << "SELL: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -295,7 +293,7 @@ int main(int argc, char **argv) {
     test_pspmv<Sparse<Field, SparseMatrix_t::CSR>>(F, row, col, dat, rowdim,
                                                    coldim, nnz, x, y1, 1);
     cout << "CSR: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -305,17 +303,17 @@ int main(int argc, char **argv) {
                                                    coldim, nnz, x, y1, 1);
 
     cout << "ELL: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
     }
 
     test_pspmv<Sparse<Field, SparseMatrix_t::ELL_simd>>(
-        F, row, col, dat, rowdim, coldim, nnz, x, y1, 1);
+                                                        F, row, col, dat, rowdim, coldim, nnz, x, y1, 1);
 
     cout << "ELL_simd: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -325,7 +323,7 @@ int main(int argc, char **argv) {
                                                        coldim, nnz, x, y1, 1);
 
     cout << "CSR_HYB: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -335,7 +333,7 @@ int main(int argc, char **argv) {
                                                       coldim, nnz, x, y1, 1);
 
     cout << "HYB_ZO: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -345,7 +343,7 @@ int main(int argc, char **argv) {
     test_pspmv_sell(F, row, col, dat, rowdim, coldim, nnz, A1, x, y1, 1);
 
     cout << "SELL: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
-         << endl;
+    << endl;
 
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
@@ -390,3 +388,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

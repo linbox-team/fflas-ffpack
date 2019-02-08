@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -175,15 +173,15 @@ int main(int argc, char** argv)
     std::string file;
 
     Argument as[] = {{'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER, &q},
-                     {'b', "-b B", "Set the bitsize of the field characteristic.", TYPE_INT, &b},
-                     {'m', "-m M", "Set the row dimension of the matrix.", TYPE_INT, &m},
-                     {'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT, &n},
-                     {'r', "-r R", "Set the rank.", TYPE_INT, &r},
-                     {'i', "-i I", "Set number of iterations.", TYPE_INT, &iters},
-                     {'s', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed},
-                     {'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL, &loop},
-                     {'f', "-f file", "Set input file", TYPE_STR, &file},
-                     END_OF_ARGUMENTS};
+        {'b', "-b B", "Set the bitsize of the field characteristic.", TYPE_INT, &b},
+        {'m', "-m M", "Set the row dimension of the matrix.", TYPE_INT, &m},
+        {'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT, &n},
+        {'r', "-r R", "Set the rank.", TYPE_INT, &r},
+        {'i', "-i I", "Set number of iterations.", TYPE_INT, &iters},
+        {'s', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed},
+        {'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL, &loop},
+        {'f', "-f file", "Set input file", TYPE_STR, &file},
+        END_OF_ARGUMENTS};
 
     FFLAS::parseArguments(argc, argv, as);
 
@@ -211,3 +209,5 @@ int main(int argc, char** argv)
 
     return !ok;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

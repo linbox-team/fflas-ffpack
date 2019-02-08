@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -34,7 +32,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-// #define __FFLASFFPACK_DEBUG 
+// #define __FFLASFFPACK_DEBUG
 #define TIME 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -62,246 +60,248 @@ using Givaro::ModularBalanced;
 // WARNING
 template<class Field>
 bool check_fger(const Field                   & F,
-	      const typename Field::Element_ptr  Cd, // c0
-	      const size_t                    m,
-	      const size_t                    n,
-	      const typename Field::Element & alpha,
-	      const typename Field::Element_ptr  x,
-	      const size_t                    incx,
-	      const typename Field::Element_ptr  y,
-	      const size_t                    incy,
-	      const typename Field::Element_ptr  C, // res
-	      const size_t                    ldc
-	      ) {
-	bool wrong = false;
+                const typename Field::Element_ptr  Cd, // c0
+                const size_t                    m,
+                const size_t                    n,
+                const typename Field::Element & alpha,
+                const typename Field::Element_ptr  x,
+                const size_t                    incx,
+                const typename Field::Element_ptr  y,
+                const size_t                    incy,
+                const typename Field::Element_ptr  C, // res
+                const size_t                    ldc
+               ) {
+    bool wrong = false;
 
-	typedef typename Field::Element Element;
-	typedef typename Field::Element_ptr Element_ptr;
+    typedef typename Field::Element Element;
+    typedef typename Field::Element_ptr Element_ptr;
 
-// 	std::cerr << "with(LinearAlgebra):" << std::endl;
-//         WriteMatrix(std::cerr <<"X:=",F, m, 1, x,incx, FflasMaple) << ';' << std::endl;
-//         WriteMatrix(std::cerr <<"Y:=Transpose(", F, n, 1, y, incy, FflasMaple) << ");" << std::endl;
-//         WriteMatrix(std::cerr <<"A:=",F, m, n, Cd, ldc, FflasMaple) << ';' << std::endl;
-// 	F.write(std::cerr << "a:=", alpha) << ';' << std::endl;
-// 	std::cerr << "q:=" << F.characteristic() << ';' << std::endl;
+    // 	std::cerr << "with(LinearAlgebra):" << std::endl;
+    //         WriteMatrix(std::cerr <<"X:=",F, m, 1, x,incx, FflasMaple) << ';' << std::endl;
+    //         WriteMatrix(std::cerr <<"Y:=Transpose(", F, n, 1, y, incy, FflasMaple) << ");" << std::endl;
+    //         WriteMatrix(std::cerr <<"A:=",F, m, n, Cd, ldc, FflasMaple) << ';' << std::endl;
+    // 	F.write(std::cerr << "a:=", alpha) << ';' << std::endl;
+    // 	std::cerr << "q:=" << F.characteristic() << ';' << std::endl;
 
-	Element_ptr D  = fflas_new (F,m,n);
-	fassign(F,m,n,Cd,n,D,n);
-	for(size_t i=0; i<m; ++i) {
-		Element tmp; F.init(tmp);
-		F.mul(tmp, alpha, *(x+i*incx) );
-		for(size_t j=0; j<n; j+=incy) {
-			F.axpyin(*(D+i*n+j), tmp, *(y+j) );
-			if ( !F.areEqual( *(D+i*n+j), *(C+i*ldc+j) ) ) {
-				wrong = true;
-			}
-		}
-	}
-//     WriteMatrix(std::cerr <<"d:=",F, m, n, D, n, FflasMaple) << ';' << std::endl;
-// 	F.write(std::cerr, alpha) << "*X.Y+A,d;";
-// 	F.write(std::cerr, alpha) << "*X.Y+A-d mod q;" << std::endl;
-	if ( wrong ){
-		size_t ici = 20 ;
-		std::cout<<"FAIL"<<std::endl;
-		std::cout << "a   :" << alpha<<std::endl;
-		std::cout << "m   :" << m   << ", n   : " <<  n  << std::endl;
-		std::cout << "incx :" << incx << ", incy : " << incy << ", ldC : " << ldc << std::endl;
-		for (size_t i=0; i<m && ici; ++i){
-			for (size_t j =0; j<n && ici; ++j)
-				if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) ) {
-					std::cout<<"Error C["<<i<<","<<j<<"]="
-					<<(*(C+i*ldc+j))<<" D["<<i<<","<<j<<"]="
-					<<(*(D+i*n+j))<<std::endl;
-					ici--;
-				}
-		}
-		if (m<80 && n<80) {
-			for (size_t i=0; i<m ; ++i){
-				for (size_t j =0; j<n ; ++j) {
-					if ( !F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) )
-						std::cout << 'X' ;
-					else
-						std::cout << '.' ;
-				}
-				std::cout << std::endl;
-			}
-		}
-	}
-	fflas_delete (D);
+    Element_ptr D  = fflas_new (F,m,n);
+    fassign(F,m,n,Cd,n,D,n);
+    for(size_t i=0; i<m; ++i) {
+        Element tmp; F.init(tmp);
+        F.mul(tmp, alpha, *(x+i*incx) );
+        for(size_t j=0; j<n; j+=incy) {
+            F.axpyin(*(D+i*n+j), tmp, *(y+j) );
+            if ( !F.areEqual( *(D+i*n+j), *(C+i*ldc+j) ) ) {
+                wrong = true;
+            }
+        }
+    }
+    //     WriteMatrix(std::cerr <<"d:=",F, m, n, D, n, FflasMaple) << ';' << std::endl;
+    // 	F.write(std::cerr, alpha) << "*X.Y+A,d;";
+    // 	F.write(std::cerr, alpha) << "*X.Y+A-d mod q;" << std::endl;
+    if ( wrong ){
+        size_t ici = 20 ;
+        std::cout<<"FAIL"<<std::endl;
+        std::cout << "a   :" << alpha<<std::endl;
+        std::cout << "m   :" << m   << ", n   : " <<  n  << std::endl;
+        std::cout << "incx :" << incx << ", incy : " << incy << ", ldC : " << ldc << std::endl;
+        for (size_t i=0; i<m && ici; ++i){
+            for (size_t j =0; j<n && ici; ++j)
+                if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) ) {
+                    std::cout<<"Error C["<<i<<","<<j<<"]="
+                    <<(*(C+i*ldc+j))<<" D["<<i<<","<<j<<"]="
+                    <<(*(D+i*n+j))<<std::endl;
+                    ici--;
+                }
+        }
+        if (m<80 && n<80) {
+            for (size_t i=0; i<m ; ++i){
+                for (size_t j =0; j<n ; ++j) {
+                    if ( !F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) )
+                        std::cout << 'X' ;
+                    else
+                        std::cout << '.' ;
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+    fflas_delete (D);
 
-	return !wrong ;
+    return !wrong ;
 }
 
 
 template<class Field, class RandIter>
 bool launch_fger(const Field & F,
-		 const size_t   m,
-		 const size_t   n,
-		 const typename Field::Element alpha,
-		 const size_t ldc,
-		 const size_t inca,
-		 const size_t incb,
-		 size_t iters,
-		 RandIter& G)
+                 const size_t   m,
+                 const size_t   n,
+                 const typename Field::Element alpha,
+                 const size_t ldc,
+                 const size_t inca,
+                 const size_t incb,
+                 size_t iters,
+                 RandIter& G)
 {
-	bool ok = true;
+    bool ok = true;
 
-	typedef typename Field::Element_ptr Element_ptr;
-	Element_ptr A ;
-	FFLASFFPACK_check(inca >= 1);
-	Element_ptr B ;
-	FFLASFFPACK_check(incb >= 1);
-	Element_ptr C = fflas_new (F,m,ldc);
-	FFLASFFPACK_check(ldc >= n);
-	fzero(F,m,n,C,ldc);
-	Element_ptr D = fflas_new (F, m, n);
-	for(size_t i = 0;i<iters;++i){
-		A = fflas_new (F, m, inca);
-		RandomMatrix(F, m, inca, A, inca, G);
-		B = fflas_new (F, n, incb);
-		RandomMatrix(F, n, incb, B, incb, G);
-		RandomMatrix(F, m, n, C, ldc, G);
-		fassign(F,m,n,C,ldc,D,n);
-		fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
-		ok = ok && check_fger(F, D, m,n,alpha, A, inca, B, incb, C,ldc);
+    typedef typename Field::Element_ptr Element_ptr;
+    Element_ptr A ;
+    FFLASFFPACK_check(inca >= 1);
+    Element_ptr B ;
+    FFLASFFPACK_check(incb >= 1);
+    Element_ptr C = fflas_new (F,m,ldc);
+    FFLASFFPACK_check(ldc >= n);
+    fzero(F,m,n,C,ldc);
+    Element_ptr D = fflas_new (F, m, n);
+    for(size_t i = 0;i<iters;++i){
+        A = fflas_new (F, m, inca);
+        RandomMatrix(F, m, inca, A, inca, G);
+        B = fflas_new (F, n, incb);
+        RandomMatrix(F, n, incb, B, incb, G);
+        RandomMatrix(F, m, n, C, ldc, G);
+        fassign(F,m,n,C,ldc,D,n);
+        fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
+        ok = ok && check_fger(F, D, m,n,alpha, A, inca, B, incb, C,ldc);
 
-		fflas_delete(A);
-		fflas_delete(B);
+        fflas_delete(A);
+        fflas_delete(B);
 
-		if (!ok)
-			break;
+        if (!ok)
+            break;
 
 
-	}
-	fflas_delete (C);
-	fflas_delete (D);
+    }
+    fflas_delete (C);
+    fflas_delete (D);
 
-	return ok ;
+    return ok ;
 }
 
 
 template<class Field, class RandIter>
 bool launch_fger_dispatch(const Field &F,
-			  const size_t nn,
-			  const typename Field::Element alpha,
-			  const size_t iters,
-			  RandIter& G)
+                          const size_t nn,
+                          const typename Field::Element alpha,
+                          const size_t iters,
+                          RandIter& G)
 {
-	bool ok = true;
-	size_t m,n;
-	size_t inca,incb,ldc;
-		//!@bug test for incx equal
-		//!@bug test for transpo
-		//!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
-	// size_t ld = 13 ;
-	{
-		m = 1+(size_t)random()%nn;
-		n = 1+(size_t)random()%nn;
+    bool ok = true;
+    size_t m,n;
+    size_t inca,incb,ldc;
+    //!@bug test for incx equal
+    //!@bug test for transpo
+    //!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
+    // size_t ld = 13 ;
+    {
+        m = 1+(size_t)random()%nn;
+        n = 1+(size_t)random()%nn;
 
 
-// 		lda = m+(size_t)random()%ld;
-// 		ldb = 1+(size_t)random()%ld;
+        // 		lda = m+(size_t)random()%ld;
+        // 		ldb = 1+(size_t)random()%ld;
 
-		inca = 1;
-		incb = 1;
+        inca = 1;
+        incb = 1;
 
-// 		ldc = n+(size_t)random()%ld;
-		ldc = n;
+        // 		ldc = n+(size_t)random()%ld;
+        ldc = n;
 
 #ifdef __FFLASFFPACK_DEBUG
-		std::cout <<"q = "<<F.characteristic()<<" m,n = "<<m<<", "<<n<<" C := "
-			  <<alpha<<".x * y^T + C";
+        std::cout <<"q = "<<F.characteristic()<<" m,n = "<<m<<", "<<n<<" C := "
+        <<alpha<<".x * y^T + C";
 #endif
-		ok = ok && launch_fger<Field>(F,m,n, alpha, ldc, inca, incb, iters, G);
+        ok = ok && launch_fger<Field>(F,m,n, alpha, ldc, inca, incb, iters, G);
 #ifdef __FFLASFFPACK_DEBUG
-		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
+        std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
 #endif
-	}
-	return ok ;
+    }
+    return ok ;
 }
 template <class Field>
 bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t seed){
-	bool ok = true ;
-	int nbit=(int)iters;
-	while (ok &&  nbit){
-		typedef typename  Field::Element Element ;
-		typedef typename Field::Element  Element ;
-		
-		Field* F= chooseField<Field>(q,b,seed);
-		if (F==NULL) return true;
-		std::ostringstream oss;
-		F->write(oss);
+    bool ok = true ;
+    int nbit=(int)iters;
+    while (ok &&  nbit){
+        typedef typename  Field::Element Element ;
+        typedef typename Field::Element  Element ;
 
-		std::cout.fill('.');
-		std::cout<<"Checking ";
-		std::cout.width(45);
-		std::cout<<oss.str();
-		std::cout<<"... ";
+        Field* F= chooseField<Field>(q,b,seed);
+        if (F==NULL) return true;
+        std::ostringstream oss;
+        F->write(oss);
 
-		typename Field::RandIter R(*F,0,seed++);
-		typename Field::NonZeroRandIter NZR(R);
+        std::cout.fill('.');
+        std::cout<<"Checking ";
+        std::cout.width(45);
+        std::cout<<oss.str();
+        std::cout<<"... ";
 
-		    //size_t k = 0 ;
-		    //std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_fger_dispatch<Field>(*F,n,F->one,iters, R);
-		    //std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_fger_dispatch<Field>(*F,n,F->zero,iters, R);
-		    //std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_fger_dispatch<Field>(*F,n,F->mOne,iters, R);
-		    //std::cout << k << "/24" << std::endl; ++k;
+        typename Field::RandIter R(*F,0,seed++);
+        typename Field::NonZeroRandIter NZR(R);
 
-		Element alpha ;
-		R.random(alpha);
+        //size_t k = 0 ;
+        //std::cout << k << "/24" << std::endl; ++k;
+        ok = ok && launch_fger_dispatch<Field>(*F,n,F->one,iters, R);
+        //std::cout << k << "/24" << std::endl; ++k;
+        ok = ok && launch_fger_dispatch<Field>(*F,n,F->zero,iters, R);
+        //std::cout << k << "/24" << std::endl; ++k;
+        ok = ok && launch_fger_dispatch<Field>(*F,n,F->mOne,iters, R);
+        //std::cout << k << "/24" << std::endl; ++k;
 
-		ok = ok && launch_fger_dispatch<Field>(*F,n,alpha,iters, R);
-		if (!ok)
-				//std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
-			std::cout << "FAILED "<<std::endl;
-		else
-				//std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
-			std::cout << "PASSED "<<std::endl;
-		    //std::cout<<std::endl;
-		nbit--;
-		delete F;
-	}
-	return ok;
+        Element alpha ;
+        R.random(alpha);
+
+        ok = ok && launch_fger_dispatch<Field>(*F,n,alpha,iters, R);
+        if (!ok)
+            //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
+            std::cout << "FAILED "<<std::endl;
+        else
+            //std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+            std::cout << "PASSED "<<std::endl;
+        //std::cout<<std::endl;
+        nbit--;
+        delete F;
+    }
+    return ok;
 }
 
 int main(int argc, char** argv)
 {
-	std::cout<<setprecision(17);
-	std::cerr<<setprecision(17);
+    std::cout<<setprecision(17);
+    std::cerr<<setprecision(17);
 
-	size_t iters = 3 ;
-	long long q = -1 ;
-	uint64_t b = 0 ;
-	size_t n = 50 ;
-	bool loop = false;
-	uint64_t seed = getSeed();
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_LONGLONG , &q },
-		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
-		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
-		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		{ 'l', "-loop Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		{ 's', "-s N", "Set the seed.",                         TYPE_UINT64 , &seed },
-		END_OF_ARGUMENTS
-	};
+    size_t iters = 3 ;
+    long long q = -1 ;
+    uint64_t b = 0 ;
+    size_t n = 50 ;
+    bool loop = false;
+    uint64_t seed = getSeed();
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_LONGLONG , &q },
+        { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
+        { 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
+        { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+        { 'l', "-loop Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
+        { 's', "-s N", "Set the seed.",                         TYPE_UINT64 , &seed },
+        END_OF_ARGUMENTS
+    };
 
-	parseArguments(argc,argv,as);
+    parseArguments(argc,argv,as);
 
-	bool ok = true;
-	do{
-		ok = ok && run_with_field<Modular<double> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<Modular<float> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
-	} while (loop && ok);
+    bool ok = true;
+    do{
+        ok = ok && run_with_field<Modular<double> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<Modular<float> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
+    } while (loop && ok);
 
-	return !ok ;
+    return !ok ;
 }
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

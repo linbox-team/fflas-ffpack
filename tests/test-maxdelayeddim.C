@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -46,45 +44,47 @@ bool test (Givaro::Integer p, size_t kmax){
 int main() {
 
     bool ok=true;
-    
-		// kmax = floor(2^53 / (p-1)^2)
+
+    // kmax = floor(2^53 / (p-1)^2)
     ok = ok && test<Givaro::Modular<double>  >(17, MAX_WITH_SIZE_T(35184372088831ULL));
     ok = ok && test<Givaro::Modular<double>  >(65521, 2098176);
     ok = ok && test<Givaro::Modular<double>  >(67108859,2);
-        // kmax = floor(2^53 / ((p-1)/2)^2)
+    // kmax = floor(2^53 / ((p-1)/2)^2)
     ok = ok && test<Givaro::ModularBalanced<double>  >(17,MAX_WITH_SIZE_T(140737488355327ULL));
     ok = ok && test<Givaro::ModularBalanced<double>  >(65521,8392705);
     ok = ok && test<Givaro::ModularBalanced<double>  >(67108859,8);
-        // kmax = floor(2^24 / (p-1)^2)
+    // kmax = floor(2^24 / (p-1)^2)
     ok = ok && test<Givaro::Modular<float> > (17,65535);
     ok = ok && test<Givaro::Modular<float> > (2039,4);
-        // kmax = floor(2^24 / ((p-1)/2)^2)
+    // kmax = floor(2^24 / ((p-1)/2)^2)
     ok = ok && test<Givaro::ModularBalanced<float> >(17,262143);
     ok = ok && test<Givaro::ModularBalanced<float> > (2039,16);
 
-       // kmax = floor(2^53 / (p-1)^2)
+    // kmax = floor(2^53 / (p-1)^2)
     ok = ok && test<Givaro::Modular<int64_t>  >(17, MAX_WITH_SIZE_T(36028797018963967));
     ok = ok && test<Givaro::Modular<int64_t>  >(65521, MAX_WITH_SIZE_T(2148532608));
     ok = ok && test<Givaro::Modular<int64_t>  >(1147482977,7);
-        // kmax = floor(2^53 / ((p-1)/2)^2)
+    // kmax = floor(2^53 / ((p-1)/2)^2)
     ok = ok && test<Givaro::ModularBalanced<int64_t>  >(17, MAX_WITH_SIZE_T(144115188075855871));
     ok = ok && test<Givaro::ModularBalanced<int64_t>  >(65521, MAX_WITH_SIZE_T(8594130432));
     ok = ok && test<Givaro::ModularBalanced<int64_t>  >(1147482977,28);
- 
-       // kmax = floor(2^31 / (p-1)^2)
+
+    // kmax = floor(2^31 / (p-1)^2)
     ok = ok && test<Givaro::Modular<int32_t>  >(17,8388607);
     ok = ok && test<Givaro::Modular<int32_t>  >(24571,3);
-        // kmax = floor(2^31 / ((p-1)/2)^2)
+    // kmax = floor(2^31 / ((p-1)/2)^2)
     ok = ok && test<Givaro::ModularBalanced<int32_t>  >(17,33554431);
     ok = ok && test<Givaro::ModularBalanced<int32_t>  >(24571,14);
 
-       // kmax = maxsize_t
+    // kmax = maxsize_t
     ok = ok && test<Givaro::Modular<Givaro::Integer>  >(17, std::numeric_limits<size_t>::max());
     ok = ok && test<Givaro::Modular<Givaro::Integer>  >(Givaro::Integer("46768052394588893382517914646921056628989841375373"),std::numeric_limits<size_t>::max());
-        // kmax = maxsize_t
+    // kmax = maxsize_t
     ok = ok && test<Givaro::Modular<RecInt::rint<8> > >(17, std::numeric_limits<size_t>::max());
     ok = ok && test<Givaro::Modular<RecInt::rint<8> > >(Givaro::Integer("166153499473114484112975882535042793"),2097152);
     return !ok;
 }
-        
 
+
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

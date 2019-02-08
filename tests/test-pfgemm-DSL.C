@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /*
@@ -29,7 +27,7 @@
 
 
 //--------------------------------------------------------------------------
-//                        DSL test for pfgemm 
+//                        DSL test for pfgemm
 //
 //--------------------------------------------------------------------------
 // Ziad Sultan
@@ -80,133 +78,135 @@ typedef Givaro::Modular<double> Field;
 BEGIN_PARALLEL_MAIN(int argc, char** argv)
 {
 
-        if (argc != 8)  {
-                cerr<<"Testing pfgemm with : test-fgemm-DSL <p> <file-matrixA> <File-matrixB> <w> <i> <alpha> <beta>"
-                    <<endl;
-                exit(-1);
-        }
-        srand48( FFLAS::BaseTimer::seed());
-        size_t m,n, k;
+    if (argc != 8)  {
+        cerr<<"Testing pfgemm with : test-fgemm-DSL <p> <file-matrixA> <File-matrixB> <w> <i> <alpha> <beta>"
+        <<endl;
+        exit(-1);
+    }
+    srand48( FFLAS::BaseTimer::seed());
+    size_t m,n, k;
 
-        Field F(atoi(argv[1]));
+    Field F(atoi(argv[1]));
 
-        typename Field::Element *A;
-	FFLAS::ReadMatrix (argv[2],F,m,k,A);
-        typename Field::Element *B;
-	FFLAS::ReadMatrix (argv[3],F,k,n,B);
-
-
-        int nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
-        int nbit=atoi(argv[5]); // number of times the product is performed                                                                                                     
-        cerr<<setprecision(10);
-	Field::Element alpha,beta;
-
-        F.init( alpha);
-        F.assign( alpha, Field::Element(atoi(argv[6])));
-        F.init( beta);
-        F.assign( beta, Field::Element(atoi(argv[7])));
-
-        size_t lda=m;
-        size_t ldb=n;
+    typename Field::Element *A;
+    FFLAS::ReadMatrix (argv[2],F,m,k,A);
+    typename Field::Element *B;
+    FFLAS::ReadMatrix (argv[3],F,k,n,B);
 
 
-        enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
-        enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
+    int nbw=atoi(argv[4]); // number of winograd levels
+    int nbit=atoi(argv[5]); // number of times the product is performed
+    cerr<<setprecision(10);
+    Field::Element alpha,beta;
 
-	Field::Element * C=NULL;
-        struct timespec t0,t1;
-        double delay, avrg;
-        double t_total=0;
+    F.init( alpha);
+    F.assign( alpha, Field::Element(atoi(argv[6])));
+    F.init( beta);
+    F.assign( beta, Field::Element(atoi(argv[7])));
 
-	//const FFLAS::CuttingStrategy meth; //= FFLAS::BLOCK
-	//const FFLAS::StrategyParameter strat;// = FFLAS::THREADS;
-	FFLAS::ParSeqHelper::Parallel PSH(MAX_THREADS, FFLAS::CuttingStrategy::Block, 
-					  FFLAS::StrategyParameter::Threads);
-	FFLAS::MMHelper<Field, 
-			FFLAS::MMHelperAlgo::Winograd, 
-			FFLAS::FieldTraits<Field>::category,			
-			FFLAS::ParSeqHelper::Parallel> pWH (F, nbw, PSH);
-        for(int i = 0;i<nbit;++i){
-		C = FFLAS::fflas_new<Field::Element>(m*n);
-                clock_gettime(CLOCK_REALTIME, &t0);
+    size_t lda=m;
+    size_t ldb=n;
 
-		//PAR_INSTR{
-		       
-		FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-				      beta,C,n, pWH);   
-		//}
-		BARRIER;
-                clock_gettime(CLOCK_REALTIME, &t1);
-                delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
 
-                if (i)
-			t_total+=delay;
+    enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
+    enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
 
-        }
-        avrg = t_total/(nbit-1);
+    Field::Element * C=NULL;
+    struct timespec t0,t1;
+    double delay, avrg;
+    double t_total=0;
+
+    //const FFLAS::CuttingStrategy meth; //= FFLAS::BLOCK
+    //const FFLAS::StrategyParameter strat;// = FFLAS::THREADS;
+    FFLAS::ParSeqHelper::Parallel PSH(MAX_THREADS, FFLAS::CuttingStrategy::Block,
+                                      FFLAS::StrategyParameter::Threads);
+    FFLAS::MMHelper<Field,
+    FFLAS::MMHelperAlgo::Winograd,
+    FFLAS::FieldTraits<Field>::category,
+    FFLAS::ParSeqHelper::Parallel> pWH (F, nbw, PSH);
+    for(int i = 0;i<nbit;++i){
+        C = FFLAS::fflas_new<Field::Element>(m*n);
+        clock_gettime(CLOCK_REALTIME, &t0);
+
+        //PAR_INSTR{
+
+        FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+                     beta,C,n, pWH);
+        //}
+        BARRIER;
+        clock_gettime(CLOCK_REALTIME, &t1);
+        delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
+
+        if (i)
+            t_total+=delay;
+
+    }
+    avrg = t_total/(nbit-1);
 
 #if TIME
 
-        double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*n/avrg;
+    double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*n/avrg;
 
-	cerr<<m<<" "<<n<<" "<<k<<" "<<nbw/*<<" "<<RBLOCKSIZE<<" "<<CBLOCKSIZE*/<<" "<<alpha<<" "<<beta<<" "
-	    <<mflops<<" "<<avrg<<endl;
+    cerr<<m<<" "<<n<<" "<<k<<" "<<nbw/*<<" "<<RBLOCKSIZE<<" "<<CBLOCKSIZE*/<<" "<<alpha<<" "<<beta<<" "
+    <<mflops<<" "<<avrg<<endl;
 #endif
 
 
 #if __FFLASFFPACK_DEBUG
-        bool wrong = false;
-	Field::Element * Cd;
-	Cd  = FFLAS::fflas_new<Field::Element>(m*n);
-	for (int i=0; i<m*n; ++i)
-		F.assign (*(Cd+i), F.zero);
+    bool wrong = false;
+    Field::Element * Cd;
+    Cd  = FFLAS::fflas_new<Field::Element>(m*n);
+    for (int i=0; i<m*n; ++i)
+        F.assign (*(Cd+i), F.zero);
 
-	Field::Element aij, bij,  tmp;
-        // Field::Element beta_alpha;                                                                                                                                           
-        //F.div (beta_alpha, beta, alpha);                                                                                                                                      
-        for (int i = 0; i < m; ++i)
-                for (int j = 0; j < n; ++j){
-                        F.mulin(*(Cd+i*n+j),beta);
-                        F.assign (tmp, F.zero);
-                        for ( int l = 0; l < k ; ++l ){
-                                if ( ta == FFLAS::FflasNoTrans )
-                                        aij = *(A+i*lda+l);
-                                else
-                                        aij = *(A+l*lda+i);
-                                if ( tb == FFLAS::FflasNoTrans )
-                                        bij = *(B+l*ldb+j);
-                                else
-                                        bij = *(B+j*ldb+l);
-                                //F.mul (tmp, aij, bij);                                                                                                                        
-                                //F.axpyin( *(Cd+i*n+j), alpha, tmp );                                                                                                          
-                                F.axpyin (tmp, aij, bij);
-                        }
-                        F.axpyin (*(Cd+i*n+j), alpha, tmp);
-                        //F.mulin( *(Cd+i*n+j),alpha );                                                                                                                         
-                        if ( !F.areEqual( *(Cd+i*n+j), *(C+i*n+j) ) ) {
-                                wrong = true;
-                        }
-                }
-        if ( wrong ){
-                cerr<<"FAIL"<<endl;
-                for (int i=0; i<m; ++i){
-                        for (int j =0; j<n; ++j)
-                                if (!F.areEqual( *(C+i*n+j), *(Cd+i*n+j) ) )
-					cerr<<"Erreur C["<<i<<","<<j<<"]="
-					    <<(*(C+i*n+j))<<" C[d"<<i<<","<<j<<"]="
-					    <<(*(Cd+i*n+j))<<endl;
-                }
+    Field::Element aij, bij,  tmp;
+    // Field::Element beta_alpha;
+    //F.div (beta_alpha, beta, alpha);
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < n; ++j){
+            F.mulin(*(Cd+i*n+j),beta);
+            F.assign (tmp, F.zero);
+            for ( int l = 0; l < k ; ++l ){
+                if ( ta == FFLAS::FflasNoTrans )
+                    aij = *(A+i*lda+l);
+                else
+                    aij = *(A+l*lda+i);
+                if ( tb == FFLAS::FflasNoTrans )
+                    bij = *(B+l*ldb+j);
+                else
+                    bij = *(B+j*ldb+l);
+                //F.mul (tmp, aij, bij);
+                //F.axpyin( *(Cd+i*n+j), alpha, tmp );
+                F.axpyin (tmp, aij, bij);
+            }
+            F.axpyin (*(Cd+i*n+j), alpha, tmp);
+            //F.mulin( *(Cd+i*n+j),alpha );
+            if ( !F.areEqual( *(Cd+i*n+j), *(C+i*n+j) ) ) {
+                wrong = true;
+            }
         }
-        else{
-                cerr<<"PASS"<<endl;
+    if ( wrong ){
+        cerr<<"FAIL"<<endl;
+        for (int i=0; i<m; ++i){
+            for (int j =0; j<n; ++j)
+                if (!F.areEqual( *(C+i*n+j), *(Cd+i*n+j) ) )
+                    cerr<<"Erreur C["<<i<<","<<j<<"]="
+                    <<(*(C+i*n+j))<<" C[d"<<i<<","<<j<<"]="
+                    <<(*(Cd+i*n+j))<<endl;
         }
-        FFLAS::fflas_delete( Cd);
+    }
+    else{
+        cerr<<"PASS"<<endl;
+    }
+    FFLAS::fflas_delete( Cd);
 #endif
 
-        FFLAS::fflas_delete( C);
-        FFLAS::fflas_delete( A);
-        FFLAS::fflas_delete( B);
+    FFLAS::fflas_delete( C);
+    FFLAS::fflas_delete( A);
+    FFLAS::fflas_delete( B);
 
 
 }
 END_PARALLEL_MAIN()
+    /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+    // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

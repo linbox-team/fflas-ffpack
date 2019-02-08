@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2014 FFLAS-FFPACK
@@ -168,7 +166,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t k, size_t n, 
 	}
 	if (!ok)
 		std::cout << "with seed = "<< seed << std::endl;
-    return ok;
+	return ok;
 }
 
 int main(int ac, char **av) {
@@ -225,3 +223,5 @@ int main(int ac, char **av) {
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

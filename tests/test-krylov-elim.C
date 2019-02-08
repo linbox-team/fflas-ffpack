@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -50,64 +48,66 @@ typedef Givaro::Modular<double> Field;
 template<class T>
 std::ostream& printvect(std::ostream& o, T* vect, size_t dim)
 {
-	for(size_t i=0; i<dim; ++i)
-		o << vect[i] << " " ;
-	return o << std::endl;
+    for(size_t i=0; i<dim; ++i)
+        o << vect[i] << " " ;
+    return o << std::endl;
 }
 
 int main(int argc, char** argv){
 
-	size_t m,n;
+    size_t m,n;
 
 
-	if (argc!=3){
-		cerr<<"usage : test-lqup <p> <A>"<<endl
-		    <<"         to compute the rank profile of the (n+m)xn matrix B formed by the n identity vectors and the mxn matrix A over Z/pZ"
-		    <<endl;
-		exit(-1);
-	}
-	Field F(atoi(argv[1]));
-	Field::Element* A;
-	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    if (argc!=3){
+        cerr<<"usage : test-lqup <p> <A>"<<endl
+        <<"         to compute the rank profile of the (n+m)xn matrix B formed by the n identity vectors and the mxn matrix A over Z/pZ"
+        <<endl;
+        exit(-1);
+    }
+    Field F(atoi(argv[1]));
+    Field::Element* A;
+    FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
-	Field::Element * B = FFLAS::fflas_new<Field::Element>((m+n)*n);
-	for (size_t i=0; i<(n+m)*n;++i) *(B+i)=0;
+    Field::Element * B = FFLAS::fflas_new<Field::Element>((m+n)*n);
+    for (size_t i=0; i<(n+m)*n;++i) *(B+i)=0;
 
-	size_t deg = (n-1)/m+1;
-	size_t curr_row = 0;
-	size_t it_idx = 0;
-	size_t bk_idx = 0;
-	for (size_t i=0; i<m; ++i){
-		for (size_t j=0; j<deg; ++j){
-			if (curr_row < n+m -1){
-				F.assign( *(B + curr_row*n + n-1 - it_idx), F.one);
-				curr_row++;
-				it_idx++;
-			}
-		}
-		for (size_t j=0; j<n; ++j)
-			*(B + curr_row*n + j) = *(A + bk_idx*n + j);
-		bk_idx++;
-		curr_row++;
-	}
-	FFLAS::WriteMatrix (cout<<"A = "<<endl, F, m, n, A, n);
-	FFLAS::WriteMatrix (cout<<"B = "<<endl, F, (m+n), n,B, n);
+    size_t deg = (n-1)/m+1;
+    size_t curr_row = 0;
+    size_t it_idx = 0;
+    size_t bk_idx = 0;
+    for (size_t i=0; i<m; ++i){
+        for (size_t j=0; j<deg; ++j){
+            if (curr_row < n+m -1){
+                F.assign( *(B + curr_row*n + n-1 - it_idx), F.one);
+                curr_row++;
+                it_idx++;
+            }
+        }
+        for (size_t j=0; j<n; ++j)
+            *(B + curr_row*n + j) = *(A + bk_idx*n + j);
+        bk_idx++;
+        curr_row++;
+    }
+    FFLAS::WriteMatrix (cout<<"A = "<<endl, F, m, n, A, n);
+    FFLAS::WriteMatrix (cout<<"B = "<<endl, F, (m+n), n,B, n);
 
-	size_t *rp = FFLAS::fflas_new<size_t>(n);
+    size_t *rp = FFLAS::fflas_new<size_t>(n);
 
-	FFPACK::SpecRankProfile(F, m, n, A, n, deg,rp);
+    FFPACK::SpecRankProfile(F, m, n, A, n, deg,rp);
 
-	size_t * P = FFLAS::fflas_new<size_t>(n);
-	size_t * Q = FFLAS::fflas_new<size_t>(n+m);
-	FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,(int)m+n, n, B, n, P, Q);
+    size_t * P = FFLAS::fflas_new<size_t>(n);
+    size_t * Q = FFLAS::fflas_new<size_t>(n+m);
+    FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,(int)m+n, n, B, n, P, Q);
 
-	printvect (cout<<"RankProfile (A) = "<<endl, rp, n)<<endl;
+    printvect (cout<<"RankProfile (A) = "<<endl, rp, n)<<endl;
 
-	printvect (cout<<"RankProfile (B) = "<<endl, Q, n)<<endl;
+    printvect (cout<<"RankProfile (B) = "<<endl, Q, n)<<endl;
 
-	FFLAS::fflas_delete( rp );
-	FFLAS::fflas_delete( A );
-	FFLAS::fflas_delete( B );
+    FFLAS::fflas_delete( rp );
+    FFLAS::fflas_delete( A );
+    FFLAS::fflas_delete( B );
 
-	return 0;
+    return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

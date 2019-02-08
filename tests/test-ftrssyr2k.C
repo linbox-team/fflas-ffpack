@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2018 FFLAS-FFPACK
@@ -86,14 +84,14 @@ bool check_ftrssyr2k (const Field &F, size_t n, FFLAS::FFLAS_UPLO uplo, FFLAS::F
     time+=t.usertime();
 
     fzero(F, n,n, D,ldd);
-        // cleaning up the lower triangular part of B
+    // cleaning up the lower triangular part of B
     if (uplo == FflasUpper)
         for (size_t i=1; i<n; i++){
             fzero(F, i, B+i*ldb,1);
             fzero(F, i, B2+i*ldb,1);
         }
     else
-		for (size_t i=1; i<n; i++){
+        for (size_t i=1; i<n; i++){
             fzero(F, i, B+i,ldb);
             fzero(F, i, B2+i,ldb);
         }
@@ -119,7 +117,7 @@ bool run_with_field (Givaro::Integer q, size_t b,  size_t n, size_t iters, uint6
     int nbit=(int)iters;
 
     while (ok &&  nbit){
-			// choose Field
+        // choose Field
         Field* F= chooseField<Field>(q,b,seed);
         typename Field::RandIter G(*F,0,seed++);
         if (F==nullptr)
@@ -153,7 +151,7 @@ int main(int argc, char** argv)
         { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
         { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
         END_OF_ARGUMENTS
-	};
+    };
 
     FFLAS::parseArguments(argc,argv,as);
     std::cerr<<"seed = "<<seed<<std::endl;
@@ -176,3 +174,5 @@ int main(int argc, char** argv)
 
     return !ok ;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

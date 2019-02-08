@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
@@ -48,76 +46,78 @@
 using namespace FFLAS;
 
 int main(int argc, char** argv) {
-	size_t iter = 3 ;
-	Givaro::Integer q = 131071;
-	size_t MAXN = 1000;
+    size_t iter = 3 ;
+    Givaro::Integer q = 131071;
+    size_t MAXN = 1000;
     size_t n=0;
     uint64_t seed = getSeed();
-	bool random_dim = false, random_rpm=false;
-	
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
-		{ 'm', "-m M", "Set the dimension of A.", TYPE_INT , &n },
-		{ 'n', "-n N", "Set the dimension of A.", TYPE_INT , &n },
-		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+    bool random_dim = false, random_rpm=false;
+
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
+        { 'm', "-m M", "Set the dimension of A.", TYPE_INT , &n },
+        { 'n', "-n N", "Set the dimension of A.", TYPE_INT , &n },
+        { 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
         { 's', "-s N", "Set the seed.", TYPE_UINT64 , &seed },
-		{ 'r', "-r Y/N", "Set random RPM or not.", TYPE_BOOL, &random_rpm },
-		END_OF_ARGUMENTS
-	};
+        { 'r', "-r Y/N", "Set random RPM or not.", TYPE_BOOL, &random_rpm },
+        END_OF_ARGUMENTS
+    };
 
-	FFLAS::parseArguments(argc,argv,as);
-	if (n == 0) random_dim = true;
+    FFLAS::parseArguments(argc,argv,as);
+    if (n == 0) random_dim = true;
 
-	typedef Givaro::Modular<double> Field;
-	Field F(q);
+    typedef Givaro::Modular<double> Field;
+    Field F(q);
 
-	Field::RandIter Rand(F,0,seed);
-	srandom(seed);
-    
-	size_t pass = 0;	// number of tests that have successfully passed
-	
-	FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
-	for(size_t it=0; it<iter; ++it) {
+    Field::RandIter Rand(F,0,seed);
+    srandom(seed);
+
+    size_t pass = 0;	// number of tests that have successfully passed
+
+    FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
+    for(size_t it=0; it<iter; ++it) {
 #ifdef TIME_CHECKER_Det
-		FFLAS::Timer init;init.start();
+        FFLAS::Timer init;init.start();
 #endif
-		if (random_dim) {
-			n = random() % MAXN + 1;
-		}
-			
-		Field::Element_ptr A = FFLAS::fflas_new(F,n,n);
-		size_t *P = FFLAS::fflas_new<size_t>(n);
-		size_t *Q = FFLAS::fflas_new<size_t>(n);
+        if (random_dim) {
+            n = random() % MAXN + 1;
+        }
 
-		// generate a random matrix A
-		if (random_rpm)
-			FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
-		else
-			FFLAS::frand(F,Rand, n,n,A,n);
-		init.stop();
-		std::cerr << "init: " << init << std::endl;
+        Field::Element_ptr A = FFLAS::fflas_new(F,n,n);
+        size_t *P = FFLAS::fflas_new<size_t>(n);
+        size_t *Q = FFLAS::fflas_new<size_t>(n);
 
-		Field::Element det; F.init(det);
- 		try {
-			FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
-			Givaro::Timer chrono; chrono.start(); 
-			FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
-			chrono.stop();
-			checker.check(det,A,n,Diag,P,Q);
-			F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
+        // generate a random matrix A
+        if (random_rpm)
+            FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
+        else
+            FFLAS::frand(F,Rand, n,n,A,n);
+        init.stop();
+        std::cerr << "init: " << init << std::endl;
+
+        Field::Element det; F.init(det);
+        try {
+            FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
+            Givaro::Timer chrono; chrono.start();
+            FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
+            chrono.stop();
+            checker.check(det,A,n,Diag,P,Q);
+            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
-			std::cerr << "Det COMPT: " << chrono << std::endl;
+            std::cerr << "Det COMPT: " << chrono << std::endl;
 #endif
-			pass++;
-		} catch(FailureDetCheck &e) {
-			F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
-		}
+            pass++;
+        } catch(FailureDetCheck &e) {
+            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
+        }
 
-		FFLAS::fflas_delete(A,P,Q);
-		Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
-	}
+        FFLAS::fflas_delete(A,P,Q);
+        Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
+    }
 
     std::cerr << pass << "/" << iter << " tests SUCCESSFUL.\n";
 
-	return (iter-pass);
+    return (iter-pass);
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2018 FFLAS-FFPACK
@@ -48,8 +46,8 @@ using Givaro::ModularBalanced;
 
 template<typename Field, class RandIter>
 bool check_fsyr2k (const Field &F, size_t n, size_t k,
-				   const typename Field::Element &alpha, const typename Field::Element &beta,
-				   FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, RandIter& Rand){
+                   const typename Field::Element &alpha, const typename Field::Element &beta,
+                   FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, RandIter& Rand){
 
     typedef typename Field::Element Element;
     Element * A, *B, *C, *C2;
@@ -119,8 +117,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
     int nbit=(int)iters;
 
     while (ok &&  nbit){
-			//typedef typename Field::Element Element ;
-			// choose Field
+        //typedef typename Field::Element Element ;
+        // choose Field
         Field* F= FFPACK::chooseField<Field>(q,b,seed);
         typename Field::RandIter G(*F,0,seed++);
         if (F==nullptr)
@@ -136,7 +134,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
         ok = ok && check_fsyr2k(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
         ok = ok && check_fsyr2k(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
 
-			// checking with k > n (=k+n)
+        // checking with k > n (=k+n)
         ok = ok && check_fsyr2k(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
         ok = ok && check_fsyr2k(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
         ok = ok && check_fsyr2k(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
@@ -170,8 +168,8 @@ int main(int argc, char** argv)
         { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
         { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
         { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
-		END_OF_ARGUMENTS
-	};
+        END_OF_ARGUMENTS
+    };
 
     parseArguments(argc,argv,as);
 
@@ -193,3 +191,5 @@ int main(int argc, char** argv)
 
     return !ok ;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
