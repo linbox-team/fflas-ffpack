@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2013,2014  Pascal Giorgi
  *
@@ -33,63 +31,63 @@
 namespace FFLAS { namespace details {
 
 
-	/* ************* */
-	/*  GEBP KERNELS */
-	/* ************* */
+    /* ************* */
+    /*  GEBP KERNELS */
+    /* ************* */
 
-	template<enum number_kind K>
-	inline void igebb44(size_t i, size_t j, size_t depth, size_t pdeth
-			    , const int64_t alpha
-			    , const int64_t *blA, const int64_t* blB
-			    , int64_t* C, size_t ldc
-			    );
+    template<enum number_kind K>
+    inline void igebb44(size_t i, size_t j, size_t depth, size_t pdeth
+                        , const int64_t alpha
+                        , const int64_t *blA, const int64_t* blB
+                        , int64_t* C, size_t ldc
+                       );
 
-	template<enum number_kind K>
-	inline void igebb24(size_t i, size_t j, size_t depth, size_t pdeth
-			    , const int64_t alpha
-			    , const int64_t *blA, const int64_t* blB
-			    , int64_t* C, size_t ldc
-			    );
+    template<enum number_kind K>
+    inline void igebb24(size_t i, size_t j, size_t depth, size_t pdeth
+                        , const int64_t alpha
+                        , const int64_t *blA, const int64_t* blB
+                        , int64_t* C, size_t ldc
+                       );
 
-	template<enum number_kind K>
-	inline void igebb14(size_t i, size_t j, size_t depth, size_t pdeth
-			    , const int64_t alpha
-			    , const int64_t *blA, const int64_t* blB
-			    , int64_t* C, size_t ldc
-			    );
+    template<enum number_kind K>
+    inline void igebb14(size_t i, size_t j, size_t depth, size_t pdeth
+                        , const int64_t alpha
+                        , const int64_t *blA, const int64_t* blB
+                        , int64_t* C, size_t ldc
+                       );
 
-	template<enum number_kind K>
-	inline void igebb41(size_t i, size_t j, size_t depth, size_t pdeth
-			    , const int64_t alpha
-			    , const int64_t *blA, const int64_t* blB
-			    , int64_t* C, size_t ldc
-			    );
+    template<enum number_kind K>
+    inline void igebb41(size_t i, size_t j, size_t depth, size_t pdeth
+                        , const int64_t alpha
+                        , const int64_t *blA, const int64_t* blB
+                        , int64_t* C, size_t ldc
+                       );
 
-	template<enum number_kind K>
-	inline void igebb21(size_t i, size_t j, size_t depth, size_t pdeth
-			    , const int64_t alpha
-			    , const int64_t *blA, const int64_t* blB
-			    , int64_t* C, size_t ldc
-			    );
+    template<enum number_kind K>
+    inline void igebb21(size_t i, size_t j, size_t depth, size_t pdeth
+                        , const int64_t alpha
+                        , const int64_t *blA, const int64_t* blB
+                        , int64_t* C, size_t ldc
+                       );
 
-	template<enum number_kind K>
-	inline void igebb11(size_t i, size_t j, size_t depth, size_t pdeth
-			    , const int64_t alpha
-			    , const int64_t *blA, const int64_t* blB
-			    , int64_t* C, size_t ldc
-			    );
+    template<enum number_kind K>
+    inline void igebb11(size_t i, size_t j, size_t depth, size_t pdeth
+                        , const int64_t alpha
+                        , const int64_t *blA, const int64_t* blB
+                        , int64_t* C, size_t ldc
+                       );
 
 
-	/*************************
-	 *  MAIN GEBP OPERATION  *
-	 ************************/
+    /*************************
+     *  MAIN GEBP OPERATION  *
+     ************************/
 
-	template<enum number_kind K>
-	void igebp( size_t rows, size_t cols, size_t depth
-		    , const int64_t alpha
-		    , const int64_t* blockA, size_t lda,
-		    const int64_t* blockB, size_t ldb,
-		    int64_t* C, size_t ldc);
+    template<enum number_kind K>
+    void igebp( size_t rows, size_t cols, size_t depth
+                , const int64_t alpha
+                , const int64_t* blockA, size_t lda,
+                const int64_t* blockB, size_t ldb,
+                int64_t* C, size_t ldc);
 
 } // details
 } // FFLAS
@@ -97,3 +95,5 @@ namespace FFLAS { namespace details {
 #include "igemm_kernels.inl" // could be .C
 
 #endif // __FFLASFFPACK_fflas_igemm_igemm_kernels_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
