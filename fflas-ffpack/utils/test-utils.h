@@ -45,55 +45,55 @@
 #include <functional>
 
 namespace FFLAS {
-	uint64_t getSeed(){
-		struct timeval tp;
-		gettimeofday(&tp, 0) ;
+    uint64_t getSeed(){
+        struct timeval tp;
+        gettimeofday(&tp, 0) ;
         return static_cast<uint64_t> (tp.tv_usec + tp.tv_sec*1000000);
-	}
+    }
 }
 namespace FFPACK {
 
-	template<typename Field>
-	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::maxCardinality();}
-	template<>
-	Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
+    template<typename Field>
+    Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::maxCardinality();}
+    template<>
+    Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
 
-	/*** Field chooser for test according to characteristic q and bitsize b ***/
-	/* if q=-1 -> field is chosen randomly with a charateristic of b bits
-	   if b=0 -> bitsize is chosen randomly according to maxFieldElt
-	 */
-	template<typename Field>
-	Field* chooseField(Givaro::Integer q, uint64_t b, uint64_t seed){
-		Givaro::Integer maxV= maxFieldElt<Field>();
-		    //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		std::mt19937 mt_rand(seed);
-		Givaro::Integer::seeding(mt_rand());
-		if (maxV>0 && (q> maxV || b> maxV.bitsize()))
-			return nullptr;
-		if (b<=1){
-			auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
-						 mt_rand);
-			b = bitrand();
-		}
-		Givaro::IntPrimeDom IPD;
-		Givaro::Integer p;
-		if (q==-1){
-			// Choose characteristic as a random prime of b bits
-			do{
-				Givaro::Integer _p;
-				Givaro::Integer::random_exact_2exp(_p,b);
-				IPD.prevprime(p, _p+1 );
-			}while( (p < 2) );
-		}
-		else p=q;
+    /*** Field chooser for test according to characteristic q and bitsize b ***/
+    /* if q=-1 -> field is chosen randomly with a charateristic of b bits
+       if b=0 -> bitsize is chosen randomly according to maxFieldElt
+       */
+    template<typename Field>
+    Field* chooseField(Givaro::Integer q, uint64_t b, uint64_t seed){
+        Givaro::Integer maxV= maxFieldElt<Field>();
+        //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        std::mt19937 mt_rand(seed);
+        Givaro::Integer::seeding(mt_rand());
+        if (maxV>0 && (q> maxV || b> maxV.bitsize()))
+            return nullptr;
+        if (b<=1){
+            auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
+                                     mt_rand);
+            b = bitrand();
+        }
+        Givaro::IntPrimeDom IPD;
+        Givaro::Integer p;
+        if (q==-1){
+            // Choose characteristic as a random prime of b bits
+            do{
+                Givaro::Integer _p;
+                Givaro::Integer::random_exact_2exp(_p,b);
+                IPD.prevprime(p, _p+1 );
+            }while( (p < 2) );
+        }
+        else p=q;
 
-		return new Field(p);
-	}
+        return new Field(p);
+    }
 
-	template<> Givaro::ZRing<int32_t>* chooseField<Givaro::ZRing<int32_t> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<int32_t>();}
-	template<> Givaro::ZRing<int64_t>* chooseField<Givaro::ZRing<int64_t> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<int64_t>();}
-	template<> Givaro::ZRing<float>* chooseField<Givaro::ZRing<float> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<float>();}
-	template<> Givaro::ZRing<double>* chooseField<Givaro::ZRing<double> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<double>();}
+    template<> Givaro::ZRing<int32_t>* chooseField<Givaro::ZRing<int32_t> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<int32_t>();}
+    template<> Givaro::ZRing<int64_t>* chooseField<Givaro::ZRing<int64_t> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<int64_t>();}
+    template<> Givaro::ZRing<float>* chooseField<Givaro::ZRing<float> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<float>();}
+    template<> Givaro::ZRing<double>* chooseField<Givaro::ZRing<double> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<double>();}
 
 } // FFPACK
 #endif

@@ -87,13 +87,13 @@
 #include <stdexcept>
 #define FFLASFFPACK_check(check) \
 if (!(check)) {\
-FFPACK::failure()(__func__, __FILE__, __LINE__, #check); \
-throw std::runtime_error(#check); \
+    FFPACK::failure()(__func__, __FILE__, __LINE__, #check); \
+    throw std::runtime_error(#check); \
 }
 #define FFLASFFPACK_abort(msg) \
 {\
-FFPACK::failure()(__func__, __FILE__, __LINE__, msg); \
-throw std::runtime_error(msg); \
+    FFPACK::failure()(__func__, __FILE__, __LINE__, msg); \
+    throw std::runtime_error(msg); \
 }
 #else
 #define FFLASFFPACK_check(check) ((void) 0)
@@ -104,90 +104,90 @@ throw std::runtime_error(msg); \
 
 namespace FFPACK {
 
-	/*!  A precondtion failed.
-	 * @ingroup util
-	 * The \c throw mechanism is usually used here as in
-	 \code
-	 if (!check)
-	 failure()(__func__,__LINE__,"this check just failed");
-	 \endcode
-	 * The parameters of the constructor help debugging.
-	 */
-	class Failure {
-	protected:
-		std::ostream *_errorStream;
+    /*!  A precondtion failed.
+     * @ingroup util
+     * The \c throw mechanism is usually used here as in
+     \code
+     if (!check)
+     failure()(__func__,__LINE__,"this check just failed");
+     \endcode
+     * The parameters of the constructor help debugging.
+     */
+    class Failure {
+    protected:
+        std::ostream *_errorStream;
 
-	public:
-	    
-	    Failure() {}
-	
-		/*! @internal
-		 * A precondtion failed.
-		 * @param function usually \c __func__, the function that threw the error
-		 * @param line     usually \c __LINE__, the line where it happened
-		 * @param check    a string telling what failed.
-		 */
-		void operator() (const char *function, int line, const char *check)
-		{
-			if (_errorStream == (std::ostream *) 0)
-				_errorStream = &std::cerr;
+    public:
 
-			(*_errorStream) << std::endl << std::endl;
-			(*_errorStream) << "ERROR (" << function << ":" << line << "): ";
-			(*_errorStream) << "Precondition not met:" << check << std::endl;
-		}
+        Failure() {}
 
-		/*! @internal
-		 * A precondtion failed.
-		 * The parameter help debugging. This is not much different from the previous
-		 * except we can digg faster in the file where the exception was triggered.
-		 * @param function usually \c __func__, the function that threw the error
-		 * @param file     usually \c __FILE__, the file where this function is
-		 * @param line     usually \c __LINE__, the line where it happened
-		 * @param check    a string telling what failed.
-		 */
-		void operator() (const char* function, const char *file, int line, const char *check)
-		{
-			if (_errorStream == (std::ostream *) 0)
-				_errorStream = &std::cerr;
+        /*! @internal
+         * A precondtion failed.
+         * @param function usually \c __func__, the function that threw the error
+         * @param line     usually \c __LINE__, the line where it happened
+         * @param check    a string telling what failed.
+         */
+        void operator() (const char *function, int line, const char *check)
+        {
+            if (_errorStream == (std::ostream *) 0)
+                _errorStream = &std::cerr;
 
-			(*_errorStream) << std::endl << std::endl;
-			(*_errorStream) << "ERROR (at " << function << " in " << file << ':' <<  line << "): " << std::endl;
-			(*_errorStream) << "Precondition not met:" << check << std::endl;
-		}
+            (*_errorStream) << std::endl << std::endl;
+            (*_errorStream) << "ERROR (" << function << ":" << line << "): ";
+            (*_errorStream) << "Precondition not met:" << check << std::endl;
+        }
 
-		void setErrorStream (std::ostream &stream);
+        /*! @internal
+         * A precondtion failed.
+         * The parameter help debugging. This is not much different from the previous
+         * except we can digg faster in the file where the exception was triggered.
+         * @param function usually \c __func__, the function that threw the error
+         * @param file     usually \c __FILE__, the file where this function is
+         * @param line     usually \c __LINE__, the line where it happened
+         * @param check    a string telling what failed.
+         */
+        void operator() (const char* function, const char *file, int line, const char *check)
+        {
+            if (_errorStream == (std::ostream *) 0)
+                _errorStream = &std::cerr;
 
-		/*! @internal overload the virtual print of LinboxError.
-		 * @param o output stream
-		 */
-		std::ostream &print (std::ostream &o) const
-		{
-			if (std::ostringstream * str = dynamic_cast<std::ostringstream*>(_errorStream))
-				return o << str->str() ;
-			else
-				throw "FFLAS-FFPACK ERROR: Failure exception is not initialized correctly";
-		}
-	};
+            (*_errorStream) << std::endl << std::endl;
+            (*_errorStream) << "ERROR (at " << function << " in " << file << ':' <<  line << "): " << std::endl;
+            (*_errorStream) << "Precondition not met:" << check << std::endl;
+        }
 
-    
+        void setErrorStream (std::ostream &stream);
+
+        /*! @internal overload the virtual print of LinboxError.
+         * @param o output stream
+         */
+        std::ostream &print (std::ostream &o) const
+        {
+            if (std::ostringstream * str = dynamic_cast<std::ostringstream*>(_errorStream))
+                return o << str->str() ;
+            else
+                throw "FFLAS-FFPACK ERROR: Failure exception is not initialized correctly";
+        }
+    };
+
+
     inline Failure& failure() {
         static Failure failure_internal;
         return failure_internal;
     }
 
-	template<class T>
-	inline bool isOdd (const T & a) {
-		return (a%2);
-	}
+    template<class T>
+    inline bool isOdd (const T & a) {
+        return (a%2);
+    }
 
-	inline bool isOdd(const float &a) {
-		return (bool)(int)fmodf(a,2.f);
-	}
+    inline bool isOdd(const float &a) {
+        return (bool)(int)fmodf(a,2.f);
+    }
 
-	inline bool isOdd(const double &a) {
-		return (bool)(int)fmod(a,2.);
-	}
+    inline bool isOdd(const double &a) {
+        return (bool)(int)fmod(a,2.);
+    }
 
 } // FFPACK
 

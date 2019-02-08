@@ -30,11 +30,11 @@
 
 namespace FFPACK {
 
-	template<class T, class CT = const T>
-	T fflas_const_cast (CT x)
-	{
-		return const_cast<T>(x);
-	}
+    template<class T, class CT = const T>
+    T fflas_const_cast (CT x)
+    {
+        return const_cast<T>(x);
+    }
 
 }
 

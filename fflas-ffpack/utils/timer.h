@@ -58,12 +58,12 @@
 #endif
 
 namespace FFLAS {
-	typedef Givaro::Timer Timer  ;
-	typedef Givaro::BaseTimer BaseTimer ;
-	typedef Givaro::UserTimer UserTimer ;
-	typedef Givaro::SysTimer SysTimer ;
+    typedef Givaro::Timer Timer  ;
+    typedef Givaro::BaseTimer BaseTimer ;
+    typedef Givaro::UserTimer UserTimer ;
+    typedef Givaro::SysTimer SysTimer ;
 #ifdef __GIVARO_USE_OPENMP
-	typedef Givaro::OMPTimer OMPTimer ;
+    typedef Givaro::OMPTimer OMPTimer ;
 #endif
 }
 
