@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas_L3_inst.h
  * Copyright (C) 2015 FFLAS-FFPACK group
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
@@ -63,3 +61,5 @@
 #undef FFLAS_FIELD
 
 #endif // __FFLAS_L3_INST_C
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

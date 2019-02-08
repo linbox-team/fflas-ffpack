@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* ffpack_inst.C
  * Copyright (C) 2015 FFLAS-FFPACK group
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
@@ -43,7 +41,7 @@
 #ifdef INST_OR_DECL
 #undef INST_OR_DECL
 #endif
-#define INST_OR_DECL 
+#define INST_OR_DECL
 
 #define FFLAS_FIELD Givaro::ModularBalanced
 #define FFLAS_ELT double
@@ -70,3 +68,5 @@
 #undef FFLAS_FIELD
 
 #endif // __FFPACK_INST_C
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
