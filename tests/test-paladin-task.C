@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (C) the FFLAS-FFPACK group
  * Written by Ziad Sultan <ziad.sultan@imag.fr>

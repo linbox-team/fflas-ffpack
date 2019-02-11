@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) FFLAS-FFPACK 2017
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
  * Written by Jean-Guillaume Dumas <Jean-Guillaume.Dumas@imag.fr>

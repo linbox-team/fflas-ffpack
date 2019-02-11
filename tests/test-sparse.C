@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2014 FFLAS-FFPACK
  * Written by :     Bastien Vialla <bastien.vialla@lirmm.fr>
  * This file is Free Software and part of FFLAS-FFPACK.

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Hongguang ZHU <zhuhongguang2014@gmail.com>

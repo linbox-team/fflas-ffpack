@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
  * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>

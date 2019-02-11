@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
  * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>

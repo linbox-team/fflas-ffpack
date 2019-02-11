@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) FFLAS-FFPACK
  * This file is Free Software and part of FFLAS-FFPACK.
