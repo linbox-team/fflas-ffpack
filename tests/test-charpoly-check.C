@@ -45,12 +45,12 @@
 template <class Field, class Polynomial>
 void printPolynomial (const Field &F, Polynomial &v)
 {
-	for (int i = v.size() - 1; i >= 0; i--) {
-		F.write (std::cout, v[i]);
-		if (i > 0)
-			std::cout << " x^" << i << " + ";
-	}
-	std::cout << std::endl;
+    for (int i = v.size() - 1; i >= 0; i--) {
+        F.write (std::cout, v[i]);
+        if (i > 0)
+            std::cout << " x^" << i << " + ";
+    }
+    std::cout << std::endl;
 }
 using namespace FFLAS;
 int main(int argc, char** argv) {
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     size_t n = 0, N = 0;
     int variant = 6;
     int seed = getSeed();
-	
+
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
         { 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
@@ -73,52 +73,54 @@ int main(int argc, char** argv) {
     FFLAS::parseArguments(argc,argv,as);
     FFPACK::FFPACK_CHARPOLY_TAG CPalg;
     switch (variant){
-        case 0: CPalg = FFPACK::FfpackLUK; break;
-        case 1: CPalg = FFPACK::FfpackKG; break;
-        case 2: CPalg = FFPACK::FfpackDanilevski; break;
-        case 3: CPalg = FFPACK::FfpackKGFast; break;
-        case 4: CPalg = FFPACK::FfpackKGFastG; break;
-        case 5: CPalg = FFPACK::FfpackHybrid; break;
-        case 6: CPalg = FFPACK::FfpackArithProg; break;
-        default: CPalg = FFPACK::FfpackLUK; break;
+    case 0: CPalg = FFPACK::FfpackLUK; break;
+    case 1: CPalg = FFPACK::FfpackKG; break;
+    case 2: CPalg = FFPACK::FfpackDanilevski; break;
+    case 3: CPalg = FFPACK::FfpackKGFast; break;
+    case 4: CPalg = FFPACK::FfpackKGFastG; break;
+    case 5: CPalg = FFPACK::FfpackHybrid; break;
+    case 6: CPalg = FFPACK::FfpackArithProg; break;
+    default: CPalg = FFPACK::FfpackLUK; break;
     }
-    
-	Field F(q);
-	srand (seed);
-	Field::RandIter Rand(F,0,seed);
-        typedef Givaro::Poly1Dom<Field> PolRing;
-        typedef PolRing::Element Polynomial;
-        PolRing R(F);
-	size_t pass = 0;
-	for (size_t i=0; i<iter; ++i) {
-        
-		N = n?n: rand() % MAXN + 1;
-// 		std::cout << "n= " << n << "\n";
+
+    Field F(q);
+    srand (seed);
+    Field::RandIter Rand(F,0,seed);
+    typedef Givaro::Poly1Dom<Field> PolRing;
+    typedef PolRing::Element Polynomial;
+    PolRing R(F);
+    size_t pass = 0;
+    for (size_t i=0; i<iter; ++i) {
+
+        N = n?n: rand() % MAXN + 1;
+        // 		std::cout << "n= " << n << "\n";
         Field::Element_ptr A = FFLAS::fflas_new(F,N,N);
 
         Polynomial g(n);
 
-		PAR_BLOCK { FFLAS::pfrand(F,Rand,N,N,A,N/MAX_THREADS); }
-		try {
-//             FFLAS::WriteMatrix (std::cerr<<"A=",F,N,N,A,N,FflasMaple) <<std::endl;
-//             FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
+        PAR_BLOCK { FFLAS::pfrand(F,Rand,N,N,A,N/MAX_THREADS); }
+        try {
+            //             FFLAS::WriteMatrix (std::cerr<<"A=",F,N,N,A,N,FflasMaple) <<std::endl;
+            //             FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
             Givaro::Timer charpolytime; charpolytime.start();
             FFPACK::CharPoly (R,g,N,A,N,CPalg);
             charpolytime.stop();
             std::cerr << "CHARPol checked full: " << charpolytime << std::endl;
-//             printPolynomial(F,g);
-//             checker.check(g);
-			std::cout << N << 'x' << N << " charpoly verification successful\n";
-			pass++;
-		} catch(FailureCharpolyCheck &e) {
-			std::cout << N << 'x' << N << " charpoly verification failed!\n";
-		}
-		FFLAS::fflas_delete( A);
-		
-	}
+            //             printPolynomial(F,g);
+            //             checker.check(g);
+            std::cout << N << 'x' << N << " charpoly verification successful\n";
+            pass++;
+        } catch(FailureCharpolyCheck &e) {
+            std::cout << N << 'x' << N << " charpoly verification failed!\n";
+        }
+        FFLAS::fflas_delete( A);
 
-	std::cout << pass << "/" << iter << " tests were successful: ";	
-        FFLAS::writeCommandString(std::cout, as) << std::endl;
+    }
 
-	return 0;
+    std::cout << pass << "/" << iter << " tests were successful: ";
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
+
+    return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
@@ -50,33 +47,35 @@ typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 
-	int n,m;
-	cerr<<setprecision(10);
-	if (argc !=  3)	{
-		cerr<<"Usage : test-fullranksubmatrix <p> <A> <<i>"
-		    <<endl;
-		exit(-1);
-	}
-	Field F (atoi(argv[1]));
-	Field::Element * A;
-	Field::Element * X;
+    int n,m;
+    cerr<<setprecision(10);
+    if (argc !=  3)	{
+        cerr<<"Usage : test-fullranksubmatrix <p> <A> <<i>"
+        <<endl;
+        exit(-1);
+    }
+    Field F (atoi(argv[1]));
+    Field::Element * A;
+    Field::Element * X;
 
-	FFLAS::ReadMatrix (argv[2],F,m,n,A);
-	FFMAS::WriteMatrix (cerr<<"A = "<<endl, F, m, n, A, n);
+    FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    FFMAS::WriteMatrix (cerr<<"A = "<<endl, F, m, n, A, n);
 
- FFLAS::Timer tim,t; t.clear();tim.clear();
-	size_t R;
+    FFLAS::Timer tim,t; t.clear();tim.clear();
+    size_t R;
 
-	FFPACK::ColRankProfileSubmatrix (F, m, n, A, n, X, R);
+    FFPACK::ColRankProfileSubmatrix (F, m, n, A, n, X, R);
 
-	FFLAS::WriteMatrix (cerr<<"X = "<<endl, F, R, R, X, R);
+    FFLAS::WriteMatrix (cerr<<"X = "<<endl, F, R, R, X, R);
 
-	size_t r2 = FFPACK::Rank(F, R,R, X, R);
-	if (r2 != R)
-		std::cerr<<"Fail : Rank (X) != Rank (A)"<<std::endl;
+    size_t r2 = FFPACK::Rank(F, R,R, X, R);
+    if (r2 != R)
+        std::cerr<<"Fail : Rank (X) != Rank (A)"<<std::endl;
 
 
 
-	FFLAS::fflas_delete(X);
-	FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(X);
+    FFLAS::fflas_delete(A);
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

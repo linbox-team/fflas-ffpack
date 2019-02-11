@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -35,50 +33,52 @@
 
 namespace FFLAS { /*  ELL_R */
 
-template <class _Field> struct Sparse<_Field, SparseMatrix_t::ELL_R> {
-    bool delayed = false;
-    uint64_t kmax = 0;
-    index_t m = 0;
-    index_t n = 0;
-    index_t ld = 0;
-    uint64_t nnz = 0;
-    uint64_t maxrow = 0;
-    uint64_t mRow = 0;
-    index_t *col = nullptr;
-    index_t *row = nullptr;
-    typename _Field::Element_ptr dat;
-};
+    template <class _Field> struct Sparse<_Field, SparseMatrix_t::ELL_R> {
+        bool delayed = false;
+        uint64_t kmax = 0;
+        index_t m = 0;
+        index_t n = 0;
+        index_t ld = 0;
+        uint64_t nnz = 0;
+        uint64_t maxrow = 0;
+        uint64_t mRow = 0;
+        index_t *col = nullptr;
+        index_t *row = nullptr;
+        typename _Field::Element_ptr dat;
+    };
 
-template <class _Field>
-struct Sparse<_Field, SparseMatrix_t::ELL_R_ZO>
+    template <class _Field>
+    struct Sparse<_Field, SparseMatrix_t::ELL_R_ZO>
     : public Sparse<_Field, SparseMatrix_t::ELL_R> {
-    typename _Field::Element cst = 1;
-};
+        typename _Field::Element cst = 1;
+    };
 
-template <class Field>
-void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
-           typename Field::ConstElement_ptr x,
-           const typename Field::Element &beta, typename Field::Element_ptr y);
+    template <class Field>
+    void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
+               typename Field::ConstElement_ptr x,
+               const typename Field::Element &beta, typename Field::Element_ptr y);
 
-template <class Field>
-void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
-           typename Field::ConstElement_ptr x,
-           const typename Field::Element &beta, typename Field::Element_ptr y);
+    template <class Field>
+    void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
+               typename Field::ConstElement_ptr x,
+               const typename Field::Element &beta, typename Field::Element_ptr y);
 
-template <class Field>
-void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
-           const size_t blockSize, const typename Field::Element_ptr &x,
-           const int ldx, const typename Field::Element &beta,
-           typename Field::Element_ptr &y, const int ldy);
+    template <class Field>
+    void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
+               const size_t blockSize, const typename Field::Element_ptr &x,
+               const int ldx, const typename Field::Element &beta,
+               typename Field::Element_ptr &y, const int ldy);
 
-template <class Field>
-void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
-           const size_t blockSize, const typename Field::Element_ptr &x,
-           const int ldx, const typename Field::Element &beta,
-           typename Field::Element_ptr &y, const int ldy);
+    template <class Field>
+    void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
+               const size_t blockSize, const typename Field::Element_ptr &x,
+               const int ldx, const typename Field::Element &beta,
+               typename Field::Element_ptr &y, const int ldy);
 } // FFLAS
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell_r_spmv.inl"
 // #include "fflas-ffpack/fflas/fflas_sparse/ell_r_spmm.inl"
 
 #endif // __FFLASFFPACK_fflas_sparse_ELL_R_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

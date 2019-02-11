@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* utils/args-parser.C
  * Copyright (C) 2001, 2002 Bradford Hovinen
  *
@@ -46,7 +44,7 @@
 #include <stdlib.h>
 
 enum ArgumentType {
-	TYPE_NONE, TYPE_INT, TYPE_UINT64, TYPE_LONGLONG, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
+    TYPE_NONE, TYPE_INT, TYPE_UINT64, TYPE_LONGLONG, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
 };
 #define TYPE_BOOL TYPE_NONE
 
@@ -61,11 +59,11 @@ enum ArgumentType {
 
 struct Argument
 {
-	char             c;
-	const char      *example    ;
-	const char      *helpString ;
-	ArgumentType     type       ;
-	void            *data       ;
+    char             c;
+    const char      *example    ;
+    const char      *helpString ;
+    ArgumentType     type       ;
+    void            *data       ;
 };
 // example may be passed as null and will be generated intelligently
 // eg "-b {YN+-}" for bools, "-v v" for all else
@@ -76,95 +74,95 @@ namespace FFLAS {
 
 void printHelpMessage (const char *program, Argument *args, bool printDefaults = false)
 {
-	int i, l;
+    int i, l;
 
-	// Skip past libtool prefix in program name
-	if (!strncmp (program, "lt-", strlen ("lt-")))
-		program += strlen ("lt-");
+    // Skip past libtool prefix in program name
+    if (!strncmp (program, "lt-", strlen ("lt-")))
+        program += strlen ("lt-");
 
-	std::cout << "Usage: " << program << " [options] [<report file>]" << std::endl;
-	std::cout << std::endl;
-	std::cout << "Where [options] are the following:" << std::endl;
+    std::cout << "Usage: " << program << " [options] [<report file>]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Where [options] are the following:" << std::endl;
 
     bool messageboolean(false),messageprimality(false);
 
-	for (i = 0; args[i].c != '\0'; ++i) {
-		if (args[i].example != 0) {
-			std::cout << "  " << args[i].example;
-			l = 10 - (int)strlen (args[i].example);
-			do std::cout << ' '; while (--l > 0);
-		}
-		else if (args[i].type == TYPE_NONE) {
-			std::cout << "  -" << args[i].c << " {YN+-} ";
+    for (i = 0; args[i].c != '\0'; ++i) {
+        if (args[i].example != 0) {
+            std::cout << "  " << args[i].example;
+            l = 10 - (int)strlen (args[i].example);
+            do std::cout << ' '; while (--l > 0);
+        }
+        else if (args[i].type == TYPE_NONE) {
+            std::cout << "  -" << args[i].c << " {YN+-} ";
             messageboolean = true;
         }
-		else
-			std::cout << "  -" << args[i].c << ' ' << args[i].c << "      ";
+        else
+            std::cout << "  -" << args[i].c << ' ' << args[i].c << "      ";
 
-		std::cout << args[i].helpString;
+        std::cout << args[i].helpString;
         if (strncmp(args[i].helpString,"Operate over the \"field\"",24) == 0)
             messageprimality = true;
-		if (printDefaults) {
-			l = 54 - (int)strlen (args[i].helpString);
-			do std::cout << ' '; while (--l > 0);
-			std::cout << " (default ";
-			switch (args[i].type) {
-			case TYPE_NONE:
-				std::cout << ((*(bool *)args[i].data)?"ON":"OFF");
-				break;
-			case TYPE_INT:
-				std::cout << *(int *) args[i].data;
-				break;
-			case TYPE_UINT64:
-				std::cout << *(uint64_t *) args[i].data;
-				break;
-			case TYPE_LONGLONG:
-				std::cout << *(long long *) args[i].data;
-				break;
-			case TYPE_INTEGER:
-				std::cout << *(type_integer *) args[i].data;
-				break;
-			case TYPE_DOUBLE:
-				std::cout << *(double *) args[i].data;
-				break;
-			case TYPE_INTLIST:
-				std::cout << *(std::list<int> *) args[i].data ;
-				break;
-			case TYPE_STR:
-				std::cout << "\"" << *(std::string *) args[i].data << "\"" ;
-				break;
-			}
-			std::cout << ")";
-		}
-		std::cout << std::endl;
-	}
+        if (printDefaults) {
+            l = 54 - (int)strlen (args[i].helpString);
+            do std::cout << ' '; while (--l > 0);
+            std::cout << " (default ";
+            switch (args[i].type) {
+            case TYPE_NONE:
+                std::cout << ((*(bool *)args[i].data)?"ON":"OFF");
+                break;
+            case TYPE_INT:
+                std::cout << *(int *) args[i].data;
+                break;
+            case TYPE_UINT64:
+                std::cout << *(uint64_t *) args[i].data;
+                break;
+            case TYPE_LONGLONG:
+                std::cout << *(long long *) args[i].data;
+                break;
+            case TYPE_INTEGER:
+                std::cout << *(type_integer *) args[i].data;
+                break;
+            case TYPE_DOUBLE:
+                std::cout << *(double *) args[i].data;
+                break;
+            case TYPE_INTLIST:
+                std::cout << *(std::list<int> *) args[i].data ;
+                break;
+            case TYPE_STR:
+                std::cout << "\"" << *(std::string *) args[i].data << "\"" ;
+                break;
+            }
+            std::cout << ")";
+        }
+        std::cout << std::endl;
+    }
 
-	std::cout << "  -h or -?  Display this message" << std::endl;
-	if (messageboolean)
+    std::cout << "  -h or -?  Display this message" << std::endl;
+    if (messageboolean)
         std::cout << "For boolean switches, the argument may be omitted, meaning the switch should be ON" << std::endl;
-	std::cout << std::endl;
-	std::cout << "If <report file> is '-' the report is written to std output.  If <report file> is" << std::endl;
-	std::cout << "not given, then no detailed reporting is done. This is suitable if you wish only" << std::endl;
-	std::cout << "to determine whether the tests succeeded." << std::endl;
-	std::cout << std::endl;
-	if (messageprimality)
+    std::cout << std::endl;
+    std::cout << "If <report file> is '-' the report is written to std output.  If <report file> is" << std::endl;
+    std::cout << "not given, then no detailed reporting is done. This is suitable if you wish only" << std::endl;
+    std::cout << "to determine whether the tests succeeded." << std::endl;
+    std::cout << std::endl;
+    if (messageprimality)
         std::cout << "[1] N.B. This program does not verify the primality of Q, and does not use a" << std::endl
-                  << "    field extension in the event that Q=p^n, n > 1" << std::endl;
-	std::cout << std::endl;
+        << "    field extension in the event that Q=p^n, n > 1" << std::endl;
+    std::cout << std::endl;
 }
 
 /* Find an argument in the argument list for a character */
 
 Argument *findArgument (Argument *args, char c)
 {
-	int i;
+    int i;
 
-	for (i = 0; args[i].c != '\0' && args[i].c != c; ++i) ;
+    for (i = 0; args[i].c != '\0' && args[i].c != c; ++i) ;
 
-	if (args[i].c != '\0')
-		return &(args[i]);
-	else
-		return (Argument *) 0;
+    if (args[i].c != '\0')
+        return &(args[i]);
+    else
+        return (Argument *) 0;
 }
 
 /* Parse command line arguments */
@@ -178,49 +176,49 @@ Argument *findArgument (Argument *args, char c)
  */
 int getListArgs(std::list<int> & outlist, std::string & instring)
 {
-	int start = 0 ;
-	int count = 0 ;
-	size_t i = 0 ;
-	for( ; i < instring.size() ; ++i) {
-		if (isdigit(instring[i])) {
-			++count;
-			continue ;
-		}
-		if (ispunct(instring[i])) {
-			if (!count) {
-				std::cout  << std::endl << "ill formed list " << instring << std::endl;
-				for (size_t sp = 0 ; sp < 16+i ; ++sp)
-					std::cout << '-' ;
-				std::cout << '^' << std::endl;
-				return(1);
-			}
-			int j = atoi(instring.substr((size_t)start,(size_t)count).c_str());
-			outlist.push_front(j);
-			count =  0 ;
-			start = int(i+1) ;
-		}
-		else {
-			std::cout << std::endl << "ill formed list " << instring << std::endl;
-			for (size_t sp = 0 ; sp < 16+i ; ++sp)
-				std::cout << '-' ;
-			std::cout << '^' << std::endl;
-			return(1);
-		}
+    int start = 0 ;
+    int count = 0 ;
+    size_t i = 0 ;
+    for( ; i < instring.size() ; ++i) {
+        if (isdigit(instring[i])) {
+            ++count;
+            continue ;
+        }
+        if (ispunct(instring[i])) {
+            if (!count) {
+                std::cout  << std::endl << "ill formed list " << instring << std::endl;
+                for (size_t sp = 0 ; sp < 16+i ; ++sp)
+                    std::cout << '-' ;
+                std::cout << '^' << std::endl;
+                return(1);
+            }
+            int j = atoi(instring.substr((size_t)start,(size_t)count).c_str());
+            outlist.push_front(j);
+            count =  0 ;
+            start = int(i+1) ;
+        }
+        else {
+            std::cout << std::endl << "ill formed list " << instring << std::endl;
+            for (size_t sp = 0 ; sp < 16+i ; ++sp)
+                std::cout << '-' ;
+            std::cout << '^' << std::endl;
+            return(1);
+        }
 
-	}
-	std::cout << std::endl;
-	if (!count) {
-		std::cout  << std::endl << "ill formed list " << instring << std::endl;
-		for (size_t sp = 0 ; sp < 15+i ; ++sp)
-			std::cout << '-' ;
-		std::cout << '^' << std::endl;
-		return(1);
-	}
+    }
+    std::cout << std::endl;
+    if (!count) {
+        std::cout  << std::endl << "ill formed list " << instring << std::endl;
+        for (size_t sp = 0 ; sp < 15+i ; ++sp)
+            std::cout << '-' ;
+        std::cout << '^' << std::endl;
+        return(1);
+    }
 
-	int j = atoi(instring.substr((size_t)start,(size_t)count).c_str());
-	outlist.push_front(j);
+    int j = atoi(instring.substr((size_t)start,(size_t)count).c_str());
+    outlist.push_front(j);
 
-	return 0 ;
+    return 0 ;
 }
 
 
@@ -231,7 +229,7 @@ namespace FFLAS {
         Argument *current;
 
         for (i = 1; i < argc; ++i) {
-                // std::cout << "i=" << i << std::endl;
+            // std::cout << "i=" << i << std::endl;
             if (argv[i][0] == '-') {
                 if (argv[i][1] == 0) {
                     std::cout << "Writing report data to cout (intermingled with brief report)" << std::endl << std::endl;
@@ -243,64 +241,64 @@ namespace FFLAS {
                 }
                 else if ((current = findArgument (args, argv[i][1])) != (Argument *) 0) {
                     switch (current->type) {
-                        case TYPE_NONE:
+                    case TYPE_NONE:
                         {
                             if (argc == i+1 || (argv[i+1][0] == '-' && argv[i+1][1] != '\0')) {
-                                    // if at last argument, or next argument is a switch, set to true
+                                // if at last argument, or next argument is a switch, set to true
                                 *((bool *) current->data) = true;
                                 break;
                             }
                             *(bool *) current->data =
-                                (argv[i+1][0] == '+'
-                                 || argv[i+1][0] == 'Y'
-                                 || argv[i+1][0] == 'y'
-                                 || argv[i+1][0] == 'T'
-                                 || argv[i+1][0] == 't') ;
+                            (argv[i+1][0] == '+'
+                             || argv[i+1][0] == 'Y'
+                             || argv[i+1][0] == 'y'
+                             || argv[i+1][0] == 'T'
+                             || argv[i+1][0] == 't') ;
                             ++i;
                         }
                         break;
 
-                        case TYPE_INT:
+                    case TYPE_INT:
                         {
                             *(int *) current->data = atoi (argv[i+1]);
                             ++i;
                         }
                         break;
 
-                        case TYPE_UINT64:
+                    case TYPE_UINT64:
                         {
                             *(uint64_t *) current->data = atol (argv[i+1]);
                             ++i;
                         }
                         break;
 
-                        case TYPE_LONGLONG:
+                    case TYPE_LONGLONG:
                         {
                             *(long long *) current->data = atol (argv[i+1]);
                             ++i;
                         }
                         break;
 
-                        case TYPE_INTEGER:
-			{
+                    case TYPE_INTEGER:
+                        {
 #ifdef _GIVARO_CONFIG_H
-				type_integer tmp(argv[i+1]);
+                            type_integer tmp(argv[i+1]);
 #else
-				type_integer tmp = atol(argv[i+1]);
+                            type_integer tmp = atol(argv[i+1]);
 #endif
-				*(type_integer *) current->data = tmp;
-			}
+                            *(type_integer *) current->data = tmp;
+                        }
                         ++i;
                         break;
 
-                        case TYPE_DOUBLE:
+                    case TYPE_DOUBLE:
                         {
                             *(double *) current->data = atof (argv[i+1]);
                             ++i;
                         }
                         break;
 
-                        case TYPE_INTLIST:
+                    case TYPE_INTLIST:
                         {
                             std::string lst = argv[i+1] ;
                             std::list<int> LST ;
@@ -310,7 +308,7 @@ namespace FFLAS {
                         }
                         break;
 
-                        case TYPE_STR:
+                    case TYPE_STR:
                         {
                             *(std::string *) current->data = argv[i+1] ;
                             ++i;
@@ -329,47 +327,49 @@ namespace FFLAS {
         }
     }
 
-	/** writes the values of all arguments, preceded by the programName */
-	std::ostream& writeCommandString (std::ostream& os, Argument *args, const char* programName = nullptr)
-	{
-		if (programName != nullptr)
-			os << programName;
-		
-		for (int i = 0; args[i].c != '\0'; ++i) {
-			os << " -" << args[i].c;
-			switch (args[i].type) {
-			case TYPE_NONE:
-				if ((*(bool *)args[i].data)) os << " Y";
-				else os << " N";
-				break;
-			case TYPE_INT:
-				os << ' ' << *(int *) args[i].data;
-				break;
-			case TYPE_UINT64:
-				os << ' ' << *(uint64_t *) args[i].data;
-				break;
-			case TYPE_LONGLONG:
-				os << ' ' << *(long long *) args[i].data;
-				break;
-			case TYPE_INTEGER:
-				os << ' ' << *(Givaro::Integer *) args[i].data;
-				break;
-			case TYPE_DOUBLE:
-				os << ' ' << *(double *) args[i].data;
-				break;
-			case TYPE_INTLIST:
-				os << ' ' << *(std::list<int> *) args[i].data;
-				break;
-			case TYPE_STR:
-				os << " \"" << *(std::string *) args[i].data << "\"";
-				break;
-			}
-		}
-		
-		return os;
-	}
+    /** writes the values of all arguments, preceded by the programName */
+    std::ostream& writeCommandString (std::ostream& os, Argument *args, const char* programName = nullptr)
+    {
+        if (programName != nullptr)
+            os << programName;
+
+        for (int i = 0; args[i].c != '\0'; ++i) {
+            os << " -" << args[i].c;
+            switch (args[i].type) {
+            case TYPE_NONE:
+                if ((*(bool *)args[i].data)) os << " Y";
+                else os << " N";
+                break;
+            case TYPE_INT:
+                os << ' ' << *(int *) args[i].data;
+                break;
+            case TYPE_UINT64:
+                os << ' ' << *(uint64_t *) args[i].data;
+                break;
+            case TYPE_LONGLONG:
+                os << ' ' << *(long long *) args[i].data;
+                break;
+            case TYPE_INTEGER:
+                os << ' ' << *(Givaro::Integer *) args[i].data;
+                break;
+            case TYPE_DOUBLE:
+                os << ' ' << *(double *) args[i].data;
+                break;
+            case TYPE_INTLIST:
+                os << ' ' << *(std::list<int> *) args[i].data;
+                break;
+            case TYPE_STR:
+                os << " \"" << *(std::string *) args[i].data << "\"";
+                break;
+            }
+        }
+
+        return os;
+    }
 }
 
 #undef type_integer
 
 #endif // __FFLASFFPACK_args_parser_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

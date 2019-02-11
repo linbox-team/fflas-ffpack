@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2017 FFLAS-FFACK group
  *
@@ -30,8 +28,8 @@
 #include "fflas-ffpack/utils/fflas_io.h"
 
 namespace FFPACK {
-	template<class Field>
-	inline void ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO UpLo,
+    template<class Field>
+    inline void ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO UpLo,
                         const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
                         typename Field::ConstElement_ptr A, const size_t lda,
                         typename Field::Element_ptr B, const size_t ldb, const size_t threshold) {
@@ -59,26 +57,26 @@ namespace FFPACK {
             else { A2 = A + N1*lda; B2 = B + N1*ldb;}
             typename Field::ConstElement_ptr A3 = A + N1*(lda+1);
             typename Field::Element_ptr B3 = B + N1*(ldb+1);
-            
-                /* Solving [ A1 A2 ] [ X1 X2 ] = [ B1 B2 ]
-                 *         [    A3 ] [    X3 ] = [    B3 ]
-                 */
 
-                // B1 <- A1^-1 . B1
+            /* Solving [ A1 A2 ] [ X1 X2 ] = [ B1 B2 ]
+             *         [    A3 ] [    X3 ] = [    B3 ]
+             */
+
+            // B1 <- A1^-1 . B1
             ftrstr (F, side, UpLo, diagA, diagB, N1, A, lda, B, ldb, threshold);
-                // B3 <- A3^-1 . B3
+            // B3 <- A3^-1 . B3
             ftrstr (F, side, UpLo, diagA, diagB, N2, A3, lda, B3, ldb, threshold);
 
             if ((UpLo == FFLAS::FflasUpper && side==FFLAS::FflasLeft) ||
                 (UpLo == FFLAS::FflasLower && side==FFLAS::FflasRight)){
-                    // B2 <- B2 - A2 . B3 
+                // B2 <- B2 - A2 . B3
                 ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagX, A2rowdim, A2coldim, F.mOne, B3, ldb, A2, lda, F.one, B2, ldb);
-                    // B2 <- A1^-1 . B2
+                // B2 <- A1^-1 . B2
                 ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
             } else {
-                    // B2 <- B2 - A2 . B1
+                // B2 <- B2 - A2 . B1
                 ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagX, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
-                    // B2 <- A3^-1 . B2
+                // B2 <- A3^-1 . B2
                 ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, A2rowdim, A2coldim, F.one, A3, lda, B2, ldb);
             }
         }
@@ -87,3 +85,5 @@ namespace FFPACK {
 } // FFPACK
 
 #endif // __FFLASFFPACK_ffpack_ftrstr_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

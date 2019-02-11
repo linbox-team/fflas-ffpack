@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Clément Pernet <clement.pernet@imag.fr>
  * ========LICENCE========
@@ -97,7 +94,7 @@ int main(int argc, char** argv) {
     // -----------
     // Standard output for benchmark
     std::cout << "Time: " << time / double(iter)
-              << " Gfops: " << (double(m*m)/1000000.*(2*double(m)/3000.+2*double(n)/1000.0)) / time * double(iter);
+    << " Gfops: " << (double(m*m)/1000000.*(2*double(m)/3000.+2*double(n)/1000.0)) / time * double(iter);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 
     if (v){
@@ -118,3 +115,5 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

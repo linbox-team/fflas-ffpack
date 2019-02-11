@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -47,18 +45,18 @@
 //#include <immintrin.h>
 // Alignment Type
 enum class Alignment : size_t {
-  NONE = 0,
-  Normal = sizeof(void*),
-  SSE = 16,
-  AVX = 32,
-  XEON_PHI = 64,
-  CACHE_LINE = 64,
-  CACHE_PAGESIZE = 4096,
-  DEFAULT =
+    NONE = 0,
+    Normal = sizeof(void*),
+    SSE = 16,
+    AVX = 32,
+    XEON_PHI = 64,
+    CACHE_LINE = 64,
+    CACHE_PAGESIZE = 4096,
+    DEFAULT =
 #ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
-  32
+    32
 #else
-  16
+    16
 #endif
 };
 
@@ -69,39 +67,39 @@ enum class Alignment : size_t {
 template<class T>
 T* malloc_align(size_t size, Alignment alignment = Alignment::DEFAULT) noexcept
 {
-  void* p = nullptr;
-  int err = 0;
-  err = posix_memalign(&p, (size_t) alignment, size*sizeof(T));
-  if(err)
-    std::cout << "posix_memalign error" << std::endl;
-  //return new(p) T[size];
-  return static_cast<T*>(p);
+    void* p = nullptr;
+    int err = 0;
+    err = posix_memalign(&p, (size_t) alignment, size*sizeof(T));
+    if(err)
+        std::cout << "posix_memalign error" << std::endl;
+    //return new(p) T[size];
+    return static_cast<T*>(p);
 }
 
 namespace detail
 {
-inline void* allocate(size_t align, size_t size)
-{
-    assert(align >= sizeof(void*));
+    inline void* allocate(size_t align, size_t size)
+    {
+        assert(align >= sizeof(void*));
 
-    if (size == 0) {
-        return nullptr;
+        if (size == 0) {
+            return nullptr;
+        }
+
+        void* ptr = nullptr;
+        int rc = posix_memalign(&ptr, align, size);
+
+        if (rc != 0) {
+            return nullptr;
+        }
+
+        return ptr;
     }
 
-    void* ptr = nullptr;
-    int rc = posix_memalign(&ptr, align, size);
-
-    if (rc != 0) {
-        return nullptr;
+    inline void deallocate(void* ptr) noexcept
+    {
+        return free(ptr);
     }
-
-    return ptr;
-}
-
-inline void deallocate(void* ptr) noexcept
-{
-    return free(ptr);
-}
 }
 
 
@@ -115,56 +113,56 @@ template <class T, Alignment Align = Alignment::SSE> class AlignedAllocator;
 
 template <class T, Alignment Align> class AlignedAllocator {
 public:
-  using value_type = T;
-  using pointer = T*;
-  using const_pointer = const T*;
-  using reference = T&;
-  using const_reference = const T&;
-  using size_type = std::size_t;
-  using difference_type = ptrdiff_t;
+    using value_type = T;
+    using pointer = T*;
+    using const_pointer = const T*;
+    using reference = T&;
+    using const_reference = const T&;
+    using size_type = std::size_t;
+    using difference_type = ptrdiff_t;
 
-  using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_move_assignment = std::true_type;
 
-  template <class U> struct rebind {
-    using other = AlignedAllocator<U, Align>;
-  };
+    template <class U> struct rebind {
+        using other = AlignedAllocator<U, Align>;
+    };
 
 public:
-  AlignedAllocator() noexcept {}
+    AlignedAllocator() noexcept {}
 
-  template <class U>
-  AlignedAllocator(const AlignedAllocator<U, Align>&) noexcept {}
+    template <class U>
+    AlignedAllocator(const AlignedAllocator<U, Align>&) noexcept {}
 
-  size_type max_size() const noexcept {
-    return (size_type(~0) - size_type(Align)) / sizeof(T);
-  }
-
-  pointer address(reference x) const noexcept { return std::addressof(x); }
-
-  const_pointer address(const_reference x) const noexcept {
-    return std::addressof(x);
-  }
-
-  pointer allocate(size_type n,
-                   typename AlignedAllocator<void, Align>::const_pointer = 0) {
-    const size_type alignment = static_cast<size_type>(Align);
-    void* ptr = detail::allocate(alignment, n * sizeof(T));
-    if (ptr == nullptr) {
-      throw std::bad_alloc();
+    size_type max_size() const noexcept {
+        return (size_type(~0) - size_type(Align)) / sizeof(T);
     }
 
-    return reinterpret_cast<pointer>(ptr);
-  }
+    pointer address(reference x) const noexcept { return std::addressof(x); }
 
-  void deallocate(pointer p, size_type) noexcept {
-    return detail::deallocate(p);
-  }
+    const_pointer address(const_reference x) const noexcept {
+        return std::addressof(x);
+    }
 
-  template <class U, class... Args> void construct(U* p, Args&&... args) {
-    ::new (reinterpret_cast<void*>(p)) U(std::forward<Args>(args)...);
-  }
+    pointer allocate(size_type n,
+                     typename AlignedAllocator<void, Align>::const_pointer = 0) {
+        const size_type alignment = static_cast<size_type>(Align);
+        void* ptr = detail::allocate(alignment, n * sizeof(T));
+        if (ptr == nullptr) {
+            throw std::bad_alloc();
+        }
 
-  void destroy(pointer p) { p->~T(); }
+        return reinterpret_cast<pointer>(ptr);
+    }
+
+    void deallocate(pointer p, size_type) noexcept {
+        return detail::deallocate(p);
+    }
+
+    template <class U, class... Args> void construct(U* p, Args&&... args) {
+        ::new (reinterpret_cast<void*>(p)) U(std::forward<Args>(args)...);
+    }
+
+    void destroy(pointer p) { p->~T(); }
 };
 
 /*
@@ -172,13 +170,13 @@ public:
  */
 template <Alignment Align> class AlignedAllocator<void, Align> {
 public:
-  using pointer = void*;
-  using const_pointer = const void*;
-  using value_type = void;
+    using pointer = void*;
+    using const_pointer = const void*;
+    using value_type = void;
 
-  template <class U> struct rebind {
-    using other = AlignedAllocator<U, Align>;
-  };
+    template <class U> struct rebind {
+        using other = AlignedAllocator<U, Align>;
+    };
 };
 
 /*
@@ -186,66 +184,66 @@ public:
  */
 template <class T, Alignment Align> class AlignedAllocator<const T, Align> {
 public:
-  using value_type = T;
-  using pointer = const T*;
-  using const_pointer = const T*;
-  using reference = const T&;
-  using const_reference = const T&;
-  using size_type = std::size_t;
-  using difference_type = ptrdiff_t;
+    using value_type = T;
+    using pointer = const T*;
+    using const_pointer = const T*;
+    using reference = const T&;
+    using const_reference = const T&;
+    using size_type = std::size_t;
+    using difference_type = ptrdiff_t;
 
-  using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_move_assignment = std::true_type;
 
-  template <class U> struct rebind {
-    using  other = AlignedAllocator<U, Align>;
-  };
+    template <class U> struct rebind {
+        using  other = AlignedAllocator<U, Align>;
+    };
 
 public:
-  AlignedAllocator() noexcept {}
+    AlignedAllocator() noexcept {}
 
-  template <class U>
-  AlignedAllocator(const AlignedAllocator<U, Align>&) noexcept {}
+    template <class U>
+    AlignedAllocator(const AlignedAllocator<U, Align>&) noexcept {}
 
-  size_type max_size() const noexcept {
-    return (size_type(~0) - size_type(Align)) / sizeof(T);
-  }
-
-  const_pointer address(const_reference x) const noexcept {
-    return std::addressof(x);
-  }
-
-  pointer allocate(size_type n,
-                   typename AlignedAllocator<void, Align>::const_pointer = 0) {
-    const size_type alignment = static_cast<size_type>(Align);
-    void* ptr = detail::allocate(alignment, n * sizeof(T));
-    if (ptr == nullptr) {
-      throw std::bad_alloc();
+    size_type max_size() const noexcept {
+        return (size_type(~0) - size_type(Align)) / sizeof(T);
     }
 
-    return reinterpret_cast<pointer>(ptr);
-  }
+    const_pointer address(const_reference x) const noexcept {
+        return std::addressof(x);
+    }
 
-  void deallocate(pointer p, size_type) noexcept {
-    return detail::deallocate(p);
-  }
+    pointer allocate(size_type n,
+                     typename AlignedAllocator<void, Align>::const_pointer = 0) {
+        const size_type alignment = static_cast<size_type>(Align);
+        void* ptr = detail::allocate(alignment, n * sizeof(T));
+        if (ptr == nullptr) {
+            throw std::bad_alloc();
+        }
 
-  template <class U, class... Args> void construct(U* p, Args&&... args) {
-    ::new (reinterpret_cast<void*>(p)) U(std::forward<Args>(args)...);
-  }
+        return reinterpret_cast<pointer>(ptr);
+    }
 
-  void destroy(pointer p) { p->~T(); }
+    void deallocate(pointer p, size_type) noexcept {
+        return detail::deallocate(p);
+    }
+
+    template <class U, class... Args> void construct(U* p, Args&&... args) {
+        ::new (reinterpret_cast<void*>(p)) U(std::forward<Args>(args)...);
+    }
+
+    void destroy(pointer p) { p->~T(); }
 };
 
 template <class T, Alignment TAlign, class U, Alignment UAlign>
 inline bool operator==(const AlignedAllocator<T, TAlign>&,
                        const AlignedAllocator<U, UAlign>&) noexcept {
-  return TAlign == UAlign;
+    return TAlign == UAlign;
 }
 
 template <class T, Alignment TAlign, class U, Alignment UAlign>
 inline bool operator!=(const AlignedAllocator<T, TAlign>&,
                        const AlignedAllocator<U, UAlign>&) noexcept {
-  return TAlign != UAlign;
+    return TAlign != UAlign;
 }
 
 #else // C++11
@@ -253,3 +251,5 @@ inline bool operator!=(const AlignedAllocator<T, TAlign>&,
 #endif // C++11
 
 #endif /* _FFLASFFPACK_align_allocator_h */
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
