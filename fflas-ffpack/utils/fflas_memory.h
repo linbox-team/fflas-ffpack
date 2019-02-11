@@ -1,4 +1,3 @@
-
 /* fflas/fflas_memory.h
  * Copyright (C) 2014 fflas-ffpack group
  *

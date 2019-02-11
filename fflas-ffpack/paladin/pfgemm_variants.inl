@@ -1,4 +1,3 @@
-
 /* fflas/fflas_pfgemm.inl
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *<ziad.sultan@imag.fr>

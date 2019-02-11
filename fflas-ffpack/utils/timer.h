@@ -1,4 +1,3 @@
-
 /* test/timer.h
  * Copyright (C) 1994-1997 Givaro Team
  *

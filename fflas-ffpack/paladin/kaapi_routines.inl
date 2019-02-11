@@ -1,4 +1,3 @@
-
 /* fflas/fflas_pftrsm.inl
  * Copyright (C) 2013 Ziad Sultan
  *

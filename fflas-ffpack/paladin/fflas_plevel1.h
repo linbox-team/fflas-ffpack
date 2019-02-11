@@ -1,4 +1,3 @@
-
 /* fflas/fflas_plevel1.inl
  * Copyright (C) 2015-2017 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *<Jean-Guillaume.Dumas@univ-grenoble-alpes.fr>
