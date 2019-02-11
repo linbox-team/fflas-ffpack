@@ -1,4 +1,3 @@
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Clément Pernet <clement.pernet@imag.fr>
  * ========LICENCE========

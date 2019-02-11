@@ -1,5 +1,3 @@
-//#include "goto-def.h"
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Clément Pernet <clement.pernet@imag.fr>
  * ========LICENCE========
@@ -20,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
+
+//#include "goto-def.h"
 
 // Please do not commit with any of these defines on - AB 2015-01-12
 //#define __FFLASFFPACK_USE_TBB

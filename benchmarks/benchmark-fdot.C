@@ -1,4 +1,3 @@
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes.fr>
  * ========LICENCE========

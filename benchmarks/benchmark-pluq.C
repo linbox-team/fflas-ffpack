@@ -1,5 +1,3 @@
-//#include "goto-def.h"
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Ziad Sultan <ziad.sultan@imag.fr>
  * ========LICENCE========
@@ -20,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
+
+//#include "goto-def.h"
 
 //#define __FFLASFFPACK_USE_OPENMP
 //#define __FFLASFFPACK_USE_TBB
