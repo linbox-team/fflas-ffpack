@@ -1,4 +1,3 @@
-
 /* ffpack_echelon.h
  * Copyright (C) 2009, 2010 Clement Pernet
  *

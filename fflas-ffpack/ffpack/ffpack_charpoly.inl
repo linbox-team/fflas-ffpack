@@ -1,4 +1,3 @@
-
 /* ffpack/ffpack_charpoly.inl
  * Copyright (C) 2005 Clement Pernet
  *

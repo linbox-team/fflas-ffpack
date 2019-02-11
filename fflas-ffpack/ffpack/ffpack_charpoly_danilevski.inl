@@ -1,4 +1,3 @@
-
 /* ffpack/ffpack_charpoly_danilevski.inl
  * Copyright (C) 2005 Clement Pernet
  *

@@ -1,4 +1,3 @@
-//
 #ifndef __FFLASFFPACK_ffpack_charpoly_kglu_INL
 #define __FFLASFFPACK_ffpack_charpoly_kglu_INL
 

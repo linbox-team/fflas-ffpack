@@ -1,4 +1,3 @@
-
 /* fflas/fflas_freduce.inl
  * Copyright (C) 2014 Pascal Giorgi
  *

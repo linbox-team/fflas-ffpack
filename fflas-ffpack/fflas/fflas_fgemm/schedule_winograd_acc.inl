@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2014 the LinBox group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>

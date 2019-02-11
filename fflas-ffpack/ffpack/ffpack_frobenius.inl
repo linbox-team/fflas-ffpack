@@ -1,4 +1,3 @@
-
 /* fflas-ffpack/ffpack/ffpack_frobenius.inl
  * Copyright (C) 2007 Clement Pernet
  *

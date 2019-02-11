@@ -1,4 +1,3 @@
-
 /* fflas/fflas_fgemm.inl
  * Copyright (C) 2005 Clement Pernet
  * Copyright (C) 2014 the FFLAS-FFPACK group

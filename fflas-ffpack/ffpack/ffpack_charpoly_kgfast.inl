@@ -1,4 +1,3 @@
-
 /* ffpack/ffpack_charpoly_kgfast.inl
  * Copyright (C) 2004 Clement Pernet
  *

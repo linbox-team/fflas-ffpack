@@ -1,4 +1,3 @@
-
 /* fflas/fflas_fassign.inl
  * Copyright (C) 2014 FFLAS FFPACK group
  *

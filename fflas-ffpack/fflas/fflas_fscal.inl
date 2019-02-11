@@ -1,4 +1,3 @@
-
 /* fflas/fflas_faxpy.inl
  * Copyright (C) 2014 FFLAS-FFPACK group
  *
