@@ -41,7 +41,6 @@ namespace FFPACK {
 		if (k>_ldm){
 			FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_double [init] -> rns basis is too small to handle integers with 2^(16*k) values ");
 			std::cerr<<"with k="<<k<<" _ldm="<<_ldm<<std::endl;
-            throw;
 		}
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
