@@ -304,7 +304,7 @@ namespace FFLAS {
 		t.stop();
 
 		std::cerr<<"=========================================="<<std::endl
-				 <<"Pointwise fgemm : "<<t.realtime()<<" ("<<s<<") moduli "<<std::endl
+				 <<"Pointwise fgemm : "<<t.realtime()<<" ("<<rns_size<<") moduli "<<std::endl
 				 <<"=========================================="<<std::endl;
 #endif
 		return Cd;
