@@ -30,13 +30,15 @@
 
 namespace FFPACK {
 
-	template<class T, class CT = const T>
-	T fflas_const_cast (CT x)
-	{
-		return const_cast<T>(x);
-	}
+    template<class T, class CT = const T>
+    T fflas_const_cast (CT x)
+    {
+        return const_cast<T>(x);
+    }
 
 }
 
 #endif
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

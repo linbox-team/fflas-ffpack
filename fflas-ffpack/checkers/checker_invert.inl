@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/Checker_invert.inl
  * Copyright (C) 2016 Ashley Lesdalons
  *
@@ -31,7 +29,7 @@
 
 namespace FFPACK {
 
-    template <class Field> 
+    template <class Field>
     class CheckerImplem_invert {
 
         const Field& F;
@@ -39,25 +37,25 @@ namespace FFPACK {
         const size_t m,lda;
 
     public:
-        CheckerImplem_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-                : F(F_), v(FFLAS::fflas_new(F_,m_)), w(FFLAS::fflas_new(F_,m_)), m(m_), lda(lda_)
-            {
-                typename Field::RandIter G(F);
-                init(G,m,A,lda);
-            }
+        CheckerImplem_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_)
+        : F(F_), v(FFLAS::fflas_new(F_,m_)), w(FFLAS::fflas_new(F_,m_)), m(m_), lda(lda_)
+        {
+            typename Field::RandIter G(F);
+            init(G,m,A,lda);
+        }
 
-        CheckerImplem_invert(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-                : F(G.ring()), v(FFLAS::fflas_new(F,m_)), w(FFLAS::fflas_new(F,m_)), m(m_), lda(lda_)
-            {
-                init(G,m,A,lda);
-            }
+        CheckerImplem_invert(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_)
+        : F(G.ring()), v(FFLAS::fflas_new(F,m_)), w(FFLAS::fflas_new(F,m_)), m(m_), lda(lda_)
+        {
+            init(G,m,A,lda);
+        }
 
         ~CheckerImplem_invert() {
             FFLAS::fflas_delete(v,w);
         }
 
         inline bool check(typename Field::ConstElement_ptr A, int nullity) {
-                // v <- A.w - v
+            // v <- A.w - v
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, w, 1, F.mOne, v, 1);
 
             bool pass = FFLAS::fiszero(F,m,1,v,1) || (nullity != 0);
@@ -69,15 +67,17 @@ namespace FFPACK {
         void init(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) {
             FFLAS::frand(F,G,m,v,1);
 
-// FFLAS::WriteMatrix (std::cerr<<"init A : ",F,m,m,A,lda,FflasMaple)<<std::endl;
-// FFLAS::WriteMatrix (std::cerr<<"init v : ",F,m,1,v,1,FflasMaple)<<std::endl;
-    	
-                // w <- A.v
+            // FFLAS::WriteMatrix (std::cerr<<"init A : ",F,m,m,A,lda,FflasMaple)<<std::endl;
+            // FFLAS::WriteMatrix (std::cerr<<"init v : ",F,m,1,v,1,FflasMaple)<<std::endl;
+
+            // w <- A.v
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.zero, w, 1);
-// FFLAS::WriteMatrix (std::cerr<<"init w : ",F,m,1,w,1,FflasMaple)<<std::endl;
+            // FFLAS::WriteMatrix (std::cerr<<"init w : ",F,m,1,w,1,FflasMaple)<<std::endl;
         }
-  
+
     };
 }
 
 #endif // __FFLASFFPACK_checker_invert_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

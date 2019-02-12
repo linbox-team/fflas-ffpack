@@ -1,7 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
-
 /* Copyright (c) FFLAS-FFPACK
  * Written by Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes.fr>
  * ========LICENCE========
@@ -38,71 +34,73 @@ using namespace FFLAS;
 using namespace FFPACK;
 int main(int argc, char** argv) {
 
-	size_t iter      = 3;
-	int    q         = 131071;
-	size_t rows      = 5000;
-	size_t cols      = 5000;
-	double a         = 1.0;
-	// size_t threshold = 64;
-	std::string file = "";
-  
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
-		{ 'm', "-m M", "Set the row dimension of the matrix C.",                TYPE_INT , &rows },
-		{ 'n', "-n N", "Set the column dimension of the matrix C.",             TYPE_INT , &cols },
-		{ 'a', "-a A", "Set the value of the coefficient alpha for alpha * B.", TYPE_DOUBLE , &a},
-		{ 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
-		END_OF_ARGUMENTS
-	};
-  
-	FFLAS::parseArguments(argc,argv,as);
-  
-	//	typedef Givaro::Modular<double> Field;
-	//	typedef Givaro::Modular<float> Field;
-	//	typedef Givaro::ZRing<int64_t> Field;
-	//	typedef Givaro::ZRing<float> Field;
-	//		typedef Givaro::ZRing<double> Field;
-	typedef Givaro::Modular<int64_t> Field;
-	
-	typedef Field::Element Element;
-	
-	Field F(q);
-	Field::Element_ptr A, B;
-	Field::Element_ptr C;
-	Element alpha;
-	F.init(alpha, a);
-  
-  
-	FFLAS::Timer chrono;
-	double *time=new double[iter];
+    size_t iter      = 3;
+    int    q         = 131071;
+    size_t rows      = 5000;
+    size_t cols      = 5000;
+    double a         = 1.0;
+    // size_t threshold = 64;
+    std::string file = "";
 
-	A = fflas_new(F, rows, cols);
-	size_t lda = cols;
-	B = fflas_new(F, rows, cols);
-	size_t ldb = cols;
-	C = fflas_new(F, rows, cols);
-	size_t ldc = cols;
-	Field::RandIter G(F);
-	RandomMatrix (F, rows, cols, A, lda, G);
-	RandomMatrix (F, rows, cols, B, ldb, G);
-  
-	for (size_t i=0;i<=iter;++i){
-		chrono.clear();
-		if (i) chrono.start();
-		fadd(F, rows, cols, A, lda, alpha, B, ldb, C, ldc);
-		if (i) {chrono.stop(); time[i-1] = chrono.usertime();}
-	}
-	FFLAS::fflas_delete(A);
-	FFLAS::fflas_delete(B);
-	FFLAS::fflas_delete(C);
-	std::sort(time, time+iter);
-	double mediantime = time[iter/2];
-	delete[] time;
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+        { 'm', "-m M", "Set the row dimension of the matrix C.",                TYPE_INT , &rows },
+        { 'n', "-n N", "Set the column dimension of the matrix C.",             TYPE_INT , &cols },
+        { 'a', "-a A", "Set the value of the coefficient alpha for alpha * B.", TYPE_DOUBLE , &a},
+        { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
+        END_OF_ARGUMENTS
+    };
 
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cout << "Time: " << mediantime
-			  << " Gfops: " << ((double(rows)/1000)*(double(cols)/1000))/(1000*mediantime); //(n^2/1000^3)/time * iter
-	FFLAS::writeCommandString(std::cout, as) << std::endl;
-	return 0;
+    FFLAS::parseArguments(argc,argv,as);
+
+    //	typedef Givaro::Modular<double> Field;
+    //	typedef Givaro::Modular<float> Field;
+    //	typedef Givaro::ZRing<int64_t> Field;
+    //	typedef Givaro::ZRing<float> Field;
+    //		typedef Givaro::ZRing<double> Field;
+    typedef Givaro::Modular<int64_t> Field;
+
+    typedef Field::Element Element;
+
+    Field F(q);
+    Field::Element_ptr A, B;
+    Field::Element_ptr C;
+    Element alpha;
+    F.init(alpha, a);
+
+
+    FFLAS::Timer chrono;
+    double *time=new double[iter];
+
+    A = fflas_new(F, rows, cols);
+    size_t lda = cols;
+    B = fflas_new(F, rows, cols);
+    size_t ldb = cols;
+    C = fflas_new(F, rows, cols);
+    size_t ldc = cols;
+    Field::RandIter G(F);
+    RandomMatrix (F, rows, cols, A, lda, G);
+    RandomMatrix (F, rows, cols, B, ldb, G);
+
+    for (size_t i=0;i<=iter;++i){
+        chrono.clear();
+        if (i) chrono.start();
+        fadd(F, rows, cols, A, lda, alpha, B, ldb, C, ldc);
+        if (i) {chrono.stop(); time[i-1] = chrono.usertime();}
+    }
+    FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
+    FFLAS::fflas_delete(C);
+    std::sort(time, time+iter);
+    double mediantime = time[iter/2];
+    delete[] time;
+
+    // -----------
+    // Standard output for benchmark - Alexis Breust 2014/11/14
+    std::cout << "Time: " << mediantime
+    << " Gfops: " << ((double(rows)/1000)*(double(cols)/1000))/(1000*mediantime); //(n^2/1000^3)/time * iter
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
+    return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

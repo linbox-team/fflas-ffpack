@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/Checker_ftrsm.inl
  * Copyright (C) 2016 Ashley Lesdalons
  *
@@ -30,38 +28,38 @@
 #define __FFLASFFPACK_checker_ftrsm_INL
 
 namespace FFLAS {
-    
-    template <class Field> 
+
+    template <class Field>
     class CheckerImplem_ftrsm {
 
-        const Field& F;	
+        const Field& F;
         typename Field::Element_ptr v,w;
 
     public:
-        CheckerImplem_ftrsm(const Field& F_, 
-                      const size_t m, const size_t n,
-                      const typename Field::Element alpha,
-                      const typename Field::ConstElement_ptr B, 
-                      const size_t ldb) 
-                : F(F_), 
-                  v(FFLAS::fflas_new(F_,n)), 
-                  w(FFLAS::fflas_new(F_,m))
-            {
-                typename Field::RandIter G(F);
-                init(G,m,n,B,ldb,alpha);
-            }
+        CheckerImplem_ftrsm(const Field& F_,
+                            const size_t m, const size_t n,
+                            const typename Field::Element alpha,
+                            const typename Field::ConstElement_ptr B,
+                            const size_t ldb)
+        : F(F_),
+        v(FFLAS::fflas_new(F_,n)),
+        w(FFLAS::fflas_new(F_,m))
+        {
+            typename Field::RandIter G(F);
+            init(G,m,n,B,ldb,alpha);
+        }
 
-        CheckerImplem_ftrsm(typename Field::RandIter &G, 
-                      const size_t m, const size_t n,
-                      const typename Field::Element alpha,
-                      const typename Field::ConstElement_ptr B, 
-                      const size_t ldb)
-                : F(G.ring()), 
-                  v(FFLAS::fflas_new(F,n)), 
-                  w(FFLAS::fflas_new(F,m))
-            {
-                init(G,m,n,B,ldb,alpha);
-            }
+        CheckerImplem_ftrsm(typename Field::RandIter &G,
+                            const size_t m, const size_t n,
+                            const typename Field::Element alpha,
+                            const typename Field::ConstElement_ptr B,
+                            const size_t ldb)
+        : F(G.ring()),
+        v(FFLAS::fflas_new(F,n)),
+        w(FFLAS::fflas_new(F,m))
+        {
+            init(G,m,n,B,ldb,alpha);
+        }
 
         ~CheckerImplem_ftrsm() {
             FFLAS::fflas_delete(v,w);
@@ -82,38 +80,40 @@ namespace FFLAS {
             size_t k = (side==FFLAS::FflasLeft?m:n);
 
             typename Field::Element_ptr v1 = FFLAS::fflas_new(F,k);
-        
+
             if (side==FFLAS::FflasLeft) {
-                    // (Left) v1 <- X.v 
-                    // (Left) v1 <- A.v1
-                    // (Left) w <- w - v1
+                // (Left) v1 <- X.v
+                // (Left) v1 <- A.v1
+                // (Left) w <- w - v1
                 FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldx, v, 1, F.zero, v1, 1);
                 FFLAS::ftrmm(F, FFLAS::FflasLeft, uplo, trans, diag, k, 1, F.one, A, lda, v1, 1);
                 FFLAS::fsubin(F, m, v1, 1, w, 1);
             } else {
-                    // (Right) v <- A.v
-                    // (Right) w <- X.v - w
+                // (Right) v <- A.v
+                // (Right) w <- X.v - w
                 FFLAS::ftrmm(F, FFLAS::FflasLeft, uplo, trans, diag, k, 1, F.one, A, lda, v, 1);
-                FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldx, v, 1, F.mOne, w, 1); 
+                FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldx, v, 1, F.mOne, w, 1);
             }
-        
+
 
             FFLAS::fflas_delete(v1);
-        
+
             bool pass = FFLAS::fiszero(F,m,1,w,1);
             if (!pass) throw FailureTrsmCheck();
             return pass;
         }
 
-    private:	
+    private:
         inline void init(typename Field::RandIter &G, const size_t m, const size_t n, const typename Field::ConstElement_ptr B, size_t ldb, const typename Field::Element alpha) {
-            FFLAS::frand(F,G,n,v,1); 
+            FFLAS::frand(F,G,n,v,1);
 
-                // w <- alpha.B.v
+            // w <- alpha.B.v
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, alpha, B, ldb, v, 1, F.zero, w, 1);
         }
     };
-    
+
 }
 
 #endif // __FFLASFFPACK_checker_ftrsm_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

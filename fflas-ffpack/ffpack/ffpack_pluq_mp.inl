@@ -1,5 +1,4 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -40,14 +39,14 @@
 #include "givaro/modular-integer.h"
 namespace FFPACK {
 
-	template <>
-	inline size_t
-	PLUQ (const Givaro::Modular<Givaro::Integer>& F,
-	      const FFLAS::FFLAS_DIAG Diag,
-	      const size_t M, const size_t N,
-	      typename Givaro::Integer* A, const size_t lda,
-	      size_t*P, size_t *Q, size_t BCThreshold)
-	{
+    template <>
+    inline size_t
+    PLUQ (const Givaro::Modular<Givaro::Integer>& F,
+          const FFLAS::FFLAS_DIAG Diag,
+          const size_t M, const size_t N,
+          typename Givaro::Integer* A, const size_t lda,
+          size_t*P, size_t *Q, size_t BCThreshold)
+    {
 
 		const size_t K = std::max(M,N);
         if (K) {
@@ -130,3 +129,6 @@ namespace FFPACK {
 } // namespace FFPACK
 
 #endif
+
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

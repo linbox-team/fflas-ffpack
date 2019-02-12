@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_bounds.inl
  * Copyright (C) 2008 Clement Pernet
  *
@@ -41,212 +39,214 @@
 
 namespace FFLAS { namespace Protected {
 
-	template <class Field>
-	inline double computeFactorClassic (const Field& F)
-	{
-		//FFLAS_INT_TYPE p=0;
-		Givaro::Integer p=0;
-		F.characteristic(p);
-		return (double) (p-1);
-	}
+    template <class Field>
+    inline double computeFactorClassic (const Field& F)
+    {
+        //FFLAS_INT_TYPE p=0;
+        Givaro::Integer p=0;
+        F.characteristic(p);
+        return (double) (p-1);
+    }
 
-	/*************************************************************************************
-	 * Specializations for ModularPositive and ModularBalanced over double and float
-	 *************************************************************************************/
-	template <>
-	inline double computeFactorClassic (const Givaro::ModularBalanced<double>& F)
-	{
-		//FFLAS_INT_TYPE p;
-		Givaro::Integer p;
-		F.characteristic(p);
-		return double((p-1) >> 1);
-	}
+    /*************************************************************************************
+     * Specializations for ModularPositive and ModularBalanced over double and float
+     *************************************************************************************/
+    template <>
+    inline double computeFactorClassic (const Givaro::ModularBalanced<double>& F)
+    {
+        //FFLAS_INT_TYPE p;
+        Givaro::Integer p;
+        F.characteristic(p);
+        return double((p-1) >> 1);
+    }
 
-	//BB: ajout, pourquoi pas ?
-	template <>
-	inline double computeFactorClassic (const Givaro::ModularBalanced<float>& F)
-	{
-		//FFLAS_INT_TYPE p;
-		Givaro::Integer p;
-		F.characteristic(p);
-		return double((p-1) >> 1);
-	}
+    //BB: ajout, pourquoi pas ?
+    template <>
+    inline double computeFactorClassic (const Givaro::ModularBalanced<float>& F)
+    {
+        //FFLAS_INT_TYPE p;
+        Givaro::Integer p;
+        F.characteristic(p);
+        return double((p-1) >> 1);
+    }
 
-	template <class Field>
-	inline size_t DotProdBoundClassic (const Field& F,
-					   const typename Field::Element& beta
-					  )
-	{
+    template <class Field>
+    inline size_t DotProdBoundClassic (const Field& F,
+                                       const typename Field::Element& beta
+                                      )
+    {
 
-		//FFLAS_INT_TYPE p=0;
-		Givaro::Integer p=0;
-		F.characteristic(p);
+        //FFLAS_INT_TYPE p=0;
+        Givaro::Integer p=0;
+        F.characteristic(p);
 
-		    //unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
+        //unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
 
-		if (p == 0)
-			return std::numeric_limits<size_t>::max();
+        if (p == 0)
+            return std::numeric_limits<size_t>::max();
 
-		double kmax;
-		{
+        double kmax;
+        {
 
-			double c = computeFactorClassic(F);
-			
-			double cplt=0;
-			if (!F.isZero (beta)){
-				if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
-				else{
-					double be;
-					F.convert(be, beta);
-					cplt = fabs(be)*c;
-				}
-			}
-			kmax = floor ( (double (double(limits<typename Field::Element>::max()) + 1 - cplt)) / (c*c));
-			if (kmax  <= 1) return 1;
-		}
-			
-		//kmax--; // we computed a strict upper bound
-		return  (size_t) std::min ((uint64_t)kmax, 1_ui64 << 31);
-	}
-		
+            double c = computeFactorClassic(F);
+
+            double cplt=0;
+            if (!F.isZero (beta)){
+                if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
+                else{
+                    double be;
+                    F.convert(be, beta);
+                    cplt = fabs(be)*c;
+                }
+            }
+            kmax = floor ( (double (double(limits<typename Field::Element>::max()) + 1 - cplt)) / (c*c));
+            if (kmax  <= 1) return 1;
+        }
+
+        //kmax--; // we computed a strict upper bound
+        return  (size_t) std::min ((uint64_t)kmax, 1_ui64 << 31);
+    }
+
 } // FFLAS
 } // Protected
 
 namespace FFLAS {
 
-	inline Givaro::Integer
-	InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
-		Givaro::Integer max = 0;
-		size_t log=0;
-		for (size_t i=0; i<M; ++i)
-			for (size_t j=0; j<N; ++j){
-				const Givaro::Integer & x(A[i*lda+j]);
-				if ((x.bitsize() >= log) && (abs(x) > max)){
-					max = abs(x);
-// 					max = x;
-					log = x.bitsize();
-				}
-			}
-		return max;
-	}
+    inline Givaro::Integer
+    InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
+        Givaro::Integer max = 0;
+        size_t log=0;
+        for (size_t i=0; i<M; ++i)
+            for (size_t j=0; j<N; ++j){
+                const Givaro::Integer & x(A[i*lda+j]);
+                if ((x.bitsize() >= log) && (abs(x) > max)){
+                    max = abs(x);
+                    // 					max = x;
+                    log = x.bitsize();
+                }
+            }
+        return max;
+    }
 
-	namespace Protected {
-
-
-	/**
-	 * TRSMBound
-	 *
-	 * \brief  computes the maximal size for delaying the modular reduction
-	 *         in a triangular system resolution
-	 *
-	 * This is the default version over an arbitrary field.
-	 * It is currently never used (the recursive algorithm is run until n=1 in this case)
-	 *
-	 * \param F Finite Field/Ring of the computation
-	 *
-	 */
-	template <class Field>
-	inline size_t TRSMBound (const Field&)
-	{
-		return 1;
-	}
-
-	// /**
-	//  * Specialization for positive modular representation over double
-	//  * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^53
-	//  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
-	//  */
-	// template<>
-	// inline size_t TRSMBound (const Givaro::Modular<double>& F)
-	// {
-
-	// 	FFLAS_INT_TYPE pi;
-	// 	F.characteristic(pi);
-	// 	unsigned long p = pi;
-	// 	unsigned long long p1(1), p2(1);
-	// 	size_t nmax = 0;
-	// 	unsigned long long max = ( (1 << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
-	// 	while ( (p1 + p2) < max ){
-	// 		p1*=p;
-	// 		p2*=p-2;
-	// 		nmax++;
-	// 	}
-	// 	return nmax;
-	// }
+    namespace Protected {
 
 
-	/**
-	 * Specialization for positive modular representation over float.
-	 * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^24
-	 * @pbi
-	 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
-	 */
-	template<class Element>
-	inline size_t TRSMBound (const Givaro::Modular<Element>& F)
-	{
+        /**
+         * TRSMBound
+         *
+         * \brief  computes the maximal size for delaying the modular reduction
+         *         in a triangular system resolution
+         *
+         * This is the default version over an arbitrary field.
+         * It is currently never used (the recursive algorithm is run until n=1 in this case)
+         *
+         * \param F Finite Field/Ring of the computation
+         *
+         */
+        template <class Field>
+        inline size_t TRSMBound (const Field&)
+        {
+            return 1;
+        }
 
-		FFLAS_INT_TYPE pi;
-		F.characteristic(pi);
-		double p = pi;
-		double p1 = 1.0, p2 = 1.0;
-		double pm1 = (p - 1) / 2;
-		size_t nmax = 0;
-		unsigned long long max = limits<Element>::max();
-		while ( (p1 + p2)*pm1 <= max ){
-			p1*=p;
-			p2*=p-2;
-			nmax++;
-		}
-		return std::max((size_t)1,nmax);
-	}
+        // /**
+        //  * Specialization for positive modular representation over double
+        //  * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^53
+        //  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+        //  */
+        // template<>
+        // inline size_t TRSMBound (const Givaro::Modular<double>& F)
+        // {
 
-	/**
-	 * Specialization for balanced modular representation over double.
-	 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
-	 * @bib
-	 * - Dumas Giorgi Pernet 06, arXiv:cs/0601133
-	 */
-	template<class Element>
-	inline size_t TRSMBound (const Givaro::ModularBalanced<Element>& F)
-	{
+        // 	FFLAS_INT_TYPE pi;
+        // 	F.characteristic(pi);
+        // 	unsigned long p = pi;
+        // 	unsigned long long p1(1), p2(1);
+        // 	size_t nmax = 0;
+        // 	unsigned long long max = ( (1 << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
+        // 	while ( (p1 + p2) < max ){
+        // 		p1*=p;
+        // 		p2*=p-2;
+        // 		nmax++;
+        // 	}
+        // 	return nmax;
+        // }
 
-		FFLAS_INT_TYPE pi;
-		F.characteristic (pi);
-		double pp1 = (pi + 1) / 2;
-		double pm1 = (pi - 1) / 2;
-		double p1 = 1.0;
-		size_t nmax = 0;
-		double max = limits<Element>::max();
-		while (pm1*p1 <= max){
-			p1 *= pp1;
-			nmax++;
-		}
-		return std::max((size_t) 1,nmax);
-	}
 
-	// /**
-	//  * Specialization for balanced modular representation over float
-	//  * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^24
-	//  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
-	//  */
-	// template<>
-	// inline size_t TRSMBound (const Givaro::ModularBalanced<float>& F)
-	// {
+        /**
+         * Specialization for positive modular representation over float.
+         * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^24
+         * @pbi
+         * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+         */
+        template<class Element>
+        inline size_t TRSMBound (const Givaro::Modular<Element>& F)
+        {
 
-	// 	FFLAS_INT_TYPE pi;
-	// 	F.characteristic (pi);
-	// 	unsigned long p = (pi + 1) / 2;
-	// 	unsigned long long p1(1);
-	// 	size_t nmax = 0;
-	// 	unsigned long long max = (1 << (FLT_MANT_DIG + 1)) ;
-	// 	while ((pi-1)*p1 < max){
-	// 		p1 *= p;
-	// 		nmax++;
-	// 	}
-	// 	return nmax;
+            FFLAS_INT_TYPE pi;
+            F.characteristic(pi);
+            double p = pi;
+            double p1 = 1.0, p2 = 1.0;
+            double pm1 = (p - 1) / 2;
+            size_t nmax = 0;
+            unsigned long long max = limits<Element>::max();
+            while ( (p1 + p2)*pm1 <= max ){
+                p1*=p;
+                p2*=p-2;
+                nmax++;
+            }
+            return std::max((size_t)1,nmax);
+        }
 
-	// }
-} // Protected
+        /**
+         * Specialization for balanced modular representation over double.
+         * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
+         * @bib
+         * - Dumas Giorgi Pernet 06, arXiv:cs/0601133
+         */
+        template<class Element>
+        inline size_t TRSMBound (const Givaro::ModularBalanced<Element>& F)
+        {
+
+            FFLAS_INT_TYPE pi;
+            F.characteristic (pi);
+            double pp1 = (pi + 1) / 2;
+            double pm1 = (pi - 1) / 2;
+            double p1 = 1.0;
+            size_t nmax = 0;
+            double max = limits<Element>::max();
+            while (pm1*p1 <= max){
+                p1 *= pp1;
+                nmax++;
+            }
+            return std::max((size_t) 1,nmax);
+        }
+
+        // /**
+        //  * Specialization for balanced modular representation over float
+        //  * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^24
+        //  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+        //  */
+        // template<>
+        // inline size_t TRSMBound (const Givaro::ModularBalanced<float>& F)
+        // {
+
+        // 	FFLAS_INT_TYPE pi;
+        // 	F.characteristic (pi);
+        // 	unsigned long p = (pi + 1) / 2;
+        // 	unsigned long long p1(1);
+        // 	size_t nmax = 0;
+        // 	unsigned long long max = (1 << (FLT_MANT_DIG + 1)) ;
+        // 	while ((pi-1)*p1 < max){
+        // 		p1 *= p;
+        // 		nmax++;
+        // 	}
+        // 	return nmax;
+
+        // }
+    } // Protected
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_bounds_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

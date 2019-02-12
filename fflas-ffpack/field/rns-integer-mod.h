@@ -1,5 +1,4 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -52,8 +51,8 @@
 
 namespace FFPACK {
 
-	template<typename RNS>
-	class RNSIntegerMod;
+    template<typename RNS>
+    class RNSIntegerMod;
 }
 #include "fflas-ffpack/fflas/fflas_fscal_mp.inl"
 
@@ -63,6 +62,7 @@ namespace FFPACK {
 #endif
 
 namespace FFPACK {
+
 
 
 	template<typename RNS>
@@ -104,11 +104,11 @@ namespace FFPACK {
 	public:
 		Element                one, mOne,zero;
 
-#ifdef BENCH_MODP
-		mutable double t_modp, t_igemm, t_scal,t_trsm;
-		mutable size_t n_modp;
-#endif
 
+#ifdef BENCH_MODP
+        mutable double t_modp, t_igemm, t_scal,t_trsm;
+        mutable size_t n_modp;
+#endif
 
 		RNSIntegerMod(const integer& p, const RNS& myrns) : _p(p),
                                                             _Mi_modp_rns(myrns._size*myrns._size),
@@ -136,9 +136,10 @@ namespace FFPACK {
                 // last line of _iM_modp_rns corresponds to a quotient of _size
 			for (size_t j=0;j<mysize;j++)
 				_iM_modp_rns[mysize+j*mysizep1]=  iM % myrns._basis[j];
+
 #ifdef BENCH_MODP
-			t_modp=t_igemm=t_scal=t_trsm=0.;
-			n_modp=0;
+            t_modp=t_igemm=t_scal=t_trsm=0.;
+            n_modp=0;
 #endif
 		}
 
@@ -298,9 +299,11 @@ namespace FFPACK {
 
 
 		void reduce_modp(size_t n, Element_ptr B) const{
+
 #ifdef BENCH_MODP
-			FFLAS::Timer chrono; chrono.start();
+            FFLAS::Timer chrono; chrono.start();
 #endif
+
 
 			size_t _size= _rns->_size;
 			BasisElement *Gamma, *alpha, *A;
@@ -314,8 +317,9 @@ namespace FFPACK {
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,n), 1);
 
                 // compute A = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
+
 #ifndef ENABLE_CHECKER_fgemm
-			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
+            FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
 #else
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)_size, (int)n, (int)_size, 1.0 , _Mi_modp_rns.data(), (int)_size, Gamma, (int)n, 0, A, (int)rda);
 #endif
@@ -326,8 +330,9 @@ namespace FFPACK {
 			for(size_t i=0;i<_size;i++){
 				for(size_t j=0;j<n;j++){
 					size_t aa= (size_t)rint(alpha[j]);
+
 #ifdef __FFLASFFPACK_DEBUG
-					if (aa>_size) {std::cout<<"RNS modp ERROR"<<std::endl;exit(1);}
+                    if (aa>_size) {std::cout<<"RNS modp ERROR"<<std::endl;exit(1);}
 #endif
 					A[j+i*rda]-=_iM_modp_rns[aa+i*(_size+1)];
 
@@ -337,12 +342,18 @@ namespace FFPACK {
 			for (size_t i=0;i<_size;i++)
 				FFLAS::freduce (_rns->_field_rns[i], n, A+i*rda, 1);
 
-			FFLAS::fflas_delete(Gamma);
-			FFLAS::fflas_delete(alpha);
+                }
+            }
+            // reduce each row of A modulo m_i
+            for (size_t i=0;i<_size;i++)
+                FFLAS::freduce (_rns->_field_rns[i], n, A+i*rda, 1);
+
+            FFLAS::fflas_delete(Gamma);
+            FFLAS::fflas_delete(alpha);
 
 #ifdef BENCH_MODP
-			chrono.stop();
-			t_modp+=chrono.usertime();
+            chrono.stop();
+            t_modp+=chrono.usertime();
 #endif
         }
 
@@ -375,8 +386,9 @@ namespace FFPACK {
 
 		void reduce_modp(const size_t m, const size_t n,
                          Element_ptr B, const size_t lda) const{
+
 #ifdef BENCH_MODP
-			FFLAS::Timer chrono; chrono.start();
+            FFLAS::Timer chrono; chrono.start();
 #endif
                 //cout<<"REDUCE MOD WITH LDA!=N"<<endl;
 			const size_t _size= _rns->_size;
@@ -428,6 +440,7 @@ namespace FFPACK {
             }
 		}
 
+
 #ifdef __DLP_CHALLENGE
 
 #define DELTA 27
@@ -454,6 +467,7 @@ namespace FFPACK {
 
 		template<class SimdT>
 		inline SimdT multModSimd(const SimdT a, const SimdT b, const SimdT p, const SimdT ip, const SimdT np) const{
+
             using simd = Simd<double>;
             using vect_t = typename simd::vect_t;
             vect_t abh, abl, pqh, pql;
@@ -478,12 +492,13 @@ namespace FFPACK {
 		inline void mult(const double a, const double b, double &s, double &t) const{
 			double ah, al, bh, bl;
 			s = a*b;
+
 #ifdef __FMA__
-			t = std::fma(-a, b, s);
+            t = std::fma(-a, b, s);
 #else
-			split(a, DELTA, ah, al);
-			split(b, DELTA, bh, bl);
-			t = ((((-s+ah*bh)+(ah*bl))+(al*bh))+(al*bl));
+            split(a, DELTA, ah, al);
+            split(b, DELTA, bh, bl);
+            t = ((((-s+ah*bh)+(ah*bl))+(al*bh))+(al*bl));
 #endif
 		}
 
@@ -583,7 +598,10 @@ namespace FFPACK {
 			      vG = multModSimd(vB, vRNS, vp, vip, vnp);
 			      simd::store(Gamma+i, vG);
                   }
-                  for(; i < _size ; ++i){
+             <<<<<<< cleanuprns
+508
+ 
+     for(; i < _size ; ++i){
 			      Fields[i].mul(Gamma[i], B._ptr[j*_size+i], _rns->_MMi[i]);
                   }
 
@@ -712,6 +730,7 @@ namespace FFPACK {
 
 		void reduce_modp_rnsmajor(size_t n, Element_ptr B) const{
                 // std::cout << "modp BLAS" << std::endl;
+
 #ifdef BENCH_MODP
             FFLAS::Timer chrono; chrono.start();
 #endif
@@ -729,12 +748,14 @@ namespace FFPACK {
                 //for(size_t i=0;i<_size;i++)
                 //
                 // FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
+
             T.start();
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
             using simd = Simd<BasisElement>;
             using vect_t = typename simd::vect_t;
 
 			if(((int64_t)A%simd::alignment == 0) && (_size%simd::vect_size==0)){
+
                 auto MMi = _rns->_MMi.data();
                 for(size_t i = 0 ; i < n ; ++i){
                     vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv_, neg_;
@@ -755,6 +776,7 @@ namespace FFPACK {
 						tmp3  = simd::vand(tmp3, basis);
 						tmp1  = simd::vor(tmp1, tmp3);
 						tmp2  = simd::add(tmp2, tmp1);
+
                         simd::store(Gamma+i*_size+k, tmp2);
                     }
                 }
@@ -779,6 +801,7 @@ namespace FFPACK {
 						tmp3  = simd::vand(tmp3, basis);
 						tmp1  = simd::vor(tmp1, tmp3);
 						tmp2  = simd::add(tmp2, tmp1);
+
                         simd::storeu(Gamma+i*_size+k, tmp2);
                     }
                     for(; k < _size ; ++k){
@@ -793,9 +816,10 @@ namespace FFPACK {
                 }
             }
                 // _rns->reduce(n,Gamma,1,true);
+
 #else
-			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
-			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,1), 1);
+            typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
+            FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,1), 1);
 #endif
 			T.stop();
                 // std::cout << "Gamma: " << T << std::endl;
@@ -845,6 +869,7 @@ namespace FFPACK {
             FFLAS::fflas_delete(alpha);
                 // T.stop();
                 // std::cout << "delete: " << T << std::endl;
+
 #ifdef BENCH_MODP
             chrono.stop();
             t_modp+=chrono.usertime();
@@ -853,7 +878,7 @@ namespace FFPACK {
         }
 
 
-	}; // end of class RNSIntegerMod
+    }; // end of class RNSIntegerMod
 
 } // end of namespace FFPACK
 
@@ -901,6 +926,9 @@ namespace FFLAS {
 		F.rns().convert_transpose(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
 
+
 } // end of namespace FFLAS
 #undef DELTA
 #endif
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

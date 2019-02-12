@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -35,47 +33,47 @@
 
 namespace FFLAS { /*  CSR */
 
-template <class _Field> struct Sparse<_Field, SparseMatrix_t::CSR> {
-    using Field = _Field;
-    bool delayed = false;
-    uint64_t kmax = 0;
-    index_t m = 0;
-    index_t n = 0;
-    uint64_t nnz = 0;
-    uint64_t nElements = 0;
-    uint64_t maxrow = 0;
-    index_t *col = nullptr;
-    index_t *st = nullptr;
-    index_t *stend = nullptr;
-    typename _Field::Element_ptr dat;
-};
+    template <class _Field> struct Sparse<_Field, SparseMatrix_t::CSR> {
+        using Field = _Field;
+        bool delayed = false;
+        uint64_t kmax = 0;
+        index_t m = 0;
+        index_t n = 0;
+        uint64_t nnz = 0;
+        uint64_t nElements = 0;
+        uint64_t maxrow = 0;
+        index_t *col = nullptr;
+        index_t *st = nullptr;
+        index_t *stend = nullptr;
+        typename _Field::Element_ptr dat;
+    };
 
-template <class _Field>
-struct Sparse<_Field, SparseMatrix_t::CSR_ZO>
+    template <class _Field>
+    struct Sparse<_Field, SparseMatrix_t::CSR_ZO>
     : public Sparse<_Field, SparseMatrix_t::CSR> {
         using Field = _Field;
-    int64_t cst = 1;
-    bool delayed = false;
-};
+        int64_t cst = 1;
+        bool delayed = false;
+    };
 
-template <class Field, class IndexT>
-inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz);
+    template <class Field, class IndexT>
+    inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR> &A,
+                            const IndexT *row, const IndexT *col,
+                            typename Field::ConstElement_ptr dat, uint64_t rowdim,
+                            uint64_t coldim, uint64_t nnz);
 
-template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz);
+    template <class Field, class IndexT>
+    inline void sparse_init(const Field &F,
+                            Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
+                            const IndexT *row, const IndexT *col,
+                            typename Field::ConstElement_ptr dat, uint64_t rowdim,
+                            uint64_t coldim, uint64_t nnz);
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR> &A);
+    template <class Field>
+    inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR> &A);
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_ZO> &A);
+    template <class Field>
+    inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_ZO> &A);
 
 } // FFLAS
 
@@ -91,3 +89,5 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_ZO> &A);
 #endif
 
 #endif // __FFLASFFPACK_fflas_sparse_CSR_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

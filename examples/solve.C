@@ -55,9 +55,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    size_t rank = FFPACK::fgesv(F, FFLAS::FflasLeft, mA, nA, nB, A, nA, X, nB, 
-            B, nB, &info);
-    
+    size_t rank = FFPACK::fgesv(F, FFLAS::FflasLeft, mA, nA, nB, A, nA, X, nB,
+                                B, nB, &info);
+
     if (info){
         std::cout << "System is inconsistent" << std::endl;
         return -1;
@@ -74,3 +74,5 @@ int main(int argc, char** argv)
 
     return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* Copyright (C) 2012 FFLAS-FFPACK
  * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
@@ -55,29 +53,29 @@
 #    undef strtoll
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-  using ::fma;
-  using ::strtoll;
-  using ::strtoull;
+    _GLIBCXX_BEGIN_NAMESPACE_VERSION
+    using ::fma;
+    using ::strtoll;
+    using ::strtoull;
 
-/*
-  unsigned long      stoul( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
-      return std::strtoul(str.c_str(), NULL, base);
-  } 
+    /*
+       unsigned long      stoul( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+       return std::strtoul(str.c_str(), NULL, base);
+       }
 
-  unsigned long long stoull( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
-      return std::strtoull(str.c_str(), NULL, base);
-  }
-  
-  long      stol( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
-      return std::strtol(str.c_str(), NULL, base);
-  } 
+       unsigned long long stoull( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+       return std::strtoull(str.c_str(), NULL, base);
+       }
 
-  long long stoll( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
-      return std::strtoll(str.c_str(), NULL, base);
-  }
-*/
-  
+       long      stol( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+       return std::strtol(str.c_str(), NULL, base);
+       }
+
+       long long stoll( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+       return std::strtoll(str.c_str(), NULL, base);
+       }
+       */
+
 }
 #  else
 #    define _GLIBCXX_USE_C99 true
@@ -164,3 +162,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // __FFLASFFPACK_fflas_ffpack_configuration_H
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

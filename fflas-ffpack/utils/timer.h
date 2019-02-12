@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /* test/timer.h
  * Copyright (C) 1994-1997 Givaro Team
  *
@@ -60,13 +57,15 @@
 #endif
 
 namespace FFLAS {
-	typedef Givaro::Timer Timer  ;
-	typedef Givaro::BaseTimer BaseTimer ;
-	typedef Givaro::UserTimer UserTimer ;
-	typedef Givaro::SysTimer SysTimer ;
+    typedef Givaro::Timer Timer  ;
+    typedef Givaro::BaseTimer BaseTimer ;
+    typedef Givaro::UserTimer UserTimer ;
+    typedef Givaro::SysTimer SysTimer ;
 #ifdef __GIVARO_USE_OPENMP
-	typedef Givaro::OMPTimer OMPTimer ;
+    typedef Givaro::OMPTimer OMPTimer ;
 #endif
 }
 
 #endif // __FFLASFFPACK_timer_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

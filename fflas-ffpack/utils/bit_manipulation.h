@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /*
  * Copyright (C) 2014 FFLAS-FFPACK group
  *
@@ -42,57 +39,57 @@
 // count leading zeros
 inline int32_t clz(uint64_t val) {
 #if __GNUC__ || __has_builtin(__builtin_clzll)
-	return __builtin_clzll(val);
+    return __builtin_clzll(val);
 #else
-	if (! val) return 64 ;
-	int32_t result = 0;
-	while (! (val & (1_ui64 << 63))) {
-		val <<= 1;
-		result++;
-	}
-	return result;
+    if (! val) return 64 ;
+    int32_t result = 0;
+    while (! (val & (1_ui64 << 63))) {
+        val <<= 1;
+        result++;
+    }
+    return result;
 #endif
 }
 
 inline int32_t clz(uint32_t val) {
 #if __GNUC__ || __has_builtin(__builtin_clzll)
-	return __builtin_clz(val);
+    return __builtin_clz(val);
 #else
-	if (! val) return 32 ;
-	int32_t result = 0;
-	while (! (val & (1 << 31))) {
-		val <<= 1;
-		result++;
-	}
-	return result;
+    if (! val) return 32 ;
+    int32_t result = 0;
+    while (! (val & (1 << 31))) {
+        val <<= 1;
+        result++;
+    }
+    return result;
 #endif
 }
 
 // count trailing zeros
 inline int32_t ctz(uint32_t val) {
 #if __GNUC__ || __has_builtin(__builtin_ctz)
-	return __builtin_ctz(val);
+    return __builtin_ctz(val);
 #else
-	if (!val) return 32;
-	int32_t result = 0;
-	val = (val ^ (val - 1)) >> 1;  // Set v's trailing 0s to 1s and zero rest
-	while (val) {
-		val >>= 1;
-		result++;
-	}
-	return result;
+    if (!val) return 32;
+    int32_t result = 0;
+    val = (val ^ (val - 1)) >> 1;  // Set v's trailing 0s to 1s and zero rest
+    while (val) {
+        val >>= 1;
+        result++;
+    }
+    return result;
 #endif
 }
 
 // count trailing zeros
 inline int32_t ctz(uint64_t val) {
 #if __GNUC__ || __has_builtin(__builtin_ctzll)
-	return __builtin_ctzll(val);
+    return __builtin_ctzll(val);
 #else
-	if (!val) return 64;
-	uint32_t lo = val & 0xFFFFFFFF;
-	if (lo != 0) return ctz(lo);
-	return 32 + ctz(val >> 32);
+    if (!val) return 64;
+    uint32_t lo = val & 0xFFFFFFFF;
+    if (lo != 0) return ctz(lo);
+    return 32 + ctz(val >> 32);
 #endif
 }
 
@@ -104,15 +101,15 @@ inline int32_t ctz(uint64_t val) {
 // return quo
 static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 {
-	// u0 -> rax
-	// u1 -> rdx
-	// divq
-	uint64_t result;
-	__asm__("divq %[v]"
-			: "=a"(result), "=d"(*r)
-			: [v] "r"(v), "a"(u0), "d"(u1)
-	       );
-	return result;
+    // u0 -> rax
+    // u1 -> rdx
+    // divq
+    uint64_t result;
+    __asm__("divq %[v]"
+            : "=a"(result), "=d"(*r)
+            : [v] "r"(v), "a"(u0), "d"(u1)
+           );
+    return result;
 }
 #endif
 
@@ -139,9 +136,9 @@ static inline uint32_t mullhi_u32(uint32_t x, uint32_t y) {
 
 static inline int64_t mulhi_64(int64_t x, int64_t y) {
 #ifdef __FFLASFFPACK_HAVE_INT128
-        int128_t xl = x, yl = y;
-        int128_t rl = xl * yl;
-        return (int64_t)(rl >> 64);
+    int128_t xl = x, yl = y;
+    int128_t rl = xl * yl;
+    return (int64_t)(rl >> 64);
 #else
     const uint32_t mask = 0xFFFFFFFF;
     const uint32_t x0 = (uint32_t)(x & mask), y0 = (uint32_t)(y & mask);
@@ -155,9 +152,9 @@ static inline int64_t mulhi_64(int64_t x, int64_t y) {
 
 static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
 #ifdef __FFLASFFPACK_HAVE_INT128
-        int128_t xl = x, yl = y;
-        int128_t rl = xl * yl;
-        return (int64_t)(rl >> 64);
+    int128_t xl = x, yl = y;
+    int128_t rl = xl * yl;
+    return (int64_t)(rl >> 64);
 #else
     const uint32_t mask = 0xFFFFFFFF;
     const uint32_t x0 = (uint32_t)(x & mask), y0 = (uint32_t)(y & mask);
@@ -172,3 +169,5 @@ static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
 
 
 #endif // __FFLASFFPACK_utils_bit_manipulation_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

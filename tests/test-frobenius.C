@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
@@ -52,38 +49,40 @@ typedef Givaro::Modular<double> Field;
 
 template<class T>
 std::ostream& printvect(std::ostream& o, vector<T>& vect){
-	for(size_t i=0; i < vect.size()-1; ++i)
-		o << vect[i] << " " ;
-	return o << vect[vect.size()-1] << std::endl;
-	}
+    for(size_t i=0; i < vect.size()-1; ++i)
+        o << vect[i] << " " ;
+    return o << vect[vect.size()-1] << std::endl;
+}
 
 int main(int argc, char** argv){
 
-	size_t m,n;
-	cout<<setprecision(20);
+    size_t m,n;
+    cout<<setprecision(20);
 
-	if (argc!=4){
-		cerr<<"usage : test-frobenius <p> <A> <c>"<<endl
-	 	    <<"         to compute the frobenius normal form of the matrix A over Z/pZ, with conditonning parameter c"
-		    <<endl;
-		exit(-1);
-	}
-	Field F( atoi(argv[1]) );
-	Field::Element* A;
-	FFLAS::ReadMatrix (argv[2],F,m,n,A);
-	size_t c = atoi(argv[3]);
+    if (argc!=4){
+        cerr<<"usage : test-frobenius <p> <A> <c>"<<endl
+        <<"         to compute the frobenius normal form of the matrix A over Z/pZ, with conditonning parameter c"
+        <<endl;
+        exit(-1);
+    }
+    Field F( atoi(argv[1]) );
+    Field::Element* A;
+    FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    size_t c = atoi(argv[3]);
 
-	std::list<vector<Field::Element> > frobForm;
-	FFLAS::Timer tim;
-	tim.clear();
-	tim.start();
-	FFPACK::CharpolyArithProg (F, frobForm, n, A, n, c);
-	tim.stop();
-	std::list<vector<Field::Element> >::iterator it = frobForm.begin();
-	while(it != frobForm.end()){
-		printvect (cout, *(it++));
-	}
-	cerr<<c<<" "<<tim.usertime()<<" "<<4.55*n*n/1000000.0*n/tim.usertime()<<endl;
-	FFLAS::fflas_delete( A);
-	return 0;
+    std::list<vector<Field::Element> > frobForm;
+    FFLAS::Timer tim;
+    tim.clear();
+    tim.start();
+    FFPACK::CharpolyArithProg (F, frobForm, n, A, n, c);
+    tim.stop();
+    std::list<vector<Field::Element> >::iterator it = frobForm.begin();
+    while(it != frobForm.end()){
+        printvect (cout, *(it++));
+    }
+    cerr<<c<<" "<<tim.usertime()<<" "<<4.55*n*n/1000000.0*n/tim.usertime()<<endl;
+    FFLAS::fflas_delete( A);
+    return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

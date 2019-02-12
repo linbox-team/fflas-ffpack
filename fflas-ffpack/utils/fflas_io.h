@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* Copyright (C) FFLAS-FFPACK 2017
  * written by Clement Pernet (clement.pernet@univ-grenoble-alpes.fr)
  * ========LICENCE========
@@ -90,57 +88,57 @@ namespace FFLAS{
         }
 
         switch (form){
-            case FflasDense:{
-                ifs >> m;
-                ifs >> n;
-                A = fflas_new(F, m,n);
-                for (size_t i=0; i<m*n; i++){
-                    F.read (ifs, A[i]);
-                }
-                break;
-            }
-            case FflasSMS:{
-                // Ignore comments (starting with %)
-                while (ifs.peek() == '%') {
-                    ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                }
+        case FflasDense:{
+                            ifs >> m;
+                            ifs >> n;
+                            A = fflas_new(F, m,n);
+                            for (size_t i=0; i<m*n; i++){
+                                F.read (ifs, A[i]);
+                            }
+                            break;
+                        }
+        case FflasSMS:{
+                          // Ignore comments (starting with %)
+                          while (ifs.peek() == '%') {
+                              ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                          }
 
-                ifs >> m >> n;
-                size_t i,j;
-                std::string tmp;
-                typename Field::Element val;
-                ifs >> tmp;
-                A = fflas_new(F, m,n);
-                fzero(F,m,n,A,n);
-                do{
-                    ifs >> i >> j;
-                    if (i>m || j>n){
-                        std::cerr<<"Matrix file does not respect the SMS format"<<std::endl;
-                        return NULL;
-                    }
-                    F.read (ifs, val);
-                    if (i>0 && i>0) F.assign (A [(i-1)*n+j-1], val);
-                } while (!(i==0 && j==0 && F.isZero(val)));
-                break;
-            }
-            case FflasBinary:{
-                char st[9];
-                ifs.getline(st, 9);
-                if (strcmp (st,"FFBinFmt")){
-                    std::cerr<<"Not a FFLAS-FFPACK binary matrix format: preamble = "<<st<<std::endl;
-                    return NULL;
-                }
-                size_t mm, nn;
-                ifs.read(reinterpret_cast<char *>(&mm), sizeof(size_t));
-                ifs.read(reinterpret_cast<char *>(&nn), sizeof(size_t));
-                m=mm,n=nn;
-                A = fflas_new(F, m,n);
-                ifs.read (reinterpret_cast<char *>(A), sizeof(typename Field::Element)*m*n);
-                ifs.close();
-                break;
-            }
-            default:
-                std::cerr<<"Unable to detect the file format"<<std::endl;
+                          ifs >> m >> n;
+                          size_t i,j;
+                          std::string tmp;
+                          typename Field::Element val;
+                          ifs >> tmp;
+                          A = fflas_new(F, m,n);
+                          fzero(F,m,n,A,n);
+                          do{
+                              ifs >> i >> j;
+                              if (i>m || j>n){
+                                  std::cerr<<"Matrix file does not respect the SMS format"<<std::endl;
+                                  return NULL;
+                              }
+                              F.read (ifs, val);
+                              if (i>0 && i>0) F.assign (A [(i-1)*n+j-1], val);
+                          } while (!(i==0 && j==0 && F.isZero(val)));
+                          break;
+                      }
+        case FflasBinary:{
+                             char st[9];
+                             ifs.getline(st, 9);
+                             if (strcmp (st,"FFBinFmt")){
+                                 std::cerr<<"Not a FFLAS-FFPACK binary matrix format: preamble = "<<st<<std::endl;
+                                 return NULL;
+                             }
+                             size_t mm, nn;
+                             ifs.read(reinterpret_cast<char *>(&mm), sizeof(size_t));
+                             ifs.read(reinterpret_cast<char *>(&nn), sizeof(size_t));
+                             m=mm,n=nn;
+                             A = fflas_new(F, m,n);
+                             ifs.read (reinterpret_cast<char *>(A), sizeof(typename Field::Element)*m*n);
+                             ifs.close();
+                             break;
+                         }
+        default:
+                         std::cerr<<"Unable to detect the file format"<<std::endl;
         }
         return A;
     }
@@ -188,92 +186,92 @@ namespace FFLAS{
                                       typename Field::ConstElement_ptr A, size_t lda,
                                       FFLAS_FORMAT format, bool column_major) {
         switch (format){
-            case FflasSageMath:
-                c << "Matrix (";
-                if (F.characteristic() == 0)
-                    c << "ZZ, ";
-                else
-                    c << "GF("<<F.cardinality()<<"), ";
-                c << m <<", " << n << ", [" ;
-                for (size_t i = 0; i<m; ++i){
-                    c << '[';
-                    for (size_t j=0; j<n;++j){
-                        if (column_major) F.write (c, A[j*lda+i]);
-                        else F.write (c, A[i*lda+j]);
-                        if (j < n-1) c << ", ";
-                    }
-                    c << ']';
-                    if (i < m-1) c << ", ";
+        case FflasSageMath:
+            c << "Matrix (";
+            if (F.characteristic() == 0)
+                c << "ZZ, ";
+            else
+                c << "GF("<<F.cardinality()<<"), ";
+            c << m <<", " << n << ", [" ;
+            for (size_t i = 0; i<m; ++i){
+                c << '[';
+                for (size_t j=0; j<n;++j){
+                    if (column_major) F.write (c, A[j*lda+i]);
+                    else F.write (c, A[i*lda+j]);
+                    if (j < n-1) c << ", ";
                 }
-                c << "])\n";
-                break;
-            case FflasMaple:
-                c << "Matrix (";
-                c << m <<", " << n << ", [" ;
-                for (size_t i = 0; i<m; ++i){
-                    c << '[';
-                    for (size_t j=0; j<n;++j){
-                        if (column_major) F.write (c, A[j*lda+i]);
-                        else F.write (c, A[i*lda+j]);
-                        if (j < n-1) c << ", ";
-                    }
-                    c << ']';
-                    if (i < m-1) c << ", ";
+                c << ']';
+                if (i < m-1) c << ", ";
+            }
+            c << "])\n";
+            break;
+        case FflasMaple:
+            c << "Matrix (";
+            c << m <<", " << n << ", [" ;
+            for (size_t i = 0; i<m; ++i){
+                c << '[';
+                for (size_t j=0; j<n;++j){
+                    if (column_major) F.write (c, A[j*lda+i]);
+                    else F.write (c, A[i*lda+j]);
+                    if (j < n-1) c << ", ";
                 }
-                c << "]);\n";
-                break;
-            case FflasDense:
-                c<<m<<" "<<n<<std::endl;
-                for (size_t i = 0; i<m; ++i){
-                    for (size_t j=0; j<n;++j){
-                        if (column_major) F.write (c, A[j*lda+i]);
-                        else F.write (c, A[i*lda+j]);
-                        c << ' ';
+                c << ']';
+                if (i < m-1) c << ", ";
+            }
+            c << "]);\n";
+            break;
+        case FflasDense:
+            c<<m<<" "<<n<<std::endl;
+            for (size_t i = 0; i<m; ++i){
+                for (size_t j=0; j<n;++j){
+                    if (column_major) F.write (c, A[j*lda+i]);
+                    else F.write (c, A[i*lda+j]);
+                    c << ' ';
+                }
+            }
+            c<<std::endl;
+            break;
+        case FflasSMS:
+            c<<m<<' '<<n<<' '<<F.cardinality()<<std::endl;
+            for (size_t i = 0; i<m; ++i){
+                for (size_t j=0; j<n;++j){
+                    typename Field::ConstElement_ptr x;
+                    if (column_major) x= A + j*lda+i;
+                    else x = A + i*lda +j;
+                    if (!F.isZero(*x)){
+                        c << (i+1) << ' ' << (j+1) << ' ';
+                        F.write (c, *x);
+                        c << std::endl;
                     }
                 }
-                c<<std::endl;
-                break;
-            case FflasSMS:
-                c<<m<<' '<<n<<' '<<F.cardinality()<<std::endl;
-                for (size_t i = 0; i<m; ++i){
-                    for (size_t j=0; j<n;++j){
-                        typename Field::ConstElement_ptr x;
-                        if (column_major) x= A + j*lda+i;
-                        else x = A + i*lda +j;
-                        if (!F.isZero(*x)){
-                            c << (i+1) << ' ' << (j+1) << ' ';
-                            F.write (c, *x);
-                            c << std::endl;
+            }
+            c << "0 0 0"<<std::endl;
+            break;
+        case FflasBinary:{
+                             char st[9]="FFBinFmt";
+                             c.write (st, 8);
+                             c<<std::endl;
+                             c.write ( reinterpret_cast<char*> (&m), sizeof (size_t));
+                             c.write ( reinterpret_cast<char*> (&n), sizeof (size_t));
+                             c.write ( reinterpret_cast<const char*> (A), sizeof(typename Field::Element)*m*n);
+                             break;
+                         }
+        default:{ // format == FflasMath
+                    size_t char_width = ceil(FFLAS::bitsize (F,m,n,A,lda)*0.301029995663982);
+                    Givaro::Integer p;
+                    F.characteristic(p);
+                    if (p==0 || F.minElement()<0) char_width++; // minus sign
+                    c.fill(' ');
+                    for (size_t i = 0; i<m; ++i){
+                        for (size_t j=0; j<n;++j){
+                            c.width(char_width);
+                            if (column_major) F.write (c, A[j*lda+i]);
+                            else F.write (c, A[i*lda+j]);
+                            if (j < n-1) c << ' ';
                         }
+                        c<<std::endl;
                     }
                 }
-                c << "0 0 0"<<std::endl;
-                break;
-            case FflasBinary:{
-                char st[9]="FFBinFmt";
-                c.write (st, 8);
-                c<<std::endl;
-                c.write ( reinterpret_cast<char*> (&m), sizeof (size_t));
-                c.write ( reinterpret_cast<char*> (&n), sizeof (size_t));
-                c.write ( reinterpret_cast<const char*> (A), sizeof(typename Field::Element)*m*n);
-                break;
-            }
-            default:{ // format == FflasMath
-                size_t char_width = ceil(FFLAS::bitsize (F,m,n,A,lda)*0.301029995663982);
-                Givaro::Integer p;
-                F.characteristic(p);
-                if (p==0 || F.minElement()<0) char_width++; // minus sign
-                c.fill(' ');
-                for (size_t i = 0; i<m; ++i){
-                    for (size_t j=0; j<n;++j){
-                        c.width(char_width);
-                        if (column_major) F.write (c, A[j*lda+i]);
-                        else F.write (c, A[i*lda+j]);
-                        if (j < n-1) c << ' ';
-                    }
-                    c<<std::endl;
-                }
-            }
         }
         return c ;
     }
@@ -320,9 +318,11 @@ namespace FFLAS{
             c<<P[i];
         }
         c<<"]"<<std::endl;
-    return c;
-}
+        return c;
+    }
 
 } //namespace FFLAS
 
 #endif //__FFLAS_IO_H
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -30,43 +28,45 @@
 #define __FFLASFFPACK_fflas_sparse_HYB_ZO_spmv_INL
 
 namespace FFLAS {
-namespace sparse_details_impl {
+    namespace sparse_details_impl {
 
-template <class Field>
-inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, FieldCategories::GenericTag) {
-    if (A.one != nullptr)
-        sparse_details_impl::fspmv_one(F, *(A.one), x, y, FieldCategories::GenericTag());
-    if (A.mone != nullptr)
-        sparse_details_impl::fspmv_mone(F, *(A.mone), x, y, FieldCategories::GenericTag());
-    if (A.dat != nullptr)
-        sparse_details_impl::fspmv(F, *(A.dat), x, y, FieldCategories::GenericTag());
-}
+        template <class Field>
+        inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
+                          typename Field::Element_ptr y, FieldCategories::GenericTag) {
+            if (A.one != nullptr)
+                sparse_details_impl::fspmv_one(F, *(A.one), x, y, FieldCategories::GenericTag());
+            if (A.mone != nullptr)
+                sparse_details_impl::fspmv_mone(F, *(A.mone), x, y, FieldCategories::GenericTag());
+            if (A.dat != nullptr)
+                sparse_details_impl::fspmv(F, *(A.dat), x, y, FieldCategories::GenericTag());
+        }
 
-template <class Field>
-inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, FieldCategories::UnparametricTag) {
-    if (A.one != nullptr)
-        sparse_details_impl::fspmv_one(F, *(A.one), x, y, FieldCategories::UnparametricTag());
-    if (A.mone != nullptr)
-        sparse_details_impl::fspmv_mone(F, *(A.mone), x, y, FieldCategories::UnparametricTag());
-    if (A.dat != nullptr)
-        sparse_details_impl::fspmv(F, *(A.dat), x, y, FieldCategories::UnparametricTag());
-}
+        template <class Field>
+        inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
+                          typename Field::Element_ptr y, FieldCategories::UnparametricTag) {
+            if (A.one != nullptr)
+                sparse_details_impl::fspmv_one(F, *(A.one), x, y, FieldCategories::UnparametricTag());
+            if (A.mone != nullptr)
+                sparse_details_impl::fspmv_mone(F, *(A.mone), x, y, FieldCategories::UnparametricTag());
+            if (A.dat != nullptr)
+                sparse_details_impl::fspmv(F, *(A.dat), x, y, FieldCategories::UnparametricTag());
+        }
 
-template <class Field>
-inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, uint64_t kmax) {
-    if (A.one != nullptr)
-        sparse_details_impl::fspmv_one(F, *(A.one), x, y, FieldCategories::UnparametricTag());
-    if (A.mone != nullptr)
-        sparse_details_impl::fspmv_mone(F, *(A.mone), x, y, FieldCategories::UnparametricTag());
-    if (A.dat != nullptr)
-        sparse_details_impl::fspmv(F, *(A.dat), x, y, kmax);
-}
+        template <class Field>
+        inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
+                          typename Field::Element_ptr y, uint64_t kmax) {
+            if (A.one != nullptr)
+                sparse_details_impl::fspmv_one(F, *(A.one), x, y, FieldCategories::UnparametricTag());
+            if (A.mone != nullptr)
+                sparse_details_impl::fspmv_mone(F, *(A.mone), x, y, FieldCategories::UnparametricTag());
+            if (A.dat != nullptr)
+                sparse_details_impl::fspmv(F, *(A.dat), x, y, kmax);
+        }
 
-} // HYB_ZO_details
+    } // HYB_ZO_details
 
 } // FFLAS
 
 #endif //  __FFLASFFPACK_fflas_HYB_ZO_spmv_INL
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
