@@ -40,7 +40,8 @@ namespace FFPACK {
             FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_double [init] -> rns basis is too small to handle integers with 2^(16*k) values ");
             std::cerr<<"with k="<<k<<" _ldm="<<_ldm<<std::endl;
         }
-        size_t mn=m*n;
+        const size_t mn=m*n;
+        if (mn) {
         double *A_beta = FFLAS::fflas_new<double >(mn*k);
         const integer* Aiter=A;
         // split A into A_beta according to a Kronecker transform in base 2^16
@@ -141,6 +142,7 @@ namespace FFPACK {
                 }
         std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
+        }
     }
 
     // Arns must be an array of m*n*_size
@@ -150,7 +152,8 @@ namespace FFPACK {
         if (k>_ldm)
             FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
 
-        size_t mn=m*n;
+        const size_t mn=m*n;
+        if (mn) {
         double *A_beta = FFLAS::fflas_new<double >(mn*k);
         const integer* Aiter=A;
         // split A into A_beta according to a Kronecker transform in base 2^16
@@ -216,11 +219,14 @@ namespace FFPACK {
                           == (int64_t) Arns[j*m+i+k*rda]);
         std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
+        }
     }
 
     inline void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
                                     const double* Arns, size_t rda, bool RNS_MAJOR) const
     {
+        const size_t  mn= m*n;
+        if (mn) {
 #ifdef CHECK_RNS
         integer* Acopy=new integer[m*n];
         for(size_t i=0;i<m;i++)
@@ -230,7 +236,6 @@ namespace FFPACK {
 #endif
 
         integer hM= (_M-1)>>1;
-        size_t  mn= m*n;
         double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
         Givaro::Timer tfgemmc;tfgemmc.start();
         if (RNS_MAJOR==false) {// compute A_beta = Ap^T x M_beta
@@ -337,14 +342,15 @@ namespace FFPACK {
                 }
         std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
-
+        }
     }
 
     inline void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
                                               const double* Arns, size_t rda, bool RNS_MAJOR) const
     {
+        const size_t  mn= m*n;
+        if (mn) {
         integer hM= (_M-1)>>1;
-        size_t  mn= m*n;
         double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
         if (RNS_MAJOR==false){
@@ -442,7 +448,7 @@ namespace FFPACK {
                 }
         std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif // CHECK_RNS
-
+        }
     }
 
     // reduce entries of Arns to be less than the rns basis elements

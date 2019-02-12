@@ -372,12 +372,13 @@ namespace FFPACK {
         }
 
         void reduce_modp(size_t m, size_t n, Element_ptr B, size_t lda) const{
+            const size_t mn=m*n;
+            if (mn) {
 #ifdef BENCH_MODP
             FFLAS::Timer chrono; chrono.start();
 #endif
             //cout<<"REDUCE MOD WITH LDA!=N"<<endl;
             size_t _size= _rns->_size;
-            size_t mn=m*n;
             BasisElement *Gamma, *alpha, *z, *A;
             A=B._ptr;
             size_t rda=B._stride;
@@ -421,6 +422,7 @@ namespace FFPACK {
             chrono.stop();
             t_modp+=chrono.usertime();
 #endif
+            }
         }
 
 #ifdef __DLP_CHALLENGE
