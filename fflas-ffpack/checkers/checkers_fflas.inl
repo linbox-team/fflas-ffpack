@@ -27,10 +27,12 @@
 #ifndef FFLASFFPACK_checkers_fflas_inl_H
 #define FFLASFFPACK_checkers_fflas_inl_H
 
+#include "checker_fgemv.inl"
 #include "checker_fgemm.inl"
 #include "checker_ftrsm.inl"
 
 namespace FFLAS {
+    template <class Field> using ForceCheck_fgemv = CheckerImplem_fgemv<Field>;
     template <class Field> using ForceCheck_fgemm = CheckerImplem_fgemm<Field>;
     template <class Field> using ForceCheck_ftrsm = CheckerImplem_ftrsm<Field>;
 }

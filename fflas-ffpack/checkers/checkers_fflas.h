@@ -37,26 +37,36 @@
 #endif
 
 #ifdef ENABLE_ALL_CHECKINGS
+#define ENABLE_CHECKER_fgemv 1
 #define ENABLE_CHECKER_fgemm 1
 #define ENABLE_CHECKER_ftrsm 1
 #endif
 
 #ifdef TIME_CHECKERS
 #include <givaro/givtimer.h>
+#define TIME_CHECKER_FGEMV
 #define TIME_CHECKER_FGEMM
 #define TIME_CHECKER_FTRSM
 #endif
 
 // definition of the exceptions
+class FailureFgemvCheck {};
 class FailureFgemmCheck {};
 class FailureTrsmCheck {};
 
 namespace FFLAS {
+    template <class Field> class CheckerImplem_fgemv;
     template <class Field> class CheckerImplem_fgemm;
     template <class Field> class CheckerImplem_ftrsm;
 }
 
 namespace FFLAS {
+#ifdef ENABLE_CHECKER_fgemv
+    template <class Field> using Checker_fgemv = CheckerImplem_fgemv<Field>;
+#else
+    template <class Field> using Checker_fgemv = FFLAS::Checker_Empty<Field>;
+#endif
+
 #ifdef ENABLE_CHECKER_fgemm
     template <class Field> using Checker_fgemm = CheckerImplem_fgemm<Field>;
 #else
