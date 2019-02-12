@@ -33,39 +33,41 @@ namespace FFLAS {
     class CheckerImplem_fgemv {
 
         const Field& F;
-        const size_t m,n,ldx;
-        typename Field::Element_ptr v,w1;
+        const size_t m,n,ldy;
+        typename Field::Element_ptr v
+        Field::Element w;
 
     public:
         CheckerImplem_fgemv(const Field &F_,
                             const size_t m_, const size_t n_,
                             const typename Field::Element beta,
-                            typename Field::Element_ptr X, const size_t ldx_)
-        : F(F_), m(m_), n(n_), ldx(ldx_), v(FFLAS::fflas_new(F_,n)),w1(FFLAS::fflas_new(F_,m))
+                            typename Field::Element_ptr Y, const size_t ldy_)
+        : F(F_), m(m_), n(n_), ldy(ldy_), v(FFLAS::fflas_new(F_,m)),w()
         {
+            F.init(w);
             typename Field::RandIter G(F);
-            init(G,beta,X);
+            init(G,beta,Y);
         }
 
         CheckerImplem_fgemv(typename Field::RandIter &G,
                             const size_t m_, const size_t n_,
                             const typename Field::Element beta,
-                            typename Field::Element_ptr X, const size_t ldx_)
-        : F(G.ring()), m(m_), n(n_), ldc(ldc_), v(FFLAS::fflas_new(F,n)),w1(FFLAS::fflas_new(F,m))
+                            typename Field::Element_ptr Y, const size_t ldy_)
+        : F(G.ring()), m(m_), n(n_), ldy(ldy_), v(FFLAS::fflas_new(F,m)),w()
         {
+            F.init(w);
             init(G,beta,X);
         }
 
         ~CheckerImplem_fgemv() {
-            FFLAS::fflas_delete(v,w1);
+            FFLAS::fflas_delete(v);
         }
 
         inline bool check(const FFLAS::FFLAS_TRANSPOSE ta,
-                          const FFLAS::FFLAS_TRANSPOSE tb,
                           const typename Field::Element alpha,
                           typename Field::ConstElement_ptr A, const size_t lda,
-                          typename Field::ConstElement_ptr B, const size_t ldb,
-                          typename Field::ConstElement_ptr C)
+                          typename Field::ConstElement_ptr X, const size_t ldx,
+                          typename Field::ConstElement_ptr Y)
         {
             // w1 <- C.v - w1
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, C, ldc, v, 1, F.mOne, w1, 1);
@@ -90,11 +92,13 @@ namespace FFLAS {
         }
 
     private:
-        inline void init(typename Field::RandIter &G, const typename Field::Element beta, typename Field::Element_ptr X) {
-            FFLAS::frand(F,G,n,v,1);
+        inline void init(typename Field::RandIter &G, const typename Field::Element beta, typename Field::Element_ptr Y) {
+            FFLAS::frand(F,G,m,v,1);
 
-            // w1 <- beta.C.v
-            FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, beta, C, ldc, v, 1, F.zero, w1, 1);
+            // w <- beta.v^T.Y
+            FFLAS::fdot(F,m,v,1,Y,ldy);
+            F.mulin(w,beta);
+            // FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, beta, C, ldc, v, 1, F.zero, w1, 1);
         }
 
     };
