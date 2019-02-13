@@ -52,6 +52,8 @@ namespace FFPACK {
               const size_t cutoff
              )
     {
+        const size_t K = std::max(M,N);
+        if (K) {
 #ifdef BENCH_PERF_LQUP_MP
         double t_init=0, t_lqup=0, t_mod=0, t_rec=0;
         FFLAS::Timer chrono;
@@ -60,7 +62,6 @@ namespace FFPACK {
         Givaro::Integer p;
         F.cardinality(p);
         size_t logp=p.bitsize();
-        size_t K = std::max(M,N);
 
         // compute bit size of feasible prime
         size_t _k=std::max(K+1,logp/20), lk=0;
@@ -126,7 +127,9 @@ namespace FFPACK {
 #endif
         FFLAS::fflas_delete(Ap);
         return R;
-
+        } else {
+            return 0;
+        }
     }
 
 } // namespace FFPACK
