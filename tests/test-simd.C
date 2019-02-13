@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 FFLAS-FFPACK
  * Written by :
@@ -26,492 +24,420 @@
  *.
  */
 
-#include "givaro/givinteger.h"
+#include "givaro/givinteger.h" /* for Givaro::Integer */
+#include "givaro/givprint.h" /* for operator<< with vector */
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
-#include "fflas-ffpack/utils/args-parser.h"
-#include "fflas-ffpack/utils/test-utils.h"
+#include "fflas-ffpack/utils/args-parser.h" /* for parsing command-line args */
+#include "fflas-ffpack/utils/test-utils.h" /* for FFLAS::getSeed */
 #include "fflas-ffpack/utils/align-allocator.h"
+
 #include <vector>
-#include <algorithm>
 #include <random>
-#include <tuple>
-#include <type_traits>
 #include <string>
-#include <iterator>
+#include <functional>
 #include <limits>
-#include <cmath>
-#include <iomanip>
+#include <type_traits>
+#include <algorithm>
 
 typedef Givaro::Integer integer;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
+using std::numeric_limits;
+using std::enable_if;
+using std::is_floating_point;
+using std::is_integral;
+using std::equal;
 
-/**********************************************************************************
- *
- * Random generators
- *
- ***********************************************************************************/
+/* For pretty printing type */
+template<typename...> const char *TypeName();
+
+#define REGISTER_TYPE_NAME(type) \
+    template<> const char *TypeName<type>(){return #type;}
+
+REGISTER_TYPE_NAME(float);
+REGISTER_TYPE_NAME(double);
+REGISTER_TYPE_NAME(int16_t);
+REGISTER_TYPE_NAME(int32_t);
+REGISTER_TYPE_NAME(int64_t);
+REGISTER_TYPE_NAME(uint16_t);
+REGISTER_TYPE_NAME(uint32_t);
+REGISTER_TYPE_NAME(uint64_t);
+
+/******************************************************************************/
+/* Random generators **********************************************************/
+/******************************************************************************/
+
+static std::mt19937 entropy_generator;
 
 template <class Element, class Alloc>
-typename std::enable_if<std::is_integral<Element>::value>::type
-generate_random (std::vector<Element,Alloc> &a, std::mt19937 &generator) {
-	std::uniform_int_distribution<Element> dist(std::numeric_limits<Element>::min(), std::numeric_limits<Element>::max());
-	std::generate(a.begin(), a.end(), [&](){return dist(generator);});
+typename enable_if<is_integral<Element>::value>::type
+generate_random_vector (vector<Element,Alloc> &a) {
+    typedef typename std::uniform_int_distribution<Element> RandGen;
+    RandGen G(numeric_limits<Element>::lowest(),numeric_limits<Element>::max());
+    std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
+// FIXME float value are too large
 template <class Element, class Alloc>
-typename std::enable_if<std::is_floating_point<Element>::value>::type
-generate_random (std::vector<Element,Alloc> &a, std::mt19937 &generator) {
-	std::uniform_real_distribution<Element> dist(std::numeric_limits<Element>::min(), std::numeric_limits<Element>::max());
-	std::generate(a.begin(), a.end(), [&](){return dist(generator);});
+typename enable_if<is_floating_point<Element>::value>::type
+generate_random_vector (vector<Element,Alloc> &a) {
+    typedef typename std::uniform_real_distribution<Element> RandGen;
+    RandGen G(numeric_limits<Element>::lowest(),numeric_limits<Element>::max());
+    //typedef typename std::normal_distribution<Element> RandGen;
+    //RandGen G(0.0, Givaro::Modular<Element>::maxCardinality());
+    std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
-/**********************************************************************************
- *
- * Function Traits
- *
- ***********************************************************************************/
+/******************************************************************************/
+/* Utils functions ************************************************************/
+/******************************************************************************/
 
-template <class F> struct function_traits;
+/* check equality for integral type */
+template <class Element>
+typename enable_if<is_integral<Element>::value, bool>::type
+check_eq (Element x, Element y)
+{
+    return x == y;
+}
 
-// function pointer
-template <class R, class... Args>
-struct function_traits<R (*)(Args...)> : public function_traits<R(Args...)> {};
+/* check equality for floating point type */
+template <class Element>
+typename enable_if<is_floating_point<Element>::value, bool>::type
+check_eq (Element x, Element y)
+{
+    return (std::isnan(x) && std::isnan(y)) || x == y;
+}
 
-template <class R, class... Args> struct function_traits<R(Args...)> {
-	using return_type = R;
+/* evaluate the function f with arguments taken in the array */
+template <class Ret, class T>
+Ret
+eval_func_on_array (std::function<Ret()> f, std::array<T, 0> arr)
+{
+    return f();
+}
 
-	static constexpr std::size_t arity = sizeof...(Args);
+template <class Ret, class T, class...TArgs>
+Ret
+eval_func_on_array (std::function<Ret(T, TArgs...)> f,
+                    std::array<T, sizeof...(TArgs)+1> arr)
+{
+    std::function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return
+        f(arr[0], args...);};
+    std::array<T, sizeof...(TArgs)> newarr;
+    for (size_t i = 0; i < sizeof...(TArgs); i++)
+        newarr[i] = arr[i+1];
+    return eval_func_on_array (newf, newarr);
+}
 
-	template <std::size_t N> struct argument {
-		static_assert(N < arity, "error: invalid parameter index.");
-		using type = typename std::tuple_element<N, std::tuple<Args...> >::type;
-	};
+
+/******************************************************************************/
+/* Main test function *********************************************************/
+/******************************************************************************/
+
+template <class Simd, class RScal, class...AScal, class RSimd, class...ASimd>
+typename enable_if<sizeof...(AScal) == sizeof...(ASimd), bool>::type
+test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
+
+    using Element = typename Simd::scalar_t;
+    using ScalVectAlign = AlignedAllocator<Element, Alignment(Simd::alignment)>;
+    using ScalVect = vector<Element, ScalVectAlign>;
+    using SimdVect = typename Simd::vect_t;
+    constexpr size_t SimdVectSize = Simd::vect_size;
+    constexpr size_t simd_size = sizeof(Element) * SimdVectSize * 8;
+    constexpr size_t arity = sizeof...(AScal);
+
+    /* input vectors */
+    vector<ScalVect> inputs (arity, ScalVect(SimdVectSize));
+    for (auto &iv: inputs)
+        generate_random_vector (iv);
+
+    /* output vectors */
+    ScalVect out_scal(SimdVectSize), out_simd(SimdVectSize);
+
+    /* compute with scalar function */
+    std::array<Element, arity> scal_in;
+    std::function<RScal(AScal...)> fscal = FScal;
+    for(size_t i = 0 ; i < SimdVectSize ; i++) {
+        for (size_t j = 0; j < arity; j++)
+            scal_in[j] = inputs[j][i];
+
+        out_scal[i] = eval_func_on_array (fscal, scal_in);
+    }
+
+    /* compute with SIMD function */
+    std::array<SimdVect, arity> simd_in;
+    std::function<RSimd(ASimd...)> fsimd = FSimd;
+    for (size_t i = 0; i < arity; i++)
+        simd_in[i] = Simd::load (inputs[i].data());
+
+    SimdVect simd_out = eval_func_on_array (fsimd, simd_in);
+    Simd::store (out_simd.data(), simd_out);
+
+    /* comparison */
+    auto eq = check_eq<Element>;
+    bool res = equal (out_scal.begin(), out_scal.end(), out_simd.begin(), eq);
+
+    /* print result line */
+    cout << "Simd" << simd_size << "<" << TypeName<Element>() << ">::" << fname
+         << " " << string (60 - fname.size() - strlen(TypeName<Element>()), '.')
+         << " " << (res ? "success" : "failure") << endl;
+
+    /* in case of error, print all input and output values */
+    if(!res) {
+        cout << string (10, '-') << " debug data " << string (58, '-') << endl;
+        for (size_t i = 0; i < arity; i++) {
+            cout << "input_" << i << ": " << inputs[i] << endl;
+        }
+        cout << "out_scal: " << out_scal << endl;
+        cout << "out_simd: " << out_simd << endl;
+        cout << string (80, '-') << endl;
+    }
+    return res;
+}
+
+/******************************************************************************/
+/* Scalar functions for comparisons *******************************************/
+/******************************************************************************/
+
+template <class Element, class Enable = void>
+struct ScalFunctions;
+
+/* for floating point element */
+template <class Element>
+struct ScalFunctions<Element,
+                    typename enable_if<is_floating_point<Element>::value>::type>
+{
+    static Element ceil (Element x) {
+        return std::ceil(x);
+    }
+    static Element floor (Element x) {
+        return std::floor(x);
+    }
+    static Element round (Element x) {
+        return std::round(x);
+    }
+    static Element add (Element x1, Element x2) {
+        return x1+x2;
+    }
+    static Element sub (Element x1, Element x2) {
+        return x1-x2;
+    }
+    static Element mul (Element x1, Element x2) {
+        return x1*x2;
+    }
+    static Element fmadd (Element x1, Element x2, Element x3) {
+        return std::fma(x3,x2,x1);
+    }
+    static Element fmsub (Element x1, Element x2, Element x3) {
+        return std::fma(x3,x2,-x1);
+    }
+    static Element fnmadd (Element x1, Element x2, Element x3) {
+        return std::fma(-x3,x2,x1);
+    }
+    /* Comparisons functions in SIMD output 0 or 0xFFFF...FFFF
+     * (here we assume 0xFFFF...FFFF is always a NAN)
+     */
+    static Element lesser (Element x1, Element x2) {
+        return (x1<x2)?NAN:0;
+    }
+    static Element lesser_eq (Element x1, Element x2) {
+        return (x1<=x2)?NAN:0;
+    }
+    static Element greater (Element x1, Element x2) {
+        return (x1>x2)?NAN:0;
+    }
+    static Element greater_eq (Element x1, Element x2) {
+        return (x1>=x2)?NAN:0;
+    }
+    static Element eq (Element x1, Element x2) {
+        return (x1==x2)?NAN:0;
+    }
 };
 
-// member function pointer
-template <class C, class R, class... Args>
-struct function_traits<R (C::*)(Args...)>       : public function_traits<R(C&, Args...)> {};
+/* for integral element */
+template <class Element>
+struct ScalFunctions<Element,
+                    typename enable_if<is_integral<Element>::value>::type>
+{
+    static Element add (Element x1, Element x2) {
+        return x1+x2;
+    }
+    static Element sub (Element x1, Element x2) {
+        return x1-x2;
+    }
+    static Element mul (Element x1, Element x2) {
+        return x1*x2;
+    }
+    static Element mullo (Element x1, Element x2) {
+        return x1*x2;
+    }
+    static Element mulhi (Element x1, Element x2) {
+        integer q,r;
+        integer a = (integer(x1)*integer(x2));
+        integer b = integer(1) << uint64_t(sizeof(Element)*8);
+        Givaro::IntegerDom Z;
+        Z.divmod(q, r, a, b);
+        return Element(q);
+    }
+    static Element mulx (Element x1, Element x2) {
+        /* h = 1 << (half the number of bits of Element) */
+        Element h = Element(1) << (sizeof(Element)*4);
 
-// const member function pointer
-template <class C, class R, class... Args>
-struct function_traits<R (C::*)(Args...) const> : public function_traits<R(C&, Args...)> {};
+        /* Representative r of x1 modulo h with -h/2 <= r < h/2 */
+        if (std::is_signed<Element>::value) {
+            x1 = (x1+h/2) % h;
+            x1 += (x1 < 0) ? h/2 : -h/2;
+            x2 = (x2+h/2) % h;
+            x2 += (x2 < 0) ? h/2 : -h/2;
+        }
+        else {
+            x1 = x1 % h;
+            x2 = x2 % h;
+        }
+        return x1*x2;
+    }
+    static Element fmadd (Element x1, Element x2, Element x3) {
+        return x1+x3*x2;
+    }
+    static Element fmsub (Element x1, Element x2, Element x3) {
+        return -x1 + x3*x2;
+    }
+    static Element fnmadd (Element x1, Element x2, Element x3) {
+        return x1 - x3*x2;
+    }
+    /* Comparisons functions in SIMD output 0 or 0xFFFF...FFFF */
+    static Element lesser (Element x1, Element x2) {
+        return (x1<x2)?-1:0;
+    }
+    static Element lesser_eq (Element x1, Element x2) {
+        return (x1<=x2)?-1:0;
+    }
+    static Element greater (Element x1, Element x2) {
+        return (x1>x2)?-1:0;
+    }
+    static Element greater_eq (Element x1, Element x2) {
+        return (x1>=x2)?-1:0;
+    }
+    static Element eq (Element x1, Element x2) {
+        return (x1==x2)?-1:0;
+    }
+};
 
-// member object pointer
-template <class C, class R>
-struct function_traits<R(C::*)>                 : public function_traits<R(C&)> {};
+/******************************************************************************/
+/* Test one SIMD implem *******************************************************/
+/******************************************************************************/
 
-template<class SimdFunc>
-void print_arity (SimdFunc f) {
-	std::cout << "Arity of function is " << (function_traits<SimdFunc>::arity) << std::endl;
-}
+#define TEST_ONE_OP(name) \
+    btest &= test_op<simd,Element> (simd::name, Scal::name, #name);
 
-/**************************************************************************************/
-
-template<class simd, class Element, class SimdFunc, class ScalFunc>
-inline
-typename std::enable_if<
-(function_traits<SimdFunc>::arity == 0) &&
-!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-, bool>::type
-test_op(SimdFunc && fsimd, ScalFunc && fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
-
-	using vect_t = typename simd::vect_t;
-
-	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> c1(vectorSize), c2(vectorSize);
-
-	std::transform(c1.begin(), c1.end(), c1.begin(), fscal);
-
-	vect_t vc2;
-	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
-			c2 = fsimd();
-			simd::store(c2.data()+i, c2);
-		}
-
-	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
-	if(!res)
-		{
-			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-
-			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl ;
-		}
-	return res;
-}
-
-template<class simd, class Element, class SimdFunc, class ScalFunc>
-inline
-typename std::enable_if<
-(function_traits<SimdFunc>::arity == 1) &&
-!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-, bool>::type
-test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
-	
-	using vect_t = typename simd::vect_t;
-
-	std::mt19937 generator(seed);
-	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), c1(vectorSize), a2(vectorSize), c2(vectorSize), c3(vectorSize);
-	generate_random(a1, generator);
-	a2 = a1;
-
-	std::transform(a1.begin(), a1.end(), c1.begin(), fscal);
-
-	vect_t va2, vc2, vc3;
-	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
-			va2 = simd::load(a2.data()+i);
-			vc3 = simd::load(c1.data()+i);
-			vc2 = fsimd(va2);
-			vc3 = simd::sub(vc3,vc2);
-			simd::store(c2.data()+i, vc2);
-			simd::store(c3.data()+i, vc3);
-		}
-
-	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
-	if(!res)
-		{
-			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-
-			std::cout << "a2: ";
-			std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "c1: ";
-			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "c2: ";
-			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl << std::endl;
-			std::cout << "c1-c2: ";
-			std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl << std::endl;
-		}
-	return res;
-}
-
-template<class simd, class Element, class SimdFunc, class ScalFunc>
-inline
-typename std::enable_if<
-(function_traits<SimdFunc>::arity == 2) &&
-!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-, bool>::type
-test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
-	
-	using vect_t = typename simd::vect_t;
-
-	std::mt19937 generator(seed);
-	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), c3(vectorSize);
-	generate_random(a1, generator);
-	generate_random(b1, generator);
-	a2 = a1;
-	b2 = b1;
-
-	std::transform(a1.begin(), a1.end(), b1.begin(), c1.begin(), fscal);
-
-	vect_t va2, vb2, vc2, vc3;
-	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
-			va2 = simd::load(a2.data()+i);
-			vb2 = simd::load(b2.data()+i);
-			vc3 = simd::load(c1.data()+i);
-			vc2 = fsimd(va2, vb2);
-			vc3 = simd::sub(vc3,vc2);
-			simd::store(c2.data()+i, vc2);
-			simd::store(c3.data()+i, vc3);
-		}
-
-	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
-	if(!res)
-		{
-			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-
-			std::cout << "a2: ";
-			std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "b2: ";
-			std::copy(b2.begin(), b2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "c1: ";
-			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "c2: ";
-			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl << std::endl;
-			std::cout << "c1-c2: ";
-			std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl << std::endl;
-		}
-	return res;
-}
-
-template<class simd, class Element, class SimdFunc, class ScalFunc>
-inline
-typename std::enable_if<
-(function_traits<SimdFunc>::arity == 3) &&
-!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-, bool>::type
-test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
-	
-	using vect_t = typename simd::vect_t;
-
-	std::mt19937 generator(seed);
-	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), d1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), d2(vectorSize);
-	generate_random(a1, generator);
-	generate_random(b1, generator);
-	generate_random(c1, generator);
-	a2 = a1;
-	b2 = b1;
-	c2 = c1;
-
-	for(size_t i = 0 ; i < vectorSize ; ++i){
-			d1[i] = fscal(c1[i], a1[i], b1[i]);
-		}
-
-	vect_t va2, vb2, vc2;
-	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
-			va2 = simd::load(a2.data()+i);
-			vb2 = simd::load(b2.data()+i);
-			vc2 = simd::load(c2.data()+i);
-			simd::store(d2.data()+i, fsimd(vc2, va2, vb2));
-		}
-
-	bool res = std::equal(d1.begin(), d1.end(), d2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
-	if(!res)
-		{
-			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-
-			std::transform(d1.begin(), d1.end(), d2.begin(), d2.begin(), [](Element x1, Element x2){return x1-x2;});
-
-			//std::copy(d1.begin(), d1.end(), std::ostream_iterator<Element>(std::cout, " "));
-			//std::cout << std::endl;
-			std::copy(d2.begin(), d2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-		}
-	return res;
-}
-
-/* test_blend todo
-template<class simd, class Element> 
-inline
-//typename std::enable_if<true, bool>::type
-bool test_blend(uint64_t seed, size_t vectorSize, Element max, std::string name){
-	using vect_t = typename simd::vect_t;
-	uint8_t a = 3;
-
-	std::mt19937 generator(seed);
-	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), c3(vectorSize);
-	generate_random(a1, generator);
-	generate_random(b1, generator);
-	a2 = a1;
-	b2 = b1;
-
-
-	//std::transform(a1.begin(), a1.end(), b1.begin(), c1.begin(), fscal);
-
-	vect_t va2, vb2, vc2, vc3;
-	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
-			va2 = simd::load(a2.data()+i);
-			vb2 = simd::load(b2.data()+i);
-			vc3 = simd::load(c1.data()+i);
-			vc2 = simd::blend<a>(va2, vb2);
-			vc3 = simd::sub(vc3,vc2);
-			simd::store(c2.data()+i, vc2);
-			simd::store(c3.data()+i, vc3);
-		}
-
-	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
-	if(!res)
-		{
-			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-
-			std::cout << "a2: ";
-			std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "b2: ";
-			std::copy(b2.begin(), b2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "c1: ";
-			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl;
-			std::cout << "c2: ";
-			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl << std::endl;
-			std::cout << "c1-c2: ";
-			std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
-			std::cout << std::endl << std::endl;
-		}
-	return res;
-}
-*/
+/* for floating point element */
 template<class simd, class Element>
-bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
-	bool btest = true;
+typename enable_if<is_floating_point<Element>::value, bool>::type
+test_impl () {
+    using Scal = ScalFunctions<Element>;
+    bool btest = true;
 
-	btest = btest && test_op<simd>(simd::ceil, [](Element x){return std::ceil(x);}, seed, vectorSize, max, "ceil");
-	btest = btest && test_op<simd>(simd::floor, [](Element x){return std::floor(x);}, seed, vectorSize, max,"floor");
-	btest = btest && test_op<simd>(simd::round, [](Element x){return std::round(x);}, seed, vectorSize, max, "round");
-	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
-	btest = btest && test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
-	btest = btest && test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mul");
-	btest = btest && test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,x1);}, seed, vectorSize, max, "fmadd");
-	btest = btest && test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,-x1);}, seed, vectorSize, max, "fmsub");
-	btest = btest && test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return std::fma(-x3,x2,x1);}, seed, vectorSize, max, "fnmadd");
-	btest = btest && test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?NAN:0;}, seed, vectorSize, max, "lesser");
-	btest = btest && test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
-	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
-	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
-	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
-	return btest;
+    TEST_ONE_OP (ceil);
+    TEST_ONE_OP (floor);
+    TEST_ONE_OP (round);
+    TEST_ONE_OP (add);
+    TEST_ONE_OP (sub);
+    TEST_ONE_OP (mul);
+    TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (lesser);
+    TEST_ONE_OP (lesser_eq);
+    TEST_ONE_OP (greater);
+    TEST_ONE_OP (greater_eq);
+    TEST_ONE_OP (eq);
+
+    return btest;
 }
 
-template<typename simd>
-typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(2));}
-
-
+/* for integral element */
 template<class simd, class Element>
-bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
-	bool btest = true;
+typename enable_if<is_integral<Element>::value, bool>::type
+test_impl () {
+    using Scal = ScalFunctions<Element>;
+    bool btest = true;
 
-	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
-	btest = btest && test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
-	btest = btest && test_op<simd>(simd::mullo, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
-	btest = btest && test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
-	btest = btest && test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return x1+x3*x2;}, seed, vectorSize, max, "fmadd");
-	btest = btest && test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return -x1+x3*x2;}, seed, vectorSize, max, "fmsub");
-	btest = btest && test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return x1-x3*x2;}, seed, vectorSize, max, "fnmadd");
-	btest = btest && test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?-1:0;}, seed, vectorSize, max, "lesser");
-	btest = btest && test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?-1:0;}, seed, vectorSize, max, "lesser_eq");
-	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
-	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
-	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	// test_blend todo
-	//btest = btest && test_blend<simd>(seed, vectorSize, max, "blend");
-	// print_arity(mysra<simd>);
-	btest = btest && test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
-						   [](Element x1){
-			integer h = integer (1) << 2;
-			integer r = integer(x1) / h;
-			r -= ((integer(x1)-h*r) < 0)?1:0;
-			return Element(r);
-			// return Element(std::floor(double(x1)/double(h)));
-}, seed, vectorSize, max, "sra");
-	btest = btest && test_op<simd>(simd::mulhi, [](Element x1, Element x2){
-			integer q,r;
-			integer a = (integer(x1)*integer(x2));
-			integer b = integer(1) << uint64_t(sizeof(Element)*8);
-			Givaro::IntegerDom Z;
-			Z.divmod(q, r, a, b);
-			return Element(q);
-}, seed, vectorSize, max, "mulhi");
-	btest = btest && test_op<simd>(simd::mulx, [](Element x1, Element x2){
-			Element h = Element(1) << (sizeof(Element)*4);
-			/* Representative r of x1 modulo h with -h/2 <= r < h/2*/
-			if (std::is_signed<Element>::value) {
-			x1 = (x1+h/2)%h;
-			x1 += (x1 < 0)?h/2:-h/2;
-			x2 = (x2+h/2)%h;
-			x2 += (x2 < 0)?h/2:-h/2; }
-			else {
-			x1 = x1 % h;
-			x2 = x2 % h;
-}
-			return x1*x2;
-}, seed, vectorSize, max, "mulx");
+    TEST_ONE_OP (add);
+    TEST_ONE_OP (sub);
+    TEST_ONE_OP (mul);
+    TEST_ONE_OP (mullo);
+    TEST_ONE_OP (mulhi);
+    TEST_ONE_OP (mulx);
+    TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (lesser);
+    TEST_ONE_OP (lesser_eq);
+    TEST_ONE_OP (greater);
+    TEST_ONE_OP (greater_eq);
+    TEST_ONE_OP (eq);
 
-	return btest;
+    return btest;
 }
 
+/******************************************************************************/
+/* Test all SIMD implems for one Element type *********************************/
+/******************************************************************************/
 template<class Element>
-bool test_float(uint64_t seed, size_t vectorSize, size_t max_){
-	bool sse = true, avx = true;
+bool
+test () {
+    bool test = true;
+
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
-	sse = test_float_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
-	if(!sse)
-		std::cout << "bug sse" << std::endl;
-	else
-		std::cout << "SSE OK" << std::endl;
+    test &= test_impl<Simd128<Element>, Element>();
+    cout << endl;
 #endif
 
 #ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
-	avx = test_float_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
-	if(!avx)
-		std::cout << "bug avx" << std::endl;
-	else
-		std::cout << "AVX OK" << std::endl;
+    test &= test_impl<Simd256<Element>, Element>();
+    cout << endl;
 #endif
-	return sse && avx;
+
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
+    test &= test_impl<Simd512<Element>, Element>();
+    cout << endl;
+#endif
+
+    return test;
 }
 
-template<class Element>
-bool test_integer(uint64_t seed, size_t vectorSize, size_t max_){
-	bool sse = true, avx = true;
-#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
-	sse = test_integer_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
-	if(!sse)
-		std::cout << "bug sse" << std::endl;
-	else
-		std::cout << "SSE OK" << std::endl;
-#endif
-#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
-	avx = test_integer_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
-	if(!avx)
-		std::cout << "bug avx" << std::endl;
-	else
-		std::cout << "AVX OK" << std::endl;
-#endif
-	return sse && avx;
-}
+/******************************************************************************/
+/* Main ***********************************************************************/
+/******************************************************************************/
+int
+main (int argc, char *argv[]) {
+    uint64_t seed = FFLAS::getSeed();
 
+    static Argument args[] = {
+        { 's', "-s S", "Set the seed", TYPE_UINT64 , &seed },
+        END_OF_ARGUMENTS
+    };
 
-int main(int ac, char **av) {
-	uint64_t seed = FFLAS::getSeed();
-	int vectorSize = 32;
-	int max = 100;
-	int loop = false;
+    FFLAS::parseArguments (argc, argv, args);
 
-	static Argument as[] = {
-		{ 's', "-s N", "Set the seed                 .", TYPE_UINT64 , &seed },
-		{ 'l', "-l N", "Set the loop execution       .", TYPE_INT , &loop },
-		END_OF_ARGUMENTS
-	};
+    cout << "# To rerun this test: test-simd -s " << seed << endl;
+    cout << "# seed = " << seed << endl << endl;
 
-	FFLAS::parseArguments(ac,av,as);
+    entropy_generator.seed (seed);
 
-	srand(seed);
-	srand48(seed);
+    bool pass  = true ;
+    pass &= test<float>();
+    pass &= test<double>();
+    pass &= test<int16_t>();
+    pass &= test<int32_t>();
+    pass &= test<int64_t>();
+    pass &= test<uint16_t>();
+    pass &= test<uint32_t>();
+    pass &= test<uint64_t>();
 
-	bool pass  = true ;
-	{
-		do{
-				{
-					pass = pass && test_float<float>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_float<double>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_integer<int16_t>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_integer<int32_t>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_integer<int64_t>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_integer<uint16_t>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_integer<uint32_t>(seed, vectorSize, max);
-				}
-				{
-					pass = pass && test_integer<uint64_t>(seed, vectorSize, max);
-				}
-			}while(loop);
-	}
-	std::cout << std::boolalpha << pass << std::endl;
-	return (pass?0:1) ;
+    cout << endl << "Test " << (pass ? "passed" : "failed") << endl;
+    return pass ? 0 : 1;
 }
