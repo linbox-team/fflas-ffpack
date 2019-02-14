@@ -64,6 +64,7 @@ BASIC_TESTS =               \
 		test-io      \
 		test-maxdelayeddim \
 		test-solve \
+		test-simd \
 		test-fgemv \
 		test-nullspace \
 		regression-check
@@ -159,6 +160,7 @@ test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 regression_check_SOURCES = regression-check.C
 
 test_solve_SOURCES = test-solve.C
+test_simd_SOURCES = test-simd.C
 test_fgemv_SOURCES = test-fgemv.C
 #test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
 

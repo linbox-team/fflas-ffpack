@@ -21,7 +21,8 @@ AC_DEFUN([INSTR_SET],
         AC_ARG_ENABLE(avx,[AC_HELP_STRING([--disable-avx], [ disable AVX instruction set (enabled by default when available)])],[],[])
         AC_ARG_ENABLE(avx2,[AC_HELP_STRING([--disable-avx2], [ disable AVX2 instruction set (enabled by default when available)])],[],[])
         AC_ARG_ENABLE(avx512f, [AC_HELP_STRING([--disable-avx512f], [ disable AVX512F instruction set (enabled by default when available)])],[],[])
-        AC_ARG_ENABLE(avx512dq, [AC_HELP_STRING([--disable-avx512dq], [ disable AVX512DQ instruction set (enabled by default when available)])],[],[])        
+        AC_ARG_ENABLE(avx512dq, [AC_HELP_STRING([--disable-avx512dq], [ disable AVX512DQ instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(avx512vl, [AC_HELP_STRING([--disable-avx512vl], [ disable AVX512VL instruction set (enabled by default when available)])],[],[])
         AC_ARG_ENABLE(fma,[AC_HELP_STRING([--disable-fma], [ disable FMA instruction set (enabled by default when available)])],[],[])
         AC_ARG_ENABLE(fma4,[AC_HELP_STRING([--disable-fma4], [ disable FMA4 instruction set (enabled by default when available)])],[],[])
 
@@ -70,6 +71,10 @@ AC_DEFUN([INSTR_SET],
                         AS_ECHO("AVX512F enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -mavx512f"
                 ],[AS_ECHO("AVX512F disabled")])
+                AS_IF([ test "$iset" -ge "11" -a "x$enable_avx512vl" != "xno" ], [
+                        AS_ECHO("AVX512VL enabled")
+                        SIMD_CFLAGS="${SIMD_CFLAGS} -mavx512vl"
+                ],[AS_ECHO("AVX512VL disabled")])
                 AS_IF([ test "$iset" -ge "12" -a "x$enable_avx512dq" != "xno" ], [
                         AS_ECHO("AVX512DQ enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -mavx512dq"
