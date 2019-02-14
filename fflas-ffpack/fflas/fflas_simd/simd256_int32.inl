@@ -686,13 +686,13 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 		// return Simd256_64::vor(C,A1);
 		vect_t C,A1,B1;
 			//C  = Simd256_64::mulx(a,b);
-		C  = _mm256_mul_epi32(a,b);
+		C  = _mm256_mul_epu32(a,b);
 			//A1 = Simd256_64::srl(a,32);
 		A1 = _mm256_srli_epi64(a, 32);
 			//B1 = Simd256_64::srl(b,32);
 		B1 = _mm256_srli_epi64(b, 32);
 			//A1 = Simd256_64::mulx(A1,B1);
-		A1 =  _mm256_mul_epi32(A1,B1);
+		A1 =  _mm256_mul_epu32(A1,B1);
 			//C  = Simd256_64::srl(C,32);
 		C  = _mm256_srli_epi64(C, 32);
 			//A1 = Simd256_64::srl(A1,32);
