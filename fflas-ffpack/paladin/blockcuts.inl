@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_bounds.inl
  * Copyright (C) 2013 Jean-Guillaume Dumas
  *
@@ -36,99 +34,99 @@
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 
 namespace FFLAS {
-	namespace CuttingStrategy{
-		struct Single{};
-		struct Row{};
-		struct Column{};
-		struct Block{};
-		struct Recursive{};		
-		typedef Row RNSModulus;
-	}
+    namespace CuttingStrategy{
+        struct Single{};
+        struct Row{};
+        struct Column{};
+        struct Block{};
+        struct Recursive{};
+        typedef Row RNSModulus;
+    }
 
-	namespace StrategyParameter{
-		struct Fixed{};
-		struct Threads{};
-		struct Grain{};
-		struct TwoD{};
-		struct TwoDAdaptive{};
-		struct ThreeD{};
-		struct ThreeDInPlace{};
-		struct ThreeDAdaptive{};
-	}
+    namespace StrategyParameter{
+        struct Fixed{};
+        struct Threads{};
+        struct Grain{};
+        struct TwoD{};
+        struct TwoDAdaptive{};
+        struct ThreeD{};
+        struct ThreeDInPlace{};
+        struct ThreeDAdaptive{};
+    }
 
-	/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-		/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-	namespace ParSeqHelper {
-		template <typename C=CuttingStrategy::Block, typename P=StrategyParameter::Threads>
-		struct Parallel{
-			typedef C Cut;
-			typedef P Param;
-			
-			Parallel(size_t n=NUM_THREADS):_numthreads(n){}
+    /*! ParSeqHelper for both fgemm and ftrsm
+    */
+    /*! ParSeqHelper for both fgemm and ftrsm
+    */
+    namespace ParSeqHelper {
+        template <typename C=CuttingStrategy::Block, typename P=StrategyParameter::Threads>
+        struct Parallel{
+            typedef C Cut;
+            typedef P Param;
 
-			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads();
-			}
-			size_t numthreads() const { return _numthreads; }
-			size_t& set_numthreads(size_t n) { return _numthreads=n; }
-			// CuttingStrategy method() const { return _method; }
-			// StrategyParameter strategy() const { return _param; }
+            Parallel(size_t n=NUM_THREADS):_numthreads(n){}
+
+            friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
+                return out << "Parallel: " << p.numthreads();
+            }
+            size_t numthreads() const { return _numthreads; }
+            size_t& set_numthreads(size_t n) { return _numthreads=n; }
+            // CuttingStrategy method() const { return _method; }
+            // StrategyParameter strategy() const { return _param; }
         private:
-			size_t _numthreads;
-			// CuttingStrategy _method;
-			// StrategyParameter _param;
-            
-		};
-		struct Sequential{
-			Sequential() {}
-			Sequential(size_t nth) { assert (nth == 1); }
-			template<class Cut,class Param>
-			Sequential(Parallel<Cut,Param>& ) {}
-			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
-				return out << "Sequential";
-			}
-			size_t numthreads() const { return 1; }
-		// 	CuttingStrategy method() const { return SINGLE; }
-                // // numthreads==1 ==> a single block
-		// 	StrategyParameter strategy() const { return THREADS; }
-		};
-		template <typename H1=Sequential, typename H2=Sequential>
-		struct Compose{
+            size_t _numthreads;
+            // CuttingStrategy _method;
+            // StrategyParameter _param;
 
-			Compose() : _comp1 (), _comp2 () {}
-			Compose(const Compose & other) : _comp1 (other.first_component()), _comp2 (other.second_component()) {}
-			Compose(const Sequential & S) : _comp1 (1), _comp2 (1) {}
-			Compose(size_t th1, size_t th2) : _comp1 (th1), _comp2 (th2) {}
-			Compose(const H1 & o1, const H2 & o2) : _comp1 (o1), _comp2 (o2) {}
+        };
+        struct Sequential{
+            Sequential() {}
+            Sequential(size_t nth) { assert (nth == 1); }
+            template<class Cut,class Param>
+            Sequential(Parallel<Cut,Param>& ) {}
+            friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
+                return out << "Sequential";
+            }
+            size_t numthreads() const { return 1; }
+            // 	CuttingStrategy method() const { return SINGLE; }
+            // // numthreads==1 ==> a single block
+            // 	StrategyParameter strategy() const { return THREADS; }
+        };
+        template <typename H1=Sequential, typename H2=Sequential>
+        struct Compose{
 
-			H1 first_component () const { return _comp1; }
-			H2 second_component () const { return _comp2; }
+            Compose() : _comp1 (), _comp2 () {}
+            Compose(const Compose & other) : _comp1 (other.first_component()), _comp2 (other.second_component()) {}
+            Compose(const Sequential & S) : _comp1 (1), _comp2 (1) {}
+            Compose(size_t th1, size_t th2) : _comp1 (th1), _comp2 (th2) {}
+            Compose(const H1 & o1, const H2 & o2) : _comp1 (o1), _comp2 (o2) {}
 
-			friend std::ostream& operator<<(std::ostream& o, const Compose& c) {
-				return o << "Compose: (" << c.first_component() << ", "
-				                         << c.second_component() << ")";
-			}
+            H1 first_component () const { return _comp1; }
+            H2 second_component () const { return _comp2; }
 
-		private:
-			H1 _comp1;
-			H2 _comp2;
-		};
-	}
+            friend std::ostream& operator<<(std::ostream& o, const Compose& c) {
+                return o << "Compose: (" << c.first_component() << ", "
+                << c.second_component() << ")";
+            }
+
+        private:
+            H1 _comp1;
+            H2 _comp2;
+        };
+    }
 
 
-	template<class Cut=CuttingStrategy::Block, class Strat=StrategyParameter::Threads>
+    template<class Cut=CuttingStrategy::Block, class Strat=StrategyParameter::Threads>
     inline void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
-                   const size_t m, const size_t n,
-                   const size_t numthreads);
+                          const size_t m, const size_t n,
+                          const size_t numthreads);
 
     template<>
     inline void BlockCuts<CuttingStrategy::Single,StrategyParameter::Threads>(size_t& RBLOCKSIZE,
-                              size_t& CBLOCKSIZE,
-                              const size_t m, const size_t n,
-                              const size_t numthreads) {
-	assert(numthreads==1);
+                                                                              size_t& CBLOCKSIZE,
+                                                                              const size_t m, const size_t n,
+                                                                              const size_t numthreads) {
+        assert(numthreads==1);
         RBLOCKSIZE = std::max(m,(size_t)1);
         CBLOCKSIZE = std::max(n,(size_t)1);
     }
@@ -136,9 +134,9 @@ namespace FFLAS {
 
     template<>
     inline void BlockCuts<CuttingStrategy::Row,StrategyParameter::Fixed>(size_t& RBLOCKSIZE,
-                              size_t& CBLOCKSIZE,
-                              const size_t m, const size_t n,
-                              const size_t numthreads) {
+                                                                         size_t& CBLOCKSIZE,
+                                                                         const size_t m, const size_t n,
+                                                                         const size_t numthreads) {
         RBLOCKSIZE = std::max(std::min(m,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
         CBLOCKSIZE = std::max(n,(size_t)1);
     }
@@ -146,18 +144,18 @@ namespace FFLAS {
 
     template<>
     inline void BlockCuts<CuttingStrategy::Row,StrategyParameter::Grain>(size_t& RBLOCKSIZE,
-                              size_t& CBLOCKSIZE,
-                              const size_t m, const size_t n,
-                              const size_t grainsize) {
+                                                                         size_t& CBLOCKSIZE,
+                                                                         const size_t m, const size_t n,
+                                                                         const size_t grainsize) {
         RBLOCKSIZE = std::max(std::min(m,grainsize),(size_t)1);
         CBLOCKSIZE = std::max(n,(size_t)1);
     }
 
     template<>
     inline void BlockCuts<CuttingStrategy::Block,StrategyParameter::Grain>(size_t& RBLOCKSIZE,
-                              size_t& CBLOCKSIZE,
-                              const size_t m, const size_t n,
-                              const size_t grainsize) {
+                                                                           size_t& CBLOCKSIZE,
+                                                                           const size_t m, const size_t n,
+                                                                           const size_t grainsize) {
         RBLOCKSIZE = std::max(std::min(m,grainsize),(size_t)1);
         CBLOCKSIZE = std::max(std::min(n,grainsize),(size_t)1);
     }
@@ -165,9 +163,9 @@ namespace FFLAS {
 
     template<>
     inline void BlockCuts<CuttingStrategy::Column,StrategyParameter::Fixed>(size_t& RBLOCKSIZE,
-                                 size_t& CBLOCKSIZE,
-                                 const size_t m, const size_t n,
-                                 const size_t numthreads) {
+                                                                            size_t& CBLOCKSIZE,
+                                                                            const size_t m, const size_t n,
+                                                                            const size_t numthreads) {
         RBLOCKSIZE = std::max(m,(size_t)1);
         CBLOCKSIZE = std::max(std::min(n,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
     }
@@ -175,9 +173,9 @@ namespace FFLAS {
 
     template<>
     inline void BlockCuts<CuttingStrategy::Column,StrategyParameter::Grain>(size_t& RBLOCKSIZE,
-                                 size_t& CBLOCKSIZE,
-                                 const size_t m, const size_t n,
-                                 const size_t grainsize) {
+                                                                            size_t& CBLOCKSIZE,
+                                                                            const size_t m, const size_t n,
+                                                                            const size_t grainsize) {
         RBLOCKSIZE = std::max(m,(size_t)1);
         CBLOCKSIZE = std::max(std::min(n,grainsize),(size_t)1);
     }
@@ -185,18 +183,18 @@ namespace FFLAS {
 
     template<>
     inline void BlockCuts<CuttingStrategy::Block,StrategyParameter::Fixed>(size_t& RBLOCKSIZE,
-                                size_t& CBLOCKSIZE,
-                                const size_t m, const size_t n,
-                                const size_t numthreads) {
+                                                                           size_t& CBLOCKSIZE,
+                                                                           const size_t m, const size_t n,
+                                                                           const size_t numthreads) {
         RBLOCKSIZE = std::max(std::min(m,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
         CBLOCKSIZE = std::max(std::min(n,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
     }
 
     template<>
     inline void BlockCuts<CuttingStrategy::Row,StrategyParameter::Threads>(size_t& RBLOCKSIZE,
-                                size_t& CBLOCKSIZE,
-                                const size_t m, const size_t n,
-                                const size_t numthreads) {
+                                                                           size_t& CBLOCKSIZE,
+                                                                           const size_t m, const size_t n,
+                                                                           const size_t numthreads) {
         RBLOCKSIZE = std::max(m/numthreads,(size_t)1);
         CBLOCKSIZE = std::max(n,(size_t)1);
     }
@@ -204,20 +202,20 @@ namespace FFLAS {
 
     template<>
     inline void BlockCuts<CuttingStrategy::Column,StrategyParameter::Threads>(size_t& RBLOCKSIZE,
-                                   size_t& CBLOCKSIZE,
-                                   const size_t m, const size_t n,
-                                   const size_t numthreads) {
+                                                                              size_t& CBLOCKSIZE,
+                                                                              const size_t m, const size_t n,
+                                                                              const size_t numthreads) {
         RBLOCKSIZE = std::max(m,(size_t)1);
         CBLOCKSIZE = std::max(n/numthreads,(size_t)1);
     }
 
     template<>
     inline void BlockCuts<CuttingStrategy::Block,StrategyParameter::Threads>(size_t& RBLOCKSIZE,
-                                  size_t& CBLOCKSIZE,
-                                  const size_t m, const size_t n,
-                                  const size_t numthreads) {
+                                                                             size_t& CBLOCKSIZE,
+                                                                             const size_t m, const size_t n,
+                                                                             const size_t numthreads) {
         if (numthreads<65) {
-                //CP: Let's not compute these values all the time
+            //CP: Let's not compute these values all the time
             const short maxtc[64] = {1,2,3,2,5,3,7,4,3,5,11,4,13,7,5,4,17,6,19,5,7,11,23,6,5,13,9,7,29,6,31,8,11,17,7,6,37,19,13,8,41,7,43,11,9,23,47,8,7,10,17,13,53,9,11,8,19,29,59,10,61,31,9,8};
             const short maxtr[64] = {1,1,1,2,1,2,1,2,3,2,1,3,1,2,3,4,1,3,1,4,3,2,1,4,5,2,3,4,1,5,1,4,3,2,5,6,1,2,3,5,1,6,1,4,5,2,1,6,7,5,3,4,1,6,5,7,3,2,1,6,1,2,7,8};
 
@@ -247,7 +245,7 @@ namespace FFLAS {
     //                const StrategyParameter strategy,
     //                const size_t t) {
     //     switch(method) {
-    //         case CuttingStrategy::Block: 
+    //         case CuttingStrategy::Block:
     // 		    switch(strategy) {
     // 			case StrategyParameter::Threads: BlockCuts<CuttingStrategy::Block,StrategyParameter::Threads>(r,c,m,n,t); break;
     // 			case StrategyParameter::Grain: BlockCuts<CuttingStrategy::Block,StrategyParameter::Grain>(r,c,m,n,t); break;
@@ -255,7 +253,7 @@ namespace FFLAS {
     // 			default: BlockCuts<CuttingStrategy::Block,StrategyParameter::Threads>(r,c,m,n,t);
     // 		    }
     // 		    break;
-    //         case CuttingStrategy::Row: 
+    //         case CuttingStrategy::Row:
     // 		    switch(strategy) {
     // 			case StrategyParameter::Threads: BlockCuts<CuttingStrategy::Row,StrategyParameter::Threads>(r,c,m,n,t); break;
     // 			case StrategyParameter::Grain: BlockCuts<CuttingStrategy::Row,StrategyParameter::Grain>(r,c,m,n,t); break;
@@ -263,7 +261,7 @@ namespace FFLAS {
     // 			default: BlockCuts<CuttingStrategy::Row,StrategyParameter::Threads>(r,c,m,n,t);
     // 		    }
     // 		    break;
-    //         case CuttingStrategy::Column: 
+    //         case CuttingStrategy::Column:
     // 		    switch(strategy) {
     // 			case StrategyParameter::Threads: BlockCuts<CuttingStrategy::Column,StrategyParameter::Threads>(r,c,m,n,t); break;
     // 			case StrategyParameter::Grain: BlockCuts<CuttingStrategy::Column,StrategyParameter::Grain>(r,c,m,n,t); break;
@@ -276,16 +274,16 @@ namespace FFLAS {
     // }
 
 
-	template<class Cut=CuttingStrategy::Block, class Param=StrategyParameter::Threads>
-	inline void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
-                   size_t& lastRBS, size_t& lastCBS,
-                   size_t& changeRBS, size_t& changeCBS,
-                   size_t& numRowBlock, size_t& numColBlock,
-                   size_t m, size_t n,
-//                 const CuttingStrategy method,
-//                 const StrategyParameter strategy,
-                   const size_t numthreads) {
-		BlockCuts<Cut,Param>(rowBlockSize, colBlockSize, m, n, numthreads);
+    template<class Cut=CuttingStrategy::Block, class Param=StrategyParameter::Threads>
+    inline void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
+                          size_t& lastRBS, size_t& lastCBS,
+                          size_t& changeRBS, size_t& changeCBS,
+                          size_t& numRowBlock, size_t& numColBlock,
+                          size_t m, size_t n,
+                          //                 const CuttingStrategy method,
+                          //                 const StrategyParameter strategy,
+                          const size_t numthreads) {
+        BlockCuts<Cut,Param>(rowBlockSize, colBlockSize, m, n, numthreads);
         numRowBlock = m/rowBlockSize;
         numColBlock = n/colBlockSize;
 
@@ -298,25 +296,25 @@ namespace FFLAS {
         if (changeCBS) ++colBlockSize;
 
 
-	/*
-            // Better preserve numRowBlock and numColBlock
+        /*
+        // Better preserve numRowBlock and numColBlock
         if (lastRBS) {
-            lastRBS = m-rowBlockSize*numRowBlock;
-            ++rowBlockSize;
+        lastRBS = m-rowBlockSize*numRowBlock;
+        ++rowBlockSize;
         } else lastRBS = rowBlockSize;
         if (lastCBS) {
-            lastCBS = n-colBlockSize*numColBlock;
-            ++colBlockSize;
+        lastCBS = n-colBlockSize*numColBlock;
+        ++colBlockSize;
         } else lastCBS = colBlockSize;
-*/
+        */
 
 
 
-//             // Better preserve rowBlockSize and colBlockSize
-//         lastRBS = m % rowBlockSize;
-//         lastCBS = n % colBlockSize;
-//          if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
-//          if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
+        //             // Better preserve rowBlockSize and colBlockSize
+        //         lastRBS = m % rowBlockSize;
+        //         lastCBS = n % colBlockSize;
+        //          if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
+        //          if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
     }
 
 
@@ -325,23 +323,23 @@ namespace FFLAS {
 
 
 namespace FFLAS {
-	template <typename blocksize_t=size_t, typename Cut=CuttingStrategy::Block, typename Param=StrategyParameter::Threads>
+    template <typename blocksize_t=size_t, typename Cut=CuttingStrategy::Block, typename Param=StrategyParameter::Threads>
     struct ForStrategy1D {
         ForStrategy1D(const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H) {
-			build(n,H);
-		}
+            build(n,H);
+        }
         ForStrategy1D(const blocksize_t b, const blocksize_t e, const ParSeqHelper::Parallel<Cut,Param> H) {
-			build(e-b,H);
-		}
-		
+            build(e-b,H);
+        }
+
         void build(const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H) {
 
-			if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
-				numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
-			} else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) { 
-				numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);
-			} else {
-				numBlock = std::max(n/(blocksize_t)(__FFLASFFPACK_MINBLOCKCUTS),(blocksize_t)1);
+            if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
+                numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
+            } else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) {
+                numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);
+            } else {
+                numBlock = std::max(n/(blocksize_t)(__FFLASFFPACK_MINBLOCKCUTS),(blocksize_t)1);
             }
             firstBlockSize = n/numBlock;
             if (firstBlockSize<1) {
@@ -351,13 +349,13 @@ namespace FFLAS {
             changeBS = n - numBlock*firstBlockSize;
             lastBlockSize = firstBlockSize;
             if (changeBS) ++firstBlockSize;
-		}
+        }
 
         blocksize_t initialize() {
             ibeg = 0; iend = firstBlockSize;
-//             std::cout << "FS1D 0   : " << 0 << std::endl;
-//             std::cout << "FS1D ibeg: " << ibeg << std::endl;
-//             std::cout << "FS1D iend: " << iend << std::endl;
+            //             std::cout << "FS1D 0   : " << 0 << std::endl;
+            //             std::cout << "FS1D ibeg: " << ibeg << std::endl;
+            //             std::cout << "FS1D iend: " << iend << std::endl;
 
             return current = 0;
         }
@@ -365,25 +363,25 @@ namespace FFLAS {
 
         blocksize_t begin() const { return ibeg; }
         blocksize_t end() const { return iend; }
-        
+
         blocksize_t numblocks() const { return numBlock; }
         blocksize_t blockindex() const { return current; }
-                
+
 
         blocksize_t operator++() {
             ibeg = iend;
             iend += (++current<changeBS?firstBlockSize:lastBlockSize);
 
-//             std::cout << "FS1D i   : " << current << std::endl;
-//             std::cout << "FS1D ibeg: " << ibeg << std::endl;
-//             std::cout << "FS1D iend: " << iend << std::endl;
+            //             std::cout << "FS1D i   : " << current << std::endl;
+            //             std::cout << "FS1D ibeg: " << ibeg << std::endl;
+            //             std::cout << "FS1D iend: " << iend << std::endl;
 
 
             return current;
         }
 
     protected:
-       blocksize_t ibeg, iend;
+        blocksize_t ibeg, iend;
 
         blocksize_t current;
         blocksize_t firstBlockSize,lastBlockSize;
@@ -391,18 +389,18 @@ namespace FFLAS {
         blocksize_t numBlock;
 
     };
-	
-	template <typename blocksize_t=size_t, typename Cut=CuttingStrategy::Block, typename Param=StrategyParameter::Threads>
-	struct ForStrategy2D {
-		ForStrategy2D(const blocksize_t m, const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H)
-			{
-				BlockCuts<Cut,Param>(rowBlockSize, colBlockSize,
-						     lastRBS, lastCBS,
-						     changeRBS, changeCBS,
-						     numRowBlock, numColBlock,
-						     m, n,
-//						     H.method(), H.strategy(),
-						     H.numthreads());
+
+    template <typename blocksize_t=size_t, typename Cut=CuttingStrategy::Block, typename Param=StrategyParameter::Threads>
+    struct ForStrategy2D {
+        ForStrategy2D(const blocksize_t m, const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H)
+        {
+            BlockCuts<Cut,Param>(rowBlockSize, colBlockSize,
+                                 lastRBS, lastCBS,
+                                 changeRBS, changeCBS,
+                                 numRowBlock, numColBlock,
+                                 m, n,
+                                 //						     H.method(), H.strategy(),
+                                 H.numthreads());
 
             BLOCKS = numRowBlock * numColBlock;
         }
@@ -419,7 +417,7 @@ namespace FFLAS {
         blocksize_t jbegin() const { return _jbeg; }
         blocksize_t iend() const { return _iend; }
         blocksize_t jend() const { return _jend; }
-        
+
 
         blocksize_t operator++() {
             ++current;
@@ -453,7 +451,7 @@ namespace FFLAS {
             out<<"_jend: " << FS2D._jend << std::endl;
             return out;
         }
-                
+
         blocksize_t rownumblocks() const { return numRowBlock; }
         blocksize_t colnumblocks() const { return numColBlock; }
         blocksize_t blockindex() const { return current; }
@@ -471,7 +469,7 @@ namespace FFLAS {
         blocksize_t numRowBlock; blocksize_t numColBlock;
         blocksize_t BLOCKS;
 
-   };
+    };
 
 }
 
@@ -479,3 +477,5 @@ namespace FFLAS {
 
 #endif
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

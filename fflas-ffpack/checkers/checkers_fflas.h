@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/checkers.h
  * Copyright (C) 2016 Ashley Lesdalons, JG Dumas
  *
@@ -34,13 +32,13 @@
 #include "checker_empty.h"
 
 #ifdef __FFLASFFPACK_DEBUG
- 	#define CHECKING_MODE 1
- 	#define ENABLE_ALL_CHECKINGS 1
+#define CHECKING_MODE 1
+#define ENABLE_ALL_CHECKINGS 1
 #endif
 
 #ifdef ENABLE_ALL_CHECKINGS
-	#define ENABLE_CHECKER_fgemm 1
- 	#define ENABLE_CHECKER_ftrsm 1
+#define ENABLE_CHECKER_fgemm 1
+#define ENABLE_CHECKER_ftrsm 1
 #endif
 
 #ifdef TIME_CHECKERS
@@ -54,21 +52,21 @@ class FailureFgemmCheck {};
 class FailureTrsmCheck {};
 
 namespace FFLAS {
-	template <class Field> class CheckerImplem_fgemm;
-	template <class Field> class CheckerImplem_ftrsm;
+    template <class Field> class CheckerImplem_fgemm;
+    template <class Field> class CheckerImplem_ftrsm;
 }
 
 namespace FFLAS {
 #ifdef ENABLE_CHECKER_fgemm
-	template <class Field> using Checker_fgemm = CheckerImplem_fgemm<Field>;
+    template <class Field> using Checker_fgemm = CheckerImplem_fgemm<Field>;
 #else
-	template <class Field> using Checker_fgemm = FFLAS::Checker_Empty<Field>;
+    template <class Field> using Checker_fgemm = FFLAS::Checker_Empty<Field>;
 #endif
 
 #ifdef ENABLE_CHECKER_ftrsm
-	template <class Field> using Checker_ftrsm = CheckerImplem_ftrsm<Field>;
+    template <class Field> using Checker_ftrsm = CheckerImplem_ftrsm<Field>;
 #else
-	template <class Field> using Checker_ftrsm = FFLAS::Checker_Empty<Field>;
+    template <class Field> using Checker_ftrsm = FFLAS::Checker_Empty<Field>;
 #endif
 }
 
@@ -77,3 +75,5 @@ namespace FFLAS {
 #include "fflas-ffpack/utils/fflas_memory.h"
 
 #endif
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

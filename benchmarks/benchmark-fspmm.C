@@ -1,26 +1,23 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /* Copyright (c) FFLAS-FFPACK
-* Written by Bastien Vialla <bastien.vialla@lirmm.fr>
-* ========LICENCE========
-* This file is part of the library FFLAS-FFPACK.
-*
-* FFLAS-FFPACK is free software: you can redistribute it and/or modify
-* it under the terms of the  GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-* ========LICENCE========
-*/
+ * Written by Bastien Vialla <bastien.vialla@lirmm.fr>
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ */
 
 #include <iostream>
 #include <vector>
@@ -70,15 +67,15 @@ std::pair<double, uint64_t> test_fspmm(size_t iter, const Field &F, IndexT *row,
 }
 
 template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t iter, T as, int blocksize) {
-//	cout << 2*p.second*blocksize*iter << endl;
+    //	cout << 2*p.second*blocksize*iter << endl;
     std::cout << "Time: " << p.first / double(iter)
-              << " Gfops: " << ((2*blocksize*p.second)/(1000000.*p.first))*(double(iter)/1000) ;
+    << " Gfops: " << ((2*blocksize*p.second)/(1000000.*p.first))*(double(iter)/1000) ;
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 }
 
 int main(int argc, char **argv) {
 
-	using Field = Givaro::Modular<double>;
+    using Field = Givaro::Modular<double>;
     using Element = typename Field::Element;
 
     size_t iter = 10;
@@ -88,11 +85,11 @@ int main(int argc, char **argv) {
     std::string matrixFile = "";
 
     Argument as[] = { { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INT, &q },
-                      { 'b', "-b Q", "Set the block size.", TYPE_INT, &blocksize },
-                      { 'i', "-i R", "Set number of repetitions.", TYPE_INT, &iter },
-                      { 's', "-s S", "Compute and print matrix statistics.", TYPE_INT, &s },
-                      { 'f', "-f FILE", "Set matrix file.", TYPE_STR, &matrixFile },
-                      END_OF_ARGUMENTS };
+        { 'b', "-b Q", "Set the block size.", TYPE_INT, &blocksize },
+        { 'i', "-i R", "Set number of repetitions.", TYPE_INT, &iter },
+        { 's', "-s S", "Compute and print matrix statistics.", TYPE_INT, &s },
+        { 'f', "-f FILE", "Set matrix file.", TYPE_STR, &matrixFile },
+        END_OF_ARGUMENTS };
 
     // matrixFile = "matrix/cis.mk8-8.sms";
     // matrixFile = "matrix/M06-D9.sms";
@@ -110,13 +107,13 @@ int main(int argc, char **argv) {
     index_t rowdim, coldim;
     uint64_t nnz;
 
-	    index_t * st = nullptr ;
+    index_t * st = nullptr ;
     readSmsFormat(matrixFile, F, st, col, dat, rowdim, coldim, nnz);
-	row = fflas_new<index_t>(nnz);
-	for (index_t j = 0 ; j < rowdim ; ++j) {
-		for (index_t k = st[j] ; k < st[j+1] ; ++k)
-			row[k] = j ;
-	}
+    row = fflas_new<index_t>(nnz);
+    for (index_t j = 0 ; j < rowdim ; ++j) {
+        for (index_t k = st[j] ; k < st[j+1] ; ++k)
+            row[k] = j ;
+    }
 
     if (s) {
         // auto stats = sparse_details::getStat(F, row, col, dat, rowdim, coldim, nnz);
@@ -154,7 +151,7 @@ int main(int argc, char **argv) {
     cout << "ELL : ";
     print_res(ell, iter, as, blocksize);
     auto ellzo = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::ELL_ZO>>(iter, F, row, col, dat, rowdim, coldim, nnz,
-                                                                     blocksize, x, blocksize, 1, y, blocksize);
+                                                                          blocksize, x, blocksize, 1, y, blocksize);
     cout << "ELL_ZO : ";
     print_res(ellzo, iter, as, blocksize);
     // auto csrzo = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::CSR_ZO>>(iter, F, row, col, dat, rowdim, coldim,
@@ -196,3 +193,5 @@ int main(int argc, char **argv) {
     fflas_delete(y);
     return 0;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

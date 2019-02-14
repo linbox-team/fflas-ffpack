@@ -1,6 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
@@ -53,141 +50,143 @@ typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 
-	int n,m,mb,nb;
-	cerr<<setprecision(10);
+    int n,m,mb,nb;
+    cerr<<setprecision(10);
 
-	if (argc != 6)	{
-		cerr<<"Usage : test-fgesv <p> <A> <b> <iter> <left/right>"
-		    <<endl;
-		exit(-1);
-	}
-	int nbit=atoi(argv[4]); // number of times the product is performed
-	Field F(atoi(argv[1]));
-	Field::Element * A, *B, *X=NULL;
-	FFLAS::ReadMatrix (argv[2],F,m,n,A);
-	FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
+    if (argc != 6)	{
+        cerr<<"Usage : test-fgesv <p> <A> <b> <iter> <left/right>"
+        <<endl;
+        exit(-1);
+    }
+    int nbit=atoi(argv[4]); // number of times the product is performed
+    Field F(atoi(argv[1]));
+    Field::Element * A, *B, *X=NULL;
+    FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
 
-	FFLAS::FFLAS_SIDE side = (atoi(argv[5])) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
+    FFLAS::FFLAS_SIDE side = (atoi(argv[5])) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
 
-	size_t ldx=0;
-	size_t rhs = (side == FFLAS::FflasLeft) ? nb : mb;
-	if (m != n) {
-		if (side == FFLAS::FflasLeft){
-			X = FFLAS::fflas_new<Field::Element>(n*nb);
-			ldx = nb;
-		}
-		else {
-			X = FFLAS::fflas_new<Field::Element>(mb*m);
-			ldx = m;
-		}
-	}
+    size_t ldx=0;
+    size_t rhs = (side == FFLAS::FflasLeft) ? nb : mb;
+    if (m != n) {
+        if (side == FFLAS::FflasLeft){
+            X = FFLAS::fflas_new<Field::Element>(n*nb);
+            ldx = nb;
+        }
+        else {
+            X = FFLAS::fflas_new<Field::Element>(mb*m);
+            ldx = m;
+        }
+    }
 
-	if ( ((side == FFLAS::FflasRight) && (n != nb))
-	     || ((side == FFLAS::FflasLeft)&&(m != mb)) ) {
-		cerr<<"Error in the dimensions of the input matrices"<<endl;
-		exit(-1);
-	}
-	int info=0;
- FFLAS::Timer t; t.clear();
-	double time=0.0;
-	//FFLAS::WriteMatrix (cerr<<"A="<<endl, F, k,k,A,k);
-	size_t R=0;
-	for (int i = 0;i<nbit;++i){
-		t.clear();
-		t.start();
-		if (m == n)
-			R = FFPACK::fgesv (F, side, mb, nb, A, n, B, nb, &info);
-		else
-			R = FFPACK::fgesv (F, side, m, n, rhs, A, n, X, ldx, B, nb, &info);
-		if (info > 0){
-			std::cerr<<"System is inconsistent"<<std::endl;
-			exit(-1);
-		}
+    if ( ((side == FFLAS::FflasRight) && (n != nb))
+         || ((side == FFLAS::FflasLeft)&&(m != mb)) ) {
+        cerr<<"Error in the dimensions of the input matrices"<<endl;
+        exit(-1);
+    }
+    int info=0;
+    FFLAS::Timer t; t.clear();
+    double time=0.0;
+    //FFLAS::WriteMatrix (cerr<<"A="<<endl, F, k,k,A,k);
+    size_t R=0;
+    for (int i = 0;i<nbit;++i){
+        t.clear();
+        t.start();
+        if (m == n)
+            R = FFPACK::fgesv (F, side, mb, nb, A, n, B, nb, &info);
+        else
+            R = FFPACK::fgesv (F, side, m, n, rhs, A, n, X, ldx, B, nb, &info);
+        if (info > 0){
+            std::cerr<<"System is inconsistent"<<std::endl;
+            exit(-1);
+        }
 
-		t.stop();
-		time+=t.usertime();
-		if (i+1<nbit){
-			FFLAS::fflas_delete(A);
-			FFLAS::ReadMatrix (argv[2],F,m,n,A);
-			FFLAS::fflas_delete( B);
-			FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
-		}
-	}
+        t.stop();
+        time+=t.usertime();
+        if (i+1<nbit){
+            FFLAS::fflas_delete(A);
+            FFLAS::ReadMatrix (argv[2],F,m,n,A);
+            FFLAS::fflas_delete( B);
+            FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
+        }
+    }
 
 #ifdef __FFLASFFPACK_DEBUG
-	Field::Element  *B2=NULL;
-	FFLAS::fflas_delete( A);
+    Field::Element  *B2=NULL;
+    FFLAS::fflas_delete( A);
 
-	if (info > 0){
-		std::cerr<<"System inconsistent"<<std::endl;
-		exit (-1);
-	}
+    if (info > 0){
+        std::cerr<<"System inconsistent"<<std::endl;
+        exit (-1);
+    }
 
-	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
-	B2 = FFLAS::fflas_new<Field::Element>(mb*nb);
-
-
-	if (m==n)
-		if (side == FFLAS::FflasLeft)
-			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
-				      F.one, A, n, B, nb, F.zero, B2, nb);
-		else
-			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
-				      F.one, B, nb, A, n, F.zero, B2, nb);
-	else
-		if (side == FFLAS::FflasLeft)
-			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
-				      F.one, A, n, X, ldx, F.zero, B2, nb);
-		else
-			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
-				      F.one, X, ldx, A, n, F.zero, B2, nb);
-	FFLAS::fflas_delete( B);
-	FFLAS::fflas_delete( X);
-
-	FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
-
-	bool wrong = false;
-	for (int i=0;i<mb;++i)
-		for (int j=0;j<nb;++j)
-			if ( !F.areEqual(*(B2+i*nb+j), *(B+i*nb+j))){
-				cerr<<"B2 ["<<i<<", "<<j<<"] = "<<(*(B2+i*nb+j))
-				    <<" ; B ["<<i<<", "<<j<<"] = "<<(*(B+i*nb+j))
-				    <<endl;
-				wrong = true;
-			}
-
-	if (wrong) {
-		cerr<<"FAIL"<<endl;
-		    //FFLAS::WriteMatrix (cerr<<"B2="<<endl,F,m,n,B2,n);
-		    //FFLAS::WriteMatrix (cerr<<"B="<<endl,F,m,n,B,n);
-	}else{
-
-		cerr<<"PASS"<<endl;
-	}
+    B2 = FFLAS::fflas_new<Field::Element>(mb*nb);
 
 
-	FFLAS::fflas_delete( B2);
+    if (m==n)
+        if (side == FFLAS::FflasLeft)
+            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
+                          F.one, A, n, B, nb, F.zero, B2, nb);
+        else
+            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
+                          F.one, B, nb, A, n, F.zero, B2, nb);
+    else
+        if (side == FFLAS::FflasLeft)
+            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
+                          F.one, A, n, X, ldx, F.zero, B2, nb);
+        else
+            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
+                          F.one, X, ldx, A, n, F.zero, B2, nb);
+    FFLAS::fflas_delete( B);
+    FFLAS::fflas_delete( X);
+
+    FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
+
+    bool wrong = false;
+    for (int i=0;i<mb;++i)
+        for (int j=0;j<nb;++j)
+            if ( !F.areEqual(*(B2+i*nb+j), *(B+i*nb+j))){
+                cerr<<"B2 ["<<i<<", "<<j<<"] = "<<(*(B2+i*nb+j))
+                <<" ; B ["<<i<<", "<<j<<"] = "<<(*(B+i*nb+j))
+                <<endl;
+                wrong = true;
+            }
+
+    if (wrong) {
+        cerr<<"FAIL"<<endl;
+        //FFLAS::WriteMatrix (cerr<<"B2="<<endl,F,m,n,B2,n);
+        //FFLAS::WriteMatrix (cerr<<"B="<<endl,F,m,n,B,n);
+    }else{
+
+        cerr<<"PASS"<<endl;
+    }
+
+
+    FFLAS::fflas_delete( B2);
 #endif
 
-	FFLAS::fflas_delete( A);
-	FFLAS::fflas_delete( B);
+    FFLAS::fflas_delete( A);
+    FFLAS::fflas_delete( B);
 #if TIME
-	double mflops;
-	double cplx = (double)n*m*m-(double)m*m*m/3;
-	if (side == FFLAS::FflasLeft)
-		mflops = (cplx+(double)(2*R*R*n))/1000000.0*nbit/time;
-	else
-		mflops = (cplx+(double)(2*R*R*m))/1000000.0*nbit/time;
-	cerr<<"m,n,mb,nb = "<<m<<" "<<n<<" "<<mb<<" "<<nb<<". fgesv "
-	    <<((side == FFLAS::FflasLeft)?" Left ":" Right ")
-	    <<"over Z/"<<atoi(argv[1])<<"Z :"
-	    <<endl
-	    <<"t= "
-	    << time/nbit
-	    << " s, Mffops = "<<mflops
-	    << endl;
+    double mflops;
+    double cplx = (double)n*m*m-(double)m*m*m/3;
+    if (side == FFLAS::FflasLeft)
+        mflops = (cplx+(double)(2*R*R*n))/1000000.0*nbit/time;
+    else
+        mflops = (cplx+(double)(2*R*R*m))/1000000.0*nbit/time;
+    cerr<<"m,n,mb,nb = "<<m<<" "<<n<<" "<<mb<<" "<<nb<<". fgesv "
+    <<((side == FFLAS::FflasLeft)?" Left ":" Right ")
+    <<"over Z/"<<atoi(argv[1])<<"Z :"
+    <<endl
+    <<"t= "
+    << time/nbit
+    << " s, Mffops = "<<mflops
+    << endl;
 
-	cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
+    cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
 #endif
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

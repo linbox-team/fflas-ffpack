@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/checkers.inl
  * Copyright (C) 2016 Ashley Lesdalons
  *
@@ -35,10 +33,12 @@
 #include "checker_charpoly.inl"
 
 namespace FFPACK {
-	template <class Field> using ForceCheck_PLUQ = CheckerImplem_PLUQ<Field>;
-	template <class Field> using ForceCheck_Det = CheckerImplem_Det<Field>;
-	template <class Field> using ForceCheck_invert = CheckerImplem_invert<Field>;
-	template <class Field, class Polynomial> using ForceCheck_charpoly = CheckerImplem_charpoly<Field,Polynomial>;
+    template <class Field> using ForceCheck_PLUQ = CheckerImplem_PLUQ<Field>;
+    template <class Field> using ForceCheck_Det = CheckerImplem_Det<Field>;
+    template <class Field> using ForceCheck_invert = CheckerImplem_invert<Field>;
+    template <class Field, class Polynomial> using ForceCheck_charpoly = CheckerImplem_charpoly<Field,Polynomial>;
 }
 
 #endif
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s

@@ -1,5 +1,3 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* ffpack.h
  * Copyright (C) 2005 Clement Pernet
  *               2014 FFLAS-FFPACK group
@@ -65,372 +63,372 @@
  */
 namespace FFPACK  { /* tags */
 
-/* \cond */
-	enum FFPACK_LU_TAG
-	{
-		FfpackSlabRecursive = 1,
-		FfpackTileRecursive = 2,
-		FfpackSingular = 3,
-		FfpackGaussJordanSlab = 4,
-		FfpackGaussJordanTile = 5
-	};
+    /* \cond */
+    enum FFPACK_LU_TAG
+    {
+        FfpackSlabRecursive = 1,
+        FfpackTileRecursive = 2,
+        FfpackSingular = 3,
+        FfpackGaussJordanSlab = 4,
+        FfpackGaussJordanTile = 5
+    };
 
-	enum FFPACK_CHARPOLY_TAG
-	{
-		FfpackAuto = 0,
-		FfpackDanilevski = 1,
-		FfpackLUK = 2,
-		FfpackArithProg = 3,
-		FfpackKG = 4,
-		FfpackKGFast = 5,
-		FfpackHybrid = 6,
-		FfpackKGFastG = 7
-	};
-/* \endcond */
-	class CharpolyFailed{};
+    enum FFPACK_CHARPOLY_TAG
+    {
+        FfpackAuto = 0,
+        FfpackDanilevski = 1,
+        FfpackLUK = 2,
+        FfpackArithProg = 3,
+        FfpackKG = 4,
+        FfpackKGFast = 5,
+        FfpackHybrid = 6,
+        FfpackKGFastG = 7
+    };
+    /* \endcond */
+    class CharpolyFailed{};
 
-/* \cond */
-	enum FFPACK_MINPOLY_TAG
-	{
-		FfpackDense=1,
-		FfpackKGF=2
-	};
-/* \endcond */
+    /* \cond */
+    enum FFPACK_MINPOLY_TAG
+    {
+        FfpackDense=1,
+        FfpackKGF=2
+    };
+    /* \endcond */
 
 }
 namespace FFPACK { /* Permutations */
 
-	/*****************/
-	/* PERMUTATIONS  */
-	/*****************/
+    /*****************/
+    /* PERMUTATIONS  */
+    /*****************/
 
 
-	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
-							  const size_t N);
+    void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
+                              const size_t N);
 
-	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
-							  const size_t N);
+    void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
+                              const size_t N);
 
-	/* \cond */
-	template <class Field>
-	void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
-					   const size_t M2,
-					   const size_t R1, const size_t R2,
-					   const size_t R3, const size_t R4);
+    /* \cond */
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
+                       const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4);
 
-	template <class Element>
-	void PermApplyS (Element* A, const size_t lda, const size_t width,
-					 const size_t M2,
-					 const size_t R1, const size_t R2,
-					 const size_t R3, const size_t R4);
+    template <class Element>
+    void PermApplyS (Element* A, const size_t lda, const size_t width,
+                     const size_t M2,
+                     const size_t R1, const size_t R2,
+                     const size_t R3, const size_t R4);
 
-	template <class Field>
-	void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
-					   const size_t N2,
-					   const size_t R1, const size_t R2,
-					   const size_t R3, const size_t R4);
+    template <class Field>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
+                       const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4);
 
-	template <class Element>
-	void PermApplyT (Element* A, const size_t lda, const size_t width,
-					 const size_t N2,
-					 const size_t R1, const size_t R2,
-					 const size_t R3, const size_t R4);
-	/* \endcond */
+    template <class Element>
+    void PermApplyT (Element* A, const size_t lda, const size_t width,
+                     const size_t N2,
+                     const size_t R1, const size_t R2,
+                     const size_t R3, const size_t R4);
+    /* \endcond */
 
-		/**
-		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
-		 * and store the result in P1 as a LAPACK permutation
-		 * @param [inout] P1 a LAPACK permutation of size N
-		 * @param P2 a LAPACK permutation of size N-R
-		 */
+    /**
+     * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
+     * and store the result in P1 as a LAPACK permutation
+     * @param [inout] P1 a LAPACK permutation of size N
+     * @param P2 a LAPACK permutation of size N-R
+     */
 
-	/* \cond */
-	inline void composePermutationsLLL (size_t * P1,
-										const size_t * P2,
-										const size_t R, const size_t N);
+    /* \cond */
+    inline void composePermutationsLLL (size_t * P1,
+                                        const size_t * P2,
+                                        const size_t R, const size_t N);
 
-		/**
-		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
-		 * and store the result in MathP as a MathPermutation format.
-		 * @param [out] MathP a MathPermutation of size N
-		 * @param P1 a LAPACK permutation of size N
-		 * @param P2 a LAPACK permutation of size N-R
-		 */
-	inline void composePermutationsLLM (size_t * MathP,
-										const size_t * P1,
-										const size_t * P2,
-										const size_t R, const size_t N);
+    /**
+     * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
+     * and store the result in MathP as a MathPermutation format.
+     * @param [out] MathP a MathPermutation of size N
+     * @param P1 a LAPACK permutation of size N
+     * @param P2 a LAPACK permutation of size N-R
+     */
+    inline void composePermutationsLLM (size_t * MathP,
+                                        const size_t * P1,
+                                        const size_t * P2,
+                                        const size_t R, const size_t N);
 
-		/**
-		 * @brief Computes MathP1 x Diag (I_R, P2) where MathP1 is a MathPermutation and P2 a LAPACK permutation
-		 * and store the result in MathP1 as a MathPermutation format.
-		 * @param [inout] MathP1 a MathPermutation of size N
-		 * @param P2 a LAPACK permutation of size N-R
-		 */
-	inline void composePermutationsMLM (size_t * MathP1,
-										const size_t * P2,
-										const size_t R, const size_t N);
+    /**
+     * @brief Computes MathP1 x Diag (I_R, P2) where MathP1 is a MathPermutation and P2 a LAPACK permutation
+     * and store the result in MathP1 as a MathPermutation format.
+     * @param [inout] MathP1 a MathPermutation of size N
+     * @param P2 a LAPACK permutation of size N-R
+     */
+    inline void composePermutationsMLM (size_t * MathP1,
+                                        const size_t * P2,
+                                        const size_t R, const size_t N);
 
-	void cyclic_shift_mathPerm (size_t * P,  const size_t s);
-	template<typename Base_t>
-	void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda);
-	template<class Field>
-	void cyclic_shift_row(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
-	template<class Field>
-	void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
-	/* \endcond */
+    void cyclic_shift_mathPerm (size_t * P,  const size_t s);
+    template<typename Base_t>
+    void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda);
+    template<class Field>
+    void cyclic_shift_row(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
+    template<class Field>
+    void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
+    /* \endcond */
 
-	/** 
-	 * @brief Applies a permutation P to the matrix A.
-	 * Apply a permutation P, stored in the LAPACK format (a sequence of transpositions) 
-	 * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
-	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
-	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
-	 * @param F base field
-	 * @param Side  decides if rows (FflasLeft) or columns (FflasRight) are permuted
-	 * @param Trans decides if the matrix is seen as columns (FflasTrans) or rows (FflasNoTrans)
-	 * @param M size of the elements to permute
-	 * @param ibeg first index to consider in P
-	 * @param iend last index to consider in P
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param P permutation in LAPACK format
-	 * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
-	 */
-	template<class Field>
-	void
-	applyP( const Field& F,
-			const FFLAS::FFLAS_SIDE Side,
-			const FFLAS::FFLAS_TRANSPOSE Trans,
-			const size_t M, const size_t ibeg, const size_t iend,
-			typename Field::Element_ptr A, const size_t lda, const size_t * P );
-	
-	
-	/** Apply a R-monotonically increasing permutation P, to the matrix A.
-	 * The permutation represented by P is defined as follows:
-	 *  - the first R values of P is a LAPACK reprensentation (a sequence of transpositions)
-	 *  - the remaining iend-ibeg-R values of the permutation are in a monotonically increasing progression
-	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
-	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
-	 * @param F	base field
-	 * @param Side selects if it is a row (FflasLeft) or column (FflasRight) permutation 
-	 * @param Trans inverse permutation (FflasTrans/NoTrans)
-	 * @param M 
-	 * @param ibeg
-	 * @param iend
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param P LAPACK permuation
-	 * @param R first values of P
-	 */
-	template<class Field>
-	void
-	MonotonicApplyP (const Field& F,
-					 const FFLAS::FFLAS_SIDE Side,
-					 const FFLAS::FFLAS_TRANSPOSE Trans,
-					 const size_t M, const size_t ibeg, const size_t iend,
-					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
-	/* \cond */
-	template<class Field>
-	void
-	MonotonicCompress (const Field& F,
-					   const FFLAS::FFLAS_SIDE Side,
-					   const size_t M,
-					   typename Field::Element_ptr A, const size_t lda, const size_t incA, const size_t * P,
-					   const size_t R, const size_t maxpiv, const size_t rowstomove,
-					   const std::vector<bool> &ispiv);
-	template<class Field>
-	void
-	MonotonicCompressMorePivots (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
-								 typename Field::Element_ptr A, const size_t lda, const size_t incA,
-								 const size_t * MathP, const size_t R, const size_t rowstomove, const size_t lenP);
-	template<class Field>
-	void
-	MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
-							 typename Field::Element_ptr A, const size_t lda, const size_t incA,
-							 const size_t * MathP, const size_t lenP);
-
-	template<class Field>
-	void
-	MonotonicExpand (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
-					 typename Field::Element_ptr A, const size_t lda, const size_t incA,
-					 const size_t * MathP, const size_t R, const size_t maxpiv,
-					 const size_t rowstomove, const std::vector<bool> &ispiv);
-	/* \endcond */
-
-	//! Parallel applyP with OPENMP tasks
-	template<class Field>
-	void
-	papplyP( const Field& F,
-			 const FFLAS::FFLAS_SIDE Side,
-			 const FFLAS::FFLAS_TRANSPOSE Trans,
-			 const size_t m, const size_t ibeg, const size_t iend,
-			 typename Field::Element_ptr A, const size_t lda, const size_t * P );
-
-	//! Parallel applyT with OPENMP tasks
-	/* \cond */
-	template <class Field>
-	void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-						const size_t width, const size_t N2,
-						const size_t R1, const size_t R2,
-						const size_t R3, const size_t R4) ;
+    /**
+     * @brief Applies a permutation P to the matrix A.
+     * Apply a permutation P, stored in the LAPACK format (a sequence of transpositions)
+     * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
+     * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
+     * Trans==FFLAS::FflasTrans for the inverse permutation of P
+     * @param F base field
+     * @param Side  decides if rows (FflasLeft) or columns (FflasRight) are permuted
+     * @param Trans decides if the matrix is seen as columns (FflasTrans) or rows (FflasNoTrans)
+     * @param M size of the elements to permute
+     * @param ibeg first index to consider in P
+     * @param iend last index to consider in P
+     * @param A input matrix
+     * @param lda leading dimension of A
+     * @param P permutation in LAPACK format
+     * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
+     */
+    template<class Field>
+    void
+    applyP( const Field& F,
+            const FFLAS::FFLAS_SIDE Side,
+            const FFLAS::FFLAS_TRANSPOSE Trans,
+            const size_t M, const size_t ibeg, const size_t iend,
+            typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
 
-	//! Parallel applyS tasks with OPENMP tasks
-	template <class Field>
-	void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-						const size_t width, const size_t M2,
-						const size_t R1, const size_t R2,
-						const size_t R3, const size_t R4) ;
+    /** Apply a R-monotonically increasing permutation P, to the matrix A.
+     * The permutation represented by P is defined as follows:
+     *  - the first R values of P is a LAPACK reprensentation (a sequence of transpositions)
+     *  - the remaining iend-ibeg-R values of the permutation are in a monotonically increasing progression
+     * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
+     * Trans==FFLAS::FflasTrans for the inverse permutation of P
+     * @param F	base field
+     * @param Side selects if it is a row (FflasLeft) or column (FflasRight) permutation
+     * @param Trans inverse permutation (FflasTrans/NoTrans)
+     * @param M
+     * @param ibeg
+     * @param iend
+     * @param A input matrix
+     * @param lda leading dimension of A
+     * @param P LAPACK permuation
+     * @param R first values of P
+     */
+    template<class Field>
+    void
+    MonotonicApplyP (const Field& F,
+                     const FFLAS::FFLAS_SIDE Side,
+                     const FFLAS::FFLAS_TRANSPOSE Trans,
+                     const size_t M, const size_t ibeg, const size_t iend,
+                     typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
+    /* \cond */
+    template<class Field>
+    void
+    MonotonicCompress (const Field& F,
+                       const FFLAS::FFLAS_SIDE Side,
+                       const size_t M,
+                       typename Field::Element_ptr A, const size_t lda, const size_t incA, const size_t * P,
+                       const size_t R, const size_t maxpiv, const size_t rowstomove,
+                       const std::vector<bool> &ispiv);
+    template<class Field>
+    void
+    MonotonicCompressMorePivots (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+                                 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+                                 const size_t * MathP, const size_t R, const size_t rowstomove, const size_t lenP);
+    template<class Field>
+    void
+    MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+                             typename Field::Element_ptr A, const size_t lda, const size_t incA,
+                             const size_t * MathP, const size_t lenP);
 
-	template<class Field>
-	size_t
-	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-	      const size_t M, const size_t N,
-	      typename Field::Element_ptr A, const size_t lda,
-	      size_t* P, size_t* Q, int nt);
-	/* \endcond */
+    template<class Field>
+    void
+    MonotonicExpand (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+                     typename Field::Element_ptr A, const size_t lda, const size_t incA,
+                     const size_t * MathP, const size_t R, const size_t maxpiv,
+                     const size_t rowstomove, const std::vector<bool> &ispiv);
+    /* \endcond */
 
-//#endif
+    //! Parallel applyP with OPENMP tasks
+    template<class Field>
+    void
+    papplyP( const Field& F,
+             const FFLAS::FFLAS_SIDE Side,
+             const FFLAS::FFLAS_TRANSPOSE Trans,
+             const size_t m, const size_t ibeg, const size_t iend,
+             typename Field::Element_ptr A, const size_t lda, const size_t * P );
+
+    //! Parallel applyT with OPENMP tasks
+    /* \cond */
+    template <class Field>
+    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                        const size_t width, const size_t N2,
+                        const size_t R1, const size_t R2,
+                        const size_t R3, const size_t R4) ;
+
+
+    //! Parallel applyS tasks with OPENMP tasks
+    template <class Field>
+    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                        const size_t width, const size_t M2,
+                        const size_t R1, const size_t R2,
+                        const size_t R3, const size_t R4) ;
+
+    template<class Field>
+    size_t
+    pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+          const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda,
+          size_t* P, size_t* Q, int nt);
+    /* \endcond */
+
+    //#endif
 
 } // FFPACK permutations
 // #include "ffpack_permutation.inl"
 
 namespace FFPACK { /* fgetrs, fgesv */
 
-	/** Solve the system \f$A X = B\f$ or \f$X A = B\f$.
-	 * Solving using the \c LQUP decomposition of \p A
-	 * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
-	 * Version for A square.
-	 * If A is rank deficient, a solution is returned if the system is consistent,
-	 * Otherwise an info is 1
-	 *
-	 * @param F base field
-	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking.
-	 * @param M row dimension of \p B
-	 * @param N col dimension of \p B
-	 * @param R rank of \p A
-	 * @param A input matrix
-	 * @param lda leading dimension of \p A
-	 * @param P column permutation of the \c LQUP decomposition of \p A
-	 * @param Q column permutation of the \c LQUP decomposition of \p A
-	 * @param B Right/Left hand side matrix. Initially stores \p B, finally stores the solution \p X.
-	 * @param ldb leading dimension of \p B
-	 * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
-	 */
-	template <class Field>
-	void
-	fgetrs (const Field& F,
-			const FFLAS::FFLAS_SIDE Side,
-			const size_t M, const size_t N, const size_t R,
-			typename Field::Element_ptr A, const size_t lda,
-			const size_t *P, const size_t *Q,
-			typename Field::Element_ptr B, const size_t ldb,
-			int * info);
+    /** Solve the system \f$A X = B\f$ or \f$X A = B\f$.
+     * Solving using the \c LQUP decomposition of \p A
+     * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Version for A square.
+     * If A is rank deficient, a solution is returned if the system is consistent,
+     * Otherwise an info is 1
+     *
+     * @param F base field
+     * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking.
+     * @param M row dimension of \p B
+     * @param N col dimension of \p B
+     * @param R rank of \p A
+     * @param A input matrix
+     * @param lda leading dimension of \p A
+     * @param P column permutation of the \c LQUP decomposition of \p A
+     * @param Q column permutation of the \c LQUP decomposition of \p A
+     * @param B Right/Left hand side matrix. Initially stores \p B, finally stores the solution \p X.
+     * @param ldb leading dimension of \p B
+     * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
+     */
+    template <class Field>
+    void
+    fgetrs (const Field& F,
+            const FFLAS::FFLAS_SIDE Side,
+            const size_t M, const size_t N, const size_t R,
+            typename Field::Element_ptr A, const size_t lda,
+            const size_t *P, const size_t *Q,
+            typename Field::Element_ptr B, const size_t ldb,
+            int * info);
 
-	/** Solve the system A X = B or X A = B.
-	 * Solving using the LQUP decomposition of A
-	 * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
-	 * Version for A rectangular.
-	 * If A is rank deficient, a solution is returned if the system is consistent,
-	 * Otherwise an info is 1
-	 *
-	 * @param F base field
-	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking.
-	 * @param M row dimension of A
-	 * @param N col dimension of A
-	 * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
-	 * @param R rank of A
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param P column permutation of the LQUP decomposition of A
-	 * @param Q column permutation of the LQUP decomposition of A
-	 * @param X solution matrix
-	 * @param ldx leading dimension of X
-	 * @param B Right/Left hand side matrix.
-	 * @param ldb leading dimension of B
-	 * @param info Succes of the computation: 0 if successfull, >0 if system is inconsistent
-	 */
-	template <class Field>
-	typename Field::Element_ptr
-	fgetrs (const Field& F,
-			const FFLAS::FFLAS_SIDE Side,
-			const size_t M, const size_t N, const size_t NRHS, const size_t R,
-			typename Field::Element_ptr A, const size_t lda,
-			const size_t *P, const size_t *Q,
-			typename Field::Element_ptr X, const size_t ldx,
-			typename Field::ConstElement_ptr B, const size_t ldb,
-			int * info);
+    /** Solve the system A X = B or X A = B.
+     * Solving using the LQUP decomposition of A
+     * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Version for A rectangular.
+     * If A is rank deficient, a solution is returned if the system is consistent,
+     * Otherwise an info is 1
+     *
+     * @param F base field
+     * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking.
+     * @param M row dimension of A
+     * @param N col dimension of A
+     * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
+     * @param R rank of A
+     * @param A input matrix
+     * @param lda leading dimension of A
+     * @param P column permutation of the LQUP decomposition of A
+     * @param Q column permutation of the LQUP decomposition of A
+     * @param X solution matrix
+     * @param ldx leading dimension of X
+     * @param B Right/Left hand side matrix.
+     * @param ldb leading dimension of B
+     * @param info Succes of the computation: 0 if successfull, >0 if system is inconsistent
+     */
+    template <class Field>
+    typename Field::Element_ptr
+    fgetrs (const Field& F,
+            const FFLAS::FFLAS_SIDE Side,
+            const size_t M, const size_t N, const size_t NRHS, const size_t R,
+            typename Field::Element_ptr A, const size_t lda,
+            const size_t *P, const size_t *Q,
+            typename Field::Element_ptr X, const size_t ldx,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            int * info);
 
-	/** @brief Square system solver
-	 * @param F The computation domain
-	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking
-	 * @param M row dimension of B
-	 * @param N col dimension of B
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param B Right/Left hand side matrix. Initially contains B, finally contains the solution X.
-	 * @param ldb leading dimension of B
-	 * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
-	 * @return the rank of the system
-	 *
-	 * Solve the system A X = B or X A = B.
-	 * Version for A square.
-	 * If A is rank deficient, a solution is returned if the system is consistent,
-	 * Otherwise an info is 1
-	 */
-	template <class Field>
-	size_t
-	fgesv (const Field& F,
-	       const FFLAS::FFLAS_SIDE Side,
-	       const size_t M, const size_t N,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr B, const size_t ldb,
-	       int * info);
+    /** @brief Square system solver
+     * @param F The computation domain
+     * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking
+     * @param M row dimension of B
+     * @param N col dimension of B
+     * @param A input matrix
+     * @param lda leading dimension of A
+     * @param B Right/Left hand side matrix. Initially contains B, finally contains the solution X.
+     * @param ldb leading dimension of B
+     * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
+     * @return the rank of the system
+     *
+     * Solve the system A X = B or X A = B.
+     * Version for A square.
+     * If A is rank deficient, a solution is returned if the system is consistent,
+     * Otherwise an info is 1
+     */
+    template <class Field>
+    size_t
+    fgesv (const Field& F,
+           const FFLAS::FFLAS_SIDE Side,
+           const size_t M, const size_t N,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr B, const size_t ldb,
+           int * info);
 
-	/**  @brief Rectangular system solver
-	 * @param F The computation domain
-	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking
-	 * @param M row dimension of A
-	 * @param N col dimension of A
-	 * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param B Right/Left hand side matrix. Initially contains B, finally contains the solution X.
-	 * @param ldb leading dimension of B
-	 * @param X
-	 * @param ldx
-	 * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
-	 * @return the rank of the system
-	 *
-	 * Solve the system A X = B or X A = B.
-	 * Version for A square.
-	 * If A is rank deficient, a solution is returned if the system is consistent,
-	 * Otherwise an info is 1
-	 */
-	template <class Field>
-	size_t
-	fgesv (const Field& F,
-	       const FFLAS::FFLAS_SIDE Side,
-	       const size_t M, const size_t N, const size_t NRHS,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr X, const size_t ldx,
-	       typename Field::ConstElement_ptr B, const size_t ldb,
-	       int * info);
+    /**  @brief Rectangular system solver
+     * @param F The computation domain
+     * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking
+     * @param M row dimension of A
+     * @param N col dimension of A
+     * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
+     * @param A input matrix
+     * @param lda leading dimension of A
+     * @param B Right/Left hand side matrix. Initially contains B, finally contains the solution X.
+     * @param ldb leading dimension of B
+     * @param X
+     * @param ldx
+     * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
+     * @return the rank of the system
+     *
+     * Solve the system A X = B or X A = B.
+     * Version for A square.
+     * If A is rank deficient, a solution is returned if the system is consistent,
+     * Otherwise an info is 1
+     */
+    template <class Field>
+    size_t
+    fgesv (const Field& F,
+           const FFLAS::FFLAS_SIDE Side,
+           const size_t M, const size_t N, const size_t NRHS,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr X, const size_t ldx,
+           typename Field::ConstElement_ptr B, const size_t ldb,
+           int * info);
 
-	/**  Solve the system Ax=b.
-	 * Solving using LQUP factorization and
-	 * two triangular system resolutions.
-	 * The input matrix is modified.
-	 * @param F The computation domain
-	 * @param M row dimension of the matrix
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param x solution vector
-	 * @param incx increment of x
-	 * @param b right hand side vector
-	 * @param incb increment of b
-	 */
+    /**  Solve the system Ax=b.
+     * Solving using LQUP factorization and
+     * two triangular system resolutions.
+     * The input matrix is modified.
+     * @param F The computation domain
+     * @param M row dimension of the matrix
+     * @param A input matrix
+     * @param lda leading dimension of A
+     * @param x solution vector
+     * @param incx increment of x
+     * @param b right hand side vector
+     * @param incb increment of b
+     */
 
 } // FFPACK fgesv, fgetrs
 // #include "ffpack_fgesv.inl"
@@ -440,589 +438,589 @@ namespace FFPACK { /* ftrtr */
 
 
 
-	/** Compute the inverse of a triangular matrix.
-	 * @param F base field
-	 * @param Uplo whether the matrix is upper or lower triangular
-	 * @param Diag whether the matrix is unit diagonal (FflasUnit/NoUnit)
-	 * @param N input matrix order
-	 * @param A the input matrix
-	 * @param lda leading dimension of A
-	 *
-	 */
-	template<class Field>
-	void
-	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-			const size_t N, typename Field::Element_ptr A, const size_t lda,
-			const size_t threshold = __FFLASFFPACK_FTRTRI_THRESHOLD);
+    /** Compute the inverse of a triangular matrix.
+     * @param F base field
+     * @param Uplo whether the matrix is upper or lower triangular
+     * @param Diag whether the matrix is unit diagonal (FflasUnit/NoUnit)
+     * @param N input matrix order
+     * @param A the input matrix
+     * @param lda leading dimension of A
+     *
+     */
+    template<class Field>
+    void
+    ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
+            const size_t N, typename Field::Element_ptr A, const size_t lda,
+            const size_t threshold = __FFLASFFPACK_FTRTRI_THRESHOLD);
 
 
-	template<class Field>
-	void trinv_left( const Field& F, const size_t N, typename Field::ConstElement_ptr L, const size_t ldl,
-					 typename Field::Element_ptr X, const size_t ldx );
+    template<class Field>
+    void trinv_left( const Field& F, const size_t N, typename Field::ConstElement_ptr L, const size_t ldl,
+                     typename Field::Element_ptr X, const size_t ldx );
 
-	/**  @brief Compute the product of two triangular matrices of opposite shape.
-	 * Product UL or LU of the upper, resp lower triangular matrices U and L
-	 * stored one above the other in the square matrix A.
-	 * @param F base field
-	 * @param Side set to FflasLeft to compute the product UL, FflasRight to compute LU
-	 * @param diag whether the matrix U is unit diagonal (FflasUnit/NoUnit)
-	 * @param N input matrix order
-	 * @param A the input matrix
-	 * @param lda leading dimension of A
-	 *
-	 */
-	template<class Field>
-	void
-	ftrtrm (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag,
-			const size_t N,	typename Field::Element_ptr A, const size_t lda);
+    /**  @brief Compute the product of two triangular matrices of opposite shape.
+     * Product UL or LU of the upper, resp lower triangular matrices U and L
+     * stored one above the other in the square matrix A.
+     * @param F base field
+     * @param Side set to FflasLeft to compute the product UL, FflasRight to compute LU
+     * @param diag whether the matrix U is unit diagonal (FflasUnit/NoUnit)
+     * @param N input matrix order
+     * @param A the input matrix
+     * @param lda leading dimension of A
+     *
+     */
+    template<class Field>
+    void
+    ftrtrm (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag,
+            const size_t N,	typename Field::Element_ptr A, const size_t lda);
 
-	/** @brief Solve a triangular system with a triangular right hand side of the same shape.
-	 * @param F base field
-	 * @param Side set to FflasLeft to compute U1^-1*U2 or L1^-1*L2, FflasRight to compute U1*U2^-1 or L1*L2^-1
-	 * @param Uplo whether the matrix A is upper or lower triangular
-	 * @param diag1 whether the matrix U1 or L2 is unit diagonal (FflasUnit/NoUnit)
-	 * @param diag2 whether the matrix U2 or L2 is unit diagonal (FflasUnit/NoUnit)
-	 * @param N order of the input matrices
-	 * @param A the input matrix to be inverted (U1 or L1)
-	 * @param lda leading dimension of A
-	 * @param B the input right hand side (U2 or L2)
-	 * @param ldb leading dimension of B
-	 */
-	template<class Field>
-	void
-	ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo,
-			const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
-			typename Field::ConstElement_ptr A, const size_t lda,
-			typename Field::Element_ptr B, const size_t ldb, const size_t threshold=__FFLASFFPACK_FTRSTR_THRESHOLD);
+    /** @brief Solve a triangular system with a triangular right hand side of the same shape.
+     * @param F base field
+     * @param Side set to FflasLeft to compute U1^-1*U2 or L1^-1*L2, FflasRight to compute U1*U2^-1 or L1*L2^-1
+     * @param Uplo whether the matrix A is upper or lower triangular
+     * @param diag1 whether the matrix U1 or L2 is unit diagonal (FflasUnit/NoUnit)
+     * @param diag2 whether the matrix U2 or L2 is unit diagonal (FflasUnit/NoUnit)
+     * @param N order of the input matrices
+     * @param A the input matrix to be inverted (U1 or L1)
+     * @param lda leading dimension of A
+     * @param B the input right hand side (U2 or L2)
+     * @param ldb leading dimension of B
+     */
+    template<class Field>
+    void
+    ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo,
+            const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
+            typename Field::ConstElement_ptr A, const size_t lda,
+            typename Field::Element_ptr B, const size_t ldb, const size_t threshold=__FFLASFFPACK_FTRSTR_THRESHOLD);
 
-	/** @brief Solve a triangular system in a symmetric sum: find B upper/lower triangular such that A^T B + B^T A = C
-	 * where C is symmetric. C is overwritten by B.
-	 * @param F base field
-	 * @param Side set to FflasLeft to compute U1^-1*U2 or L1^-1*L2, FflasRight to compute U1*U2^-1 or L1*L2^-1
-	 * @param Uplo whether the matrix A is upper or lower triangular
-	 * @param diagA whether the matrix A is unit diagonal (FflasUnit/NoUnit)
-	 * @param N order of the input matrices
-	 * @param A the input matrix
-	 * @param lda leading dimension of A
-	 * @param [inout] B the input right hand side where the output is written
-	 * @param ldb leading dimension of B
-	 */
-	template<class Field>
-	void
-	ftrssyr2k (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-			   const FFLAS::FFLAS_DIAG diagA, const size_t N,
-			   typename Field::ConstElement_ptr A, const size_t lda,
-			   typename Field::Element_ptr B, const size_t ldb, const size_t threshold=__FFLASFFPACK_FTRSSYR2K_THRESHOLD);
+    /** @brief Solve a triangular system in a symmetric sum: find B upper/lower triangular such that A^T B + B^T A = C
+     * where C is symmetric. C is overwritten by B.
+     * @param F base field
+     * @param Side set to FflasLeft to compute U1^-1*U2 or L1^-1*L2, FflasRight to compute U1*U2^-1 or L1*L2^-1
+     * @param Uplo whether the matrix A is upper or lower triangular
+     * @param diagA whether the matrix A is unit diagonal (FflasUnit/NoUnit)
+     * @param N order of the input matrices
+     * @param A the input matrix
+     * @param lda leading dimension of A
+     * @param [inout] B the input right hand side where the output is written
+     * @param ldb leading dimension of B
+     */
+    template<class Field>
+    void
+    ftrssyr2k (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+               const FFLAS::FFLAS_DIAG diagA, const size_t N,
+               typename Field::ConstElement_ptr A, const size_t lda,
+               typename Field::Element_ptr B, const size_t ldb, const size_t threshold=__FFLASFFPACK_FTRSSYR2K_THRESHOLD);
 
 } // FFPACK ftrtr
 // #include "ffpack_ftrtr.inl"
 
 namespace FFPACK {
 
-		/* LDLT or UTDU factorizations */
+    /* LDLT or UTDU factorizations */
 
     /** @brief Triangular factorization of symmetric matrices
-	 * @param F The computation domain
-	 * @param UpLo Determine wheter to store the upper (FflasUpper) or lower (FflasLower) triangular factor
-	 * @param N order of the matrix A
-	 * @param [inout] A input matrix
-	 * @param lda leading dimension of A
-	 * @return false if the \p A does not have generic rank profile, making the computation fail.
-	 *
-	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times D \times  L^T\f$ if UpLo = FflasLower or
-	 * \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
-	 * diagonal lower (resp. upper) triangular and overwrite the input matrix \p A. 
-	 * The matrix \p D is stored on the diagonal of \p A, as the diagonal of \p L or \p U is known to be all ones.
-	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm 
-	 * returns false.
-	 */
-	template <class Field>
-	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda,
-				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
+     * @param F The computation domain
+     * @param UpLo Determine wheter to store the upper (FflasUpper) or lower (FflasLower) triangular factor
+     * @param N order of the matrix A
+     * @param [inout] A input matrix
+     * @param lda leading dimension of A
+     * @return false if the \p A does not have generic rank profile, making the computation fail.
+     *
+     * Compute the a triangular factorization of the matrix A: \f$ A = L \times D \times  L^T\f$ if UpLo = FflasLower or
+     * \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
+     * diagonal lower (resp. upper) triangular and overwrite the input matrix \p A.
+     * The matrix \p D is stored on the diagonal of \p A, as the diagonal of \p L or \p U is known to be all ones.
+     * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm
+     * returns false.
+     */
+    template <class Field>
+    bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 
-	template <class Field>
-	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda,
-				 const FFLAS::ParSeqHelper::Sequential seq,
-				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
+    template <class Field>
+    bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 const FFLAS::ParSeqHelper::Sequential seq,
+                 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 
-	template <class Field, class Cut, class Param>
-	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda,
-				 const FFLAS::ParSeqHelper::Parallel<Cut,Param> par,
-				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
+    template <class Field, class Cut, class Param>
+    bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 const FFLAS::ParSeqHelper::Parallel<Cut,Param> par,
+                 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 
-		/* LDLT or UTDU factorizations */
+    /* LDLT or UTDU factorizations */
 
     /** @brief Triangular factorization of symmetric matrices
-	 * @param F The computation domain
-	 * @param UpLo Determine wheter to store the upper (FflasUpper) or lower (FflasLower) triangular factor
-	 * @param N order of the matrix A
-	 * @param [inout] A input matrix
-	 * @param [inout] D
-	 * @param lda leading dimension of A
-	 * @return false if the \p A does not have generic rank profile, making the computation fail.
-	 *
-	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times Dinv \times  L^T\f$ if UpLo = FflasLower 
-	 * or \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are
-	 * lower (resp. upper) triangular and overwrite the input matrix \p A. 
-	 * The matrix \p D need to be stored separately, as the diagonal of \p L or \p U are not unit.
-	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm 
-	 * returns false.
-	 */
-	template <class Field>
-	bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-						 typename Field::Element_ptr A, const size_t lda,
-						 typename Field::Element_ptr D, const size_t incD,
-						 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
-/* PLUQ */
+     * @param F The computation domain
+     * @param UpLo Determine wheter to store the upper (FflasUpper) or lower (FflasLower) triangular factor
+     * @param N order of the matrix A
+     * @param [inout] A input matrix
+     * @param [inout] D
+     * @param lda leading dimension of A
+     * @return false if the \p A does not have generic rank profile, making the computation fail.
+     *
+     * Compute the a triangular factorization of the matrix A: \f$ A = L \times Dinv \times  L^T\f$ if UpLo = FflasLower
+     * or \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are
+     * lower (resp. upper) triangular and overwrite the input matrix \p A.
+     * The matrix \p D need to be stored separately, as the diagonal of \p L or \p U are not unit.
+     * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm
+     * returns false.
+     */
+    template <class Field>
+    bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+                         typename Field::Element_ptr A, const size_t lda,
+                         typename Field::Element_ptr D, const size_t incD,
+                         const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
+    /* PLUQ */
 
-	/** @brief Compute a PLUQ factorization of the given matrix.
-	 * Return its rank.
-	 * The permutations P and Q are represented
-	 * using LAPACK's convention.
-	 * @param F base field
-	 * @param Diag   whether U should have a unit diagonal (FflasUnit) or not (FflasNoUnit)
-	 * @param M matrix row dimension
-	 * @param N matrix column dimension
-	 * @param A input matrix
-	 * @param lda leading dimension of \p A
-	 * @param P the row permutation
-	 * @param Q the column permutation
+    /** @brief Compute a PLUQ factorization of the given matrix.
+     * Return its rank.
+     * The permutations P and Q are represented
+     * using LAPACK's convention.
+     * @param F base field
+     * @param Diag   whether U should have a unit diagonal (FflasUnit) or not (FflasNoUnit)
+     * @param M matrix row dimension
+     * @param N matrix column dimension
+     * @param A input matrix
+     * @param lda leading dimension of \p A
+     * @param P the row permutation
+     * @param Q the column permutation
 
-	 * @return the rank of \p A
-	 * @bib
-	 * - Dumas J-G.,  Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13, 2013
-	 * .
-	 */
-	template<class Field>
-	size_t
-	PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
-	      const size_t M, const size_t N,
-	      typename Field::Element_ptr A, const size_t lda,
-	      size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
+     * @return the rank of \p A
+     * @bib
+     * - Dumas J-G.,  Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13, 2013
+     * .
+     */
+    template<class Field>
+    size_t
+    PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+          const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda,
+          size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
 
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"
 
 namespace FFPACK { /* ludivine */
 
-	/** @brief Compute the CUP or PLE factorization of the given matrix.
-	 * Using
-	 * a block algorithm and return its rank.
-	 * The permutations P and Q are represented
-	 * using LAPACK's convention.
-	 * @param F base field
-	 * @param Diag  whether the transformation matrix (U of the CUP, L of the PLE) should have a unit diagonal (FflasUnit)
-	 * or not (FflasNoUnit)
-	 * @param trans whether to compute the CUP decomposition (FflasNoTrans) or the PLE decomposition (FflasTrans)
-	 * @param M matrix row dimension
-	 * @param N matrix column dimension
-	 * @param A input matrix
-	 * @param lda leading dimension of \p A
-	 * @param P the factor of CUP or PLE
-	 * @param Q a permutation indicating the pivot position in the echelon form C or E in its first r positions
-	 * @param LuTag flag for setting the earling termination if the matrix
-	 * is singular
-	 * @param cutoff threshold to basecase
-	 *
-	 * @return the rank of \p A
-	 * @bib
-	 * - Jeannerod C-P, Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
-	 * - Pernet C, Brassel M <i>\c LUdivine, une divine factorisation \c LU</i>, 2002
-	 * .
-	 */
-	template <class Field>
-	size_t
-	LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
-			  const size_t M, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  size_t* P, size_t* Qt,
-			  const FFPACK_LU_TAG LuTag = FfpackSlabRecursive,
-			  const size_t cutoff=__FFLASFFPACK_LUDIVINE_THRESHOLD);
+    /** @brief Compute the CUP or PLE factorization of the given matrix.
+     * Using
+     * a block algorithm and return its rank.
+     * The permutations P and Q are represented
+     * using LAPACK's convention.
+     * @param F base field
+     * @param Diag  whether the transformation matrix (U of the CUP, L of the PLE) should have a unit diagonal (FflasUnit)
+     * or not (FflasNoUnit)
+     * @param trans whether to compute the CUP decomposition (FflasNoTrans) or the PLE decomposition (FflasTrans)
+     * @param M matrix row dimension
+     * @param N matrix column dimension
+     * @param A input matrix
+     * @param lda leading dimension of \p A
+     * @param P the factor of CUP or PLE
+     * @param Q a permutation indicating the pivot position in the echelon form C or E in its first r positions
+     * @param LuTag flag for setting the earling termination if the matrix
+     * is singular
+     * @param cutoff threshold to basecase
+     *
+     * @return the rank of \p A
+     * @bib
+     * - Jeannerod C-P, Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
+     * - Pernet C, Brassel M <i>\c LUdivine, une divine factorisation \c LU</i>, 2002
+     * .
+     */
+    template <class Field>
+    size_t
+    LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
+              const size_t M, const size_t N,
+              typename Field::Element_ptr A, const size_t lda,
+              size_t* P, size_t* Qt,
+              const FFPACK_LU_TAG LuTag = FfpackSlabRecursive,
+              const size_t cutoff=__FFLASFFPACK_LUDIVINE_THRESHOLD);
 
-	/* \cond */
-	template<class Element>
-	class callLUdivine_small;
+    /* \cond */
+    template<class Element>
+    class callLUdivine_small;
 
-	//! LUdivine small case
-	template <class Field>
-	size_t
-	LUdivine_small (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
-					const size_t M, const size_t N,
-					typename Field::Element_ptr A, const size_t lda,
-					size_t* P, size_t* Q,
-					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    //! LUdivine small case
+    template <class Field>
+    size_t
+    LUdivine_small (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
+                    const size_t M, const size_t N,
+                    typename Field::Element_ptr A, const size_t lda,
+                    size_t* P, size_t* Q,
+                    const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	//! LUdivine gauss
-	template <class Field>
-	size_t
-	LUdivine_gauss (const Field& F, const FFLAS::FFLAS_DIAG Diag,
-					const size_t M, const size_t N,
-					typename Field::Element_ptr A, const size_t lda,
-					size_t* P, size_t* Q,
-					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    //! LUdivine gauss
+    template <class Field>
+    size_t
+    LUdivine_gauss (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                    const size_t M, const size_t N,
+                    typename Field::Element_ptr A, const size_t lda,
+                    size_t* P, size_t* Q,
+                    const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/* \endcond */
-	namespace Protected {
+    /* \endcond */
+    namespace Protected {
 
 
 
-		//---------------------------------------------------------------------
-		// LUdivine_construct: (Specialisation of LUdivine)
-		// LUP factorisation of X, the Krylov base matrix of A^t and v, in A.
-		// X contains the nRowX first vectors v, vA, .., vA^{nRowX-1}
-		// A contains the LUP factorisation of the nUsedRowX first row of X.
-		// When all rows of X have been factorized in A, and rank is full,
-		// then X is updated by the following scheme: X <= ( X; X.B ), where
-		// B = A^2^i.
-		// This enables to make use of Matrix multiplication, and stop computing
-		// Krylov vector, when the rank is not longer full.
-		// P is the permutation matrix stored in an array of indexes
-		//---------------------------------------------------------------------
+        //---------------------------------------------------------------------
+        // LUdivine_construct: (Specialisation of LUdivine)
+        // LUP factorisation of X, the Krylov base matrix of A^t and v, in A.
+        // X contains the nRowX first vectors v, vA, .., vA^{nRowX-1}
+        // A contains the LUP factorisation of the nUsedRowX first row of X.
+        // When all rows of X have been factorized in A, and rank is full,
+        // then X is updated by the following scheme: X <= ( X; X.B ), where
+        // B = A^2^i.
+        // This enables to make use of Matrix multiplication, and stop computing
+        // Krylov vector, when the rank is not longer full.
+        // P is the permutation matrix stored in an array of indexes
+        //---------------------------------------------------------------------
 
-		template <class Field>
-		size_t
-		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
-							const size_t M, const size_t N,
-							typename Field::ConstElement_ptr A, const size_t lda,
-							typename Field::Element_ptr X, const size_t ldx,
-							typename Field::Element_ptr u, const size_t incu, size_t* P,
-							bool computeX, const FFPACK_MINPOLY_TAG MinTag= FfpackDense
-							, const size_t kg_mc =0
-							, const size_t kg_mb =0
-							, const size_t kg_j  =0);
+        template <class Field>
+        size_t
+        LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                            const size_t M, const size_t N,
+                            typename Field::ConstElement_ptr A, const size_t lda,
+                            typename Field::Element_ptr X, const size_t ldx,
+                            typename Field::Element_ptr u, const size_t incu, size_t* P,
+                            bool computeX, const FFPACK_MINPOLY_TAG MinTag= FfpackDense
+                            , const size_t kg_mc =0
+                            , const size_t kg_mb =0
+                            , const size_t kg_j  =0);
 
-	} // Protected
+    } // Protected
 
 } //FFPACK ludivine, turbo
 // #include "ffpack_ludivine.inl"
 
 namespace FFPACK { /* echelon */
-	/*****************/
-	/* ECHELON FORMS */
-	/*****************/
+    /*****************/
+    /* ECHELON FORMS */
+    /*****************/
 
-	/** Compute the Column Echelon form of the input matrix in-place.
-	 *
-	 * If LuTag == FfpackTileRecursive, then after the computation A = [ M \ V ]
-	 * such that AU = C is a column echelon decomposition of A,
-	 * with U = P^T [   V    ] and C = M + Q [ Ir ]
-	 *              [ 0 In-r ]               [ 0  ]
-	 * If LuTag == FfpackTileRecursive then A = [ N \ V ] such that the same holds with M = Q N
-	 *
-	 * Qt = Q^T
-	 * If transform=false, the matrix V is not computed.
-	 * See also test-colechelon for an example of use
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param[in] A input matrix
-	 * @param lda leading dimension of A
-	 * @param P the column permutation 
-	 * @param Qt the row position of the pivots in the echelon form
-	 * @param transform decides whether V is computed
-	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 */
-	template <class Field>
-	size_t
-	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-					   typename Field::Element_ptr A, const size_t lda,
-					   size_t* P, size_t* Qt, bool transform = false,
-					   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    /** Compute the Column Echelon form of the input matrix in-place.
+     *
+     * If LuTag == FfpackTileRecursive, then after the computation A = [ M \ V ]
+     * such that AU = C is a column echelon decomposition of A,
+     * with U = P^T [   V    ] and C = M + Q [ Ir ]
+     *              [ 0 In-r ]               [ 0  ]
+     * If LuTag == FfpackTileRecursive then A = [ N \ V ] such that the same holds with M = Q N
+     *
+     * Qt = Q^T
+     * If transform=false, the matrix V is not computed.
+     * See also test-colechelon for an example of use
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in] A input matrix
+     * @param lda leading dimension of A
+     * @param P the column permutation
+     * @param Qt the row position of the pivots in the echelon form
+     * @param transform decides whether V is computed
+     * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     */
+    template <class Field>
+    size_t
+    ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                       typename Field::Element_ptr A, const size_t lda,
+                       size_t* P, size_t* Qt, bool transform = false,
+                       const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/**  Compute the Row Echelon form of the input matrix in-place.
-	 *
-	 * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ]
-	 * such that X A = R is a row echelon decomposition of A,
-	 * with X =  [ L  0   ] P  and R = M + [Ir 0] Q^T
-	 *           [    In-r]
-	 * If LuTag == FfpackTileRecursive then A = [ L \ N ] such that the same holds with M =  N Q^T
-	 * Qt = Q^T
-	 * If transform=false, the matrix L is not computed.
-	 * See also test-rowechelon for an example of use
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param[in] A the input matrix
-	 * @param lda leading dimension of A
-	 * @param P the row permutation
-	 * @param Qt the column position of the pivots in the echelon form
-	 * @param transform decides whether L is computed
-	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 */
-	template <class Field>
-	size_t
-	RowEchelonForm (const Field& F, const size_t M, const size_t N,
-					typename Field::Element_ptr A, const size_t lda,
-					size_t* P, size_t* Qt, const bool transform = false,
-					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    /**  Compute the Row Echelon form of the input matrix in-place.
+     *
+     * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ]
+     * such that X A = R is a row echelon decomposition of A,
+     * with X =  [ L  0   ] P  and R = M + [Ir 0] Q^T
+     *           [    In-r]
+     * If LuTag == FfpackTileRecursive then A = [ L \ N ] such that the same holds with M =  N Q^T
+     * Qt = Q^T
+     * If transform=false, the matrix L is not computed.
+     * See also test-rowechelon for an example of use
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in] A the input matrix
+     * @param lda leading dimension of A
+     * @param P the row permutation
+     * @param Qt the column position of the pivots in the echelon form
+     * @param transform decides whether L is computed
+     * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     */
+    template <class Field>
+    size_t
+    RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                    typename Field::Element_ptr A, const size_t lda,
+                    size_t* P, size_t* Qt, const bool transform = false,
+                    const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/** Compute the Reduced Column Echelon form of the input matrix in-place.
-	 *
-	 * After the computation A = [ V   ] such that AX = R is a reduced col echelon
-	 *                           [ M 0 ]
-	 * decomposition of A, where X = P^T [ V      ] and R = Q [ Ir   ]
-	 *                                   [ 0 In-r ]           [ M  0 ]
-	 * Qt = Q^T
-	 * If transform=false, the matrix X is not computed and the matrix A = R
-	 *
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns 
-	 * @param[in] A input matrix
-	 * @param lda leading dimension of A
-	 * @param P the column permutation
-	 * @param Qt the row position of the pivots in the echelon form
-	 * @param transform decides whether X is computed
-	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 */
-	template <class Field>
-	size_t
-	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-							  typename Field::Element_ptr A, const size_t lda,
-							  size_t* P, size_t* Qt, const bool transform = false,
-							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    /** Compute the Reduced Column Echelon form of the input matrix in-place.
+     *
+     * After the computation A = [ V   ] such that AX = R is a reduced col echelon
+     *                           [ M 0 ]
+     * decomposition of A, where X = P^T [ V      ] and R = Q [ Ir   ]
+     *                                   [ 0 In-r ]           [ M  0 ]
+     * Qt = Q^T
+     * If transform=false, the matrix X is not computed and the matrix A = R
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in] A input matrix
+     * @param lda leading dimension of A
+     * @param P the column permutation
+     * @param Qt the row position of the pivots in the echelon form
+     * @param transform decides whether X is computed
+     * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     */
+    template <class Field>
+    size_t
+    ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* P, size_t* Qt, const bool transform = false,
+                              const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/** Compute the Reduced Row Echelon form of the input matrix in-place.
-	 *
-	 * After the computation A = [ V1 M ] such that X A = R is a reduced row echelon
-	 *                           [ V2 0 ]
-	 * decomposition of A, where X =  [ V1  0   ] P and R =  [ Ir M  ] Q^T
-	 *                                [ V2 In-r ]            [ 0     ]
-	 * Qt = Q^T
-	 * If transform=false, the matrix X is not computed and the matrix A = R
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param[in] A input matrix
-	 * @param lda leading dimension of A
-	 * @param P the row permutation
-	 * @param Qt the column position of the pivots in the echelon form
-	 * @param transform decides whether X is computed
-	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 */
-	template <class Field>
-	size_t
-	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
-						   typename Field::Element_ptr A, const size_t lda,
-						   size_t* P, size_t* Qt, const bool transform = false,
-						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    /** Compute the Reduced Row Echelon form of the input matrix in-place.
+     *
+     * After the computation A = [ V1 M ] such that X A = R is a reduced row echelon
+     *                           [ V2 0 ]
+     * decomposition of A, where X =  [ V1  0   ] P and R =  [ Ir M  ] Q^T
+     *                                [ V2 In-r ]            [ 0     ]
+     * Qt = Q^T
+     * If transform=false, the matrix X is not computed and the matrix A = R
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in] A input matrix
+     * @param lda leading dimension of A
+     * @param P the row permutation
+     * @param Qt the column position of the pivots in the echelon form
+     * @param transform decides whether X is computed
+     * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     */
+    template <class Field>
+    size_t
+    ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* P, size_t* Qt, const bool transform = false,
+                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	namespace Protected {
-		/**  @brief Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
-		 * @bib
-		 *  - Algorithm 2.8 of A. Storjohann Thesis 2000,
-		 *  - Algorithm 11 of Jeannerod C-P., Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
-		 * @param M row dimension of A
-		 * @param N column dimension of A
-		 * @param [inout] A an m x n matrix
-		 * @param lda leading dimension of A
-		 * @param P row permutation
-		 * @param Q column permutation
-		 * @param LuTag set the base case to a Tile (FfpackGaussJordanTile)  or Slab (FfpackGaussJordanSlab) recursive RedEchelon
-		 */
-		template <class Field>
-		size_t
-		GaussJordan (const Field& F, const size_t M, const size_t N,
-					 typename Field::Element_ptr A, const size_t lda,
-					 const size_t colbeg, const size_t rowbeg, const size_t colsize,
-					 size_t* P, size_t* Q, const FFPACK::FFPACK_LU_TAG LuTag);
-	} // Protected
+    namespace Protected {
+        /**  @brief Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
+         * @bib
+         *  - Algorithm 2.8 of A. Storjohann Thesis 2000,
+         *  - Algorithm 11 of Jeannerod C-P., Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
+         * @param M row dimension of A
+         * @param N column dimension of A
+         * @param [inout] A an m x n matrix
+         * @param lda leading dimension of A
+         * @param P row permutation
+         * @param Q column permutation
+         * @param LuTag set the base case to a Tile (FfpackGaussJordanTile)  or Slab (FfpackGaussJordanSlab) recursive RedEchelon
+         */
+        template <class Field>
+        size_t
+        GaussJordan (const Field& F, const size_t M, const size_t N,
+                     typename Field::Element_ptr A, const size_t lda,
+                     const size_t colbeg, const size_t rowbeg, const size_t colsize,
+                     size_t* P, size_t* Q, const FFPACK::FFPACK_LU_TAG LuTag);
+    } // Protected
 } // FFPACK
 // #include "ffpack_echelonforms.inl"
 
 namespace FFPACK { /* invert */
-	/*****************/
-	/*   INVERSION   */
-	/*****************/
-	/**  @brief Invert the given matrix in place
-	 * or computes its nullity if it is singular.
-	 *
-	 * An inplace \f$2n^3\f$ algorithm is used.
-	 * @param F The computation domain
-	 * @param M order of the matrix
-	 * @param [in,out] A input matrix (\f$M \times M\f$)
-	 * @param lda leading dimension of A
-	 * @param nullity dimension of the kernel of A
-	 * @return pointer to \f$A\f$ and \f$A \gets A^{-1}\f$
-	 */
-	template <class Field>
-	typename Field::Element_ptr
-	Invert (const Field& F, const size_t M,
-			typename Field::Element_ptr A, const size_t lda,
-			int& nullity);
+    /*****************/
+    /*   INVERSION   */
+    /*****************/
+    /**  @brief Invert the given matrix in place
+     * or computes its nullity if it is singular.
+     *
+     * An inplace \f$2n^3\f$ algorithm is used.
+     * @param F The computation domain
+     * @param M order of the matrix
+     * @param [in,out] A input matrix (\f$M \times M\f$)
+     * @param lda leading dimension of A
+     * @param nullity dimension of the kernel of A
+     * @return pointer to \f$A\f$ and \f$A \gets A^{-1}\f$
+     */
+    template <class Field>
+    typename Field::Element_ptr
+    Invert (const Field& F, const size_t M,
+            typename Field::Element_ptr A, const size_t lda,
+            int& nullity);
 
-	/** @brief Invert the given matrix
-	 * or computes its nullity if it is singular.
-	 *
-	 * @pre \p X is preallocated and should be large enough to store the
-	 * \f$ m \times m\f$ matrix \p A.
-	 *
-	 * @param F The computation domain
-	 * @param M order of the matrix
-	 * @param [in] A input matrix (\f$M \times M\f$)
-	 * @param lda leading dimension of \p A
-	 * @param [out] X this is the inverse of \p A if \p A is invertible
-	 * (non \c NULL and \f$ \mathtt{nullity} = 0\f$). It is untouched
-	 * otherwise.
-	 * @param ldx leading dimension of \p X
-	 * @param nullity dimension of the kernel of \p A
-	 * @return pointer to \f$X = A^{-1}\f$
-	 */
-	template <class Field>
-	typename Field::Element_ptr
-	Invert (const Field& F, const size_t M,
-			typename Field::ConstElement_ptr A, const size_t lda,
-			typename Field::Element_ptr X, const size_t ldx,
-			int& nullity);
+    /** @brief Invert the given matrix
+     * or computes its nullity if it is singular.
+     *
+     * @pre \p X is preallocated and should be large enough to store the
+     * \f$ m \times m\f$ matrix \p A.
+     *
+     * @param F The computation domain
+     * @param M order of the matrix
+     * @param [in] A input matrix (\f$M \times M\f$)
+     * @param lda leading dimension of \p A
+     * @param [out] X this is the inverse of \p A if \p A is invertible
+     * (non \c NULL and \f$ \mathtt{nullity} = 0\f$). It is untouched
+     * otherwise.
+     * @param ldx leading dimension of \p X
+     * @param nullity dimension of the kernel of \p A
+     * @return pointer to \f$X = A^{-1}\f$
+     */
+    template <class Field>
+    typename Field::Element_ptr
+    Invert (const Field& F, const size_t M,
+            typename Field::ConstElement_ptr A, const size_t lda,
+            typename Field::Element_ptr X, const size_t ldx,
+            int& nullity);
 
-	/** @brief Invert the given matrix or computes its nullity if it is singular.
-	 *
-	 * An \f$2n^3f\f$ algorithm is used.
-	 * This routine can be \% faster than FFPACK::Invert but is not totally inplace.
-	 *
-	 * @pre \p X is preallocated and should be large enough to store the
-	 * \f$ m \times m\f$ matrix \p A.
-	 *
-	 * @warning A is overwritten here !
-	 * @bug not tested.
-	 * @param F the computation domain
-	 * @param M order of the matrix
-	 * @param [in,out] A input matrix (\f$M \times M\f$). On output, \p A
-	 * is modified and represents a "psycological" factorisation \c LU.
-	 * @param lda leading dimension of A
-	 * @param [out] X this is the inverse of \p A if \p A is invertible
-	 * (non \c NULL and \f$ \mathtt{nullity} = 0\f$). It is untouched
-	 * otherwise.
-	 * @param ldx leading dimension of \p X
-	 * @param nullity dimension of the kernel of \p A
-	 * @return pointer to \f$X = A^{-1}\f$
-	 */
-	template <class Field>
-	typename Field::Element_ptr
-	Invert2( const Field& F, const size_t M,
-			 typename Field::Element_ptr A, const size_t lda,
-			 typename Field::Element_ptr X, const size_t ldx,
-			 int& nullity);
+    /** @brief Invert the given matrix or computes its nullity if it is singular.
+     *
+     * An \f$2n^3f\f$ algorithm is used.
+     * This routine can be \% faster than FFPACK::Invert but is not totally inplace.
+     *
+     * @pre \p X is preallocated and should be large enough to store the
+     * \f$ m \times m\f$ matrix \p A.
+     *
+     * @warning A is overwritten here !
+     * @bug not tested.
+     * @param F the computation domain
+     * @param M order of the matrix
+     * @param [in,out] A input matrix (\f$M \times M\f$). On output, \p A
+     * is modified and represents a "psycological" factorisation \c LU.
+     * @param lda leading dimension of A
+     * @param [out] X this is the inverse of \p A if \p A is invertible
+     * (non \c NULL and \f$ \mathtt{nullity} = 0\f$). It is untouched
+     * otherwise.
+     * @param ldx leading dimension of \p X
+     * @param nullity dimension of the kernel of \p A
+     * @return pointer to \f$X = A^{-1}\f$
+     */
+    template <class Field>
+    typename Field::Element_ptr
+    Invert2( const Field& F, const size_t M,
+             typename Field::Element_ptr A, const size_t lda,
+             typename Field::Element_ptr X, const size_t ldx,
+             int& nullity);
 
 } // FFPACK invert
 // #include "ffpack_invert.inl"
 
 namespace FFPACK { /* charpoly */
-	/*****************************/
-	/* CHARACTERISTIC POLYNOMIAL */
-	/*****************************/
+    /*****************************/
+    /* CHARACTERISTIC POLYNOMIAL */
+    /*****************************/
 
 
-	/**
-	 * @brief Compute the characteristic polynomial of the matrix A.
-	 * @param R the polynomial ring of charp (contains the base field)
-	 * @param [out] charp the characteristic polynomial of \p as a list of factors
-	 * @param N order of the matrix \p A
-	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
-	 * @param lda leading dimension of \p A
-	 * @param CharpTag the algorithmic variant
-	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
-	 */
+    /**
+     * @brief Compute the characteristic polynomial of the matrix A.
+     * @param R the polynomial ring of charp (contains the base field)
+     * @param [out] charp the characteristic polynomial of \p as a list of factors
+     * @param N order of the matrix \p A
+     * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+     * @param lda leading dimension of \p A
+     * @param CharpTag the algorithmic variant
+     * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
+     */
     template <class PolRing>
-	std::list<typename PolRing::Element>&
-	CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
-			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-			  typename PolRing::Domain_t::RandIter& G,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
+    std::list<typename PolRing::Element>&
+    CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
+              typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+              typename PolRing::Domain_t::RandIter& G,
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
 
-	/**
-	 * @brief Compute the characteristic polynomial of the matrix A.
-	 * @param R the polynomial ring of charp (contains the base field)
-	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
-	 * @param N order of the matrix \p A
-	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
-	 * @param lda leading dimension of \p A
-	 * @param CharpTag the algorithmic variant
-	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
-	 */
-	template <class PolRing>
-	typename PolRing::Element&
-	CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
-			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-			  typename PolRing::Domain_t::RandIter& G,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
+    /**
+     * @brief Compute the characteristic polynomial of the matrix A.
+     * @param R the polynomial ring of charp (contains the base field)
+     * @param [out] charp the characteristic polynomial of \p as a single polynomial
+     * @param N order of the matrix \p A
+     * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+     * @param lda leading dimension of \p A
+     * @param CharpTag the algorithmic variant
+     * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
+     */
+    template <class PolRing>
+    typename PolRing::Element&
+    CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
+              typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+              typename PolRing::Domain_t::RandIter& G,
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
 
-	/**
-	 * @brief Compute the characteristic polynomial of the matrix A.
-	 * @param R the polynomial ring of charp (contains the base field)
-	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
-	 * @param N order of the matrix \p A
-	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
-	 * @param lda leading dimension of \p A
-	 * @param CharpTag the algorithmic variant
-	 */
-	template <class PolRing>
-	typename PolRing::Element&
-	CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
-			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto){
-		typename PolRing::Domain_t::RandIter G(R.getdomain());
-		return CharPoly (R, charp, N, A, lda, G, CharpTag);
-	}
-
-
-	namespace Protected {
-		template <class Field, class Polynomial>
-		std::list<Polynomial>&
-		KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			      typename Field::ConstElement_ptr A, const size_t lda );
-
-		template <class Field, class Polynomial>
-		int
-		KGFast ( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			 typename Field::Element_ptr A, const size_t lda,
-			 size_t * kg_mc, size_t* kg_mb, size_t* kg_j );
-
-		template <class Field, class Polynomial>
-		std::list<Polynomial>&
-		KGFast_generalized (const Field& F, std::list<Polynomial>& charp,
-				    const size_t N,
-				    typename Field::Element_ptr A, const size_t lda);
+    /**
+     * @brief Compute the characteristic polynomial of the matrix A.
+     * @param R the polynomial ring of charp (contains the base field)
+     * @param [out] charp the characteristic polynomial of \p as a single polynomial
+     * @param N order of the matrix \p A
+     * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+     * @param lda leading dimension of \p A
+     * @param CharpTag the algorithmic variant
+     */
+    template <class PolRing>
+    typename PolRing::Element&
+    CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
+              typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto){
+        typename PolRing::Domain_t::RandIter G(R.getdomain());
+        return CharPoly (R, charp, N, A, lda, G, CharpTag);
+    }
 
 
-		template<class Field>
-		void
-		fgemv_kgf( const Field& F,  const size_t N,
-			   typename Field::ConstElement_ptr A, const size_t lda,
-			   typename Field::ConstElement_ptr X, const size_t incX,
-			   typename Field::Element_ptr Y, const size_t incY,
-			   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+    namespace Protected {
+        template <class Field, class Polynomial>
+        std::list<Polynomial>&
+        KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t N,
+                      typename Field::ConstElement_ptr A, const size_t lda );
 
-		template <class Field, class Polynomial, class RandIter>
-		std::list<Polynomial>&
-		LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-				  typename Field::Element_ptr U, const size_t ldu, RandIter& G);
+        template <class Field, class Polynomial>
+        int
+        KGFast ( const Field& F, std::list<Polynomial>& charp, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 size_t * kg_mc, size_t* kg_mb, size_t* kg_j );
 
-		template <class Field, class Polynomial>
-		std::list<Polynomial>&
-		Danilevski (const Field& F, std::list<Polynomial>& charp,
-			    const size_t N, typename Field::Element_ptr A, const size_t lda);
-
-		template <class PolRing>
-		std::list<typename PolRing::Element>&
-		CharpolyArithProg (const PolRing& R,
-						   std::list<typename PolRing::Element>& frobeniusForm,
-						   const size_t N,
-						   typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-						   typename PolRing::Domain_t::RandIter& G,
-						   const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+        template <class Field, class Polynomial>
+        std::list<Polynomial>&
+        KGFast_generalized (const Field& F, std::list<Polynomial>& charp,
+                            const size_t N,
+                            typename Field::Element_ptr A, const size_t lda);
 
 
-		template <class Field, class Polynomial>
-		std::list<Polynomial>&
-		LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda,
-				 typename Field::Element_ptr X, const size_t ldx);
-	} // Protected
+        template<class Field>
+        void
+        fgemv_kgf( const Field& F,  const size_t N,
+                   typename Field::ConstElement_ptr A, const size_t lda,
+                   typename Field::ConstElement_ptr X, const size_t incX,
+                   typename Field::Element_ptr Y, const size_t incY,
+                   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+
+        template <class Field, class Polynomial, class RandIter>
+        std::list<Polynomial>&
+        LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
+                  typename Field::Element_ptr A, const size_t lda,
+                  typename Field::Element_ptr U, const size_t ldu, RandIter& G);
+
+        template <class Field, class Polynomial>
+        std::list<Polynomial>&
+        Danilevski (const Field& F, std::list<Polynomial>& charp,
+                    const size_t N, typename Field::Element_ptr A, const size_t lda);
+
+        template <class PolRing>
+        std::list<typename PolRing::Element>&
+        CharpolyArithProg (const PolRing& R,
+                           std::list<typename PolRing::Element>& frobeniusForm,
+                           const size_t N,
+                           typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                           typename PolRing::Domain_t::RandIter& G,
+                           const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+
+
+        template <class Field, class Polynomial>
+        std::list<Polynomial>&
+        LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
+                         typename Field::Element_ptr A, const size_t lda,
+                         typename Field::Element_ptr X, const size_t ldx);
+    } // Protected
 } // FFPACK charpoly
 // #include "ffpack_charpoly_kglu.inl"
 // #include "ffpack_charpoly_kgfast.inl"
@@ -1039,690 +1037,690 @@ namespace FFPACK { /* frobenius, charpoly */
 namespace FFPACK { /* minpoly */
 
 
-	/**********************/
-	/* MINIMAL POLYNOMIAL */
-	/**********************/
+    /**********************/
+    /* MINIMAL POLYNOMIAL */
+    /**********************/
 
-	/**
-	 * @brief Compute the minimal polynomial of the matrix A.
-	 * The algorithm is randomized probabilistic, and computes the minimal polynomial of 
-	 * the Krylov iterates of a random vector: (v, Av, .., A^kv)
-	 * @param F the base field
-	 * @param [out] minP the minimal polynomial of \p A
-	 * @param N order of the matrix \p A
-	 * @param [in] A the input matrix (\f$ N \times N\f$)
-	 * @param lda leading dimension of \p A
-	 */
-	template <class Field, class Polynomial>
-	Polynomial&
-	MinPoly (const Field& F, Polynomial& minP, const size_t N,
-			 typename Field::ConstElement_ptr A, const size_t lda);
+    /**
+     * @brief Compute the minimal polynomial of the matrix A.
+     * The algorithm is randomized probabilistic, and computes the minimal polynomial of
+     * the Krylov iterates of a random vector: (v, Av, .., A^kv)
+     * @param F the base field
+     * @param [out] minP the minimal polynomial of \p A
+     * @param N order of the matrix \p A
+     * @param [in] A the input matrix (\f$ N \times N\f$)
+     * @param lda leading dimension of \p A
+     */
+    template <class Field, class Polynomial>
+    Polynomial&
+    MinPoly (const Field& F, Polynomial& minP, const size_t N,
+             typename Field::ConstElement_ptr A, const size_t lda);
 
-	/**
-	 * @brief Compute the minimal polynomial of the matrix A.
-	 * The algorithm is randomized probabilistic, and computes the minimal polynomial of 
-	 * the Krylov iterates of a random vector: (v, Av, .., A^kv)
-	 * @param F the base field
-	 * @param [out] minP the minimal polynomial of \p A
-	 * @param N order of the matrix \p A
-	 * @param [in] A the input matrix (\f$ N \times N\f$)
-	 * @param lda leading dimension of \p A
-	 * @param G a random iterator
-	 */
-	template <class Field, class Polynomial, class RandIter>
-	Polynomial&
-	MinPoly (const Field& F, Polynomial& minP, const size_t N,
-			 typename Field::ConstElement_ptr A, const size_t lda, RandIter& G);
+    /**
+     * @brief Compute the minimal polynomial of the matrix A.
+     * The algorithm is randomized probabilistic, and computes the minimal polynomial of
+     * the Krylov iterates of a random vector: (v, Av, .., A^kv)
+     * @param F the base field
+     * @param [out] minP the minimal polynomial of \p A
+     * @param N order of the matrix \p A
+     * @param [in] A the input matrix (\f$ N \times N\f$)
+     * @param lda leading dimension of \p A
+     * @param G a random iterator
+     */
+    template <class Field, class Polynomial, class RandIter>
+    Polynomial&
+    MinPoly (const Field& F, Polynomial& minP, const size_t N,
+             typename Field::ConstElement_ptr A, const size_t lda, RandIter& G);
 
-	/**
-	 * @brief Compute the minimal polynomial of the matrix A and a vector v, namely the first linear dependency relation in the Krylov basis \f$(v,Av, ..., A^Nv)\f$.
-	 * @param F the base field
-	 * @param [out] minP the minimal polynomial of \p A and v
-	 * @param N order of the matrix \p A
-	 * @param [in] A the input matrix (\f$ N \times N\f$)
-	 * @param lda leading dimension of \p A
-	 * @param K an \f$ N \times (N+1)\f$ matrix containing the vector v on its first row
-	 * @param ldk leading dimension of \p K
-	 * @param P [out] (optional) the permutation used in the elimination of the Krylov matrix \p K
-	 */
-	template <class Field, class Polynomial>
-	Polynomial&
-	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
-				   typename Field::ConstElement_ptr A, const size_t lda,
-				   typename Field::ConstElement_ptr v, const size_t incv);
+    /**
+     * @brief Compute the minimal polynomial of the matrix A and a vector v, namely the first linear dependency relation in the Krylov basis \f$(v,Av, ..., A^Nv)\f$.
+     * @param F the base field
+     * @param [out] minP the minimal polynomial of \p A and v
+     * @param N order of the matrix \p A
+     * @param [in] A the input matrix (\f$ N \times N\f$)
+     * @param lda leading dimension of \p A
+     * @param K an \f$ N \times (N+1)\f$ matrix containing the vector v on its first row
+     * @param ldk leading dimension of \p K
+     * @param P [out] (optional) the permutation used in the elimination of the Krylov matrix \p K
+     */
+    template <class Field, class Polynomial>
+    Polynomial&
+    MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
+                   typename Field::ConstElement_ptr A, const size_t lda,
+                   typename Field::ConstElement_ptr v, const size_t incv);
 
-	namespace Protected{
-		template <class Field, class Polynomial>
-		Polynomial&
-		MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
-					   typename Field::ConstElement_ptr A, const size_t lda,
-					   typename Field::Element_ptr v, const size_t incv,
-					   typename Field::Element_ptr K, const size_t ldk,
-					   size_t * P);
+    namespace Protected{
+        template <class Field, class Polynomial>
+        Polynomial&
+        MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::Element_ptr v, const size_t incv,
+                       typename Field::Element_ptr K, const size_t ldk,
+                       size_t * P);
 
-		template <class Field, class Polynomial>
-		Polynomial&
-		Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N,
-								typename Field::ConstElement_ptr A, const size_t lda,
-								typename Field::Element_ptr X, const size_t ldx, size_t* P,
-								const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
-								const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0);
-	} // Protected
+        template <class Field, class Polynomial>
+        Polynomial&
+        Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N,
+                                typename Field::ConstElement_ptr A, const size_t lda,
+                                typename Field::Element_ptr X, const size_t ldx, size_t* P,
+                                const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
+                                const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0);
+    } // Protected
 } // FFPACK minpoly
 // #include "ffpack_minpoly.inl"
 
 namespace FFPACK { /* Krylov Elim */
 
-	/* \cond */
-	template <class Field>
-	size_t KrylovElim( const Field& F, const size_t M, const size_t N,
-			   typename Field::Element_ptr A, const size_t lda, size_t*P,
-			   size_t *Q, const size_t deg, size_t *iterates, size_t * inviterates, const size_t maxit,size_t virt);
+    /* \cond */
+    template <class Field>
+    size_t KrylovElim( const Field& F, const size_t M, const size_t N,
+                       typename Field::Element_ptr A, const size_t lda, size_t*P,
+                       size_t *Q, const size_t deg, size_t *iterates, size_t * inviterates, const size_t maxit,size_t virt);
 
-	template <class Field>
-	size_t  SpecRankProfile (const Field& F, const size_t M, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda, const size_t deg, size_t *rankProfile);
-	/* \endcond */
+    template <class Field>
+    size_t  SpecRankProfile (const Field& F, const size_t M, const size_t N,
+                             typename Field::Element_ptr A, const size_t lda, const size_t deg, size_t *rankProfile);
+    /* \endcond */
 
 } // FFPACK KrylovElim
 // #include "ffpack_krylovelim.inl"
 
 namespace FFPACK { /* Solutions */
-	/********/
-	/* RANK */
-	/********/
+    /********/
+    /* RANK */
+    /********/
 
 
 
-	/** Computes the rank of the given matrix using a LQUP factorization.
-	 * The input matrix is modified.
-	 * @param F base field
-	 * @param M row dimension of the matrix
-	 * @param N column dimension of the matrix
-	 * @param [in] A input matrix
-	 * @param lda leading dimension of A
-	 */
-	template <class Field>
-	size_t
-	Rank( const Field& F, const size_t M, const size_t N,
-	      typename Field::Element_ptr A, const size_t lda) ;
+    /** Computes the rank of the given matrix using a LQUP factorization.
+     * The input matrix is modified.
+     * @param F base field
+     * @param M row dimension of the matrix
+     * @param N column dimension of the matrix
+     * @param [in] A input matrix
+     * @param lda leading dimension of A
+     */
+    template <class Field>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda) ;
 
-	/********/
-	/* DET  */
-	/********/
+    /********/
+    /* DET  */
+    /********/
 
 
-	/**  Returns true if the given matrix is singular.
-	 * The method is a block elimination with early termination
-	 *
-	 * using LQUP factorization  with early termination.
-	 * If <code>M != N</code>,
-	 * then the matrix is virtually padded with zeros to make it square and
-	 * it's determinant is zero.
-	 * @warning The input matrix is modified.
-	 * @param F base field
-	 * @param M row dimension of the matrix
-	 * @param N column dimension of the matrix.
-	 * @param [in,out] A input matrix
-	 * @param lda leading dimension of A
-	 */
-	template <class Field>
-	bool
-	IsSingular( const Field& F, const size_t M, const size_t N,
-		    typename Field::Element_ptr A, const size_t lda);
+    /**  Returns true if the given matrix is singular.
+     * The method is a block elimination with early termination
+     *
+     * using LQUP factorization  with early termination.
+     * If <code>M != N</code>,
+     * then the matrix is virtually padded with zeros to make it square and
+     * it's determinant is zero.
+     * @warning The input matrix is modified.
+     * @param F base field
+     * @param M row dimension of the matrix
+     * @param N column dimension of the matrix.
+     * @param [in,out] A input matrix
+     * @param lda leading dimension of A
+     */
+    template <class Field>
+    bool
+    IsSingular( const Field& F, const size_t M, const size_t N,
+                typename Field::Element_ptr A, const size_t lda);
 
-	/** @brief Returns the determinant of the given matrix.
-	 * @details The method is a block elimination with early termination
-	 * using LQUP factorization  with early termination. The input matrix A is overwritten.
-	 * If <code>M != N</code>,
-	 * then the matrix is virtually padded with zeros to make it square and
-	 * it's determinant is zero.
-	 * @warning The input matrix is modified.
-	 * @param F base field
-	 * @param M row dimension of the matrix
-	 * @param N column dimension of the matrix.
-	 * @param [in,out] A input matrix
-	 * @param lda leading dimension of A
-	 * @param P the row permutation
+    /** @brief Returns the determinant of the given matrix.
+     * @details The method is a block elimination with early termination
+     * using LQUP factorization  with early termination. The input matrix A is overwritten.
+     * If <code>M != N</code>,
+     * then the matrix is virtually padded with zeros to make it square and
+     * it's determinant is zero.
+     * @warning The input matrix is modified.
+     * @param F base field
+     * @param M row dimension of the matrix
+     * @param N column dimension of the matrix.
+     * @param [in,out] A input matrix
+     * @param lda leading dimension of A
+     * @param P the row permutation
      * @param Q the column permutation
-	 */
-	template <class Field>
-	typename Field::Element&
-	Det( typename Field::Element& det,
-		 const Field& F, const size_t M, const size_t N,
-	     typename Field::Element_ptr A, const size_t lda,
-		 size_t* P, size_t* Q,
-		 const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+     */
+    template <class Field>
+    typename Field::Element&
+    Det( typename Field::Element& det,
+         const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t* P, size_t* Q,
+         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
 
-	/** @brief Returns the determinant of the given matrix.
-	 * @details The method is a block elimination with early termination
-	 * using LQUP factorization  with early termination. The input matrix A is overwritten.
-	 * If <code>M != N</code>,
-	 * then the matrix is virtually padded with zeros to make it square and
-	 * it's determinant is zero.
-	 * @warning The input matrix is modified.
-	 * @param F field
-	 * @param M row dimension of the matrix
-	 * @param N column dimension of the matrix.
-	 * @param [in,out] A input matrix
-	 * @param lda leading dimension of A
-	 */
-	template <class Field>
-	typename Field::Element
-	Det( const Field& F, const size_t M, const size_t N,
-	     typename Field::Element_ptr A, const size_t lda);
+    /** @brief Returns the determinant of the given matrix.
+     * @details The method is a block elimination with early termination
+     * using LQUP factorization  with early termination. The input matrix A is overwritten.
+     * If <code>M != N</code>,
+     * then the matrix is virtually padded with zeros to make it square and
+     * it's determinant is zero.
+     * @warning The input matrix is modified.
+     * @param F field
+     * @param M row dimension of the matrix
+     * @param N column dimension of the matrix.
+     * @param [in,out] A input matrix
+     * @param lda leading dimension of A
+     */
+    template <class Field>
+    typename Field::Element
+    Det( const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda);
 
-	template <class Field>
-	typename Field::Element&
-	Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-	     typename Field::Element_ptr A, const size_t lda);
+    template <class Field>
+    typename Field::Element&
+    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda);
 
-	/*********/
-	/* SOLVE */
-	/*********/
-
-
-	/** 
-	 * @brief Solves a linear system AX = b using LQUP factorization.
-	 * @oaram F base field
-	 * @oaram M matrix order
-	 * @param [in] A input matrix
-	 * @param lda leading dimension of A
-	 * @param [out] x output solution vector
-	 * @param incx increment of x
-	 * @param b input right hand side of the system
-	 * @param incb increment of b
-	 */
-	template <class Field>
-	typename Field::Element_ptr
-	Solve( const Field& F, const size_t M,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr x, const int incx,
-	       typename Field::ConstElement_ptr b, const int incb );
+    /*********/
+    /* SOLVE */
+    /*********/
 
 
-	//! Solve L X = B or X L = B in place.
-	//! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
-	//! Only the R non trivial column of L are stored in the M*R matrix L
-	//! Requirement :  so that L could  be expanded in-place
-	/* \cond */
-	template<class Field>
-	void
-	solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
-		 const size_t M, const size_t N, const size_t R,
-		 typename Field::Element_ptr L, const size_t ldl,
-		 const size_t * Q,
-		 typename Field::Element_ptr B, const size_t ldb );
+    /**
+     * @brief Solves a linear system AX = b using LQUP factorization.
+     * @oaram F base field
+     * @oaram M matrix order
+     * @param [in] A input matrix
+     * @param lda leading dimension of A
+     * @param [out] x output solution vector
+     * @param incx increment of x
+     * @param b input right hand side of the system
+     * @param incb increment of b
+     */
+    template <class Field>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb );
 
-	//! Solve L X = B in place.
-	//! L is M*M or N*N, B is M*N.
-	//! Only the R non trivial column of L are stored in the M*R matrix L
-	template<class Field>
-	void
-	solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,
-		  const size_t M, const size_t N, const size_t R,
-		  typename Field::Element_ptr L, const size_t ldl,
-		  const size_t * Q,
-		  typename Field::Element_ptr B, const size_t ldb );
-	/* \endcond */
 
-	/*************/
-	/* NULLSPACE */
-	/*************/
+    //! Solve L X = B or X L = B in place.
+    //! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
+    //! Only the R non trivial column of L are stored in the M*R matrix L
+    //! Requirement :  so that L could  be expanded in-place
+    /* \cond */
+    template<class Field>
+    void
+    solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
+             const size_t M, const size_t N, const size_t R,
+             typename Field::Element_ptr L, const size_t ldl,
+             const size_t * Q,
+             typename Field::Element_ptr B, const size_t ldb );
 
-	/**  Computes a vector of the Left/Right nullspace of the matrix A.
-	 *
-	 * @param F The computation domain
-	 * @param Side decides whether it computes the left (FflasLeft) or right (FflasRight) nullspace
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param[in,out] A input matrix of dimension M x N, A is modified to its LU version
-	 * @param lda leading dimension of A
-	 * @param[out] X output vector
-	 * @param incX increment of X
-	 *
-	 */
-	template <class Field>
-	void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
+    //! Solve L X = B in place.
+    //! L is M*M or N*N, B is M*N.
+    //! Only the R non trivial column of L are stored in the M*R matrix L
+    template<class Field>
+    void
+    solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,
+              const size_t M, const size_t N, const size_t R,
+              typename Field::Element_ptr L, const size_t ldl,
+              const size_t * Q,
+              typename Field::Element_ptr B, const size_t ldb );
+    /* \endcond */
+
+    /*************/
+    /* NULLSPACE */
+    /*************/
+
+    /**  Computes a vector of the Left/Right nullspace of the matrix A.
+     *
+     * @param F The computation domain
+     * @param Side decides whether it computes the left (FflasLeft) or right (FflasRight) nullspace
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in,out] A input matrix of dimension M x N, A is modified to its LU version
+     * @param lda leading dimension of A
+     * @param[out] X output vector
+     * @param incX increment of X
+     *
+     */
+    template <class Field>
+    void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
                                 const size_t M, const size_t N,
                                 typename Field::Element_ptr A, const size_t lda,
                                 typename Field::Element_ptr X, const size_t incX);
 
-	/**  Computes a basis of the Left/Right nullspace of the matrix A.
-	 * return the dimension of the nullspace.
-	 *
-	 * @param F The computation domain
-	 * @param Side decides whether it computes the left (FflasLeft) or right (FflasRight) nullspace
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param[in,out] A input matrix of dimension M x N, A is modified
-	 * @param lda leading dimension of A
-	 * @param[out] NS output matrix of dimension N x NSdim (allocated here)
-	 * @param[out] ldn leading dimension of NS
-	 * @param[out] NSdim the dimension of the Nullspace (N-rank(A))
-	 *
-	 */
-	template <class Field>
-	size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
-			       const size_t M, const size_t N,
-			       typename Field::Element_ptr A, const size_t lda,
-			       typename Field::Element_ptr& NS, size_t& ldn,
-			       size_t& NSdim);
+    /**  Computes a basis of the Left/Right nullspace of the matrix A.
+     * return the dimension of the nullspace.
+     *
+     * @param F The computation domain
+     * @param Side decides whether it computes the left (FflasLeft) or right (FflasRight) nullspace
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in,out] A input matrix of dimension M x N, A is modified
+     * @param lda leading dimension of A
+     * @param[out] NS output matrix of dimension N x NSdim (allocated here)
+     * @param[out] ldn leading dimension of NS
+     * @param[out] NSdim the dimension of the Nullspace (N-rank(A))
+     *
+     */
+    template <class Field>
+    size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
+                           const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           typename Field::Element_ptr& NS, size_t& ldn,
+                           size_t& NSdim);
 
-	/*****************/
-	/* RANK PROFILES */
-	/*****************/
+    /*****************/
+    /* RANK PROFILES */
+    /*****************/
 
-	/** @brief Computes the row rank profile of A.
-	 *
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param [in] A input matrix of dimension M x N
-	 * @param lda leading dimension of A
-	 * @param [out] rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
-	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 *
-	 * A is modified
-	 * rkprofile is allocated during the computation.
-	 * @returns R
-	 */
-	template <class Field>
-	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
-						   typename Field::Element_ptr A, const size_t lda,
-						   size_t* &rkprofile,
-						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    /** @brief Computes the row rank profile of A.
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param [in] A input matrix of dimension M x N
+     * @param lda leading dimension of A
+     * @param [out] rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
+     * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     *
+     * A is modified
+     * rkprofile is allocated during the computation.
+     * @returns R
+     */
+    template <class Field>
+    size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* &rkprofile,
+                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 
-	/**  @brief Computes the column rank profile of A.
-	 *
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param [in] A input matrix of dimension
-	 * @param lda leading dimension of A
-	 * @param [out] rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
-	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 *
-	 * A is modified
-	 * rkprofile is allocated during the computation.
-	 * @returns R
-	 */
-	template <class Field>
-	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
-							  typename Field::Element_ptr A, const size_t lda,
-							  size_t* &rkprofile,
-							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+    /**  @brief Computes the column rank profile of A.
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param [in] A input matrix of dimension
+     * @param lda leading dimension of A
+     * @param [out] rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
+     * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     *
+     * A is modified
+     * rkprofile is allocated during the computation.
+     * @returns R
+     */
+    template <class Field>
+    size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* &rkprofile,
+                              const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
-	 *
-	 * Works with both the CUP/PLE decompositions (obtained by LUdivine) or the PLUQ decomposition.
-	 * Assumes that the output vector containing the rank profile is already allocated.
-	 * @param P the permutation carrying the rank profile information
-	 * @param N the row/col dimension for a row/column rank profile
-	 * @param R the rank of the matrix
-	 * @param [out] rkprofile return the rank profile as an array of indices
-	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
-	 *
-	 *
-	 */
-	void RankProfileFromLU (const size_t* P, const size_t N, const size_t R,
-							size_t* rkprofile, const FFPACK_LU_TAG LuTag);
+    /**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
+     *
+     * Works with both the CUP/PLE decompositions (obtained by LUdivine) or the PLUQ decomposition.
+     * Assumes that the output vector containing the rank profile is already allocated.
+     * @param P the permutation carrying the rank profile information
+     * @param N the row/col dimension for a row/column rank profile
+     * @param R the rank of the matrix
+     * @param [out] rkprofile return the rank profile as an array of indices
+     * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+     *
+     *
+     */
+    void RankProfileFromLU (const size_t* P, const size_t N, const size_t R,
+                            size_t* rkprofile, const FFPACK_LU_TAG LuTag);
 
-	/**  @brief Recovers the row and column rank profiles of any leading submatrix from the PLUQ decomposition.
-	 *
-	 * Only works with the PLUQ decomposition
-	 * Assumes that the output vectors containing the rank profiles are already allocated.
-	 *
-	 * @param P the permutation carrying the rank profile information
-	 * @param M the row dimension of the initial matrix
-	 * @param N the column dimension of the initial matrix
-	 * @param R the rank of the initial matrix
-	 * @param LSm the row dimension of the leading submatrix considered
-	 * @param LSn the column dimension of the leading submatrix considered
-	 * @param P the row permutation of the PLUQ decomposition
-	 * @param Q the column permutation of the PLUQ decomposition
-	 * @param RRP return the row rank profile of the leading submatrix
-	 * @return the rank of the LSm x LSn leading submatrix
-	 *
-	 * A is modified
-	 * @bib
-	 * - Dumas J-G., Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13.
-	 */
-	size_t LeadingSubmatrixRankProfiles (const size_t M, const size_t N, const size_t R,
-										 const size_t LSm, const size_t LSn,
-										 const size_t* P, const size_t* Q,
-										 size_t* RRP, size_t* CRP);
-	/** RowRankProfileSubmatrixIndices.
-	 * Computes the indices of the submatrix r*r X of A whose rows correspond to
-	 * the row rank profile of A.
-	 *
-	 * @param F base field  
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param [in] A input matrix of dimension
-	 * @param rowindices array of the row indices of X in A
-	 * @param colindices array of the col indices of X in A
-	 * @param lda leading dimension of A
-	 * @param[out] R list of indices
-	 *
-	 * rowindices and colindices are allocated during the computation.
-	 * A is modified
-	 * @returns R
-	 */
-	template <class Field>
-	size_t RowRankProfileSubmatrixIndices (const Field& F,
-										   const size_t M, const size_t N,
-										   typename Field::Element_ptr A,
-										   const size_t lda,
-										   size_t*& rowindices,
-										   size_t*& colindices,
-										   size_t& R);
+    /**  @brief Recovers the row and column rank profiles of any leading submatrix from the PLUQ decomposition.
+     *
+     * Only works with the PLUQ decomposition
+     * Assumes that the output vectors containing the rank profiles are already allocated.
+     *
+     * @param P the permutation carrying the rank profile information
+     * @param M the row dimension of the initial matrix
+     * @param N the column dimension of the initial matrix
+     * @param R the rank of the initial matrix
+     * @param LSm the row dimension of the leading submatrix considered
+     * @param LSn the column dimension of the leading submatrix considered
+     * @param P the row permutation of the PLUQ decomposition
+     * @param Q the column permutation of the PLUQ decomposition
+     * @param RRP return the row rank profile of the leading submatrix
+     * @return the rank of the LSm x LSn leading submatrix
+     *
+     * A is modified
+     * @bib
+     * - Dumas J-G., Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13.
+     */
+    size_t LeadingSubmatrixRankProfiles (const size_t M, const size_t N, const size_t R,
+                                         const size_t LSm, const size_t LSn,
+                                         const size_t* P, const size_t* Q,
+                                         size_t* RRP, size_t* CRP);
+    /** RowRankProfileSubmatrixIndices.
+     * Computes the indices of the submatrix r*r X of A whose rows correspond to
+     * the row rank profile of A.
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param [in] A input matrix of dimension
+     * @param rowindices array of the row indices of X in A
+     * @param colindices array of the col indices of X in A
+     * @param lda leading dimension of A
+     * @param[out] R list of indices
+     *
+     * rowindices and colindices are allocated during the computation.
+     * A is modified
+     * @returns R
+     */
+    template <class Field>
+    size_t RowRankProfileSubmatrixIndices (const Field& F,
+                                           const size_t M, const size_t N,
+                                           typename Field::Element_ptr A,
+                                           const size_t lda,
+                                           size_t*& rowindices,
+                                           size_t*& colindices,
+                                           size_t& R);
 
-	/** Computes the indices of the submatrix r*r X of A whose columns correspond to
-	 * the column rank profile of A.
-	 *
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param [in] A input matrix of dimension
-	 * @param rowindices array of the row indices of X in A
-	 * @param colindices array of the col indices of X in A
-	 * @param lda leading dimension of A
-	 * @param[out] R list of indices
-	 *
-	 * rowindices and colindices are allocated during the computation.
-	 * @warning A is modified
-	 * \return R
-	 */
-	template <class Field>
-	size_t ColRankProfileSubmatrixIndices (const Field& F,
-					       const size_t M, const size_t N,
-					       typename Field::Element_ptr A,
-					       const size_t lda,
-					       size_t*& rowindices,
-					       size_t*& colindices,
-					       size_t& R);
+    /** Computes the indices of the submatrix r*r X of A whose columns correspond to
+     * the column rank profile of A.
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param [in] A input matrix of dimension
+     * @param rowindices array of the row indices of X in A
+     * @param colindices array of the col indices of X in A
+     * @param lda leading dimension of A
+     * @param[out] R list of indices
+     *
+     * rowindices and colindices are allocated during the computation.
+     * @warning A is modified
+     * \return R
+     */
+    template <class Field>
+    size_t ColRankProfileSubmatrixIndices (const Field& F,
+                                           const size_t M, const size_t N,
+                                           typename Field::Element_ptr A,
+                                           const size_t lda,
+                                           size_t*& rowindices,
+                                           size_t*& colindices,
+                                           size_t& R);
 
-	/** Computes the r*r submatrix X of A, by picking the row rank profile rows of A.
-	 *
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param [in] A input matrix of dimension M x N
-	 * @param lda leading dimension of A
-	 * @param [out] X the output matrix
-	 * @param[out] R list of indices
-	 *
-	 * A is not modified
-	 * X is allocated during the computation.
-	 * @return R
-	 */
-	template <class Field>
-	size_t RowRankProfileSubmatrix (const Field& F,
-									const size_t M, const size_t N,
-									typename Field::Element_ptr A,
-									const size_t lda,
-									typename Field::Element_ptr& X, size_t& R);
+    /** Computes the r*r submatrix X of A, by picking the row rank profile rows of A.
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param [in] A input matrix of dimension M x N
+     * @param lda leading dimension of A
+     * @param [out] X the output matrix
+     * @param[out] R list of indices
+     *
+     * A is not modified
+     * X is allocated during the computation.
+     * @return R
+     */
+    template <class Field>
+    size_t RowRankProfileSubmatrix (const Field& F,
+                                    const size_t M, const size_t N,
+                                    typename Field::Element_ptr A,
+                                    const size_t lda,
+                                    typename Field::Element_ptr& X, size_t& R);
 
-	/** Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
-	 *
-	 *
-	 * @param F base field
-	 * @param M number of rows
-	 * @param N number of columns
-	 * @param[in] A input matrix of dimension M x N
-	 * @param lda leading dimension of A
-	 * @param[out] X the output matrix
-	 * @param[out] R list of indices
-	 *
-	 * A is not modified
-	 * X is allocated during the computation.
-	 * \returns R
-	 */
-	template <class Field>
-	size_t ColRankProfileSubmatrix (const Field& F, const size_t M, const size_t N,
-					typename Field::Element_ptr A, const size_t lda,
-					typename Field::Element_ptr& X, size_t& R);
+    /** Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
+     *
+     *
+     * @param F base field
+     * @param M number of rows
+     * @param N number of columns
+     * @param[in] A input matrix of dimension M x N
+     * @param lda leading dimension of A
+     * @param[out] X the output matrix
+     * @param[out] R list of indices
+     *
+     * A is not modified
+     * X is allocated during the computation.
+     * \returns R
+     */
+    template <class Field>
+    size_t ColRankProfileSubmatrix (const Field& F, const size_t M, const size_t N,
+                                    typename Field::Element_ptr A, const size_t lda,
+                                    typename Field::Element_ptr& X, size_t& R);
 
-	/*********************************************/
-	/* Accessors to Triangular and Echelon forms */
-	/*********************************************/
+    /*********************************************/
+    /* Accessors to Triangular and Echelon forms */
+    /*********************************************/
 
-	/** Extracts a triangular matrix from a compact storage A=L\U of rank R.
-	 * if OnlyNonZeroVectors is false, then T and A have the same dimensions
-	 * Otherwise, T is R x N if UpLo = FflasUpper, else T is  M x R
-	 * @param F: base field
-	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
-	 * @param diag: selects if the triangular matrix unit-diagonal (FflasUnit/NoUnit)
-	 * @param M: row dimension of T
-	 * @param N: column dimension of T
-	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param[in] A: input matrix
-	 * @param lda: leading dimension of A
-	 * @param[out] T: output matrix
-	 * @param ldt: leading dimension of T
-	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
-	 */
-	template <class Field>
-	void
-	getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-				   const FFLAS::FFLAS_DIAG diag,
-				   const size_t M, const size_t N, const size_t R,
-				   typename Field::ConstElement_ptr A, const size_t lda,
-				   typename Field::Element_ptr T, const size_t ldt,
-				   const bool OnlyNonZeroVectors = false);
+    /** Extracts a triangular matrix from a compact storage A=L\U of rank R.
+     * if OnlyNonZeroVectors is false, then T and A have the same dimensions
+     * Otherwise, T is R x N if UpLo = FflasUpper, else T is  M x R
+     * @param F: base field
+     * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+     * @param diag: selects if the triangular matrix unit-diagonal (FflasUnit/NoUnit)
+     * @param M: row dimension of T
+     * @param N: column dimension of T
+     * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+     * @param[in] A: input matrix
+     * @param lda: leading dimension of A
+     * @param[out] T: output matrix
+     * @param ldt: leading dimension of T
+     * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
+     */
+    template <class Field>
+    void
+    getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                   const FFLAS::FFLAS_DIAG diag,
+                   const size_t M, const size_t N, const size_t R,
+                   typename Field::ConstElement_ptr A, const size_t lda,
+                   typename Field::Element_ptr T, const size_t ldt,
+                   const bool OnlyNonZeroVectors = false);
 
-	/** Cleans up a compact storage A=L\U to reveal a triangular matrix of rank R.
-	 * @param F: base field
-	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is revealed
-	 * @param diag: selects if the triangular matrix unit-diagonal (FflasUnit/NoUnit)
-	 * @param M: row dimension of A
-	 * @param N: column dimension of A
-	 * @param R: rank of the triangular matrix
-	 * @param[inout] A: input/output matrix
-	 * @param lda: leading dimension of A
-	 */
-	template <class Field>
-	void
-	getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-				   const FFLAS::FFLAS_DIAG diag,
-				   const size_t M, const size_t N, const size_t R,
-				   typename Field::Element_ptr A, const size_t lda);
+    /** Cleans up a compact storage A=L\U to reveal a triangular matrix of rank R.
+     * @param F: base field
+     * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is revealed
+     * @param diag: selects if the triangular matrix unit-diagonal (FflasUnit/NoUnit)
+     * @param M: row dimension of A
+     * @param N: column dimension of A
+     * @param R: rank of the triangular matrix
+     * @param[inout] A: input/output matrix
+     * @param lda: leading dimension of A
+     */
+    template <class Field>
+    void
+    getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                   const FFLAS::FFLAS_DIAG diag,
+                   const size_t M, const size_t N, const size_t R,
+                   typename Field::Element_ptr A, const size_t lda);
 
-	/** Extracts a matrix in echelon form from a compact storage A=L\U of rank R obtained by
-	 * RowEchelonForm or ColumnEchelonForm.
-	 * Either L or U is in Echelon form (depending on Uplo)
-	 * The echelon structure is defined by the first R values of the array P.
-	 * row and column dimension of T are greater or equal to that of A
-	 * @param F: base field
-	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
-	 * @param M: row dimension of T
-	 * @param N: column dimension of T
-	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param P: positions of the R pivots
-	 * @param[in] A: input matrix
-	 * @param lda: leading dimension of A
-	 * @param[out] T: output matrix
-	 * @param ldt: leading dimension of T
-	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
-	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
-	 */
-	template <class Field>
-	void
-	getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-					const FFLAS::FFLAS_DIAG diag,
-					const size_t M, const size_t N, const size_t R, const size_t* P,
-					typename Field::ConstElement_ptr A, const size_t lda,
-					typename Field::Element_ptr T, const size_t ldt,
-					const bool OnlyNonZeroVectors = false,
-					const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+    /** Extracts a matrix in echelon form from a compact storage A=L\U of rank R obtained by
+     * RowEchelonForm or ColumnEchelonForm.
+     * Either L or U is in Echelon form (depending on Uplo)
+     * The echelon structure is defined by the first R values of the array P.
+     * row and column dimension of T are greater or equal to that of A
+     * @param F: base field
+     * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+     * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
+     * @param M: row dimension of T
+     * @param N: column dimension of T
+     * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+     * @param P: positions of the R pivots
+     * @param[in] A: input matrix
+     * @param lda: leading dimension of A
+     * @param[out] T: output matrix
+     * @param ldt: leading dimension of T
+     * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
+     * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+     */
+    template <class Field>
+    void
+    getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                    const FFLAS::FFLAS_DIAG diag,
+                    const size_t M, const size_t N, const size_t R, const size_t* P,
+                    typename Field::ConstElement_ptr A, const size_t lda,
+                    typename Field::Element_ptr T, const size_t ldt,
+                    const bool OnlyNonZeroVectors = false,
+                    const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
     /** Cleans up a compact storage A=L\U obtained by RowEchelonForm or ColumnEchelonForm
-	 * to reveal an echelon form of rank R.
-	 * Either L or U is in Echelon form (depending on Uplo)
-	 * The echelon structure is defined by the first R values of the array P.
-	 * @param F: base field
-	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
-	 * @param M: row dimension of A
-	 * @param N: column dimension of A
-	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param P: positions of the R pivots
-	 * @param[inout] A: input/output matrix
-	 * @param lda: leading dimension of A
-	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
-	 */
-	template <class Field>
-	void
-	getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-					const FFLAS::FFLAS_DIAG diag,
-					const size_t M, const size_t N, const size_t R, const size_t* P,
-					typename Field::Element_ptr A, const size_t lda,
-					const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+     * to reveal an echelon form of rank R.
+     * Either L or U is in Echelon form (depending on Uplo)
+     * The echelon structure is defined by the first R values of the array P.
+     * @param F: base field
+     * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+     * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
+     * @param M: row dimension of A
+     * @param N: column dimension of A
+     * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+     * @param P: positions of the R pivots
+     * @param[inout] A: input/output matrix
+     * @param lda: leading dimension of A
+     * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+     */
+    template <class Field>
+    void
+    getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                    const FFLAS::FFLAS_DIAG diag,
+                    const size_t M, const size_t N, const size_t R, const size_t* P,
+                    typename Field::Element_ptr A, const size_t lda,
+                    const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
-	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U
-	 * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
-	 * If Uplo == FflasLower:
-	 *   T is N x N (already allocated) such that A T = C is a transformation of A in
-	 *   Column echelon form
-	 * Else
-	 *   T is M x M (already allocated) such that T A = E is a transformation of A in
-	 *   Row Echelon form
-	 * @param F: base field
-	 * @param UpLo: Lower (FflasLower) means Transformation to Column Echelon Form, Upper (FflasUpper), to Row Echelon Form
-	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
-	 * @param M: row dimension of A
-	 * @param N: column dimension of A
-	 * @param R: rank of the triangular matrix
-	 * @param P: permutation matrix
-	 * @param[in] A: input matrix
-	 * @param lda: leading dimension of A
-	 * @param[out] T: output matrix
-	 * @param ldt: leading dimension of T
-	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
-	 */
-	template <class Field>
-	void
-	getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-						 const FFLAS::FFLAS_DIAG diag,
-						 const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
-						 typename Field::ConstElement_ptr A, const size_t lda,
-						 typename Field::Element_ptr T, const size_t ldt,
-						 const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
-	/** Extracts a matrix in echelon form from a compact storage A=L\U of rank R obtained by
-	 * ReducedRowEchelonForm or ReducedColumnEchelonForm with transform = true.
-	 * Either L or U is in Echelon form (depending on Uplo)
-	 * The echelon structure is defined by the first R values of the array P.
-	 * row and column dimension of T are greater or equal to that of A
-	 * @param F: base field
-	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
-	 * @param M: row dimension of T
-	 * @param N: column dimension of T
-	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param P: positions of the R pivots
-	 * @param[in] A: input matrix
-	 * @param lda: leading dimension of A
-	 * @param ldt: leading dimension of T
-	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
-	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
-	 */
-	template <class Field>
-	void
-	getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-						   const size_t M, const size_t N, const size_t R, const size_t* P,
-						   typename Field::ConstElement_ptr A, const size_t lda,
-						   typename Field::Element_ptr T, const size_t ldt,
-						   const bool OnlyNonZeroVectors = false,
-						   const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+    /** Extracts a transformation matrix to echelon form from a compact storage A=L\U
+     * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
+     * If Uplo == FflasLower:
+     *   T is N x N (already allocated) such that A T = C is a transformation of A in
+     *   Column echelon form
+     * Else
+     *   T is M x M (already allocated) such that T A = E is a transformation of A in
+     *   Row Echelon form
+     * @param F: base field
+     * @param UpLo: Lower (FflasLower) means Transformation to Column Echelon Form, Upper (FflasUpper), to Row Echelon Form
+     * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
+     * @param M: row dimension of A
+     * @param N: column dimension of A
+     * @param R: rank of the triangular matrix
+     * @param P: permutation matrix
+     * @param[in] A: input matrix
+     * @param lda: leading dimension of A
+     * @param[out] T: output matrix
+     * @param ldt: leading dimension of T
+     * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+     */
+    template <class Field>
+    void
+    getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                         const FFLAS::FFLAS_DIAG diag,
+                         const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
+                         typename Field::ConstElement_ptr A, const size_t lda,
+                         typename Field::Element_ptr T, const size_t ldt,
+                         const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+    /** Extracts a matrix in echelon form from a compact storage A=L\U of rank R obtained by
+     * ReducedRowEchelonForm or ReducedColumnEchelonForm with transform = true.
+     * Either L or U is in Echelon form (depending on Uplo)
+     * The echelon structure is defined by the first R values of the array P.
+     * row and column dimension of T are greater or equal to that of A
+     * @param F: base field
+     * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+     * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
+     * @param M: row dimension of T
+     * @param N: column dimension of T
+     * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+     * @param P: positions of the R pivots
+     * @param[in] A: input matrix
+     * @param lda: leading dimension of A
+     * @param ldt: leading dimension of T
+     * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+     * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
+     */
+    template <class Field>
+    void
+    getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                           const size_t M, const size_t N, const size_t R, const size_t* P,
+                           typename Field::ConstElement_ptr A, const size_t lda,
+                           typename Field::Element_ptr T, const size_t ldt,
+                           const bool OnlyNonZeroVectors = false,
+                           const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
     /** Cleans up a compact storage A=L\U of rank R obtained by ReducedRowEchelonForm or
-	 * ReducedColumnEchelonForm with transform = true.
-	 * Either L or U is in Echelon form (depending on Uplo)
-	 * The echelon structure is defined by the first R values of the array P.
-	 * @param F: base field
-	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
-	 * @param M: row dimension of A
-	 * @param N: column dimension of A
-	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param P: positions of the R pivots
-	 * @param[inout] A: input/output matrix
-	 * @param lda: leading dimension of A
-	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
-	 */
-	template <class Field>
-	void
-	getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-						   const size_t M, const size_t N, const size_t R, const size_t* P,
-						   typename Field::Element_ptr A, const size_t lda,
-						   const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+     * ReducedColumnEchelonForm with transform = true.
+     * Either L or U is in Echelon form (depending on Uplo)
+     * The echelon structure is defined by the first R values of the array P.
+     * @param F: base field
+     * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+     * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
+     * @param M: row dimension of A
+     * @param N: column dimension of A
+     * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+     * @param P: positions of the R pivots
+     * @param[inout] A: input/output matrix
+     * @param lda: leading dimension of A
+     * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+     */
+    template <class Field>
+    void
+    getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                           const size_t M, const size_t N, const size_t R, const size_t* P,
+                           typename Field::Element_ptr A, const size_t lda,
+                           const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
-	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U
-	 * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
-	 * If Uplo == FflasLower:
-	 *   T is N x N (already allocated) such that A T = C is a transformation of A in
-	 *   Column echelon form
-	 * Else
-	 *   T is M x M (already allocated) such that T A = E is a transformation of A in
-	 *   Row Echelon form
-	 * @param F: base field
-	 * @param UpLo: selects Col (FflasLower) or Row (FflasUpper) Echelon Form
-	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
-	 * @param M: row dimension of A
-	 * @param N: column dimension of A
-	 * @param R: rank of the triangular matrix
-	 * @param P: permutation matrix
-	 * @param[in] A: input matrix
-	 * @param lda: leading dimension of A
-	 * @param[out] T: output matrix
-	 * @param ldt: leading dimension of T
-	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
-	 */
-	template <class Field>
-	void
-	getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-								const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
-								typename Field::ConstElement_ptr A, const size_t lda,
-								typename Field::Element_ptr T, const size_t ldt,
-								const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
-		/** Auxiliary routine: determines the permutation that changes a PLUQ decomposition
-		 * into a echelon form revealing PLUQ decomposition
-		 */
-	void
-	PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm);
+    /** Extracts a transformation matrix to echelon form from a compact storage A=L\U
+     * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
+     * If Uplo == FflasLower:
+     *   T is N x N (already allocated) such that A T = C is a transformation of A in
+     *   Column echelon form
+     * Else
+     *   T is M x M (already allocated) such that T A = E is a transformation of A in
+     *   Row Echelon form
+     * @param F: base field
+     * @param UpLo: selects Col (FflasLower) or Row (FflasUpper) Echelon Form
+     * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
+     * @param M: row dimension of A
+     * @param N: column dimension of A
+     * @param R: rank of the triangular matrix
+     * @param P: permutation matrix
+     * @param[in] A: input matrix
+     * @param lda: leading dimension of A
+     * @param[out] T: output matrix
+     * @param ldt: leading dimension of T
+     * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+     */
+    template <class Field>
+    void
+    getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+                                const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
+                                typename Field::ConstElement_ptr A, const size_t lda,
+                                typename Field::Element_ptr T, const size_t ldt,
+                                const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+    /** Auxiliary routine: determines the permutation that changes a PLUQ decomposition
+     * into a echelon form revealing PLUQ decomposition
+     */
+    void
+    PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm);
 
 } // FFPACK
 // #include "ffpack.inl"
 
 namespace FFPACK { /* not used */
 
-	/** LQUPtoInverseOfFullRankMinor.
-	 * Suppose A has been factorized as L.Q.U.P, with rank r.
-	 * Then Qt.A.Pt has an invertible leading principal r x r submatrix
-	 * This procedure efficiently computes the inverse of this minor and puts it into X.
-	 * @note It changes the lower entries of A_factors in the process (NB: unless A was nonsingular and square)
-	 *
-	 * @param F base field
-	 * @param rank       rank of the matrix.
-	 * @param A_factors  matrix containing the L and U entries of the factorization
-	 * @param lda leading dimension of A
-	 * @param QtPointer  theLQUP->getQ()->getPointer() (note: getQ returns Qt!)
-	 * @param X          desired location for output
-	 * @param ldx leading dimension of X
-	 */
-	template <class Field>
-	typename Field::Element_ptr
-	LQUPtoInverseOfFullRankMinor( const Field& F, const size_t rank,
-				      typename Field::Element_ptr A_factors, const size_t lda,
-				      const size_t* QtPointer,
-				      typename Field::Element_ptr X, const size_t ldx);
+    /** LQUPtoInverseOfFullRankMinor.
+     * Suppose A has been factorized as L.Q.U.P, with rank r.
+     * Then Qt.A.Pt has an invertible leading principal r x r submatrix
+     * This procedure efficiently computes the inverse of this minor and puts it into X.
+     * @note It changes the lower entries of A_factors in the process (NB: unless A was nonsingular and square)
+     *
+     * @param F base field
+     * @param rank       rank of the matrix.
+     * @param A_factors  matrix containing the L and U entries of the factorization
+     * @param lda leading dimension of A
+     * @param QtPointer  theLQUP->getQ()->getPointer() (note: getQ returns Qt!)
+     * @param X          desired location for output
+     * @param ldx leading dimension of X
+     */
+    template <class Field>
+    typename Field::Element_ptr
+    LQUPtoInverseOfFullRankMinor( const Field& F, const size_t rank,
+                                  typename Field::Element_ptr A_factors, const size_t lda,
+                                  const size_t* QtPointer,
+                                  typename Field::Element_ptr X, const size_t ldx);
 
 } // FFPACK
 // include precompiled instantiation headers (avoiding to recompile them)
-#ifdef FFPACK_COMPILED 
+#ifdef FFPACK_COMPILED
 #include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
 #endif
 
@@ -1763,3 +1761,5 @@ namespace FFPACK { /* not used */
 
 #endif // __FFLASFFPACK_ffpack_H
 
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
