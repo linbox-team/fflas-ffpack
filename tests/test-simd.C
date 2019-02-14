@@ -32,6 +32,7 @@
 #include "fflas-ffpack/utils/test-utils.h" /* for FFLAS::getSeed */
 #include "fflas-ffpack/utils/align-allocator.h"
 
+#include <array>
 #include <vector>
 #include <random>
 #include <string>
