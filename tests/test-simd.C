@@ -432,11 +432,17 @@ main (int argc, char *argv[]) {
     bool pass  = true ;
     pass &= test<float>();
     pass &= test<double>();
+#ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+        // Not yet implemented over AVX512
     pass &= test<int16_t>();
     pass &= test<int32_t>();
+#endif
     pass &= test<int64_t>();
+#ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+        // Not yet implemented over AVX512
     pass &= test<uint16_t>();
     pass &= test<uint32_t>();
+#endif
     pass &= test<uint64_t>();
 
     cout << endl << "Test " << (pass ? "passed" : "failed") << endl;

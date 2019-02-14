@@ -174,14 +174,14 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
      */
     template<int s>
     static INLINE CONST vect_t sra(const vect_t a) {
-#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+#if defined(__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
         return _mm_srai_epi64(a, s);
 #else
         vect_t m = sll<63-s>(set1(1));
         vect_t x = srl<s>(a);
         vect_t result = sub(vxor(x, m), m); // result = x^m - m
         return result;
-#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS and __FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS
     }
 
     /*
@@ -255,7 +255,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
      *	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
      */
     static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
-#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
         return _mm_mullo_epi64(x0, x1);
 #else
         // _mm_mullo_epi64 emul
@@ -264,7 +264,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
         c0.v = x0;
         c1.v = x1;
         return set((scalar_t)(c0.t[0] * c1.t[0]), (scalar_t)(c0.t[1] * c1.t[1]));
-#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+#endif //  __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS and __FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS
     }
 
     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return mullo(a, b); }
