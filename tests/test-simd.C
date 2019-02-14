@@ -388,7 +388,30 @@ test_impl () {
 /* Test all SIMD implems for one Element type *********************************/
 /******************************************************************************/
 template<class Element>
-bool
+typename enable_if<is_integral<Element>::value, bool>::type
+test () {
+    bool test = true;
+
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
+    test &= test_impl<Simd128<Element>, Element>();
+    cout << endl;
+#endif
+
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+    test &= test_impl<Simd256<Element>, Element>();
+    cout << endl;
+#endif
+
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
+    test &= test_impl<Simd512<Element>, Element>();
+    cout << endl;
+#endif
+
+    return test;
+}
+
+template<class Element>
+typename enable_if<is_floating_point<Element>::value, bool>::type
 test () {
     bool test = true;
 
