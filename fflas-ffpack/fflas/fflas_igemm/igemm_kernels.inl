@@ -353,8 +353,7 @@ namespace FFLAS { namespace details { /*  kernels */
                        )
     {
 
-#if defined( __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS) or (not defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS))
-        // Note: as long as _nr is harcoded to _nr=4, no way to vectorize gebb14 with simd512
+#if not defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
         size_t k;
         int64_t *r0 = C+j*ldc+i;
         int64_t *r1 = r0+ldc;
@@ -385,7 +384,12 @@ namespace FFLAS { namespace details { /*  kernels */
                 blB+=4;
             }
 #else
-        using simd = Simd<int64_t>;
+#if defined( __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+        // Note: currently, _nr is harcoded to 4, so simd512 is unusable
+        using simd = Simd256<int64_t>;
+#else
+        using simd = Simd128<int64_t>;
+#endif
         using vect_t =  typename simd::vect_t;
 
         size_t k;
