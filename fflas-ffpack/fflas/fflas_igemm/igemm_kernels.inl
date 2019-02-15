@@ -1,9 +1,11 @@
 /*
  * Copyright (C) 2013,2014  Pascal Giorgi
+ * Copyright (C) 2018,2019  Pierre Karpman
  *
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
  * the code is inspired and adapted from the Eigen library
  * modified by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Some mild vectorization improvements by Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -399,7 +401,6 @@ namespace FFLAS { namespace details { /*  kernels */
         int64_t *r3 = r2+ldc;
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
         vect_t R0;
-        //		R0 = simd::load (r0); // requires _nr=simd::vect_size
         R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
         for(k=0;k<depth;k++){
             vect_t A0;
