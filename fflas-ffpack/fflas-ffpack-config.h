@@ -156,8 +156,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #define __FFLASFFPACK_HAVE_FMA_INSTRUCTIONS  1
 #endif
 
-#ifdef __GIVARO_HAVE_INT128
-#define __FFLASFFPACK_HAVE_INT128
+#ifdef __FFLASFFPACK_HAVE_INT128
+#define int128_t __int128_t
+#define uint128_t __uint128_t
 #endif
 
 #endif // __FFLASFFPACK_fflas_ffpack_configuration_H

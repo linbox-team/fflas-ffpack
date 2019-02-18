@@ -202,6 +202,8 @@ AC_CHECK_SIZEOF(long, 32)
 AC_CHECK_SIZEOF(long long, 64)
 AC_CHECK_SIZEOF(__int64, 64)
 
+AC_CHECK_TYPE([__int128_t], [AC_DEFINE(HAVE_INT128, 1, [Define that compiler allows int128_t types])])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([float.h limits.h stddef.h stdlib.h string.h sys/time.h stdint.h pthread.h])
