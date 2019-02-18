@@ -262,6 +262,9 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_integral<Element>::value>::type>
 {
+    static Element round (Element x) {
+        return x;
+    }
     static Element add (Element x1, Element x2) {
         return x1+x2;
     }
@@ -395,6 +398,7 @@ test_impl () {
     using Scal = ScalFunctions<Element>;
     bool btest = true;
 
+    TEST_ONE_OP (round);
     TEST_ONE_OP (add);
     TEST_ONE_OP (sub);
     TEST_ONE_OP (mul);
