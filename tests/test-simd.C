@@ -303,13 +303,22 @@ struct ScalFunctions<Element,
         return x1*x2;
     }
     static Element fmadd (Element x1, Element x2, Element x3) {
-        return x1+x3*x2;
+        return x1 + x2*x3;
+    }
+    static Element fmaddx (Element x1, Element x2, Element x3) {
+        return x1 + mulx (x2, x3);
     }
     static Element fmsub (Element x1, Element x2, Element x3) {
-        return -x1 + x3*x2;
+        return -x1 + x2*x3;
+    }
+    static Element fmsubx (Element x1, Element x2, Element x3) {
+        return -x1 + mulx (x2, x3);
     }
     static Element fnmadd (Element x1, Element x2, Element x3) {
-        return x1 - x3*x2;
+        return x1 - x2*x3;
+    }
+    static Element fnmaddx (Element x1, Element x2, Element x3) {
+        return x1 - mulx(x2, x3);
     }
 
     /* Shift */
@@ -406,8 +415,11 @@ test_impl () {
     TEST_ONE_OP (mulhi);
     TEST_ONE_OP (mulx);
     TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmaddx);
     TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fmsubx);
     TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (fnmaddx);
     TEST_ONE_OP (lesser);
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
