@@ -54,6 +54,7 @@ using std::is_floating_point;
 using std::is_integral;
 using std::is_signed;
 using std::equal;
+using std::remove_reference;
 
 /* For pretty printing type */
 template<typename...> const char *TypeName();
@@ -123,10 +124,10 @@ eval_func_on_array (function<Ret()> f, array<T, 0> arr)
 template <class Ret, class T, class...TArgs>
 Ret
 eval_func_on_array (function<Ret(T, TArgs...)> f,
-                    array<T, sizeof...(TArgs)+1> arr)
+                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> arr)
 {
     function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return f(arr[0], args...);};
-    array<T, sizeof...(TArgs)> newarr;
+    array<typename remove_reference<T>::type, sizeof...(TArgs)> newarr;
     for (size_t i = 0; i < sizeof...(TArgs); i++)
         newarr[i] = arr[i+1];
     return eval_func_on_array (newf, newarr);
@@ -268,8 +269,14 @@ struct ScalFunctions<Element,
     static Element add (Element x1, Element x2) {
         return x1+x2;
     }
+    static Element addin (Element &x1, Element x2) {
+        return x1+=x2;
+    }
     static Element sub (Element x1, Element x2) {
         return x1-x2;
+    }
+    static Element subin (Element &x1, Element x2) {
+        return x1-=x2;
     }
     static Element mul (Element x1, Element x2) {
         return x1*x2;
@@ -305,20 +312,38 @@ struct ScalFunctions<Element,
     static Element fmadd (Element x1, Element x2, Element x3) {
         return x1 + x2*x3;
     }
+    static Element fmaddin (Element &x1, Element x2, Element x3) {
+        return x1 += x2*x3;
+    }
     static Element fmaddx (Element x1, Element x2, Element x3) {
         return x1 + mulx (x2, x3);
+    }
+    static Element fmaddxin (Element &x1, Element x2, Element x3) {
+        return x1 += mulx (x2, x3);
     }
     static Element fmsub (Element x1, Element x2, Element x3) {
         return -x1 + x2*x3;
     }
+    static Element fmsubin (Element &x1, Element x2, Element x3) {
+        return x1 = -x1 + x2*x3;
+    }
     static Element fmsubx (Element x1, Element x2, Element x3) {
         return -x1 + mulx (x2, x3);
+    }
+    static Element fmsubxin (Element &x1, Element x2, Element x3) {
+        return x1 = -x1 + mulx (x2, x3);
     }
     static Element fnmadd (Element x1, Element x2, Element x3) {
         return x1 - x2*x3;
     }
+    static Element fnmaddin (Element &x1, Element x2, Element x3) {
+        return x1 -= x2*x3;
+    }
     static Element fnmaddx (Element x1, Element x2, Element x3) {
         return x1 - mulx(x2, x3);
+    }
+    static Element fnmaddxin (Element &x1, Element x2, Element x3) {
+        return x1 -= mulx(x2, x3);
     }
 
     /* Shift */
@@ -409,17 +434,25 @@ test_impl () {
 
     TEST_ONE_OP (round);
     TEST_ONE_OP (add);
+    TEST_ONE_OP (addin);
     TEST_ONE_OP (sub);
+    TEST_ONE_OP (subin);
     TEST_ONE_OP (mul);
     TEST_ONE_OP (mullo);
     TEST_ONE_OP (mulhi);
     TEST_ONE_OP (mulx);
     TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmaddin);
     TEST_ONE_OP (fmaddx);
+    TEST_ONE_OP (fmaddxin);
     TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fmsubin);
     TEST_ONE_OP (fmsubx);
+    TEST_ONE_OP (fmsubxin);
     TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (fnmaddin);
     TEST_ONE_OP (fnmaddx);
+    TEST_ONE_OP (fnmaddxin);
     TEST_ONE_OP (lesser);
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
