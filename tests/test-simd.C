@@ -83,14 +83,11 @@ generate_random_vector (vector<Element,Alloc> &a) {
     std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
-// FIXME float value are too large
 template <class Element, class Alloc>
 typename enable_if<is_floating_point<Element>::value>::type
 generate_random_vector (vector<Element,Alloc> &a) {
     typedef typename std::uniform_real_distribution<Element> RandGen;
     RandGen G(numeric_limits<Element>::lowest(),numeric_limits<Element>::max());
-    //typedef typename std::normal_distribution<Element> RandGen;
-    //RandGen G(0.0, Givaro::Modular<Element>::maxCardinality());
     std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
