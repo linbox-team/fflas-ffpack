@@ -1,9 +1,11 @@
 /*
  * Copyright (C) 2013,2014  Pascal Giorgi
+ * Copyright (C) 2018,2019  Pierre Karpman
  *
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
  * the code is inspired and adapted from the Eigen library
  * modified by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Some mild vectorization improvements by Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -353,8 +355,7 @@ namespace FFLAS { namespace details { /*  kernels */
                        )
     {
 
-#if defined( __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS) or (not defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS))
-        // Note: as long as _nr is harcoded to _nr=4, no way to vectorize gebb14 with simd512
+#if not defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
         size_t k;
         int64_t *r0 = C+j*ldc+i;
         int64_t *r1 = r0+ldc;
@@ -385,7 +386,12 @@ namespace FFLAS { namespace details { /*  kernels */
                 blB+=4;
             }
 #else
-        using simd = Simd<int64_t>;
+#if defined( __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+        // Note: currently, _nr is harcoded to 4, so simd512 is unusable
+        using simd = Simd256<int64_t>;
+#else
+        using simd = Simd128<int64_t>;
+#endif
         using vect_t =  typename simd::vect_t;
 
         size_t k;
@@ -395,7 +401,6 @@ namespace FFLAS { namespace details { /*  kernels */
         int64_t *r3 = r2+ldc;
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
         vect_t R0;
-        //		R0 = simd::load (r0); // requires _nr=simd::vect_size
         R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
         for(k=0;k<depth;k++){
             vect_t A0;

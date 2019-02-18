@@ -180,7 +180,8 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
      * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s] int32_t
      */
-    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srai_epi32(a, s); }
+    template<int s>
+    static INLINE CONST vect_t sra(const vect_t a) { return _mm256_srai_epi32(a, s); }
 
     /*
      * Shuffle 32-bit integers in a within 128-bit lanes using the control in imm8, and store the results in dst.
