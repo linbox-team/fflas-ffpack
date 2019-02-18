@@ -46,6 +46,8 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using std::array;
+using std::function;
 using std::numeric_limits;
 using std::enable_if;
 using std::is_floating_point;
@@ -115,19 +117,18 @@ check_eq (Element x, Element y)
 /* evaluate the function f with arguments taken in the array */
 template <class Ret, class T>
 Ret
-eval_func_on_array (std::function<Ret()> f, std::array<T, 0> arr)
+eval_func_on_array (function<Ret()> f, array<T, 0> arr)
 {
     return f();
 }
 
 template <class Ret, class T, class...TArgs>
 Ret
-eval_func_on_array (std::function<Ret(T, TArgs...)> f,
-                    std::array<T, sizeof...(TArgs)+1> arr)
+eval_func_on_array (function<Ret(T, TArgs...)> f,
+                    array<T, sizeof...(TArgs)+1> arr)
 {
-    std::function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return
-        f(arr[0], args...);};
-    std::array<T, sizeof...(TArgs)> newarr;
+    function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return f(arr[0], args...);};
+    array<T, sizeof...(TArgs)> newarr;
     for (size_t i = 0; i < sizeof...(TArgs); i++)
         newarr[i] = arr[i+1];
     return eval_func_on_array (newf, newarr);
@@ -159,8 +160,8 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     ScalVect out_scal(SimdVectSize), out_simd(SimdVectSize);
 
     /* compute with scalar function */
-    std::array<Element, arity> scal_in;
-    std::function<RScal(AScal...)> fscal = FScal;
+    array<Element, arity> scal_in;
+    function<RScal(AScal...)> fscal = FScal;
     for(size_t i = 0 ; i < SimdVectSize ; i++) {
         for (size_t j = 0; j < arity; j++)
             scal_in[j] = inputs[j][i];
@@ -169,8 +170,8 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     }
 
     /* compute with SIMD function */
-    std::array<SimdVect, arity> simd_in;
-    std::function<RSimd(ASimd...)> fsimd = FSimd;
+    array<SimdVect, arity> simd_in;
+    function<RSimd(ASimd...)> fsimd = FSimd;
     for (size_t i = 0; i < arity; i++)
         simd_in[i] = Simd::load (inputs[i].data());
 
