@@ -460,14 +460,17 @@ main (int argc, char *argv[]) {
     pass &= test<int16_t>();
     pass &= test<int32_t>();
 #endif
+#ifdef __x86_64__
     pass &= test<int64_t>();
+#endif
 #ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
         // Not yet implemented over AVX512
     pass &= test<uint16_t>();
     pass &= test<uint32_t>();
 #endif
+#ifdef __x86_64__
     pass &= test<uint64_t>();
-
+#endif
     cout << endl << "Test " << (pass ? "passed" : "failed") << endl;
     return pass ? 0 : 1;
 }
