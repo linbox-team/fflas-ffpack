@@ -444,11 +444,6 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 
     static INLINE CONST vect_t round(const vect_t a) { return a; }
 
-    static INLINE CONST vect_t signbits(const vect_t x) {
-        vect_t signBits = sub(zero(), srl< 4*sizeof(scalar_t)-1>(x));
-        return signBits;
-    }
-
     // mask the high 32 bits of a 64 bits, that is 00000000FFFFFFFF
     static INLINE CONST vect_t mask_high() { return srl<32>(_mm_set1_epi8(-1)); }
 
@@ -457,6 +452,13 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
     template <bool overflow, bool poweroftwo, int8_t shifter>
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+
+protected:
+    /* return the sign where vect_t is seen as four int32_t */
+    static INLINE CONST vect_t signbits(const vect_t x) {
+        vect_t signBits = sub(zero(), srl< 4*sizeof(scalar_t)-1>(x));
+        return signBits;
+    }
 }; // Simd128_impl<true, true, true, 8>
 
 /*

@@ -403,11 +403,6 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 
     static INLINE CONST vect_t round(const vect_t a) { return a; }
 
-    static INLINE CONST vect_t signbits(const vect_t x) {
-        vect_t signBits = sub(zero(), srl<4*sizeof(scalar_t)-1>(x));
-        return signBits;
-    }
-
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const __m64 &INVP, const vect_t &NEGP, const vect_t &MIN,
                              const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
