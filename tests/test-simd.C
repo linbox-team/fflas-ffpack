@@ -223,20 +223,38 @@ struct ScalFunctions<Element,
     static Element add (Element x1, Element x2) {
         return x1+x2;
     }
+    static Element addin (Element &x1, Element x2) {
+        return x1+=x2;
+    }
     static Element sub (Element x1, Element x2) {
         return x1-x2;
+    }
+    static Element subin (Element &x1, Element x2) {
+        return x1-=x2;
     }
     static Element mul (Element x1, Element x2) {
         return x1*x2;
     }
+    static Element mulin (Element &x1, Element x2) {
+        return x1*=x2;
+    }
     static Element fmadd (Element x1, Element x2, Element x3) {
         return std::fma(x3,x2,x1);
+    }
+    static Element fmaddin (Element &x1, Element x2, Element x3) {
+        return x1 = std::fma(x3,x2,x1);
     }
     static Element fmsub (Element x1, Element x2, Element x3) {
         return std::fma(x3,x2,-x1);
     }
+    static Element fmsubin (Element &x1, Element x2, Element x3) {
+        return x1 = std::fma(x3,x2,-x1);
+    }
     static Element fnmadd (Element x1, Element x2, Element x3) {
         return std::fma(-x3,x2,x1);
+    }
+    static Element fnmaddin (Element &x1, Element x2, Element x3) {
+        return x1 = std::fma(-x3,x2,x1);
     }
     /* Comparisons functions in SIMD output 0 or 0xFFFF...FFFF
      * (here we assume 0xFFFF...FFFF is always a NAN)
@@ -411,11 +429,17 @@ test_impl () {
     TEST_ONE_OP (floor);
     TEST_ONE_OP (round);
     TEST_ONE_OP (add);
+    TEST_ONE_OP (addin);
     TEST_ONE_OP (sub);
+    TEST_ONE_OP (subin);
     TEST_ONE_OP (mul);
+    TEST_ONE_OP (mulin);
     TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmaddin);
     TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fmsubin);
     TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (fnmaddin);
     TEST_ONE_OP (lesser);
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
