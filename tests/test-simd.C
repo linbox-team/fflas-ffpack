@@ -52,6 +52,7 @@ using std::numeric_limits;
 using std::enable_if;
 using std::is_floating_point;
 using std::is_integral;
+using std::is_signed;
 using std::equal;
 
 /* For pretty printing type */
@@ -307,6 +308,36 @@ struct ScalFunctions<Element,
     static Element fnmadd (Element x1, Element x2, Element x3) {
         return x1 - x3*x2;
     }
+
+    /* Shift */
+    template <int s, bool EnableTrue = true>
+    static
+    typename enable_if<!is_signed<Element>::value && EnableTrue, Element>::type
+    sra (Element x1) {
+        return x1 >> s; /* For unsigned type, simply use >> */
+    }
+
+    template <int s, bool EnableTrue = true>
+    static
+    typename enable_if<is_signed<Element>::value && EnableTrue, Element>::type
+    sra (Element x1) {
+        /* For signed type we need to do a sign extension, the code comes from
+         *   http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+         */
+        struct {Element x:sizeof(Element)*8-s;} r;
+        return r.x = (x1 >> s);
+    }
+
+    template <int s>
+    static Element srl (Element x1) {
+        return ((typename std::make_unsigned<Element>::type) x1) >> s;
+    }
+
+    template <int s>
+    static Element sll (Element x1) {
+        return ((typename std::make_unsigned<Element>::type) x1) << s;
+    }
+
     /* Comparisons functions in SIMD output 0 or 0xFFFF...FFFF */
     static Element lesser (Element x1, Element x2) {
         return (x1<x2)?-1:0;
@@ -378,6 +409,12 @@ test_impl () {
     TEST_ONE_OP (greater);
     TEST_ONE_OP (greater_eq);
     TEST_ONE_OP (eq);
+    TEST_ONE_OP (template sra<3>);
+    TEST_ONE_OP (template sra<7>);
+    TEST_ONE_OP (template srl<5>);
+    TEST_ONE_OP (template srl<11>);
+    TEST_ONE_OP (template sll<2>);
+    TEST_ONE_OP (template sll<13>);
 
     return btest;
 }
