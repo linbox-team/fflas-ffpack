@@ -584,8 +584,8 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
         a2 = set(_mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3), 0);
         b1 = set(_mm_extract_epi32(b, 0), 0, _mm_extract_epi32(b, 2), 0);
         b2 = set(_mm_extract_epi32(b, 1), 0, _mm_extract_epi32(b, 3), 0);
-        a1 = _mm_mul_epi32(a1, b1);
-        a2 = _mm_mul_epi32(a2, b2);
+        a1 = _mm_mul_epu32(a1, b1);
+        a2 = _mm_mul_epu32(a2, b2);
         return set(_mm_extract_epi32(a1, 1), _mm_extract_epi32(a2, 1), _mm_extract_epi32(a1, 3),
                    _mm_extract_epi32(a2, 3));
 #else
