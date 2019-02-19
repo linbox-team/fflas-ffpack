@@ -26,6 +26,7 @@
 
 #include "givaro/givinteger.h" /* for Givaro::Integer */
 #include "givaro/givprint.h" /* for operator<< with vector */
+#include "givaro/modular-general.h" /* for make_unsigned_int */
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/utils/args-parser.h" /* for parsing command-line args */
@@ -211,6 +212,38 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_floating_point<Element>::value>::type>
 {
+    using UintTypeSameLength = typename make_unsigned_int<Element>::type;
+    static Element zero () {
+        return 0.0;
+    }
+    static Element vand (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = *y1 & *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
+    static Element vor (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = *y1 | *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
+    static Element vxor (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = *y1 ^ *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
+    static Element vandnot (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = (~*y1) & *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
     static Element ceil (Element x) {
         return std::ceil(x);
     }
@@ -237,6 +270,9 @@ struct ScalFunctions<Element,
     }
     static Element mulin (Element &x1, Element x2) {
         return x1*=x2;
+    }
+    static Element div (Element x1, Element x2) {
+        return x1/x2;
     }
     static Element fmadd (Element x1, Element x2, Element x3) {
         return std::fma(x3,x2,x1);
@@ -281,8 +317,23 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_integral<Element>::value>::type>
 {
+    static Element zero () {
+        return 0;
+    }
     static Element round (Element x) {
         return x;
+    }
+    static Element vand (Element x1, Element x2) {
+        return x1 & x2;
+    }
+    static Element vor (Element x1, Element x2) {
+        return x1 | x2;
+    }
+    static Element vxor (Element x1, Element x2) {
+        return x1 ^ x2;
+    }
+    static Element vandnot (Element x1, Element x2) {
+        return (~x1) & x2;
     }
     static Element add (Element x1, Element x2) {
         return x1+x2;
@@ -425,6 +476,11 @@ test_impl () {
     using Scal = ScalFunctions<Element>;
     bool btest = true;
 
+    TEST_ONE_OP (zero);
+    TEST_ONE_OP (vand);
+    TEST_ONE_OP (vor);
+    TEST_ONE_OP (vxor);
+    TEST_ONE_OP (vandnot);
     TEST_ONE_OP (ceil);
     TEST_ONE_OP (floor);
     TEST_ONE_OP (round);
@@ -434,6 +490,7 @@ test_impl () {
     TEST_ONE_OP (subin);
     TEST_ONE_OP (mul);
     TEST_ONE_OP (mulin);
+    TEST_ONE_OP (div);
     TEST_ONE_OP (fmadd);
     TEST_ONE_OP (fmaddin);
     TEST_ONE_OP (fmsub);
@@ -456,7 +513,12 @@ test_impl () {
     using Scal = ScalFunctions<Element>;
     bool btest = true;
 
+    TEST_ONE_OP (zero);
     TEST_ONE_OP (round);
+    TEST_ONE_OP (vand);
+    TEST_ONE_OP (vor);
+    TEST_ONE_OP (vxor);
+    TEST_ONE_OP (vandnot);
     TEST_ONE_OP (add);
     TEST_ONE_OP (addin);
     TEST_ONE_OP (sub);
