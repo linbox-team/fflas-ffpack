@@ -55,12 +55,28 @@ struct Simd512i_base {
     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm512_or_si512(b, a); }
 
     /*
+     * Compute the bitwise XOR and store the results in vect_t.
+     * Args   : [a0, ..., a511]
+     *		   [b0, ..., b511]
+     * Return : [a0 XOR b0, ..., a511 XOR b511]
+     */
+    static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm512_xor_si512(b, a); }
+
+    /*
      * Compute the bitwise AND and store the results in vect_t.
      * Args   : [a0, ..., a255]
      *		   [b0, ..., b255]
      * Return : [a0 AND b0, ..., a255 AND b255]
      */
     static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_si512(b, a); }
+
+    /*
+     * Compute the bitwise NOT AND and store the results in vect_t.
+     * Args   : [a0, ..., a511]
+     *		   [b0, ..., b511]
+     * Return : [(NOT a0) AND b0, ..., (NOT a511) AND b511]
+     */
+    static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_si512(a, b); }
 
 
 };
