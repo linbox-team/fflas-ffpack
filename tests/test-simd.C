@@ -90,7 +90,7 @@ template <class Element, class Alloc>
 typename enable_if<is_floating_point<Element>::value>::type
 generate_random_vector (vector<Element,Alloc> &a) {
     typedef typename std::uniform_real_distribution<Element> RandGen;
-    RandGen G(numeric_limits<Element>::lowest(),numeric_limits<Element>::max());
+    RandGen G(numeric_limits<Element>::min(),numeric_limits<Element>::max());
     std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
