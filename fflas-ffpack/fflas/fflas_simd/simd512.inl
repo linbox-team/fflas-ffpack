@@ -48,9 +48,9 @@ struct Simd512i_base {
 
     /*
      * Compute the bitwise OR and store the results in vect_t.
-     * Args   : [a0, ..., a255]
-     *		   [b0, ..., b255]
-     * Return : [a0 OR b0, ..., a255 OR b255]
+     * Args   : [a0, ..., a511]
+     *		   [b0, ..., b511]
+     * Return : [a0 OR b0, ..., a511 OR b511]
      */
     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm512_or_si512(b, a); }
 
@@ -64,9 +64,9 @@ struct Simd512i_base {
 
     /*
      * Compute the bitwise AND and store the results in vect_t.
-     * Args   : [a0, ..., a255]
-     *		   [b0, ..., b255]
-     * Return : [a0 AND b0, ..., a255 AND b255]
+     * Args   : [a0, ..., a511]
+     *		   [b0, ..., b511]
+     * Return : [a0 AND b0, ..., a511 AND b511]
      */
     static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_si512(b, a); }
 
