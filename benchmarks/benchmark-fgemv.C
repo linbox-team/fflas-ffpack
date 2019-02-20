@@ -30,6 +30,8 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/utils/test-utils.h"
+
 #include "fflas-ffpack/utils/timer.h"
 #include "givaro/modular-integer.h"
 #include "givaro/givcaster.h"
@@ -49,7 +51,7 @@ int main(int argc, char** argv) {
     size_t m = 8000;
     size_t k = 8000;
     //static size_t n = 512 ;
-    size_t seed= time(NULL);
+    uint64_t seed= getSeed();
     int t=NUM_THREADS;
     int NBK = -1;
     int b=0;
