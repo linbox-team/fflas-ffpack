@@ -31,11 +31,10 @@
 struct Simd128fp_base {
 
     /* Name of the Simd struct */
-    static const char type_name[];
+    static inline const std::string type_string () { return "Simd128"; }
 
 
 };
-const char Simd128fp_base::type_name[] = "Simd128";
 
 struct Simd128i_base {
 
@@ -45,7 +44,7 @@ struct Simd128i_base {
     using vect_t = __m128i;
 
     /* Name of the Simd struct */
-    static const char type_name[];
+    static inline const std::string type_string () { return "Simd128"; }
 
     /*
      *  Return vector of type vect_t with all elements set to zero
@@ -102,7 +101,6 @@ struct Simd128i_base {
     static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(a, b); }
 
 };
-const char Simd128i_base::type_name[] = "Simd128";
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd128_impl;
 

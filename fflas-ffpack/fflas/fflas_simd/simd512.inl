@@ -31,11 +31,10 @@
 struct Simd512fp_base {
 
     /* Name of the Simd struct */
-    static const char type_name[];
+    static inline const std::string type_string () { return "Simd512"; }
 
 
 };
-const char Simd512fp_base::type_name[] = "Simd512";
 
 struct Simd512i_base {
 
@@ -45,7 +44,7 @@ struct Simd512i_base {
     using vect_t = __m512i;
 
     /* Name of the Simd struct */
-    static const char type_name[];
+    static inline const std::string type_string () { return "Simd512"; }
 
     /*
      *  Return vector of type vect_t with all elements set to zero
@@ -71,7 +70,6 @@ struct Simd512i_base {
 
 
 };
-const char Simd512i_base::type_name[] = "Simd512";
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd512_impl;
 
