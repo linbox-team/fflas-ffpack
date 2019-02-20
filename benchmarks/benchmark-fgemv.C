@@ -50,16 +50,17 @@ int main(int argc, char** argv) {
     size_t k = 8000;
     //static size_t n = 512 ;
     size_t seed= time(NULL);
-    int t=MAX_THREADS;
+    int t=NUM_THREADS;
     int NBK = -1;
-
+    int b=0;
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-        { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row, Grain>.", TYPE_INT , &p },
+        { 'b', "-b B", "Set the bitsize of input.",         TYPE_INT , &b },
+       { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row, Grain>.", TYPE_INT , &p },
         { 'm', "-m M", "Set the dimension m of the matrix.",                    TYPE_INT , &m },
         { 'k', "-k K", "Set the dimension k of the matrix.",                    TYPE_INT , &k },
         { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
-        { 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
+        { 'N', "-n N", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
         { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iters },
         { 's', "-s S", "Sets seed.",                            				TYPE_INT , &seed },
         END_OF_ARGUMENTS
@@ -72,11 +73,13 @@ int main(int argc, char** argv) {
     //  typedef Givaro::Modular<Givaro::Integer> Field;
     //  typedef Givaro::ModularBalanced<int32_t> Field;
     //	typedef Givaro::ModularBalanced<float> Field;
-    typedef Givaro::ModularBalanced<double> Field;
+        //  typedef Givaro::ModularBalanced<double> Field;
+    typedef Givaro::ZRing<Givaro::Integer> Field;
 
-    //	typedef Field::Element Element;
+        //	typedef Field::Element Element;
 
-    Field F(q);
+//    Field F(q);
+    Field F;
     Timer chrono, TimFreivalds;
     double time=0.0;
 
@@ -91,7 +94,7 @@ int main(int argc, char** argv) {
     X = FFLAS::fflas_new(F,k,incX);
     Y = FFLAS::fflas_new(F,m,incY);
     //Y2= FFLAS::fflas_new(F,m,incY);
-    Field::RandIter Rand(F,seed);
+    Field::RandIter Rand(F,b,seed);
 
 
     // TODO: replace by a 1D pfrand
