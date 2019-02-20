@@ -318,12 +318,18 @@ struct NoSimd {
      */
     static const constexpr size_t vect_size = 1;
 
+    /* Name of the NoSimd struct */
+    static const char type_name[];
+
     // Test if the pointer p is multiple of alignment
     template <class TT> static constexpr bool valid(TT p) { return false; }
 
     // Test if n is multiple of vect_size
     template <class TT> static constexpr bool compliant(TT n) { return false; }
 };
+
+template<typename T>
+const char NoSimd<T>::type_name[] = "NoSimd";
 
 // #if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 

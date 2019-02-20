@@ -31,6 +31,9 @@
 struct Simd256fp_base {
 #if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
+    /* Name of the Simd struct */
+    static const char type_name[];
+
     /*
      * Shuffle 128-bits selected by imm8 from a and b, and store the results in dst.
      * Args   :	[a0, a1]
@@ -67,6 +70,7 @@ struct Simd256fp_base {
 
 #endif
 };
+const char Simd256fp_base::type_name[] = "Simd256";
 
 struct Simd256i_base {
 
@@ -74,6 +78,9 @@ struct Simd256i_base {
      * alias to 256 bit simd register
      */
     using vect_t = __m256i;
+
+    /* Name of the Simd struct */
+    static const char type_name[];
 
     /*
      *  Return vector of type vect_t with all elements set to zero
@@ -167,6 +174,7 @@ struct Simd256i_base {
     static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return permute128<0x31>(a, b); }
 #endif
 };
+const char Simd256i_base::type_name[] = "Simd256";
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd256_impl;
 

@@ -31,7 +31,7 @@
 /*
  * Simd128 specialized for double
  */
-template <> struct Simd128_impl<true, false, true, 8> {
+template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
     /*
