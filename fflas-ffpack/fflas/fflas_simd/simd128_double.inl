@@ -242,14 +242,6 @@ template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
 #endif
     }
 
-    /*
-     * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the negated intermediate result
-     * to packed elements in c, and store the results in vect_t.
-     * Args   : [a0, a1], [b0, b1], [c0, c1]
-     * Return : [-(a0*b0)+c0, -(a1*b1)+c1]
-     */
-    static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) { return fnmadd(c, a, b); }
-
     static INLINE CONST vect_t fnmaddin(vect_t &c, const vect_t a, const vect_t b) { return c = fnmadd(c, a, b); }
 
     /*
@@ -265,14 +257,6 @@ template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
         return sub(mul(a, b), c);
 #endif
     }
-
-    /*
-     * Multiply packed double-precision (64-bit) floating-point elements in a and b, subtract packed elements in c from
-     * the intermediate result, and store the results in vect_t.
-     * Args   : [a0, a1], [b0, b1], [c0, c1]
-     * Return : [a0*b0-c0, a1*b1-c1]
-     */
-    static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) { return fmsub(c, a, b); }
 
     static INLINE CONST vect_t fmsubin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsub(c, a, b); }
 

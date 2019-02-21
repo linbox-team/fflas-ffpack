@@ -26,6 +26,7 @@
 
 #include "givaro/givinteger.h" /* for Givaro::Integer */
 #include "givaro/givprint.h" /* for operator<< with vector */
+#include "givaro/modular-general.h" /* for make_unsigned_int */
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/utils/args-parser.h" /* for parsing command-line args */
@@ -46,11 +47,15 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using std::array;
+using std::function;
 using std::numeric_limits;
 using std::enable_if;
 using std::is_floating_point;
 using std::is_integral;
+using std::is_signed;
 using std::equal;
+using std::remove_reference;
 
 /* For pretty printing type */
 template<typename...> const char *TypeName();
@@ -81,14 +86,11 @@ generate_random_vector (vector<Element,Alloc> &a) {
     std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
-// FIXME float value are too large
 template <class Element, class Alloc>
 typename enable_if<is_floating_point<Element>::value>::type
 generate_random_vector (vector<Element,Alloc> &a) {
     typedef typename std::uniform_real_distribution<Element> RandGen;
-    RandGen G(numeric_limits<Element>::lowest(),numeric_limits<Element>::max());
-    //typedef typename std::normal_distribution<Element> RandGen;
-    //RandGen G(0.0, Givaro::Modular<Element>::maxCardinality());
+    RandGen G(numeric_limits<Element>::min(),numeric_limits<Element>::max());
     std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
 }
 
@@ -115,19 +117,18 @@ check_eq (Element x, Element y)
 /* evaluate the function f with arguments taken in the array */
 template <class Ret, class T>
 Ret
-eval_func_on_array (std::function<Ret()> f, std::array<T, 0> arr)
+eval_func_on_array (function<Ret()> f, array<T, 0> arr)
 {
     return f();
 }
 
 template <class Ret, class T, class...TArgs>
 Ret
-eval_func_on_array (std::function<Ret(T, TArgs...)> f,
-                    std::array<T, sizeof...(TArgs)+1> arr)
+eval_func_on_array (function<Ret(T, TArgs...)> f,
+                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> arr)
 {
-    std::function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return
-        f(arr[0], args...);};
-    std::array<T, sizeof...(TArgs)> newarr;
+    function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return f(arr[0], args...);};
+    array<typename remove_reference<T>::type, sizeof...(TArgs)> newarr;
     for (size_t i = 0; i < sizeof...(TArgs); i++)
         newarr[i] = arr[i+1];
     return eval_func_on_array (newf, newarr);
@@ -158,8 +159,8 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     ScalVect out_scal(SimdVectSize), out_simd(SimdVectSize);
 
     /* compute with scalar function */
-    std::array<Element, arity> scal_in;
-    std::function<RScal(AScal...)> fscal = FScal;
+    array<Element, arity> scal_in;
+    function<RScal(AScal...)> fscal = FScal;
     for(size_t i = 0 ; i < SimdVectSize ; i++) {
         for (size_t j = 0; j < arity; j++)
             scal_in[j] = inputs[j][i];
@@ -168,8 +169,8 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     }
 
     /* compute with SIMD function */
-    std::array<SimdVect, arity> simd_in;
-    std::function<RSimd(ASimd...)> fsimd = FSimd;
+    array<SimdVect, arity> simd_in;
+    function<RSimd(ASimd...)> fsimd = FSimd;
     for (size_t i = 0; i < arity; i++)
         simd_in[i] = Simd::load (inputs[i].data());
 
@@ -210,6 +211,38 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_floating_point<Element>::value>::type>
 {
+    using UintTypeSameLength = typename make_unsigned_int<Element>::type;
+    static Element zero () {
+        return 0.0;
+    }
+    static Element vand (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = *y1 & *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
+    static Element vor (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = *y1 | *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
+    static Element vxor (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = *y1 ^ *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
+    static Element vandnot (Element x1, Element x2) {
+        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
+        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
+        UintTypeSameLength t = (~*y1) & *y2;
+        Element *r = reinterpret_cast<Element*>(&t);
+        return *r;
+    }
     static Element ceil (Element x) {
         return std::ceil(x);
     }
@@ -222,20 +255,41 @@ struct ScalFunctions<Element,
     static Element add (Element x1, Element x2) {
         return x1+x2;
     }
+    static Element addin (Element &x1, Element x2) {
+        return x1+=x2;
+    }
     static Element sub (Element x1, Element x2) {
         return x1-x2;
+    }
+    static Element subin (Element &x1, Element x2) {
+        return x1-=x2;
     }
     static Element mul (Element x1, Element x2) {
         return x1*x2;
     }
+    static Element mulin (Element &x1, Element x2) {
+        return x1*=x2;
+    }
+    static Element div (Element x1, Element x2) {
+        return x1/x2;
+    }
     static Element fmadd (Element x1, Element x2, Element x3) {
         return std::fma(x3,x2,x1);
+    }
+    static Element fmaddin (Element &x1, Element x2, Element x3) {
+        return x1 = std::fma(x3,x2,x1);
     }
     static Element fmsub (Element x1, Element x2, Element x3) {
         return std::fma(x3,x2,-x1);
     }
+    static Element fmsubin (Element &x1, Element x2, Element x3) {
+        return x1 = std::fma(x3,x2,-x1);
+    }
     static Element fnmadd (Element x1, Element x2, Element x3) {
         return std::fma(-x3,x2,x1);
+    }
+    static Element fnmaddin (Element &x1, Element x2, Element x3) {
+        return x1 = std::fma(-x3,x2,x1);
     }
     /* Comparisons functions in SIMD output 0 or 0xFFFF...FFFF
      * (here we assume 0xFFFF...FFFF is always a NAN)
@@ -262,11 +316,35 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_integral<Element>::value>::type>
 {
+    static Element zero () {
+        return 0;
+    }
+    static Element round (Element x) {
+        return x;
+    }
+    static Element vand (Element x1, Element x2) {
+        return x1 & x2;
+    }
+    static Element vor (Element x1, Element x2) {
+        return x1 | x2;
+    }
+    static Element vxor (Element x1, Element x2) {
+        return x1 ^ x2;
+    }
+    static Element vandnot (Element x1, Element x2) {
+        return (~x1) & x2;
+    }
     static Element add (Element x1, Element x2) {
         return x1+x2;
     }
+    static Element addin (Element &x1, Element x2) {
+        return x1+=x2;
+    }
     static Element sub (Element x1, Element x2) {
         return x1-x2;
+    }
+    static Element subin (Element &x1, Element x2) {
+        return x1-=x2;
     }
     static Element mul (Element x1, Element x2) {
         return x1*x2;
@@ -300,14 +378,71 @@ struct ScalFunctions<Element,
         return x1*x2;
     }
     static Element fmadd (Element x1, Element x2, Element x3) {
-        return x1+x3*x2;
+        return x1 + x2*x3;
+    }
+    static Element fmaddin (Element &x1, Element x2, Element x3) {
+        return x1 += x2*x3;
+    }
+    static Element fmaddx (Element x1, Element x2, Element x3) {
+        return x1 + mulx (x2, x3);
+    }
+    static Element fmaddxin (Element &x1, Element x2, Element x3) {
+        return x1 += mulx (x2, x3);
     }
     static Element fmsub (Element x1, Element x2, Element x3) {
-        return -x1 + x3*x2;
+        return -x1 + x2*x3;
+    }
+    static Element fmsubin (Element &x1, Element x2, Element x3) {
+        return x1 = -x1 + x2*x3;
+    }
+    static Element fmsubx (Element x1, Element x2, Element x3) {
+        return -x1 + mulx (x2, x3);
+    }
+    static Element fmsubxin (Element &x1, Element x2, Element x3) {
+        return x1 = -x1 + mulx (x2, x3);
     }
     static Element fnmadd (Element x1, Element x2, Element x3) {
-        return x1 - x3*x2;
+        return x1 - x2*x3;
     }
+    static Element fnmaddin (Element &x1, Element x2, Element x3) {
+        return x1 -= x2*x3;
+    }
+    static Element fnmaddx (Element x1, Element x2, Element x3) {
+        return x1 - mulx(x2, x3);
+    }
+    static Element fnmaddxin (Element &x1, Element x2, Element x3) {
+        return x1 -= mulx(x2, x3);
+    }
+
+    /* Shift */
+    template <int s, bool EnableTrue = true>
+    static
+    typename enable_if<!is_signed<Element>::value && EnableTrue, Element>::type
+    sra (Element x1) {
+        return x1 >> s; /* For unsigned type, simply use >> */
+    }
+
+    template <int s, bool EnableTrue = true>
+    static
+    typename enable_if<is_signed<Element>::value && EnableTrue, Element>::type
+    sra (Element x1) {
+        /* For signed type we need to do a sign extension, the code comes from
+         *   http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+         */
+        struct {Element x:sizeof(Element)*8-s;} r;
+        return r.x = (x1 >> s);
+    }
+
+    template <int s>
+    static Element srl (Element x1) {
+        return ((typename std::make_unsigned<Element>::type) x1) >> s;
+    }
+
+    template <int s>
+    static Element sll (Element x1) {
+        return ((typename std::make_unsigned<Element>::type) x1) << s;
+    }
+
     /* Comparisons functions in SIMD output 0 or 0xFFFF...FFFF */
     static Element lesser (Element x1, Element x2) {
         return (x1<x2)?-1:0;
@@ -331,7 +466,7 @@ struct ScalFunctions<Element,
 /******************************************************************************/
 
 #define TEST_ONE_OP(name) \
-    btest &= test_op<simd,Element> (simd::name, Scal::name, #name);
+    btest &= test_op<simd> (simd::name, Scal::name, #name);
 
 /* for floating point element */
 template<class simd, class Element>
@@ -340,15 +475,27 @@ test_impl () {
     using Scal = ScalFunctions<Element>;
     bool btest = true;
 
+    TEST_ONE_OP (zero);
+    TEST_ONE_OP (vand);
+    TEST_ONE_OP (vor);
+    TEST_ONE_OP (vxor);
+    TEST_ONE_OP (vandnot);
     TEST_ONE_OP (ceil);
     TEST_ONE_OP (floor);
     TEST_ONE_OP (round);
     TEST_ONE_OP (add);
+    TEST_ONE_OP (addin);
     TEST_ONE_OP (sub);
+    TEST_ONE_OP (subin);
     TEST_ONE_OP (mul);
+    TEST_ONE_OP (mulin);
+    TEST_ONE_OP (div);
     TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmaddin);
     TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fmsubin);
     TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (fnmaddin);
     TEST_ONE_OP (lesser);
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
@@ -365,20 +512,43 @@ test_impl () {
     using Scal = ScalFunctions<Element>;
     bool btest = true;
 
+    TEST_ONE_OP (zero);
+    TEST_ONE_OP (round);
+    TEST_ONE_OP (vand);
+    TEST_ONE_OP (vor);
+    TEST_ONE_OP (vxor);
+    TEST_ONE_OP (vandnot);
     TEST_ONE_OP (add);
+    TEST_ONE_OP (addin);
     TEST_ONE_OP (sub);
+    TEST_ONE_OP (subin);
     TEST_ONE_OP (mul);
     TEST_ONE_OP (mullo);
     TEST_ONE_OP (mulhi);
     TEST_ONE_OP (mulx);
     TEST_ONE_OP (fmadd);
+    TEST_ONE_OP (fmaddin);
+    TEST_ONE_OP (fmaddx);
+    TEST_ONE_OP (fmaddxin);
     TEST_ONE_OP (fmsub);
+    TEST_ONE_OP (fmsubin);
+    TEST_ONE_OP (fmsubx);
+    TEST_ONE_OP (fmsubxin);
     TEST_ONE_OP (fnmadd);
+    TEST_ONE_OP (fnmaddin);
+    TEST_ONE_OP (fnmaddx);
+    TEST_ONE_OP (fnmaddxin);
     TEST_ONE_OP (lesser);
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
     TEST_ONE_OP (greater_eq);
     TEST_ONE_OP (eq);
+    TEST_ONE_OP (template sra<3>);
+    TEST_ONE_OP (template sra<7>);
+    TEST_ONE_OP (template srl<5>);
+    TEST_ONE_OP (template srl<11>);
+    TEST_ONE_OP (template sll<2>);
+    TEST_ONE_OP (template sll<13>);
 
     return btest;
 }

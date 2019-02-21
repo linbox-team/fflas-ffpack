@@ -230,22 +230,6 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
 #endif
     }
 
-    /*
-     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to
-     * packed elements in c, and store the results in vect_t.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
-     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]
-     */
-    static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) { return fmadd(c, a, b); }
-
-    /*
-     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to
-     * packed elements in c, and store the results in vect_t.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
-     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]
-     */
-    static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b) { return fmadd(c, a, b); }
-
     static INLINE CONST vect_t fmaddin(vect_t &c, const vect_t a, const vect_t b) { return c = fmadd(c, a, b); }
 
     /*
@@ -262,14 +246,6 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
 #endif
     }
 
-    /*
-     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the negated intermediate result
-     * to packed elements in c, and store the results in vect_t.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
-     * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3, -(a4*b4)+c4, -(a5*b5)+c5, -(a6*b6)+c6, -(a7*b7)+c7]
-     */
-    static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) { return fnmadd(c, a, b); }
-
     static INLINE CONST vect_t fnmaddin(vect_t &c, const vect_t a, const vect_t b) { return c = fnmadd(c, a, b); }
 
     /*
@@ -285,14 +261,6 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
         return sub(mul(a, b), c);
 #endif
     }
-
-    /*
-     * Multiply packed single-precision (32-bit) floating-point elements in a and b, subtract packed elements in c from
-     * the intermediate result, and store the results in vect_t.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
-     * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3, a4*b4-c4, a5*b5-c5, a6*b6-c6, a7*b7-c7]
-     */
-    static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) { return fmsub(c, a, b); }
 
     static INLINE CONST vect_t fmsubin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsub(c, a, b); }
 
