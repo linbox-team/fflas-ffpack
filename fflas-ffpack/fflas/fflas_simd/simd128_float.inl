@@ -31,7 +31,7 @@
 /*
  * Simd128 specialized for float
  */
-template <> struct Simd128_impl<true, false, true, 4> {
+template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
     /*

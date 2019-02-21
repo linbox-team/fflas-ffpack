@@ -147,7 +147,6 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     using ScalVect = vector<Element, ScalVectAlign>;
     using SimdVect = typename Simd::vect_t;
     constexpr size_t SimdVectSize = Simd::vect_size;
-    constexpr size_t simd_size = sizeof(Element) * SimdVectSize * 8;
     constexpr size_t arity = sizeof...(AScal);
 
     /* input vectors */
@@ -182,7 +181,7 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     bool res = equal (out_scal.begin(), out_scal.end(), out_simd.begin(), eq);
 
     /* print result line */
-    cout << "Simd" << simd_size << "<" << TypeName<Element>() << ">::" << fname
+    cout << Simd::type_string() << "<" << TypeName<Element>() << ">::" << fname
          << " " << string (60 - fname.size() - strlen(TypeName<Element>()), '.')
          << " " << (res ? "success" : "failure") << endl;
 

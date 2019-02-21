@@ -31,6 +31,9 @@
 struct Simd256fp_base {
 #if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
+    /* Name of the Simd struct */
+    static inline const std::string type_string () { return "Simd256"; }
+
     /*
      * Shuffle 128-bits selected by imm8 from a and b, and store the results in dst.
      * Args   :	[a0, a1]
@@ -74,6 +77,9 @@ struct Simd256i_base {
      * alias to 256 bit simd register
      */
     using vect_t = __m256i;
+
+    /* Name of the Simd struct */
+    static inline const std::string type_string () { return "Simd256"; }
 
     /*
      *  Return vector of type vect_t with all elements set to zero

@@ -30,6 +30,9 @@
 
 struct Simd512fp_base {
 
+    /* Name of the Simd struct */
+    static inline const std::string type_string () { return "Simd512"; }
+
 
 };
 
@@ -39,6 +42,9 @@ struct Simd512i_base {
      * alias to 512 bit simd register
      */
     using vect_t = __m512i;
+
+    /* Name of the Simd struct */
+    static inline const std::string type_string () { return "Simd512"; }
 
     /*
      *  Return vector of type vect_t with all elements set to zero

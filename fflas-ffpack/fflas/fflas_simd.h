@@ -318,6 +318,9 @@ struct NoSimd {
      */
     static const constexpr size_t vect_size = 1;
 
+    /* Name of the NoSimd struct */
+    static inline const std::string type_string () { return "NoSimd"; }
+
     // Test if the pointer p is multiple of alignment
     template <class TT> static constexpr bool valid(TT p) { return false; }
 
