@@ -186,7 +186,6 @@ namespace FFLAS {
             // memset(X,(int)F.zero,n); // might be bogus ?
             for (size_t i = 0 ; i < n ; ++i)
                 G.random(*(X+i));
-
         }
         else { // not contiguous (strided)
             for (size_t i = 0 ; i < n ; ++i)
