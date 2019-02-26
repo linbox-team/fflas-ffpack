@@ -60,7 +60,6 @@ void fill_value(Field& F, RandIter& Rand,
             SYNCH_GROUP(
                         FORBLOCK1D(iter, m, SPLITTER(NBK, 
                         CuttingStrategy::Row, StrategyParameter::Threads
-                        //Cut, Strat
                         ),
                                    TASK(MODE(CONSTREFERENCE(F,Rand)),
                                         {
@@ -84,34 +83,13 @@ void fill_value(Field& F, RandIter& Rand,
 
 
 template <class Field, class Matrix, class Vector>
-void genData_with_bitsize(Field& F, 
+void genData(Field& F, 
     Matrix& A, Vector& X, Vector& Y, 
     size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
     int bitsize, uint64_t seed){
 
     typename Field::RandIter Rand(F,bitsize,seed);
-
     fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
-}
-
-template <class Field, class Matrix, class Vector>
-void genData_without_bitsize(Field& F, 
-    Matrix& A, Vector& X, Vector& Y, 
-    size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK){
-
-    typename Field::RandIter Rand(F);
-    
-    fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
-
-}
-
-template <class Field, class Matrix, class Vector>
-void genData(Field& F, 
-    Matrix& A, Vector& X, Vector& Y, 
-    size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
-    int bitsize, uint64_t seed){
-    if(need_field_characteristic<Field>::value) genData_with_bitsize(F, A, X, Y, m, k, incX, incY, lda, NBK, bitsize, seed);
-    else genData_without_bitsize(F, A, X, Y, m, k, incX, incY, lda, NBK);
 }
 
 
@@ -121,8 +99,8 @@ template <class Field, class Matrix, class Vector, class T>
 bool benchmark_with_timer(Field& F, int p,
     Matrix& A, Vector& X, Vector& Y, 
     size_t m, size_t k, size_t incX, size_t incY, size_t lda, size_t iters, int t,
-    T& chrono, double time){
-    
+    T& chrono, double& time){
+
     bool pass = true;
     for (size_t i=0;i<=iters;++i){
 
@@ -167,7 +145,18 @@ bool benchmark_with_timer(Field& F, int p,
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
             if (i) {chrono.stop(); time+=chrono.realtime();}
         }
+        //Naive result checking by comparing result from pfgemv against the one from fgemv
+        typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
 
+        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
+
+
+
+        for(size_t j=0; j<m; ++j){
+            pass &= F.areEqual(Y2[j],Y[j]);
+            if(!F.areEqual(Y2[j],Y[j])) std::cerr<<std::setprecision(500)<<" : Y2["<<j<<"]<"<<Y2[j]<<">=!=Y["<<j<<"]<"<<Y[j]<<">"<<std::endl;
+
+        }
     }
     return pass;
 }
@@ -230,7 +219,15 @@ bool benchmark_with_timer(Field& F, int p,
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
             if (i) {chrono.stop(); time+=chrono.realtime();}
         }
+        //Naive result checking by comparing result from pfgemv against the one from fgemv
+        typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
+        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
 
+        for(size_t j=0; j<m; ++j){
+            pass &= F.areEqual(Y2[j],Y[j]);
+            if(!F.areEqual(Y2[j],Y[j])) std::cerr<<std::setprecision(500)<<" : Y2["<<j<<"]<"<<Y2[j]<<">=!=Y["<<j<<"]<"<<Y[j]<<">"<<std::endl;
+
+        }
     }
     return pass;
 }
@@ -240,12 +237,12 @@ bool benchmark_with_timer(Field& F, int p,
 
 template <class Field, class arg>
 void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
-    int NBK, int bitsize, uint64_t seed, size_t iters, int t, double time
-    ,arg& as
+    int NBK, int bitsize, uint64_t seed, size_t iters, int t, 
+    arg& as
     ){
 
     Timer chrono, TimFreivalds;
-
+    double time=0.0;
     size_t lda,incX,incY;
     lda=k;
     incX=1;
@@ -257,13 +254,21 @@ void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
     Y = FFLAS::fflas_new(F,m,incY);
 
     genData(F, A, X, Y, m, k, incX, incY, lda, NBK, bitsize, seed);
-
+/*
+            FFLAS::WriteMatrix (std::cout<<"A:=",F,m,k,A,lda)<<';'<<std::endl;
+            FFLAS::WriteMatrix(std::cout<<"X:=",F,k,1,X,1)<<';'<<std::endl;
+            FFLAS::WriteMatrix(std::cout<<"Y:=",F,k,1,Y,1)<<';'<<std::endl;
+*/
     bool pass=benchmark_with_timer( F, p, A, X, Y, m, k, incX, incY, lda, iters, t, chrono, time);
     
     if(pass){
         std::cout << "Time: " << time / double(iters)
         << " Gflops: " << (2.*double(m)/1000.*double(k)/1000.0/1000.0) / time * double(iters);
         writeCommandString(std::cout, as) << std::endl;
+    }else{
+            std::cout<<"FAILED for "<<typeid(Field).name()<<std::endl;
+            std::cout << "p:=" << p << ';'<<std::endl;
+
     }
     
     FFLAS::fflas_delete(A);
@@ -275,7 +280,7 @@ void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
 
 template <class Field,  class arg >
 void benchmark_with_field(int p,  size_t m, size_t k,
-    int NBK, int bitsize, uint64_t seed, size_t iters, int t, double time,
+    int NBK, int bitsize, uint64_t seed, size_t iters, int t, 
     arg& as
     ){
     
@@ -283,18 +288,18 @@ void benchmark_with_field(int p,  size_t m, size_t k,
     //static assert to raise compile time error for Non ZRing without providing a characteristic
     static_assert(!need_field_characteristic<Field>::value, "A field characteristic should be provided for Non ZRing data type !");
 
-    benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, time,as);
+    benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, as);
     
 }
 
 
 template <class Field, class arg>
 void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
-    int NBK, int bitsize, uint64_t seed, size_t iters, int t, double time
-    ,arg& as
+    int NBK, int bitsize, uint64_t seed, size_t iters, int t,
+    arg& as
     ){
     Field  F(q);
-    benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, time,as);    
+    benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, as);    
 }
 
 
@@ -327,26 +332,24 @@ int main(int argc, char** argv) {
     parseArguments(argc,argv,as);
 
     if (NBK==-1) NBK = t;
+    //@Fixme runtime error which appears to be due to precision
+    //benchmark_with_field<Givaro::ZRing<float>>( p,  m, k, NBK, b, seed, iters, t, as);
+    //benchmark_with_field<Givaro::ZRing<double>>( p,  m, k, NBK, b, seed, iters, t, as);
+    
+    benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, as);
+    benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as);
 
-    Timer chrono, TimFreivalds;
-    double time=0.0;
+    benchmark_with_field<Givaro::Modular<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+    benchmark_with_field<Givaro::Modular<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+    benchmark_with_field<Givaro::Modular<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+    benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
 
-    benchmark_with_field<Givaro::ZRing<float>>( p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::ZRing<double>>( p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, time, as);
+    benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+    benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+    benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
 
-    benchmark_with_field<Givaro::Modular<float>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::Modular<double>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::Modular<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-
-    benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-    benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
-
-    //@Wny compile error : ‘Givaro::ModularBalanced<Givaro::Integer> F’ has incomplete type
-    //benchmark_with_field<Givaro::ModularBalanced<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, time,as);
+    //@Fixme compile error : ‘Givaro::ModularBalanced<Givaro::Integer> F’ has incomplete type
+    //benchmark_with_field<Givaro::ModularBalanced<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
     
     
     return 0;
