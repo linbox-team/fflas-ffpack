@@ -36,6 +36,8 @@
 #include "givaro/modular-integer.h"
 #include "givaro/givcaster.h"
 
+
+
 using namespace FFPACK;
 
 using namespace std;
@@ -47,6 +49,13 @@ template <typename Field>
 struct need_field_characteristic<Givaro::Modular<Field>>{ static constexpr bool value = true; };
 template <typename Field>
 struct need_field_characteristic<Givaro::ModularBalanced<Field>>{ static constexpr bool value = true; };
+
+template <typename Field>
+struct compatible_data_type { static constexpr bool value = true; };
+template <>
+struct compatible_data_type<Givaro::ZRing<float>>{ static constexpr bool value = false; };
+template <>
+struct compatible_data_type<Givaro::ZRing<double>>{ static constexpr bool value = false; };
 
 
 template <class Field, class RandIter, class Matrix, class Vector>
@@ -72,7 +81,6 @@ void fill_value(Field& F, RandIter& Rand,
                                        );
                                   );
                        );
-
             //FFLAS::pfrand(F,Rand, m,k,A,m/NBK);
         }
 
@@ -92,6 +100,22 @@ void genData(Field& F,
     fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
 }
 
+template <class Field, class Matrix, class Vector>
+bool check_result(Field& F, size_t m, size_t lda, Matrix& A, Vector& X, size_t incX, Vector& Y, size_t incY){
+    //Naive result checking by comparing result from pfgemv against the one from fgemv    
+    typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);    
+    FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
+
+    for(size_t j=0; j<m; ++j){
+        if(!F.areEqual(Y2[j],Y[j])){ 
+            std::cerr<<std::setprecision(50)<<" : Y2["<<j<<"]<"<<Y2[j]<<">=!=Y["<<j<<"]<"<<Y[j]<<">"<<std::endl;
+            FFLAS::fflas_delete(Y2);
+            return false;
+        }
+    }
+    FFLAS::fflas_delete(Y2);
+    return true;
+}
 
 #if 0
 
@@ -145,17 +169,9 @@ bool benchmark_with_timer(Field& F, int p,
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
             if (i) {chrono.stop(); time+=chrono.realtime();}
         }
-        //Naive result checking by comparing result from pfgemv against the one from fgemv
-        typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
-
-        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
-
-
-
-        for(size_t j=0; j<m; ++j){
-            pass &= F.areEqual(Y2[j],Y[j]);
-            if(!F.areEqual(Y2[j],Y[j])) std::cerr<<std::setprecision(500)<<" : Y2["<<j<<"]<"<<Y2[j]<<">=!=Y["<<j<<"]<"<<Y[j]<<">"<<std::endl;
-
+        if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
+            pass = false;
+            break;
         }
     }
     return pass;
@@ -194,6 +210,7 @@ template <Index I> struct CaseSwitch
 };
 
 
+
 template <class Field, class Matrix, class Vector, class T>
 bool benchmark_with_timer(Field& F, int p,
     Matrix& A, Vector& X, Vector& Y, 
@@ -219,16 +236,12 @@ bool benchmark_with_timer(Field& F, int p,
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
             if (i) {chrono.stop(); time+=chrono.realtime();}
         }
-        //Naive result checking by comparing result from pfgemv against the one from fgemv
-        typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
-        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
-
-        for(size_t j=0; j<m; ++j){
-            pass &= F.areEqual(Y2[j],Y[j]);
-            if(!F.areEqual(Y2[j],Y[j])) std::cerr<<std::setprecision(500)<<" : Y2["<<j<<"]<"<<Y2[j]<<">=!=Y["<<j<<"]<"<<Y[j]<<">"<<std::endl;
-
+        if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
+            pass = false;
+            break;
         }
     }
+    
     return pass;
 }
 
@@ -254,11 +267,7 @@ void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
     Y = FFLAS::fflas_new(F,m,incY);
 
     genData(F, A, X, Y, m, k, incX, incY, lda, NBK, bitsize, seed);
-/*
-            FFLAS::WriteMatrix (std::cout<<"A:=",F,m,k,A,lda)<<';'<<std::endl;
-            FFLAS::WriteMatrix(std::cout<<"X:=",F,k,1,X,1)<<';'<<std::endl;
-            FFLAS::WriteMatrix(std::cout<<"Y:=",F,k,1,Y,1)<<';'<<std::endl;
-*/
+
     bool pass=benchmark_with_timer( F, p, A, X, Y, m, k, incX, incY, lda, iters, t, chrono, time);
     
     if(pass){
@@ -268,7 +277,6 @@ void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
     }else{
             std::cout<<"FAILED for "<<typeid(Field).name()<<std::endl;
             std::cout << "p:=" << p << ';'<<std::endl;
-
     }
     
     FFLAS::fflas_delete(A);
@@ -279,14 +287,15 @@ void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
 
 
 template <class Field,  class arg >
-void benchmark_with_field(int p,  size_t m, size_t k,
-    int NBK, int bitsize, uint64_t seed, size_t iters, int t, 
-    arg& as
-    ){
+void benchmark_with_field(int p,  size_t m, size_t k, int NBK, int bitsize, uint64_t seed, size_t iters, int t, arg& as){
     
     Field F;
     //static assert to raise compile time error for Non ZRing without providing a characteristic
-    static_assert(!need_field_characteristic<Field>::value, "A field characteristic should be provided for Non ZRing data type !");
+    static_assert(!need_field_characteristic<Field>::value, 
+    "A field characteristic should be provided for Non ZRing data type !");
+    //static assert to raise compile time error for ZRing with either float or double that could lead to inconsistent result
+    static_assert(compatible_data_type<Field>::value,
+    "The provided data type for ZRing is not compatible for the desired operation and could lead to inconsistent result !");
 
     benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, as);
     
@@ -305,17 +314,17 @@ void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
 
 int main(int argc, char** argv) {
 
-    int p=0;    
-    
-    size_t iters = 10;
-    Givaro::Integer q = 131071; 
-    size_t m = 800;
-    size_t k = 800;
-    //static size_t n = 512 ;
-    uint64_t seed= getSeed();
-    int t=NUM_THREADS;
-    int NBK = -1;
-    int b=0;
+    static int p=0;    
+        
+    static size_t iters = 10;
+    static Givaro::Integer q = 131071; 
+    static size_t m = 800;
+    static size_t k = 800;
+
+    static uint64_t seed= getSeed();
+    static int t=NUM_THREADS;
+    static int NBK = -1;
+    static int b=0;
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of input.",         TYPE_INT , &b },
@@ -332,7 +341,7 @@ int main(int argc, char** argv) {
     parseArguments(argc,argv,as);
 
     if (NBK==-1) NBK = t;
-    //@Fixme runtime error which appears to be due to precision
+
     //benchmark_with_field<Givaro::ZRing<float>>( p,  m, k, NBK, b, seed, iters, t, as);
     //benchmark_with_field<Givaro::ZRing<double>>( p,  m, k, NBK, b, seed, iters, t, as);
     
@@ -350,7 +359,7 @@ int main(int argc, char** argv) {
 
     //@Fixme compile error : ‘Givaro::ModularBalanced<Givaro::Integer> F’ has incomplete type
     //benchmark_with_field<Givaro::ModularBalanced<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-    
+
     
     return 0;
 }
