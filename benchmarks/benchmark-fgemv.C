@@ -137,7 +137,6 @@ bool benchmark_with_timer(Field& F, int p,
             typedef StrategyParameter::Threads threads;
             typedef StrategyParameter::Grain grain;
 
-
             PAR_BLOCK{
                 if (i) { chrono.start(); }
 
@@ -169,10 +168,12 @@ bool benchmark_with_timer(Field& F, int p,
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
             if (i) {chrono.stop(); time+=chrono.realtime();}
         }
+
         if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
             pass = false;
             break;
         }
+
     }
     return pass;
 }
@@ -210,7 +211,6 @@ template <Index I> struct CaseSwitch
 };
 
 
-
 template <class Field, class Matrix, class Vector, class T>
 bool benchmark_with_timer(Field& F, int p,
     Matrix& A, Vector& X, Vector& Y, 
@@ -221,9 +221,7 @@ bool benchmark_with_timer(Field& F, int p,
     for (size_t i=0;i<=iters;++i){
 
         chrono.clear();
-
         if (p){
-
             PAR_BLOCK{
                 if (i) { chrono.start(); }
 
@@ -236,10 +234,12 @@ bool benchmark_with_timer(Field& F, int p,
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
             if (i) {chrono.stop(); time+=chrono.realtime();}
         }
+
         if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
             pass = false;
             break;
         }
+
     }
     
     return pass;
@@ -247,12 +247,25 @@ bool benchmark_with_timer(Field& F, int p,
 
 #endif
 
+template <class Field, class arg>
+void benchmark_disp(Field& F, bool pass,
+    double& time, size_t iters, int p,  size_t m, size_t k,
+    arg& as){
+    if(pass){
+        std::cout << "Time: " << time / double(iters)
+        << " Gflops: " << (2.*double(m)/1000.*double(k)/1000.0/1000.0) / time * double(iters);
+        writeCommandString(std::cout, as) << std::endl;
+    }else{
+            std::cout<<"FAILED for "<<typeid(Field).name()<<std::endl;
+            std::cout << "p:=" << p << ';'<<std::endl;
+    }
+}
+
 
 template <class Field, class arg>
-void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
+void benchmark_in_Field(Field& F, int p,  size_t m, size_t k,
     int NBK, int bitsize, uint64_t seed, size_t iters, int t, 
-    arg& as
-    ){
+    arg& as){
 
     Timer chrono, TimFreivalds;
     double time=0.0;
@@ -269,16 +282,9 @@ void benchmark_in_ZZ(Field& F, int p,  size_t m, size_t k,
     genData(F, A, X, Y, m, k, incX, incY, lda, NBK, bitsize, seed);
 
     bool pass=benchmark_with_timer( F, p, A, X, Y, m, k, incX, incY, lda, iters, t, chrono, time);
-    
-    if(pass){
-        std::cout << "Time: " << time / double(iters)
-        << " Gflops: " << (2.*double(m)/1000.*double(k)/1000.0/1000.0) / time * double(iters);
-        writeCommandString(std::cout, as) << std::endl;
-    }else{
-            std::cout<<"FAILED for "<<typeid(Field).name()<<std::endl;
-            std::cout << "p:=" << p << ';'<<std::endl;
-    }
-    
+
+    benchmark_disp(F,pass, time, iters, p, m, k, as);
+
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(X);
     FFLAS::fflas_delete(Y);    
@@ -297,7 +303,7 @@ void benchmark_with_field(int p,  size_t m, size_t k, int NBK, int bitsize, uint
     static_assert(compatible_data_type<Field>::value,
     "The provided data type for ZRing is not compatible for the desired operation and could lead to inconsistent result !");
 
-    benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, as);
+    benchmark_in_Field(F, p,  m, k, NBK, bitsize, seed, iters, t, as);
     
 }
 
@@ -305,10 +311,9 @@ void benchmark_with_field(int p,  size_t m, size_t k, int NBK, int bitsize, uint
 template <class Field, class arg>
 void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
     int NBK, int bitsize, uint64_t seed, size_t iters, int t,
-    arg& as
-    ){
+    arg& as){
     Field  F(q);
-    benchmark_in_ZZ(F, p,  m, k, NBK, bitsize, seed, iters, t, as);    
+    benchmark_in_Field(F, p,  m, k, NBK, bitsize, seed, iters, t, as);    
 }
 
 
@@ -341,7 +346,7 @@ int main(int argc, char** argv) {
     parseArguments(argc,argv,as);
 
     if (NBK==-1) NBK = t;
-
+while(true){
     //benchmark_with_field<Givaro::ZRing<float>>( p,  m, k, NBK, b, seed, iters, t, as);
     //benchmark_with_field<Givaro::ZRing<double>>( p,  m, k, NBK, b, seed, iters, t, as);
     
@@ -356,10 +361,10 @@ int main(int argc, char** argv) {
     benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
     benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
     benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-
+seed= getSeed();
     //@Fixme compile error : ‘Givaro::ModularBalanced<Givaro::Integer> F’ has incomplete type
     //benchmark_with_field<Givaro::ModularBalanced<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-
+}
     
     return 0;
 }
