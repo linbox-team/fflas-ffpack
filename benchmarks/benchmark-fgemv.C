@@ -117,14 +117,12 @@ bool check_result(Field& F, size_t m, size_t lda, Matrix& A, Vector& X, size_t i
     return true;
 }
 
-#if 0
 
-template <class Field, class Matrix, class Vector, class T>
+template <class Field, class Matrix, class Vector>
 bool benchmark_with_timer(Field& F, int p,
     Matrix& A, Vector& X, Vector& Y, 
-    size_t m, size_t k, size_t incX, size_t incY, size_t lda, size_t iters, int t,
-    T& chrono, double& time){
-
+    size_t m, size_t k, size_t incX, size_t incY, size_t lda, size_t iters, int t, double& time){
+    Timer chrono;
     bool pass = true;
     for (size_t i=0;i<=iters;++i){
 
@@ -178,74 +176,6 @@ bool benchmark_with_timer(Field& F, int p,
     return pass;
 }
 
-#else
-
-enum Index { One, Two, Three };
-
-template <template <Index> class Switcher, class Field, class Matrix, class Vector> 
-void test_case_switch(int k, Field& F, int t, size_t m, size_t lda, Matrix& A, Vector& X, size_t incX, Vector& Y, size_t incY)
-{
-            typedef CuttingStrategy::Row row;
-            typedef CuttingStrategy::Recursive rec;
-            typedef StrategyParameter::Threads threads;
-            typedef StrategyParameter::Grain grain;
-            size_t BS = 64;
-            ParSeqHelper::Parallel<rec, threads>  H(t); 
-            ParSeqHelper::Parallel<row, threads>  H2(t);
-            ParSeqHelper::Parallel<row, grain>  H3(BS);
-    switch (k)
-    {
-        case 1: Switcher<One>::template test(F, m, lda, A, X, incX, Y,  incY, H); break;
-        case 2: Switcher<Two>::template test(F, m, lda, A, X, incX, Y,  incY, H2); break;
-        case 3:  Switcher<Three>::template test(F, m, lda, A, X, incX, Y,  incY, H3); break;
-        default: FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY); break;
-    }
-}
-
-template <Index I> struct CaseSwitch
-{
-    template <class Field, class Matrix, class Vector, class Helper>
-    static void test(Field& F, size_t m, size_t lda, Matrix& A, Vector& X, size_t incX, Vector& Y, size_t incY, Helper& H){
-        FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
-    };
-};
-
-
-template <class Field, class Matrix, class Vector, class T>
-bool benchmark_with_timer(Field& F, int p,
-    Matrix& A, Vector& X, Vector& Y, 
-    size_t m, size_t k, size_t incX, size_t incY, size_t lda, size_t iters, int t,
-    T& chrono, double& time){
-    
-    bool pass = true;
-    for (size_t i=0;i<=iters;++i){
-
-        chrono.clear();
-        if (p){
-            PAR_BLOCK{
-                if (i) { chrono.start(); }
-
-                test_case_switch<CaseSwitch>(p, F, t,  m, lda, A, X, incX, Y,  incY);
-
-            }//PAR_BLOCK
-            if (i) {chrono.stop(); time+=chrono.realtime();}
-        }else{
-            if (i) chrono.start();
-            FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
-            if (i) {chrono.stop(); time+=chrono.realtime();}
-        }
-
-        if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
-            pass = false;
-            break;
-        }
-
-    }
-    
-    return pass;
-}
-
-#endif
 
 template <class Field, class arg>
 void benchmark_disp(Field& F, bool pass,
@@ -267,7 +197,7 @@ void benchmark_in_Field(Field& F, int p,  size_t m, size_t k,
     int NBK, int bitsize, uint64_t seed, size_t iters, int t, 
     arg& as){
 
-    Timer chrono, TimFreivalds;
+//    Timer chrono, TimFreivalds;
     double time=0.0;
     size_t lda,incX,incY;
     lda=k;
@@ -281,9 +211,9 @@ void benchmark_in_Field(Field& F, int p,  size_t m, size_t k,
 
     genData(F, A, X, Y, m, k, incX, incY, lda, NBK, bitsize, seed);
 
-    bool pass=benchmark_with_timer( F, p, A, X, Y, m, k, incX, incY, lda, iters, t, chrono, time);
+    bool pass=benchmark_with_timer( F, p, A, X, Y, m, k, incX, incY, lda, iters, t, time);
 
-    benchmark_disp(F,pass, time, iters, p, m, k, as);
+    benchmark_disp(F, pass, time, iters, p, m, k, as);
 
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(X);
@@ -330,6 +260,7 @@ int main(int argc, char** argv) {
     static int t=NUM_THREADS;
     static int NBK = -1;
     static int b=0;
+    
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of input.",         TYPE_INT , &b },
@@ -346,25 +277,25 @@ int main(int argc, char** argv) {
     parseArguments(argc,argv,as);
 
     if (NBK==-1) NBK = t;
-while(true){
-    //benchmark_with_field<Givaro::ZRing<float>>( p,  m, k, NBK, b, seed, iters, t, as);
-    //benchmark_with_field<Givaro::ZRing<double>>( p,  m, k, NBK, b, seed, iters, t, as);
-    
-    benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, as);
-    benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as);
+    if(q==0){
+        //benchmark_with_field<Givaro::ZRing<float>>( p,  m, k, NBK, b, seed, iters, t, as);
+        //benchmark_with_field<Givaro::ZRing<double>>( p,  m, k, NBK, b, seed, iters, t, as);
+        
+        benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as);
+    }else{
+        benchmark_with_field<Givaro::Modular<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::Modular<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::Modular<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
 
-    benchmark_with_field<Givaro::Modular<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-    benchmark_with_field<Givaro::Modular<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-    benchmark_with_field<Givaro::Modular<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-    benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
 
-    benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-    benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-    benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-seed= getSeed();
-    //@Fixme compile error : ‘Givaro::ModularBalanced<Givaro::Integer> F’ has incomplete type
-    //benchmark_with_field<Givaro::ModularBalanced<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-}
+        //@Fixme -> compile error : ‘Givaro::ModularBalanced<Givaro::Integer> F’ has incomplete type
+        //benchmark_with_field<Givaro::ModularBalanced<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+    }
     
     return 0;
 }
