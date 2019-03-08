@@ -330,11 +330,41 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         // ugly solution, but it works.
         // tested with gcc, clang, icc
+#if 1
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
         return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
                    (scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64));
+#else
+        const vect_t mask = mask_high();
+        vect_t a0 = vand(a, mask);
+        vect_t b0 = vand(b, mask);
+        vect_t a1 = sra<32>(a);
+        vect_t b1 = sra<32>(b);
+        vect_t t0, t1, t2, t3, t4, t5;
+
+        t0 = _mm256_mul_epu32(a0,b0);
+        t1 = mullo(a0,b1); // slow... how to do better?
+        t2 = mullo(a1,b0);
+        t3 = mulx(a1,b1);
+
+        t0 = srl<32>(t0);
+        t5 = vand(t1, mask);
+        t4 = vand(t2, mask);
+        t4 = add(t4, t5);
+        t4 = add(t4, t0);
+        t4 = srl<32>(t4);
+
+        t1 = sra<32>(t1);
+        t2 = sra<32>(t2);
+
+        t1 = add(t1, t2);
+        t3 = add(t3, t4);
+        t3 = add(t3, t1);
+
+        return t3;
+#endif
     }
 #endif
 
@@ -486,7 +516,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     static INLINE CONST vect_t round(const vect_t a) { return a; }
 
     // mask the high 32 bits of a 64 bits, that is 00000000FFFFFFFF
-    static INLINE CONST vect_t mask_high() { return srl<32>(_mm256_set1_epi8(-1)); }
+    static INLINE CONST vect_t mask_high() { return srl<32>(_mm256_set1_epi8(-1)); } // TODO why not _mm256_set1_epi64x(0x00000000FFFFFFFFULL)?
 
     static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
@@ -648,11 +678,57 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         // ugly solution, but it works.
         // tested with gcc, clang, icc
+#if 1
         Converter c0, c1;
         c0.v = a;
         c1.v = b;
+
         return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
                    (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
+#else
+        // purely vectorized alternative, that doesn't require __uint128_t
+        // detailed scalar
+//        uint64_t a0 = c0.t[0] & 0xFFFFFFFF;
+//        uint64_t a1 = c0.t[0] >> 32;
+//        uint64_t b0 = c1.t[0] & 0xFFFFFFFF;
+//        uint64_t b1 = c1.t[0] >> 32;
+//        uint64_t t0, t1, t2, t3, t4;
+//        t0 = a1*b1;
+//        t1 = a1*b0 >> 32;
+//        t2 = a0*b1 >> 32;
+//        t4 = a0*b0 >> 32;
+//        t3 = ((a1*b0 & 0xFFFFFFFF) + (a0*b1 & 0xFFFFFFFF) + t4) >> 32;
+//        t0 = t0 + t1 + t2 + t3;
+        //
+        // vectorized
+        const vect_t mask = mask_high();
+
+        vect_t a0 = vand(a, mask);
+        vect_t b0 = vand(b, mask);
+        vect_t a1 = srl<32>(a);
+        vect_t b1 = srl<32>(b);
+
+        vect_t t0 = mulx(a0, b0);
+        vect_t t1 = mulx(a0, b1);
+        vect_t t2 = mulx(a1, b0);
+        vect_t t3 = mulx(a1, b1);
+
+        t0 = srl<32>(t0);
+        vect_t t4 = vand(t1, mask);
+        vect_t t5 = vand(t2, mask);
+        t0 = add(t0, t4);
+        t0 = add(t0, t5);
+        t0 = srl<32>(t0); // carry bits
+
+        t1 = srl<32>(t1);
+        t2 = srl<32>(t2);
+
+        t1 = add(t1, t2);
+        t3 = add(t3, t0);
+        t3 = add(t3, t1);
+
+        return t3;
+#endif
     }
 #endif
 
