@@ -340,20 +340,25 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
      * Return : [Floor(a0*b0/2^64), ..., Floor(a7*b7/2^64)] int64_t
      */
 
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
+#ifdef __FFLASFFPACK_HAVE_INT128
+        // ugly solution, but it works.
+        // tested with gcc, clang, icc
         return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
                    (scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64),
                    (scalar_t)((int128_t(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)((int128_t(ca.t[5]) * cb.t[5]) >> 64),
                    (scalar_t)((int128_t(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)((int128_t(ca.t[7]) * cb.t[7]) >> 64));
-    }
+#else /* here we assume __x86_64__ */
+        Converter o;
+        for (unsigned int i = 0; i < vect_size; i++)
+            __asm__ ("imulq %2" : "=d" (o.t[i]) : "a" (ca.t[i]), "r" (cb.t[i]));
+        return o.v;
 #endif
+    }
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results
@@ -701,20 +706,25 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
      [b0, b1, b2, b3, b4, b5, b6, b7]  	uint64_t
      * Return :
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+#ifdef __FFLASFFPACK_HAVE_INT128
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         // ugly solution, but it works.
         // tested with gcc, clang, icc
-        Converter c0, c1;
-        c0.v = a;
-        c1.v = b;
-        return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[4]) * c1.t[4]) >> 64), (scalar_t)(((uint128_t)(c0.t[5]) * c1.t[5]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[6]) * c1.t[6]) >> 64), (scalar_t)(((uint128_t)(c0.t[7]) * c1.t[7]) >> 64));
-    }
+        return set((scalar_t)(((uint128_t)(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)(((uint128_t)(ca.t[1]) * cb.t[1]) >> 64),
+                   (scalar_t)(((uint128_t)(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)(((uint128_t)(ca.t[3]) * cb.t[3]) >> 64),
+                   (scalar_t)(((uint128_t)(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)(((uint128_t)(ca.t[5]) * cb.t[5]) >> 64),
+                   (scalar_t)(((uint128_t)(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)(((uint128_t)(ca.t[7]) * cb.t[7]) >> 64));
+#else /* here we assume __x86_64__ */
+        Converter o;
+        for (unsigned int i = 0; i < vect_size; i++)
+            __asm__ ("mulq %2" : "=d" (o.t[i]) : "a" (ca.t[i]), "r" (cb.t[i]));
+        return o.v;
 #endif
+    }
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit
