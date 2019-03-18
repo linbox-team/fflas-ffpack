@@ -242,17 +242,17 @@ void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
 
 int main(int argc, char** argv) {
 
-    static int p=0;    
+    int p=0;    
         
-    static size_t iters = 10;
-    static Givaro::Integer q = 131071; 
-    static size_t m = 800;
-    static size_t k = 800;
+    size_t iters = 10;
+    Givaro::Integer q = 131071; 
+    size_t m = 800;
+    size_t k = 800;
 
-    static uint64_t seed= getSeed();
-    static int t=NUM_THREADS;
-    static int NBK = -1;
-    static int b=0;
+    uint64_t seed= getSeed();
+    int t=NUM_THREADS;
+    int NBK = -1;
+    int b=0;
     
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
@@ -271,16 +271,17 @@ int main(int argc, char** argv) {
 
     if (NBK==-1) NBK = t;
     if(q==0){
-        benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, as);
-        //benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as);
+        //benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as);
     }else{
         //benchmark_with_field<Givaro::Modular<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
         //benchmark_with_field<Givaro::Modular<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
         //benchmark_with_field<Givaro::Modular<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-        benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        
+        //benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as);
 
         //benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as);
-        //benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
+        benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as);
         //benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as);
     }
     
