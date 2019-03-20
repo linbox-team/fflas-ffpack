@@ -250,7 +250,10 @@ int main(int argc, char** argv) {
     size_t k = 800;
 
     uint64_t seed= getSeed();
-    int t=NUM_THREADS;
+    int t;
+    PAR_BLOCK{
+        t=NUM_THREADS;
+    }
     int NBK = -1;
     int b=0;
     
