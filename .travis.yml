@@ -87,7 +87,6 @@ install:
 before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
   - git clone --depth=1 https://github.com/xianyi/OpenBLAS.git  && cd OpenBLAS && make && sudo make PREFIX="/usr/local" install && cd ..
-  - export LD_LIBRARY_PATH=/usr/local/lib
   - ./autogen.sh #$BLAS_LIBS
 
 script:
