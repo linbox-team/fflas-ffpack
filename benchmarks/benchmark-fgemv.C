@@ -71,13 +71,7 @@ void fill_value(Field& F, RandIter& Rand,
                         CuttingStrategy::Row, StrategyParameter::Threads
                         ),
                                    TASK(MODE(CONSTREFERENCE(F,Rand)),
-                                        {
-                                        frand(F, Rand,
-                                              iter.end()-iter.begin(),
-                                              k,
-                                              A+iter.begin()*lda,
-                                              lda);
-                                        }
+                                        {frand(F, Rand, iter.end()-iter.begin(), k, A+iter.begin()*lda, lda);}
                                        );
                                   );
                        );
@@ -259,14 +253,14 @@ int main(int argc, char** argv) {
     
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-        { 'b', "-b B", "Set the bitsize of input.",         TYPE_INT , &b },
+        { 'b', "-b B", "Set the bitsize of input.",                             TYPE_INT , &b },
         { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row, Grain>.", TYPE_INT , &p },
         { 'm', "-m M", "Set the dimension m of the matrix.",                    TYPE_INT , &m },
         { 'k', "-k K", "Set the dimension k of the matrix.",                    TYPE_INT , &k },
-        { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+        { 't', "-t T", "number of virtual threads to drive the partition.",     TYPE_INT , &t },
         { 'N', "-n N", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
         { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iters },
-        { 's', "-s S", "Sets seed.",                            				TYPE_INT , &seed },
+        { 's', "-s S", "Sets seed.",                                            TYPE_INT , &seed },
         END_OF_ARGUMENTS
     };
 
