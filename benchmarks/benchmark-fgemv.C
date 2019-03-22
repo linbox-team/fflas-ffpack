@@ -222,10 +222,10 @@ int main(int argc, char** argv) {
 
   int p=0;
 
-  size_t iters = 10;
+  size_t iters = 3;
   Givaro::Integer q = 131071;
-  size_t m = 800;
-  size_t k = 800;
+  size_t m = 4000;
+  size_t k = 4000;
 
   uint64_t seed = getSeed();
   int t;
