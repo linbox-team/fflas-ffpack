@@ -118,6 +118,15 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     }
 
     /*
+     *  Extract one 64-bit integer from src at index idx
+     *  Return v[qqwi*4 + qwi] int64_t
+     */
+    template<int qqwi, int qwi>
+    static INLINE CONST scalar_t get(vect_t v) {
+        return _mm256_extract_epi64(_mm512_extracti64x4_epi64(v, qqwi), qwi);
+    }
+
+    /*
      * Load 512-bits of integer data from memory into dst.
      * p must be aligned on a 64-byte boundary or a general-protection exception will be generated.
      * Return [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]] int32_t
@@ -345,7 +354,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         // ugly solution, but it works.
         // tested with gcc, clang, icc
-#if 1
+#if 0
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -354,35 +363,33 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
                    (scalar_t)((int128_t(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)((int128_t(ca.t[5]) * cb.t[5]) >> 64),
                    (scalar_t)((int128_t(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)((int128_t(ca.t[7]) * cb.t[7]) >> 64));
 #else
-        // purely vectorized alternative, that doesn't require __uint128_t
         const vect_t mask = mask_high();
-
         vect_t a0 = vand(a, mask);
         vect_t b0 = vand(b, mask);
-        vect_t a1 = srl<32>(a);
-        vect_t b1 = srl<32>(b);
+        vect_t a1 = sra<32>(a);
+        vect_t b1 = sra<32>(b);
+        vect_t t0, t1, t2, t3, t4, t5;
 
-        vect_t t0 = mulx(a0, b0);
-        vect_t t1 = mulx(a0, b1);
-        vect_t t2 = mulx(a1, b0);
-        vect_t t3 = mulx(a1, b1);
+        t0 = _mm512_mul_epu32(a0,b0);
+        t1 = mullo(a0,b1);
+        t2 = mullo(a1,b0);
+        t3 = mulx(a1,b1);
 
         t0 = srl<32>(t0);
-        vect_t t4 = vand(t1, mask);
-        vect_t t5 = vand(t2, mask);
-        t0 = add(t0, t4);
-        t0 = add(t0, t5);
-        t0 = srl<32>(t0); // carry bits
+        t5 = vand(t1, mask);
+        t4 = vand(t2, mask);
+        t4 = add(t4, t5);
+        t4 = add(t4, t0);
+        t4 = srl<32>(t4);
 
-        t1 = srl<32>(t1);
-        t2 = srl<32>(t2);
+        t1 = sra<32>(t1);
+        t2 = sra<32>(t2);
 
         t1 = add(t1, t2);
-        t3 = add(t3, t0);
+        t3 = add(t3, t4);
         t3 = add(t3, t1);
 
         return t3;
-
 #endif
     }
 #endif
@@ -567,6 +574,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     template <bool overflow, bool poweroftwo, int8_t shifter>
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+    template <bool overflow, bool poweroftwo>
+    static INLINE vect_t mod(int8_t shifter, vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
+                             const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
 
 protected:
     /* return the sign where vect_t is seen as sixteen int32_t */
@@ -738,7 +748,7 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         // ugly solution, but it works.
         // tested with gcc, clang, icc
-#if 1
+#if 0
         Converter c0, c1;
         c0.v = a;
         c1.v = b;
@@ -747,30 +757,31 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
                    (scalar_t)(((uint128_t)(c0.t[4]) * c1.t[4]) >> 64), (scalar_t)(((uint128_t)(c0.t[5]) * c1.t[5]) >> 64),
                    (scalar_t)(((uint128_t)(c0.t[6]) * c1.t[6]) >> 64), (scalar_t)(((uint128_t)(c0.t[7]) * c1.t[7]) >> 64));
 #else
+        // purely vectorized alternative, that doesn't require __uint128_t
         const vect_t mask = mask_high();
+
         vect_t a0 = vand(a, mask);
         vect_t b0 = vand(b, mask);
-        vect_t a1 = sra<32>(a);
-        vect_t b1 = sra<32>(b);
-        vect_t t0, t1, t2, t3, t4, t5;
+        vect_t a1 = srl<32>(a);
+        vect_t b1 = srl<32>(b);
 
-        t0 = _mm256_mul_epu32(a0,b0);
-        t1 = mullo(a0,b1);
-        t2 = mullo(a1,b0);
-        t3 = mulx(a1,b1);
+        vect_t t0 = mulx(a0, b0);
+        vect_t t1 = mulx(a0, b1);
+        vect_t t2 = mulx(a1, b0);
+        vect_t t3 = mulx(a1, b1);
 
         t0 = srl<32>(t0);
-        t5 = vand(t1, mask);
-        t4 = vand(t2, mask);
-        t4 = add(t4, t5);
-        t4 = add(t4, t0);
-        t4 = srl<32>(t4);
+        vect_t t4 = vand(t1, mask);
+        vect_t t5 = vand(t2, mask);
+        t0 = add(t0, t4);
+        t0 = add(t0, t5);
+        t0 = srl<32>(t0); // carry bits
 
-        t1 = sra<32>(t1);
-        t2 = sra<32>(t2);
+        t1 = srl<32>(t1);
+        t2 = srl<32>(t2);
 
         t1 = add(t1, t2);
-        t3 = add(t3, t4);
+        t3 = add(t3, t0);
         t3 = add(t3, t1);
 
         return t3;
@@ -845,36 +856,221 @@ INLINE CONST vect_t Simd512_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
     return x1;
 }
 
+template <bool overflow, bool poweroftwo>
+INLINE vect_t Simd512_impl<true, true, true, 8>::mod(int8_t shifter, vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
+                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
+    printf("shifter %d\n", shifter);
+    switch (shifter)
+    {
+    case 0:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,0>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 1:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,1>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 2:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,2>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 3:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,3>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 4:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,4>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 5:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,5>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 6:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,6>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 7:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,7>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 8:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,8>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 9:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,9>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 10:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,10>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 11:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,11>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 12:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,12>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 13:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,13>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 14:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,14>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 15:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,15>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 16:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,16>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 17:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,17>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 18:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,18>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 19:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,19>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 20:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,20>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 21:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,21>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 22:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,22>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 23:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,23>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 24:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,24>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 25:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,25>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 26:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,26>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 27:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,27>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 28:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,28>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 29:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,29>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 30:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,30>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 31:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,31>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 32:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,32>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 33:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,33>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 34:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,34>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 35:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,35>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 36:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,36>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 37:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,37>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 38:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,38>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 39:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,39>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 40:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,40>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 41:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,41>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 42:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,42>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 43:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,43>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 44:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,44>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 45:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,45>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 46:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,46>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 47:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,47>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 48:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,48>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 49:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,49>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 50:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,50>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 51:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,51>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 52:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,52>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 53:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,53>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 54:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,54>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 55:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,55>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 56:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,56>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 57:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,57>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 58:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,58>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 59:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,59>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 60:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,60>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 61:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,61>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 62:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,62>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 63:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,63>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    case 64:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,64>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    default:
+        return Simd512_impl<true, true, true, 8>::template mod<overflow,poweroftwo,64>(C,P,magic,NEGP,MIN,MAX,Q,T);
+    }
+}
+
+
 template <bool overflow, bool poweroftwo, int8_t shifter>
 INLINE vect_t Simd512_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
                                                      const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
-#ifdef __INTEL_COMPILER
-    // Works fine with ICC 15.0.1 - A.B.
-    C = _mm512_rem_epi64(C, P);
-#else
-    if (poweroftwo) {
-        Q = srl<63>(C);
-        vect_t un = set1(1);
-        T = sub(sll<shifter>(un), un);
-        Q = add(C, vand(Q, T));
-        Q = sll<shifter>(srl<shifter>(Q));
-        C = sub(C, Q);
-        Q = vand(greater(zero(), Q), P);
-        C = add(C, Q);
-    } else {
-        Q = mulhi_fast(C, magic);
-        if (overflow) {
-            Q = add(Q, C);
-        }
-        Q = sra<shifter>(Q);
-        vect_t q1 = Simd512_impl<true, true, false, 8>::mulx(Q, P);
-        vect_t q2 = sll<32>(Simd512_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
-        C = sub(C, add(q1, q2));
-        T = greater_eq(C, P);
-        C = sub(C, vand(T, P));
+//#ifdef __INTEL_COMPILER
+//    // Works fine with ICC 15.0.1 - A.B.
+//    C = _mm512_rem_epi64(C, P);
+//#else
+//    if (poweroftwo) {
+//        Q = srl<63>(C);
+//        vect_t un = set1(1);
+//        T = sub(sll<shifter>(un), un);
+//        Q = add(C, vand(Q, T));
+//        Q = sll<shifter>(srl<shifter>(Q));
+//        C = sub(C, Q);
+//        Q = vand(greater(zero(), Q), P);
+//        C = add(C, Q);
+//    } else {
+//        Q = mulhi_fast(C, magic);
+//        if (overflow) {
+//            Q = add(Q, C);
+//        }
+//        Q = sra<shifter>(Q);
+//        vect_t q1 = Simd512_impl<true, true, false, 8>::mulx(Q, P);
+//        vect_t q2 = sll<32>(Simd512_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
+//        C = sub(C, add(q1, q2));
+//        T = greater_eq(C, P);
+//        C = sub(C, vand(T, P));
+//    }
+//#endif
+//    NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+
+
+
+    int64_t cv[8];
+    int64_t pv[8];
+
+//    __m512d Cd = _mm512_cvtepi64_pd(C);
+
+//    storeu(cv, C);
+//    storeu(pv, P);
+
+    cv[0] = get<0,0>(C);
+    cv[1] = get<0,1>(C);
+    cv[2] = get<0,2>(C);
+    cv[3] = get<0,3>(C);
+    cv[4] = get<1,0>(C);
+    cv[5] = get<1,1>(C);
+    cv[6] = get<1,2>(C);
+    cv[7] = get<1,3>(C);
+
+    pv[0] = get<0,0>(P);
+    pv[1] = get<0,1>(P);
+    pv[2] = get<0,2>(P);
+    pv[3] = get<0,3>(P);
+    pv[4] = get<1,0>(P);
+    pv[5] = get<1,1>(P);
+    pv[6] = get<1,2>(P);
+    pv[7] = get<1,3>(P);
+
+    for (int i = 0; i < 32; i++)
+    {
+        printf("%ld %ld\n", cv[i], pv[i]);
+        cv[i] = cv[i] % pv[i];
     }
-#endif
-    NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+
+    C = set(cv[0], cv[1], cv[2], cv[3], cv[4], cv[5], cv[6], cv[7]);
+
+
+
+//    C = loadu(cv);
+
+
+
     return C;
 }
 

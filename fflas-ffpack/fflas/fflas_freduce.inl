@@ -116,6 +116,8 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
     template<bool overflow, bool poweroftwo>
     inline int64_t monfmod(int64_t A, int64_t p, int8_t shifter, int64_t magic)
     {
+//        printf("coucou monfmod\n");
+        return A%p;
         if (poweroftwo) { //shift path
             int64_t q = A + ((A >> 63) & ((1_i64 << shifter) - 1));
             q = A - ((q>>shifter)<< shifter) ;
@@ -456,16 +458,16 @@ namespace FFLAS { namespace vectorised {
         // std::cout << H.P << std::endl;
         switch (ALGO) {
         case 0 :
-            C = SimdT::template mod<false, false, H.shift>( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+            C = SimdT::template mod<false, false>(H.shift, C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
             break;
         case 1 :
-            C = SimdT::template mod<true, false, H.shift> ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+            C = SimdT::template mod<true, false> (H.shift, C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
             break;
         case 2 :
-            C = SimdT::template mod<false, true, H.shift> ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+            C = SimdT::template mod<false, true> (H.shift, C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
             break;
         case 3 :
-            C = SimdT::template mod<true, true, H.shift>  ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+            C = SimdT::template mod<true, true>  (H.shift, C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
             break;
         }
     }
@@ -485,7 +487,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
          , HelperMod<Field> & G
         )
     {
-
+        printf("coucou modp vectorized with buggy call\n");
         //		std::cerr<<"modp vectorized"<<std::endl;
         typedef typename Field::Element Element;
         Element min = (Element)F.minElement(), max = (Element)F.maxElement();
@@ -636,6 +638,7 @@ namespace FFLAS { namespace vectorised {
          typename Field::Element_ptr T)
     {
         HelperMod<Field> H(F);
+//        printf("coucou modppppppp\n");
 
         int ALGO = H.getAlgo();
 
@@ -697,6 +700,12 @@ namespace FFLAS { namespace details {
         // 	vectorised::modp<Field,false>(F,A,m,A);
         // }
         // else {
+//        printf("freduce\n");
+//        std::cout << "teh supporting " << FFLAS::support_simd_mod<int64_t>::value << std::endl;
+//#ifdef SIMD_INT
+//        printf("wtf\n");
+//#endif
+//        assert(0);
         typename Field::Element_ptr  Xi = A ;
         for (; Xi < A+m*incX; Xi+=incX )
             F.reduce(*Xi);
@@ -709,6 +718,8 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::GenericTag)
     {
+        printf("freduce\n");
+        assert(0);
         typename Field::Element_ptr Xi = A ;
         for (; Xi < A+m*incX; Xi+=incX )
             F.reduce (*Xi);
@@ -720,6 +731,8 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::UnparametricTag)
     {
+        printf("freduce\n");
+        assert(0);
         typename Field::Element_ptr Xi = A ;
         for (; Xi < A+m*incX; Xi+=incX )
             F.reduce (*Xi);
@@ -751,6 +764,8 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::ModularTag)
     {
+        printf("freduce\n");
+        assert(0);
 
         typename Field::Element_ptr Xi = A ;
         typename Field::ConstElement_ptr Yi = B ;
@@ -765,6 +780,8 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::GenericTag)
     {
+        printf("freduce\n");
+        assert(0);
         typename Field::Element_ptr Xi = A ;
         typename Field::ConstElement_ptr Yi = B ;
         for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
@@ -777,6 +794,8 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::UnparametricTag)
     {
+        printf("freduce\n");
+        assert(0);
         typename Field::Element_ptr Xi = A ;
         typename Field::ConstElement_ptr Yi = B ;
         for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
