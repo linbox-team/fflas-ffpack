@@ -36,8 +36,6 @@
 #include "givaro/modular-integer.h"
 #include "givaro/givcaster.h"
 
-
-
 using namespace FFPACK;
 
 using namespace std;
