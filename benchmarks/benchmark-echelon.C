@@ -25,7 +25,7 @@
 #include <givaro/modular-balanced.h>
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/args-parser.h"
-
+#include "fflas-ffpack/ffpack/ffpack.h"
 using namespace std;
 
 typedef Givaro::ModularBalanced<double> Field;
@@ -41,7 +41,7 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
     size_t lda = n;
     Field::Element *U=new Field::Element[n*n];
 
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> H;
 
     std::vector<size_t> E(r);
     PARFOR1D(i,r,H, E[i]=i; );
@@ -69,7 +69,7 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
 
 typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t m, size_t r, const std::vector<size_t>& P, size_t seed)
 {
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> H;
 
     size_t lda = m;
     size_t taille=m*m;
@@ -120,9 +120,8 @@ typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,ty
        FFLAS::ftrmm(F,  FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, m,n,1.0, U, lda, L, lda);
        */
 
-    const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-    const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
-    typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
+
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeD> pWH (MAX_THREADS);
     PAR_BLOCK{
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                       m,n,r, alpha, L,r, U,
@@ -135,7 +134,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
                        size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeD> H;
 
     Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
     Field::Element * L, *U;
@@ -167,8 +166,8 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 #pragma omp task shared(F, Q, U)
         FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 #pragma omp taskwait
-        const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
-        typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
+        //const FFLAS::CuttingStrategy method = FFLAS::ThreeD;
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeD> pWH (MAX_THREADS);
 #pragma omp task shared(F, L, U, X)
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
                       F.one, L,R, U,n, F.zero, X,n, pWH);
@@ -187,7 +186,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
                 errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
                 << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
                 << std::endl;
-                std::cout << errs;
+                //std::cout << errs;
                 fail=true;
                 std::cout<<" end verification"<<std::endl;
                 exit(1);
@@ -252,7 +251,7 @@ int main(int argc, char** argv) {
     std::vector<size_t> Index_P(r);
     Field::RandIter GG(F, seed1);
 
-    PAR_BLOCK{ pfrand(F,GG,m,n,A,m/NBK); }
+    PAR_BLOCK{ FFLAS::pfrand(F,GG,m,n,A,m/NBK); }
 
 
     //       std::cout<<"Construct U"<<endl;
@@ -273,7 +272,7 @@ int main(int argc, char** argv) {
     size_t *P = FFLAS::fflas_new<size_t>(maxP);
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeD> H;
 
     PARFOR1D(i,(size_t)m,H,
              for (size_t j=0; j<(size_t)n; ++j)
@@ -296,7 +295,7 @@ int main(int argc, char** argv) {
         if (i) chrono.start();
         // Added by AB 2014-12-15
         //#ifdef __FFLASFFPACK_USE_OPENMP
-        r = RowEchelonForm(F,m,n,A,n,P,Q,transform,LuTag);
+        r = FFPACK::RowEchelonForm(F,m,n,A,n,P,Q,transform,LuTag);
         if (i) {chrono.stop(); time+=chrono.realtime();}
     }
 
