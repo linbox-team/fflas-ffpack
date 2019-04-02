@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
     FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> H;
-
+    FFLAS::ParSeqHelper::Sequential SeqHelper;
     Acop = FFLAS::fflas_new(F,m,n);
     PARFOR1D(i,(size_t)m,H,
              FFLAS::fassign(F, n, A + i*n, 1, Acop + i*n, 1);
@@ -246,14 +246,14 @@ int main(int argc, char** argv) {
 
 
             PAR_BLOCK{
-                R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
+                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, H);
             }
         }
         else{
             if (slab)
                 R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
             else
-                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
+                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, SeqHelper);
         }
         if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 
