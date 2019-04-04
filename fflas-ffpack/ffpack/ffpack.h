@@ -280,13 +280,14 @@ namespace FFPACK { /* Permutations */
                         const size_t width, const size_t M2,
                         const size_t R1, const size_t R2,
                         const size_t R3, const size_t R4) ;
-
+/*
     template<class Field>
     size_t
     pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
           const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda,
           size_t* P, size_t* Q, int nt);
+*/
     /* \endcond */
 
     //#endif
@@ -595,11 +596,14 @@ namespace FFPACK {
      * .
      */
     template<class Field>
-    size_t
-    PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
-          const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda,
-          size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
+    size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag, const size_t M, const size_t N,
+    		 typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q);
+    template<class Field>
+    size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag, const size_t M, const size_t N,
+		 typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q, const FFLAS::ParSeqHelper::Sequential seq);
+    template<class Field, class Cut, class Param>
+    size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag, const size_t M, const size_t N,
+		 typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q, const FFLAS::ParSeqHelper::Parallel<Cut,Param> par);
 
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"
