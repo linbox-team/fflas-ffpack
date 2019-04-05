@@ -493,6 +493,10 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     template <bool overflow, bool poweroftwo, int8_t shifter>
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+//    static INLINE vect_t mod(vect_t &C, const vect_t &P, const __m256d &INVP, const vect_t &NEGP, const vect_t &POW50REM,
+//                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+static INLINE vect_t mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
+                                                     const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T); 
 
 protected:
     /* return the sign where vect_t is seen as eight int32_t */
@@ -751,6 +755,41 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P,
     }
 #endif
     NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+    return C;
+}
+
+// FIXME why cannot use Simd256<double>::vect_t in the declaration instead of __m256d?
+// TODO test it
+INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
+                                                     const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T) {
+    vect_t Cq50, Cr50, Ceq;
+    __m256d nCmod;
+
+    Cq50 = sra<50>(C);
+    Cr50 = set1(0x3FFFFFFFFFFFFLL);
+    Cr50 = vand(C, Cr50);
+
+    Ceq = fmadd(Cr50, Cq50, POW50REM);
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    nCmod = _mm256_cvtepi64_pd(Ceq);
+#else
+    // ><
+    Converter cC;
+    cC.v = Ceq;
+    nCmod = _mm256_set_pd((double)cC.t[3],(double)cC.t[2],(double)cC.t[1],(double)cC.t[0]);
+#endif
+
+    nCmod = Simd256<double>::mod(nCmod, P, INVP, NEGP, MIN, MAX, Q, T);
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    C = _mm256_cvtpd_epi64(nCmod);
+#else
+    // the result is small enough for this to work?
+    __m128i Cp = _mm256_cvttpd_epi32(nCmod);
+    C = _mm256_cvtepi32_epi64(Cp);
+#endif
+
     return C;
 }
 

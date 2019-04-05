@@ -404,6 +404,7 @@ namespace FFLAS { namespace vectorised {
         vect_t NEGP ;
         vect_t Q ;
         vect_t T ;
+        Simd<double> INVP;
 
         HelperModSimd ( const Field & F) :
             HelperMod<Field>(F)
