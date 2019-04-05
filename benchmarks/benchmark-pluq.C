@@ -245,7 +245,7 @@ FFLAS::StrategyParameter::TwoDAdaptive> parH;
         if (par){
 
             PAR_BLOCK{
-                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, parH);
+                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, t, parH);
             }
         }
         else{
