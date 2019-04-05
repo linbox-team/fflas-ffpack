@@ -112,7 +112,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         return A ; // B > 0
     }
 
-
+    /* Does not seem to be used/work; replaced by the below -- PK 2019
     template<bool overflow, bool poweroftwo>
     inline int64_t monfmod(int64_t A, int64_t p, int8_t shifter, int64_t magic)
     {
@@ -133,6 +133,23 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 
         }
     }
+    */
+    inline int64_t monfmod(int64_t A, int64_t p, double invp, int64_t pow50rem)
+    {
+        // assert(p < 1LL << 31);
+        int64_t Aq50 = A >> 50;                         // Aq50 < 2**14
+        int64_t Ar50 = A & 0x3FFFFFFFFFFFFLL;           // Ar50 < 2**50
+
+        int64_t Aeq  = Aq50 * pow50rem + Ar50;          // Aeq < 2**45 + 2**50 < 2**51; Aeq ~ A mod p
+        double nAmod = ((double)Aeq) * invp;
+        nAmod        = Aeq - floor(nAmod) * p;
+
+        if (nAmod < 0)
+            nAmod += p;
+
+        return (int64_t)nAmod;
+    }
+
 
 } // vectorised
 } // FFLAS
@@ -195,6 +212,7 @@ namespace FFLAS { namespace vectorised {
     struct HelperMod  ;
 
 
+    /* Does not seem to be used/word ; replaced by the below -- PK 2019
     template<class Field>
     struct HelperMod<Field, ElementCategories::MachineIntTag> {
         bool overflow  = false ;
@@ -226,6 +244,32 @@ namespace FFLAS { namespace vectorised {
         }
 
 
+    } ;
+    */
+
+    template<class Field>
+    struct HelperMod<Field, ElementCategories::MachineIntTag> {
+        typename Field::Element p;
+        double invp;
+        int64_t pow50rem;
+
+        HelperMod()
+        {
+            // std::cout << "empty cstor called" << std::endl;
+        } ;
+
+        HelperMod( const Field & F)
+        {
+            // std::cout << "field cstor called" << std::endl;
+            p =  (typename Field::Element) F.characteristic();
+            pow50rem = (1LL << 50) % p;
+            invp = 1/((double)p);
+        }
+
+        int getAlgo() const
+        {
+            return 0;
+        }
     } ;
 
     template<class Field>
@@ -302,6 +346,7 @@ namespace FFLAS { namespace vectorised {
     template<class Field, class SimdT, class ElementTraits = typename ElementTraits<typename Field::Element>::value>
     struct HelperModSimd  ;
 
+    /* Does not seem to be used/work; replaced by the below -- PK 2019
     template<class Field, class SimdT>
     struct HelperModSimd<Field, SimdT, ElementCategories::MachineIntTag> : public HelperMod<Field> {
         typedef typename SimdT::vect_t vect_t ;
@@ -344,6 +389,41 @@ namespace FFLAS { namespace vectorised {
             MAX = SimdT::set1(F.maxElement());
             // fast_mod_generate(overflow, shift, magic, p);
             M = SimdT::set1(magic);
+        }
+
+    } ;
+    */
+
+
+    template<class Field, class SimdT>
+    struct HelperModSimd<Field, SimdT, ElementCategories::MachineIntTag> : public HelperMod<Field> {
+        typedef typename SimdT::vect_t vect_t ;
+        vect_t P ;
+        vect_t MIN ;
+        vect_t MAX ;
+        vect_t NEGP ;
+        vect_t Q ;
+        vect_t T ;
+
+        HelperModSimd ( const Field & F) :
+            HelperMod<Field>(F)
+        {
+            // std::cout << "HelperMod constructed " << this->shift << std::endl;
+            P = SimdT::set1(this->p);
+            NEGP = SimdT::set1(-this->p);
+            MIN = SimdT::set1(F.minElement());
+            MAX = SimdT::set1(F.maxElement());
+        }
+
+        HelperModSimd( const Field & F, const HelperMod<Field> & G)
+        {
+            this->p=G.p;
+            this->invp=G.invp;
+            this->pow50rem=G.pow50rem;
+            P = SimdT::set1(this->p);
+            NEGP = SimdT::set1(-(this->p));
+            MIN = SimdT::set1(F.minElement());
+            MAX = SimdT::set1(F.maxElement());
         }
 
     } ;
@@ -390,6 +470,7 @@ namespace FFLAS { namespace vectorised {
 
 
 #ifdef __x86_64__
+    /* Does not seem to be used/work; replaced by the below -- PK 2019
     template<class Field, int ALGO>
     typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
     monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
@@ -410,6 +491,13 @@ namespace FFLAS { namespace vectorised {
         default :
             FFLASFFPACK_abort("unknown algo");
         }
+    }
+    */
+    template<class Field, int ALGO>
+    typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
+    monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
+    {
+        return monfmod(A, H.p, H.invp, H.pow50rem);
     }
 #endif // __x86_64__
 
@@ -448,6 +536,7 @@ namespace FFLAS { namespace vectorised {
         C = SimdT::mod( C, H.P, H.INVP, H.NEGP, H.MIN, H.MAX, H.Q, H.T );
     }
 
+    /* Does not seem to be used/work; replaced by the below -- PK 2019
     template<class Field, class SimdT, int ALGO>
     inline void
     VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,ElementCategories::MachineIntTag> & H)
@@ -468,6 +557,14 @@ namespace FFLAS { namespace vectorised {
             C = SimdT::template mod<true, true, H.shift>  ( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
             break;
         }
+    }
+    */
+
+    template<class Field, class SimdT, int ALGO>
+    inline void
+    VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,ElementCategories::MachineIntTag> & H)
+    {
+//        C = SimdT::mod( C, H.P, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
     }
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -495,20 +592,20 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         HelperModSimd<Field,simd> H(F,G);
 
         size_t i = 0;
-        if (n < simd::vect_size)
-        {
+//        if (n < simd::vect_size)
+//        {
             //			std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
             for (; i < n ; i++)
             {
-                if (round)
-                {
-                    T[i] = monrint(U[i]);
-                    T[i] = monfmod<Field,algo>(T[i],H);
-                }
-                else
-                {
+//                if (round)
+//                {
+//                    T[i] = monrint(U[i]);
+//                    T[i] = monfmod<Field,algo>(T[i],H);
+//                }
+//                else
+//                {
                     T[i]=monfmod<Field,algo>(U[i],H);
-                }
+//                }
                 if (!positive)
                 {
                     T[i]-=(T[i]>max)?H.p:0;
@@ -516,8 +613,9 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
                 T[i]+=(T[i]<min)?H.p:0;
             }
             return;
-        }
+//        }
 
+#if 0 // disabled for now (PK)
         long st = long(T) % simd::alignment;
 
         // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
@@ -586,6 +684,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             }
             T[i] += (T[i] < min) ? H.p : 0;
         }
+#endif
     }
 #endif
 
