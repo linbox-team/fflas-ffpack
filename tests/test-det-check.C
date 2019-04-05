@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     srandom(seed);
 
     size_t pass = 0;	// number of tests that have successfully passed
-FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> HP;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
     FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
     for(size_t it=0; it<iter; ++it) {
 #ifdef TIME_CHECKER_Det
@@ -98,7 +98,9 @@ FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyP
         try {
             FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
             Givaro::Timer chrono; chrono.start();
-            FFPACK::Det(det,F,n,n,A,n,P,Q,Diag,HP);
+            PAR_BLOCK{
+            FFPACK::Det(det,F,n,n,A,n,P,Q,Diag,parH);
+            }
             chrono.stop();
             checker.check(det,A,n,Diag,P,Q);
             F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
