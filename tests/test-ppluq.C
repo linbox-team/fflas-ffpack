@@ -280,8 +280,9 @@ int main(int argc, char** argv)
         PP[j]=0;
     for (size_t j=0;j<maxQ;j++)
         QQ[j]=0;
+
     clock_gettime(CLOCK_REALTIME, &tt0);
-    size_t R2 = PLUQ(F, diag, m, n, Acop, n, PP, QQ,H);
+    size_t R2 = PLUQ(F, diag, m, n, Acop, n, PP, QQ);
     clock_gettime(CLOCK_REALTIME, &tt1);
     FFLAS::fflas_delete( Acop);
     avrgg = (double)(tt1.tv_sec-tt0.tv_sec)+(double)(tt1.tv_nsec-tt0.tv_nsec)/1000000000;

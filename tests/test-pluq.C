@@ -48,7 +48,7 @@
 #include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/test-utils.h"
-
+#include "fflas-ffpack/fflas-ffpack-config.h"
 using namespace std;
 using namespace FFPACK;
 
@@ -110,14 +110,15 @@ int main(int argc, char** argv){
         tim.clear();
         tim.start();
 
-        R = FFPACK::PLUQ_basecaseCrout (F, diag, m, n, A, n, P, Q);
+        R = FFPACK::PLUQ_basecaseCrout (F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q);
         tim.stop();
         timc+=tim;
         FFLAS::fflas_delete( A);
         FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasDense);
         timlud.clear();
+
         timlud.start();
-        R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
+        R = FFPACK::PLUQ (F, diag, m, n, A, n, P, Q);
         timlud.stop();
         timludc+=timlud;
         //		std::cerr<<"Fini LUdivine"<<std::endl;
