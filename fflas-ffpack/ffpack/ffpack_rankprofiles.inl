@@ -247,7 +247,6 @@ namespace FFPACK{
                                   const size_t* QtPointer,
                                   typename Field::Element_ptr X, const size_t ldx)
     {
-
         // upper entries are okay, just need to move up bottom ones
         const size_t* srcRow = QtPointer;
         for (size_t row=0; row<rank; row++, srcRow++)
@@ -261,7 +260,7 @@ namespace FFPACK{
         // X <- (Qt.L.Q)^(-1)
         //invL( F, rank, A_factors, lda, X, ldx);
         ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, rank, A_factors, lda);
-        FFLAS::fassign(F,rank,rank,X,ldx,A_factors,lda);
+        FFLAS::fassign(F,rank,rank,A_factors,lda,X,ldx);
 
         // X = U^-1.X
         ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans,
