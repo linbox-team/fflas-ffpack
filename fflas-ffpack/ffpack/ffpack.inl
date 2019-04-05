@@ -130,7 +130,7 @@ namespace FFPACK {
         size_t *P = FFLAS::fflas_new<size_t>(M);
         size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
-        if (PLUQ (F, FFLAS::FflasNonUnit, M, M, A, lda, P, rowP) < M){
+        if (PLUQ (F, FFLAS::FflasNonUnit, M, M, A, lda, rowP, P) < M){
             std::cerr<<"SINGULAR MATRIX"<<std::endl;
             FFLAS::fflas_delete (P);
             FFLAS::fflas_delete (rowP);
@@ -139,6 +139,7 @@ namespace FFPACK {
         else{
             FFLAS::fassign( F, M, b, incb, x, incx );
 
+            applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0,(int) M, x, incx, rowP );
             ftrsv (F, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, A, lda , x, incx);
             ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M, A, lda , x, incx);
             applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1, 0,(int) M, x, incx, P );
