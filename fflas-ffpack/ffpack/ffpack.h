@@ -1188,6 +1188,7 @@ namespace FFPACK { /* Solutions */
      * @param P the row permutation
      * @param Q the column permutation
      */
+
     template <class Field>
     typename Field::Element&
     Det( typename Field::Element& det,
@@ -1195,6 +1196,23 @@ namespace FFPACK { /* Solutions */
          typename Field::Element_ptr A, const size_t lda,
          size_t* P, size_t* Q,
          const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+
+    template <class Field>
+    typename Field::Element&
+    Det( typename Field::Element& det,
+         const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t* P, size_t* Q,
+         const FFLAS::FFLAS_DIAG Diag, const FFLAS::ParSeqHelper::Sequential seqH);
+
+    template <class Field, class Cut, class Param>
+    typename Field::Element&
+    Det( typename Field::Element& det,
+         const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t* P, size_t* Q,
+         const FFLAS::FFLAS_DIAG Diag, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+
 
     /** @brief Returns the determinant of the given matrix.
      * @details The method is a block elimination with early termination
@@ -1209,15 +1227,39 @@ namespace FFPACK { /* Solutions */
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
      */
+
     template <class Field>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda);
 
     template <class Field>
+    typename Field::Element
+    Det( const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH);
+
+    template <class Field, class Cut, class Param>
+    typename Field::Element
+    Det( const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+
+
+
+    template <class Field>
     typename Field::Element&
     Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda);
+
+    template <class Field>
+    typename Field::Element&
+    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH);
+
+    template <class Field, class Cut, class Param>
+    typename Field::Element&
+    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+
 
     /*********/
     /* SOLVE */

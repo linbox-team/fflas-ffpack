@@ -178,7 +178,7 @@ perfpublisher:
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
 
-new_examp_comp = $(CXX) $(AM_CXXFLAGS) ${CXXFLAGS}  ${INCLUDES} $(AM_CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+new_examp_comp = $(CXX) $(AM_CXXFLAGS) ${CXXFLAGS}  ${INCLUDES} $(AM_CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES) $(LIBS)
 
 %:%.C
 	$(new_examp_comp)
