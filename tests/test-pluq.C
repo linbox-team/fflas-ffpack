@@ -70,7 +70,7 @@ int main(int argc, char** argv){
     Field F(atof(argv[1]));
     Field::Element * A;
 
-    FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasAuto);
+    FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
     size_t maxP, maxQ;
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv){
             FFLAS::fflas_delete( A);
             FFLAS::fflas_delete( RRP);
             FFLAS::fflas_delete( CRP);
-            FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasDense);
+            FFLAS::ReadMatrix (argv[2],F,m,n,A);
         }
 
         for (size_t j=0;j<maxP;j++)
@@ -110,15 +110,15 @@ int main(int argc, char** argv){
         tim.clear();
         tim.start();
 
-        R = FFPACK::PLUQ_basecaseCrout (F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q);
+        R = FFPACK::PLUQ_basecaseCrout (F, diag, m, n, A, n, P, Q);
         tim.stop();
         timc+=tim;
         FFLAS::fflas_delete( A);
-        FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasDense);
+        FFLAS::ReadMatrix (argv[2],F,m,n,A);
         timlud.clear();
 
         timlud.start();
-        R = FFPACK::PLUQ (F, diag, m, n, A, n, P, Q);
+        R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
         timlud.stop();
         timludc+=timlud;
         //		std::cerr<<"Fini LUdivine"<<std::endl;

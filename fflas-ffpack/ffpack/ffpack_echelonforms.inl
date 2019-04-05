@@ -41,8 +41,7 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
     if (LuTag == FFPACK::FfpackSlabRecursive)
         r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
     else{
-        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSHelper;
-        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, PSHelper);
+        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P);
         }
 
     if (transform){
@@ -63,8 +62,7 @@ inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size
     if (LuTag == FFPACK::FfpackSlabRecursive)
         r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
     else{
-        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSHelper;
-        r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt, PSHelper);
+        r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt);
         }
 
     if (transform){
