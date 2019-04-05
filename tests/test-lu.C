@@ -223,8 +223,8 @@ bool test_pluq (const Field & F,
     size_t * Q = fflas_new<size_t> (n);
 
     ForceCheck_PLUQ<Field> checker (G,m,n,B,lda);
-
-    size_t R = PLUQ (F, diag, m, n, B, lda, P, Q);
+FFLAS::ParSeqHelper::Sequential seqH;
+    size_t R = PLUQ (F, diag, m, n, B, lda, P, Q, seqH);
 
     try {
         checker.check(B,lda,diag,R,P,Q);

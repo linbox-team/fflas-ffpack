@@ -83,7 +83,8 @@ namespace FFPACK {
 
 
         size_t R(0);
-        R = PLUQ(F,Diag,M,N,A,lda,P,Q);
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSHelper;
+        R = PLUQ(F,Diag,M,N,A,lda,P,Q,PSHelper);
         if (R<M) return F.assign(det,F.zero);
 
         F.assign(det,F.one);

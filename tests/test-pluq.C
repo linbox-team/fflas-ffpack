@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------
 
 #define ENABLE_ALL_CHECKINGS 1
-
+//#include "omp.h"
 #define __FFPACK_LUDIVINE_CUTOFF 60
 #include <iostream>
 #include <iomanip>
@@ -48,7 +48,7 @@
 #include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/test-utils.h"
-
+#include "fflas-ffpack/fflas-ffpack-config.h"
 using namespace std;
 using namespace FFPACK;
 
@@ -58,7 +58,7 @@ typedef Givaro::Modular<Givaro::Integer> Field;
 
 int main(int argc, char** argv){
     //cerr<<setprecision(20);
-    int m,n;
+    size_t m,n;
     size_t R;
 
     if (argc!=4){
@@ -70,7 +70,7 @@ int main(int argc, char** argv){
     Field F(atof(argv[1]));
     Field::Element * A;
 
-    FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasAuto);
 
     size_t maxP, maxQ;
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv){
             FFLAS::fflas_delete( A);
             FFLAS::fflas_delete( RRP);
             FFLAS::fflas_delete( CRP);
-            FFLAS::ReadMatrix (argv[2],F,m,n,A);
+            FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasDense);
         }
 
         for (size_t j=0;j<maxP;j++)
@@ -110,14 +110,15 @@ int main(int argc, char** argv){
         tim.clear();
         tim.start();
 
-        R = FFPACK::PLUQ_basecaseCrout (F, diag, m, n, A, n, P, Q);
+        R = FFPACK::PLUQ_basecaseCrout (F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q);
         tim.stop();
         timc+=tim;
         FFLAS::fflas_delete( A);
-        FFLAS::ReadMatrix (argv[2],F,m,n,A);
+        FFLAS::ReadMatrix (argv[2],F,m,n,A,FFLAS::FflasDense);
         timlud.clear();
+
         timlud.start();
-        R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
+        R = FFPACK::PLUQ (F, diag, m, n, A, n, P, Q);
         timlud.stop();
         timludc+=timlud;
         //		std::cerr<<"Fini LUdivine"<<std::endl;
@@ -207,7 +208,7 @@ int main(int argc, char** argv){
     // cerr<<endl;
 
     Field::Element* B;
-    FFLAS::ReadMatrix (argv[2],F,m,n,B);
+    FFLAS::ReadMatrix (argv[2],F,m,n,B,FFLAS::FflasDense);
 
     bool fail = false;
     for (size_t i=0; i<(size_t)m; ++i)

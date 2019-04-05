@@ -114,10 +114,11 @@ namespace FFPACK {
                 inittime.stop(); _time = inittime;
                 Givaro::Timer pluqtime; pluqtime.start();
 #endif
+FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSHelper;
 #ifndef ENABLE_CHECKER_PLUQ
                 size_t R =
 #endif
-                FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
+                FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q,PSHelper);
 #ifdef TIME_CHECKER_CHARPOLY
                 pluqtime.stop();
                 std::cerr << "CHARPol server PLUQ : " << pluqtime << std::endl;

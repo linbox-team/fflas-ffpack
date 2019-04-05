@@ -52,7 +52,7 @@
 #include "sys/time.h"
 
 //#define BASECASE_K 256
-
+#include "fflas-ffpack/utils/test-utils.h"
 //#include "fflas-ffpack/ffpack/parallel.h"
 
 using namespace std;
@@ -84,7 +84,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
     Field::Element * L, *U;
     L = FFLAS::fflas_new<Field::Element>(m*R);
     U = FFLAS::fflas_new<Field::Element>(R*n);
-    ParSeqHelper::Parallel H;
+    ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> H;
 
     PARFOR1D (i,m*R, H, { F.init(L[i]); F.assign(L[i], F.zero); } );
     PARFOR1D (i,m*R, H, { F.init(U[i]); F.assign(U[i], F.zero); } );
@@ -120,7 +120,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
               errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
               << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
               << std::endl;
-              std::cerr << errs;
+//              std::cerr << errs;
               fail=true;
               }
              );
@@ -138,7 +138,8 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 int main(int argc, char** argv)
 {
 
-    int p, n, m, nbf;
+    size_t p, n, m;
+    int nbf;
 
     if (argc > 6){
         std::cerr<<"usage : PLUQ-rec-omp <p> <m> <n> <i> <file>"<<std::endl
@@ -175,11 +176,11 @@ int main(int argc, char** argv)
 
     // Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
 
-    ParSeqHelper::Parallel H;
+    ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> H;
 
     typename Field::Element* Acop;
     if (argc > 5) {
-        FFLAS::ReadMatrix (argv[5],F,m,n,Acop);
+        FFLAS::ReadMatrix (argv[5],F,m,n,Acop,FFLAS::FflasAuto);
     } else {
         Field::RandIter G(F);
         Acop = FFLAS::fflas_new<Field::Element>(m*n);
@@ -241,7 +242,7 @@ int main(int argc, char** argv)
 
         clock_gettime(CLOCK_REALTIME, &t0);
         PAR_BLOCK{
-            R = pPLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, NUM_THREADS);// Parallel PLUQ
+            R = PLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, H);// Parallel PLUQ
         }
         clock_gettime(CLOCK_REALTIME, &t1);
         delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
@@ -279,6 +280,7 @@ int main(int argc, char** argv)
         PP[j]=0;
     for (size_t j=0;j<maxQ;j++)
         QQ[j]=0;
+
     clock_gettime(CLOCK_REALTIME, &tt0);
     size_t R2 = PLUQ(F, diag, m, n, Acop, n, PP, QQ);
     clock_gettime(CLOCK_REALTIME, &tt1);
