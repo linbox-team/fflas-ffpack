@@ -120,8 +120,9 @@ typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,ty
        FFLAS::ftrmm(F,  FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, m,n,1.0, U, lda, L, lda);
        */
 
-
-    FFLAS::ParSeqHelper::Parallel> pWH (MAX_THREADS);
+    const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
+    const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
+    typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
     PAR_BLOCK{
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                       m,n,r, alpha, L,r, U,
@@ -166,8 +167,8 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 #pragma omp task shared(F, Q, U)
         FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 #pragma omp taskwait
-        //const FFLAS::CuttingStrategy method = FFLAS::ThreeD;
-        FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS);
+        const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
+        typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
 #pragma omp task shared(F, L, U, X)
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
                       F.one, L,R, U,n, F.zero, X,n, pWH);
@@ -319,3 +320,4 @@ int main(int argc, char** argv) {
 
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

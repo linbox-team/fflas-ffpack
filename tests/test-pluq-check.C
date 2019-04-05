@@ -85,9 +85,7 @@ int main(int argc, char** argv) {
         PAR_BLOCK { pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
 
         try {
-            //FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSHelper;
-            FFLAS::ParSeqHelper::Sequential PSHelper;
-            FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q, PSHelper);
+            FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
             std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification PASSED\n";
             pass++;
         } catch(FailurePLUQCheck &e) {

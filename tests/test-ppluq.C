@@ -242,7 +242,7 @@ int main(int argc, char** argv)
 
         clock_gettime(CLOCK_REALTIME, &t0);
         PAR_BLOCK{
-            R = PLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, H);// Parallel PLUQ
+            R = PLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, NUM_THREADS, H);// Parallel PLUQ
         }
         clock_gettime(CLOCK_REALTIME, &t1);
         delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
