@@ -211,6 +211,20 @@ namespace FFLAS {
            const OtherElement_ptr B, const size_t ldb,
            typename Field::Element_ptr A, const size_t lda);
 
+    /** finit
+     * \f$A \gets  initialized in F\f$.
+     * @param F field
+     * @param m number of rows
+     * @param n number of cols
+     * \param A matrix in \p F
+     * \param lda stride of \p A
+     * @internal
+     */
+    template<class Field, class OtherElement_ptr>
+    void
+    finit (const Field& F, const size_t m , const size_t n,
+           typename Field::Element_ptr A, const size_t lda);
+
     /** fconvert
      * \f$A \gets  B mod F\f$.
      * @param F field
@@ -522,7 +536,7 @@ namespace FFLAS {
      * @param lda leading dimension of \p A
      */
     template<class Field>
-    inline size_t bitsize(const Field& F, size_t M, size_t N, const typename Field::Element* A, size_t lda){
+    inline size_t bitsize(const Field& F, size_t M, size_t N, const typename Field::ConstElement_ptr A, size_t lda){
         Givaro::Integer min = F.minElement() ,max = F.maxElement();
         return std::max(max,-min).bitsize();
     }

@@ -28,6 +28,7 @@
 #define __FFLASFFPACK_checker_pluq_INL
 
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 #ifdef TIME_CHECKER_PLUQ
 #include <givaro/givtimer.h>
@@ -133,6 +134,8 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_PLUQ
             Givaro::Timer inittime; inittime.start();
 #endif
+            FFLAS::finit(F,n,v,1);
+            FFLAS::finit(F,m,w,1);
             FFLAS::frand(F,G,n,v,1);
 
             // w <-- A.v
