@@ -53,8 +53,8 @@ namespace FFPACK {
                    R, N, F.one, A, lda , B, ldb);
 
                 // Verifying that the system is consistent @todo: disable this check optionnally
-            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, N, R, F.mOne, A+R*lda, lda, B, ldb, F.One, B+R*ldb, ldb);
-            if (! fiszero (F, M-R, N, B+R*ldb, ldb)) *info = 1;
+            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, N, R, F.mOne, A+R*lda, lda, B, ldb, F.one, B+R*ldb, ldb);
+            if (! FFLAS::fiszero (F, M-R, N, B+R*ldb, ldb)) *info = 1;
 
                 // B <- U^-1 B
             ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
@@ -72,7 +72,7 @@ namespace FFPACK {
                    M, R, F.one, A, lda , B, ldb);
                 //  Verifying that the system is consistent @todo: disable this check optionnally
             fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, F.mOne, B, ldb, A+R, lda, F.one, B+R, ldb);
-            if (! fiszero (F, M, N-R, B+R, ldb)) *info = 1;
+            if (! FFLAS::fiszero (F, M, N-R, B+R, ldb)) *info = 1;
 
                 // B <- B L^-1
             ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
@@ -113,7 +113,7 @@ namespace FFPACK {
 
                     // Verifying that the system is consistent @todo: disable this check optionnally
                 fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, NRHS, R, F.mOne, A+R*lda, lda, W, ldw, F.one, W+R*ldw, ldw);
-                if (! fiszero (F, M-R, NRHS, W+R*ldw, ldw)) *info = 1;
+                if (! FFLAS::fiszero (F, M-R, NRHS, W+R*ldw, ldw)) *info = 1;
 
                     // B <- U^-1 B
                 ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
@@ -140,7 +140,7 @@ namespace FFPACK {
 
                     // Verifying that the system is consistent @todo: disable this check optionnally
                 fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, NRHS, R, F.mOne, A+R*lda, lda, X, ldx, F.one, X+R*ldx, ldx);
-                if (! fiszero (F, M-R, NRHS, X+R*ldx, ldx)) *info = 1;
+                if (! FFLAS::fiszero (F, M-R, NRHS, X+R*ldx, ldx)) *info = 1;
 
                     // B <- U^-1 B
                 ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
@@ -159,7 +159,7 @@ namespace FFPACK {
             if (M < N) {
                 W = FFLAS::fflas_new (F, NRHS, N);
                 ldw = N;
-                fassign (F,NRHS, N, B, ldb, W, ldw);
+                FFLAS::fassign (F,NRHS, N, B, ldb, W, ldw);
 
                     // B <- B Q^T
                 applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, N, W, ldw, Q);
@@ -172,17 +172,17 @@ namespace FFPACK {
                 fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.mOne,
                        W, ldw, A+R, lda, F.one, W+R, ldw);
 
-                if (! fiszero (F, NRHS, N-R, W+R, ldw)) *info = 1;
+                if (! FFLAS::fiszero (F, NRHS, N-R, W+R, ldw)) *info = 1;
 
                     // B <- B L^-1
                 ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
                        NRHS, R, F.one, A, lda , W, ldw);
 
                     // X <- B
-                fassign (F, NRHS, R, W, ldw, X, ldx);
-                fflas_delete (W);
+                FFLAS::fassign (F, NRHS, R, W, ldw, X, ldx);
+                FFLAS::fflas_delete (W);
 
-                fzero (F, NRHS, M-R, X+R, ldx);
+                FFLAS::fzero (F, NRHS, M-R, X+R, ldx);
 
                     // X <- X P^T
                 applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, M, X, ldx, P);
@@ -201,7 +201,7 @@ namespace FFPACK {
                 fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.mOne,
                        X, ldx, A+R, lda, F.one, X+R, ldx);
 
-                if (! fiszero (F, NRHS, N-R, X+R, ldx)) *info = 1;
+                if (! FFLAS::fiszero (F, NRHS, N-R, X+R, ldx)) *info = 1;
 
                 // B <- B L^-1
                 ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
