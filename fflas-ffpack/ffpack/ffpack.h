@@ -1160,6 +1160,21 @@ namespace FFPACK { /* Solutions */
     Rank( const Field& F, const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda) ;
 
+    template <class Field>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda,
+          const FFLAS::ParSeqHelper::Sequential seqH=FFLAS::ParSeqHelper::Sequential());
+
+    template <class Field, class Cut, class Param>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda,
+          const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH
+          =FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                           FFLAS::StrategyParameter::Threads>());
+
+
     /********/
     /* DET  */
     /********/
@@ -1340,12 +1355,21 @@ namespace FFPACK { /* Solutions */
      * rkprofile is allocated during the computation.
      * @returns R
      */
+
     template <class Field>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* &rkprofile,
-                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+                           const FFLAS::ParSeqHelper::Sequential seqH=FFLAS::ParSeqHelper::Sequential());
 
+    template <class Field, class Cut, class Param>
+    size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+                           const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH
+                           =FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                           FFLAS::StrategyParameter::Threads>());
 
     /**  @brief Computes the column rank profile of A.
      *
