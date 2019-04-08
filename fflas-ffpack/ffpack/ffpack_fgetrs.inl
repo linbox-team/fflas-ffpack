@@ -46,28 +46,6 @@ namespace FFPACK {
         *info =0;
         if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
-//             // Code for when A is LU decomposed with LUdivine
-//
-//             solveLB2 (F, FFLAS::FflasLeft, M, N, R, A, lda, Q, B, ldb);
-
-//             applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-//                     N, 0,(int) R, B, ldb, Q);
-
-//             bool consistent = true;
-//             for (size_t i = R; i < M; ++i)
-//                 for (size_t j = 0; j < N; ++j)
-//                     if (!F.isZero (*(B + i*ldb + j)))
-//                         consistent = false;
-//             if (!consistent) {
-//                 *info = 1;
-//             }
-//             // The last rows of B are now supposed to be 0
-// #if 0
-//             for (size_t i = R; i < M; ++i)
-//                 for (size_t j = 0; j < N; ++j)
-//                     *(B + i*ldb + j) = F.zero;
-// #endif
-
                 // B <- P^T B
             applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, M, B, ldb, P);
                 // B <- L^-1 B
@@ -122,141 +100,117 @@ namespace FFPACK {
 
         if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
-            // Initializing X to 0 (to be optimized)
-            FFLAS::fzero(F,N,NRHS,X,ldx);
-            // for (size_t i = 0; i <N; ++i)
-            // for (size_t j=0; j< NRHS; ++j)
-            // F.assign (*(X+i*ldx+j), F.zero);
-
             if (M > N){ // Cannot copy B into X
                 W = FFLAS::fflas_new (F, M, NRHS);
                 ldw = NRHS;
+
                 FFLAS::fassign(F,M,NRHS,B,ldb,W,ldw);
+                    // B <- P^T B
+                applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, NRHS, 0, M, W, ldw, P);
+                    // B <- L^-1 B
+                ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
+                       R, NRHS, F.one, A, lda , W, ldw);
 
-                solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
+                    // Verifying that the system is consistent @todo: disable this check optionnally
+                fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, NRHS, R, F.mOne, A+R*lda, lda, W, ldw, F.one, W+R*ldw, ldw);
+                if (! fiszero (F, M-R, NRHS, W+R*ldw, ldw)) *info = 1;
 
-                applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-                        NRHS, 0,(int) R, W, ldw, Q);
-
-                bool consistent = true;
-                for (size_t i = R; i < M; ++i)
-                    for (size_t j = 0; j < NRHS; ++j)
-                        if (!F.isZero (*(W + i*ldw + j)))
-                            consistent = false;
-                if (!consistent) {
-                    *info = 1;
-                    FFLAS::fflas_delete (W);
-                    return X;
-                }
-                // Here the last rows of W are supposed to be 0
-
+                    // B <- U^-1 B
                 ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
                        R, NRHS, F.one, A, lda , W, ldw);
 
-                FFLAS::fassign(F,R,NRHS,W,ldw,X,ldx);
-
+                FFLAS::fassign (F,R,NRHS,W,ldw,X,ldx);
                 FFLAS::fflas_delete (W);
-                applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-                        NRHS, 0,(int) R, X, ldx, P);
+
+                FFLAS::fzero (F, N-R, NRHS, X+R, ldx);
+
+                    // B <- Q^T B
+                applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, N, X, ldx, Q);
 
             }
             else { // Copy B to X directly
 
-                FFLAS::fassign(F,M,NRHS,B,ldb,X,ldx);
+                FFLAS::fassign (F,M,NRHS,B,ldb,X,ldx);
 
-                solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
+                    // B <- P^T B
+                applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, NRHS, 0, M, X, ldx, P);
+                    // B <- L^-1 B
+                ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
+                       R, NRHS, F.one, A, lda , X, ldx);
 
-                applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-                        NRHS, 0,(int) R, X, ldx, Q);
+                    // Verifying that the system is consistent @todo: disable this check optionnally
+                fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, NRHS, R, F.mOne, A+R*lda, lda, X, ldx, F.one, X+R*ldx, ldx);
+                if (! fiszero (F, M-R, NRHS, X+R*ldx, ldx)) *info = 1;
 
-                bool consistent = true;
-                for (size_t i = R; i < M; ++i)
-                    for (size_t j = 0; j < NRHS; ++j)
-                        if (!F.isZero (*(X + i*ldx + j)))
-                            consistent = false;
-                if (!consistent) {
-                    *info = 1;
-                    return X;
-                }
-                // Here the last rows of W are supposed to be 0
-
+                    // B <- U^-1 B
                 ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
                        R, NRHS, F.one, A, lda , X, ldx);
 
-                applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-                        NRHS, 0,(int) R, X, ldx, P);
+                FFLAS::fzero (F, N-M, NRHS, X+M, ldx);
+
+                    // B <- Q^T B
+                applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, N, X, ldx, Q);
             }
             return X;
 
         }
         else { // Right Looking X A = B
 
-            FFLAS::fzero(F,NRHS,M,X,ldx);
-            // for (size_t i = 0; i <NRHS; ++i)
-            // for (size_t j=0; j< M; ++j)
-            // F.assign (*(X+i*ldx+j), F.zero);
-
             if (M < N) {
                 W = FFLAS::fflas_new (F, NRHS, N);
                 ldw = N;
-                FFLAS::fassign (F,NRHS, N, B, ldb, W, ldw);
+                fassign (F,NRHS, N, B, ldb, W, ldw);
 
-                applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                        NRHS, 0,(int) R, W, ldw, P);
+                    // B <- B Q^T
+                applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, N, W, ldw, Q);
 
+                    // B <- B U^-1
                 ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
                        NRHS, R, F.one, A, lda , W, ldw);
 
-                fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.one,
-                       W, ldw, A+R, lda, F.mOne, W+R, ldw);
+                    // Verifying that the system is consistent @todo: disable this check optionnally
+                fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.mOne,
+                       W, ldw, A+R, lda, F.one, W+R, ldw);
 
-                bool consistent = true;
-                for (size_t i = 0; i < NRHS; ++i)
-                    for (size_t j = R; j < N; ++j)
-                        if (!F.isZero (*(W + i*ldw + j)))
-                            consistent = false;
-                if (!consistent) {
-                    *info = 1;
-                    FFLAS::fflas_delete (W);
-                    return X;
-                }
-                // The last N-R cols of W are now supposed to be 0
-                FFLAS::fassign (F, NRHS,R,  W , ldb, X ,ldx);
-                FFLAS::fflas_delete (W);
-                applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                        NRHS, 0,(int) R, X, ldx, Q);
+                if (! fiszero (F, NRHS, N-R, W+R, ldw)) *info = 1;
 
-                solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
+                    // B <- B L^-1
+                ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
+                       NRHS, R, F.one, A, lda , W, ldw);
 
-            }
-            else { // M >=N
-                FFLAS::fassign(F,NRHS,N,B,ldb,X,ldx);
+                    // X <- B
+                fassign (F, NRHS, R, W, ldw, X, ldx);
+                fflas_delete (W);
 
-                applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                        NRHS, 0,(int) R, X, ldx, P);
+                fzero (F, NRHS, M-R, X+R, ldx);
 
+                    // X <- X P^T
+                applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, M, X, ldx, P);
+
+            } else { // M >=N
+                FFLAS::fassign (F, NRHS, N, B, ldb, X, ldx);
+
+                    // B <- B Q^T
+                applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, N, X, ldx, Q);
+
+                    // B <- B U^-1
                 ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
                        NRHS, R, F.one, A, lda , X, ldx);
 
-                fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.one,
-                       X, ldx, A+R, lda, F.mOne, X+R, ldx);
+                    // Verifying that the system is consistent @todo: disable this check optionnally
+                fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.mOne,
+                       X, ldx, A+R, lda, F.one, X+R, ldx);
 
-                bool consistent = true;
-                for (size_t i = 0; i < NRHS; ++i)
-                    for (size_t j = R; j < N; ++j)
-                        if (!F.isZero (*(X + i*ldx + j)))
-                            consistent = false;
-                if (!consistent) {
-                    *info = 1;
-                    return X;
-                }
-                // The last N-R cols of W are now supposed to be 0
+                if (! fiszero (F, NRHS, N-R, X+R, ldx)) *info = 1;
 
-                applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                        NRHS, 0,(int) R, X, ldx, Q);
+                // B <- B L^-1
+                ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
+                       NRHS, R, F.one, A, lda , X, ldx);
 
-                solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
+                FFLAS::fzero (F, NRHS, M-N, X+N, ldx);
 
+                    // X <- X P^T
+                applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, M, X, ldx, P);
             }
             return X;
         }
