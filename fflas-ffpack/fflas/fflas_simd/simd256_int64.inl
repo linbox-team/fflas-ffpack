@@ -496,7 +496,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 //    static INLINE vect_t mod(vect_t &C, const vect_t &P, const __m256d &INVP, const vect_t &NEGP, const vect_t &POW50REM,
 //                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
 static INLINE vect_t mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
-                                                     const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T); 
+                                                     const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T);
 
 protected:
     /* return the sign where vect_t is seen as eight int32_t */
@@ -765,11 +765,14 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P
     vect_t Cq50, Cr50, Ceq;
     __m256d nCmod;
 
-    Cq50 = sra<50>(C);
-    Cr50 = set1(0x3FFFFFFFFFFFFLL);
-    Cr50 = vand(C, Cr50);
+    // assert(p[i] <  2**31, for all i)
+    // nothing so special with 50; could be something else
 
-    Ceq = fmadd(Cr50, Cq50, POW50REM);
+    Cq50 = sra<50>(C);                      // Cq50[i] < 2**14
+    Cr50 = set1(0x3FFFFFFFFFFFFLL);
+    Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
+
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**45 + 2**50 < 2**51; Ceq[i] ~ Ceq mod p
 
 #if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
     nCmod = _mm256_cvtepi64_pd(Ceq);
