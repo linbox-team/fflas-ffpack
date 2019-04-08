@@ -136,13 +136,13 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
     */
     inline int64_t monfmod(int64_t A, int64_t p, double invp, int64_t pow50rem)
     {
-        // assert(p < 1LL << 31);
+        // assert(p < 1LL << 33);
         // nothing so special with 50; could be something else
 
         int64_t Aq50 = A >> 50;                         // Aq50 < 2**14
         int64_t Ar50 = A & 0x3FFFFFFFFFFFFLL;           // Ar50 < 2**50
 
-        int64_t Aeq  = Aq50 * pow50rem + Ar50;          // Aeq < 2**45 + 2**50 < 2**51; Aeq ~ A mod p
+        int64_t Aeq  = Aq50 * pow50rem + Ar50;          // Aeq < 2**47 + 2**50 < 2**51; Aeq ~ A mod p
         double nAmod = ((double)Aeq) * invp;
         nAmod        = Aeq - floor(nAmod) * p;
 
@@ -623,7 +623,6 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             return;
         }
 
-#if 1 // disabled for now (PK)
         long st = long(T) % simd::alignment;
 
         // the array T is not aligned (process few elements s.t. (T+i) is 32 bytes aligned)
@@ -692,7 +691,6 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             }
             T[i] += (T[i] < min) ? H.p : 0;
         }
-#endif
     }
 #endif
 

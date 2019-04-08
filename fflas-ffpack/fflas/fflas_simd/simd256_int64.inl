@@ -759,20 +759,19 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P,
 }
 
 // FIXME why cannot use Simd256<double>::vect_t in the declaration instead of __m256d?
-// TODO test it
+// --**~~~~ Only suitable for use with Modular<int64_t> or ModularBalanced<int64_t>, so p <= max_cardinality < 2**33 ~~~~~**--
 INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
                                                      const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T) {
     vect_t Cq50, Cr50, Ceq;
     __m256d nCmod;
 
-    // assert(p[i] <  2**31, for all i)
     // nothing so special with 50; could be something else
 
     Cq50 = sra<50>(C);                      // Cq50[i] < 2**14
     Cr50 = set1(0x3FFFFFFFFFFFFLL);
     Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
 
-    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**45 + 2**50 < 2**51; Ceq[i] ~ Ceq mod p
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ Ceq mod p
 
 #if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
     nCmod = _mm256_cvtepi64_pd(Ceq);
@@ -788,9 +787,13 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P
 #if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
     C = _mm256_cvtpd_epi64(nCmod);
 #else
-    // the result is small enough for this to work?
-    __m128i Cp = _mm256_cvttpd_epi32(nCmod);
-    C = _mm256_cvtepi32_epi64(Cp);
+    // If we could guarantee that p < 2**31 one could vectorise the conversion as below
+    // right now it's not the case
+//    __m128i Cp = _mm256_cvttpd_epi32(nCmod);
+//    C = _mm256_cvtepi32_epi64(Cp);
+    double r[4];
+    _mm256_storeu_pd(r, nCmod);
+    C = set((int64_t)r[0],(int64_t)r[1],(int64_t)r[2],(int64_t)r[3]);
 #endif
 
     return C;
