@@ -57,7 +57,7 @@ bool test_square_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, s
         ldb = ldx = ldr = bcols;
     } else {
         ldb = ldx = ldr = bcols+(rand() % 13);
-        B = fflas_new (F, brows,bcols);
+        B = fflas_new (F, brows,ldb);
         if (r==m)
             RandomMatrix(F, brows, bcols, B, ldb, G);
         else{
@@ -69,8 +69,8 @@ bool test_square_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, s
         }
     }
     Acop = fflas_new(F, m, lda);
-    X = fflas_new(F, brows, bcols);
-    R = fflas_new(F, brows, bcols);
+    X = fflas_new(F, brows, ldx);
+    R = fflas_new(F, brows, ldr);
     fassign (F, brows, bcols, B,ldb, X, ldx);
     fassign (F, m, m, A, lda, Acop, lda);
 
@@ -111,7 +111,7 @@ bool test_rect_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, siz
         ldb = ldx = ldr = bcols;
     } else {
         ldb = ldx = ldr = bcols+(rand() % 13);
-        B = fflas_new (F, brows,bcols);
+        B = fflas_new (F, brows,ldb);
         if (r==std::min(m,n))
             RandomMatrix(F, brows, bcols, B, ldb, G);
         else{
@@ -124,8 +124,8 @@ bool test_rect_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, siz
     }
 
     Acop = fflas_new(F, m, lda);
-    X = fflas_new(F, brows, bcols);
-    R = fflas_new(F, brows, bcols);
+    X = fflas_new(F, brows, ldx);
+    R = fflas_new(F, brows, ldr);
     fassign (F, brows, bcols, B,ldb, X, ldx);
     fassign (F, m, n, A, lda, Acop, lda);
 
