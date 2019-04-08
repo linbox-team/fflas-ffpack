@@ -39,7 +39,7 @@ using namespace FFPACK;
 template <class Field,  class RandIter>
 bool test_square_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, size_t m, size_t k, size_t r, RandIter& G){
 
-    typename Field::Element_ptr A, B, X, Acop, R;
+    typename Field::Element_ptr A, B, X, Acop, R=NULL;
     size_t lda, ldb, ldx, ldr, brows, bcols;
     if (side == FflasLeft){brows = m; bcols = k;}
     else {brows = k; bcols = m;}
@@ -93,7 +93,7 @@ bool test_square_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, s
 template <class Field,  class RandIter>
 bool test_rect_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, size_t m, size_t n, size_t k, size_t r, RandIter& G){
 
-    typename Field::Element_ptr A, B, X, Acop, R;
+    typename Field::Element_ptr A, B, X, Acop, R=NULL;
     size_t lda, ldb, ldx, ldr, brows, bcols;
     if (side == FflasLeft) {brows = n; bcols = k;}
     else {brows = k; bcols = m;}
