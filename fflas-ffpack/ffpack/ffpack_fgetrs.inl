@@ -46,58 +46,62 @@ namespace FFPACK {
         *info =0;
         if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
-            solveLB2 (F, FFLAS::FflasLeft, M, N, R, A, lda, Q, B, ldb);
+//             // Code for when A is LU decomposed with LUdivine
+//
+//             solveLB2 (F, FFLAS::FflasLeft, M, N, R, A, lda, Q, B, ldb);
 
-            applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-                    N, 0,(int) R, B, ldb, Q);
+//             applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+//                     N, 0,(int) R, B, ldb, Q);
 
-            bool consistent = true;
-            for (size_t i = R; i < M; ++i)
-                for (size_t j = 0; j < N; ++j)
-                    if (!F.isZero (*(B + i*ldb + j)))
-                        consistent = false;
-            if (!consistent) {
-                *info = 1;
-            }
-            // The last rows of B are now supposed to be 0
-#if 0
-            for (size_t i = R; i < M; ++i)
-                for (size_t j = 0; j < N; ++j)
-                    *(B + i*ldb + j) = F.zero;
-#endif
+//             bool consistent = true;
+//             for (size_t i = R; i < M; ++i)
+//                 for (size_t j = 0; j < N; ++j)
+//                     if (!F.isZero (*(B + i*ldb + j)))
+//                         consistent = false;
+//             if (!consistent) {
+//                 *info = 1;
+//             }
+//             // The last rows of B are now supposed to be 0
+// #if 0
+//             for (size_t i = R; i < M; ++i)
+//                 for (size_t j = 0; j < N; ++j)
+//                     *(B + i*ldb + j) = F.zero;
+// #endif
 
-            ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
+                // B <- P^T B
+            applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, M, B, ldb, P);
+                // B <- L^-1 B
+            ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
                    R, N, F.one, A, lda , B, ldb);
 
-            applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-                    N, 0,(int) R, B, ldb, P);
+                // Verifying that the system is consistent @todo: disable this check optionnally
+            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-R, N, R, F.mOne, A+R*lda, lda, B, ldb, F.One, B+R*ldb, ldb);
+            if (! fiszero (F, M-R, N, B+R*ldb, ldb)) *info = 1;
+
+                // B <- U^-1 B
+            ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
+                   R, N, F.one, A, lda , B, ldb);
+                // B <- P^T B
+            applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, M, B, ldb, Q);
 
         }
         else { // Right Looking X A = B
 
-            applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                    M, 0,(int) R, B, ldb, P);
-
+                // B <- B Q^T
+            applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, N, B, ldb, Q);
+                // B <- B U^-1
             ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
                    M, R, F.one, A, lda , B, ldb);
+                //  Verifying that the system is consistent @todo: disable this check optionnally
+            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, F.mOne, B, ldb, A+R, lda, F.one, B+R, ldb);
+            if (! fiszero (F, M, N-R, B+R, ldb)) *info = 1;
 
-            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, F.one,
-                   B, ldb, A+R, lda, F.mOne, B+R, ldb);
+                // B <- B L^-1
+            ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
+                   M, R, F.one, A, lda , B, ldb);
 
-            bool consistent = true;
-            for (size_t i = 0; i < M; ++i)
-                for (size_t j = R; j < N; ++j)
-                    if (!F.isZero (*(B + i*ldb + j)))
-                        consistent = false;
-            if (!consistent) {
-                *info = 1;
-            }
-            // The last cols of B are now supposed to be 0
-
-            applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                    M, 0,(int) R, B, ldb, Q);
-
-            solveLB2 (F, FFLAS::FflasRight, M, N, R, A, lda, Q, B, ldb);
+                // B <- B P^T
+            applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, M, B, ldb, P);
         }
     }
 

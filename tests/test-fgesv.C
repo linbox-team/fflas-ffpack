@@ -31,14 +31,14 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define __FFLASFFPACK_DEBUG 1
+#define __FFLASFFPACK_DEBUG 1
 #define TIME 1
 
 #include <iomanip>
 #include <iostream>
 using namespace std;
 
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -50,7 +50,7 @@ typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 
-    int n,m,mb,nb;
+    size_t  n,m,mb,nb;
     cerr<<setprecision(10);
 
     if (argc != 6)	{
