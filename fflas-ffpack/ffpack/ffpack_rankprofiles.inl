@@ -74,16 +74,32 @@ namespace FFPACK{
     template <class Field>
     inline size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                                      typename Field::Element_ptr A, const size_t lda,
-                                     size_t* &rkprofile,
-                                     const FFPACK_LU_TAG LuTag){
+                                     size_t* &rkprofile, const FFPACK_LU_TAG LuTag,
+                                     const FFLAS::ParSeqHelper::Sequential seqH){
+        size_t R = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
+        return R;
+    }
 
+    template <class Field, class Cut, class Param>
+    inline size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                                     typename Field::Element_ptr A, const size_t lda,
+                                     size_t* &rkprofile, const FFPACK_LU_TAG LuTag,
+                                     const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH){
+        size_t R = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, parH);
+        return R;
+    }
+
+    template <class Field, class PSHelper>
+    size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH){
 
         size_t *P = FFLAS::fflas_new<size_t>(M);
         size_t *Q = FFLAS::fflas_new<size_t>(N);
         size_t R;
 
         if (LuTag == FfpackSlabRecursive){
-            R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
+            R = PLUQ (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q, psH);
         } else
             R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
 
@@ -95,6 +111,7 @@ namespace FFPACK{
         FFLAS::fflas_delete (Q);
         return R;
     }
+                              
 
     inline void RankProfileFromLU (const size_t* Q, const size_t N, const size_t R,
                                    size_t* rkprofile, const FFPACK_LU_TAG LuTag){
