@@ -419,7 +419,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             //			std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
             for (; i < n ; i++)
             {
-                    T[i]=reduce<Field>(U[i],H);
+                T[i]=reduce<Field>(U[i],H);
                 if (!positive)
                 {
                     T[i]-=(T[i]>max)?H.p:0;
@@ -439,7 +439,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
             {
-                    T[i] = reduce<Field>(U[i],H);
+                T[i] = reduce<Field>(U[i],H);
                 if (!positive)
                 {
                     T[i] -= (T[i] > max) ? H.p : 0;
@@ -469,7 +469,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         for (;i<n;i++)
         {
 
-                T[i] = reduce<Field>(U[i],H);
+            T[i] = reduce<Field>(U[i],H);
             if (!positive)
             {
                 T[i] -= (T[i] > max) ? H.p : 0;
