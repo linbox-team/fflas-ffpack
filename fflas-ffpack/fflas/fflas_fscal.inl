@@ -62,7 +62,7 @@ namespace FFLAS { namespace vectorised {
         {
             for (; i < n ; i++)
             {
-                T[i]=monfmod(alpha*U[i], p);
+                T[i]=reduce(alpha*U[i], p);
                 T[i] -= (T[i] > max) ? p : 0;
                 T[i] += (T[i] < min) ? p : 0;
             }
@@ -81,7 +81,7 @@ namespace FFLAS { namespace vectorised {
         { // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j+=sizeof(Element), i++)
             {
-                T[i] = monfmod(alpha*U[i], p);
+                T[i] = reduce(alpha*U[i], p);
                 T[i] -= (T[i] > max) ? p : 0;
                 T[i] += (T[i] < min) ? p : 0;
             }
@@ -100,7 +100,7 @@ namespace FFLAS { namespace vectorised {
         // perform the last elt from T without SIMD
         for (; i < n ; i++)
         {
-            T[i] = monfmod(alpha*U[i],p);
+            T[i] = reduce(alpha*U[i],p);
             T[i] -= (T[i] > max) ? p : 0;
             T[i] += (T[i] < min) ? p : 0;
         }
@@ -119,7 +119,7 @@ namespace FFLAS { namespace vectorised {
         {
             for (; i < n ; i++)
             {
-                T[i]=monfmod(alpha*U[i], p);
+                T[i]=reduce(alpha*U[i], p);
                 T[i] -= (T[i] > max) ? p : 0;
                 T[i] += (T[i] < min) ? p : 0;
             }
