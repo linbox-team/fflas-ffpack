@@ -317,20 +317,19 @@ ftrtrm_modular_double (const double p, const FFLAS::FFLAS_SIDE side, const enum 
 
 /* PLUQ */
 
-template<class Field, class PSHelper>
 size_t
 PLUQ_modular_double (const double p, const enum FFLAS::FFLAS_DIAG Diag,
                      const size_t M, const size_t N,
                      double * A, const size_t lda,
                      size_t*P, size_t *Q
-                     , bool positive, PSHelper psH)
+                     , bool positive)
 {
     if (positive) {
         Modular<double> F(p);
-        return PLUQ(F,(enum FFLAS::FFLAS_DIAG)Diag,M,N,A,lda,P,Q, psH);
+        return PLUQ(F,(enum FFLAS::FFLAS_DIAG)Diag,M,N,A,lda,P,Q);
     } else {
         ModularBalanced<double> F(p);
-        return PLUQ(F,(enum FFLAS::FFLAS_DIAG)Diag,M,N,A,lda,P,Q, psH);
+        return PLUQ(F,(enum FFLAS::FFLAS_DIAG)Diag,M,N,A,lda,P,Q);
     }
 }
 
