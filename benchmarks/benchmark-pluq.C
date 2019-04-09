@@ -245,7 +245,8 @@ int main(int argc, char** argv) {
         if (par){
 
             PAR_BLOCK{
-                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, t, parH);
+                parH.set_numthreads(t);
+                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, parH);
             }
         }
         else{
