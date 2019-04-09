@@ -1216,8 +1216,8 @@ namespace FFPACK { /* Solutions */
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
          size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit,
-         const FFLAS::ParSeqHelper::Sequential seqH=FFLAS::ParSeqHelper::Sequential());
+         const FFLAS::FFLAS_DIAG Diag,
+         const FFLAS::ParSeqHelper::Sequential seqH);
 
     template <class Field, class Cut, class Param>
     typename Field::Element&
@@ -1225,9 +1225,8 @@ namespace FFPACK { /* Solutions */
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
          size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit,
-         const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH=FFLAS::ParSeqHelper::Parallel<
-         FFLAS::StructureHelper::Recursive,FFLAS::StrategyParameter::Threads>());
+         const FFLAS::FFLAS_DIAG Diag,
+         const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
 
 
     /** @brief Returns the determinant of the given matrix.

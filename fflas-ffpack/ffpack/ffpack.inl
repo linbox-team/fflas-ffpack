@@ -148,13 +148,10 @@ namespace FFPACK {
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda)
     {
-        size_t *P = FFLAS::fflas_new<size_t>(N);
-        size_t *Q = FFLAS::fflas_new<size_t>(M);
+
         typename Field::Element det; F.init(det);
         FFLAS::ParSeqHelper::Sequential seqH;
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,FFLAS::FflasNonUnit,seqH);
-        FFLAS::fflas_delete( P);
-        FFLAS::fflas_delete( Q);
+        det = FFPACK::Det(F,M,N,A,lda,seqH);
         return det;
     }
 
@@ -163,12 +160,9 @@ namespace FFPACK {
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH)
     {
-        size_t *P = FFLAS::fflas_new<size_t>(N);
-        size_t *Q = FFLAS::fflas_new<size_t>(M);
+
         typename Field::Element det; F.init(det);
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,FFLAS::FflasNonUnit,seqH);
-        FFLAS::fflas_delete( P);
-        FFLAS::fflas_delete( Q);
+        det = FFPACK::Det(F,M,N,A,lda,seqH);
         return det;
     }
 
@@ -177,12 +171,9 @@ namespace FFPACK {
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
     {
-        size_t *P = FFLAS::fflas_new<size_t>(N);
-        size_t *Q = FFLAS::fflas_new<size_t>(M);
+
         typename Field::Element det; F.init(det);
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,parH);
-        FFLAS::fflas_delete( P);
-        FFLAS::fflas_delete( Q);
+        det = FFPACK::Det(det,F,M,N,A,lda,parH);
         return det;
     }
 
