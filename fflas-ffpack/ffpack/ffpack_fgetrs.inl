@@ -79,7 +79,7 @@ namespace FFPACK {
                    M, R, F.one, A, lda , B, ldb);
 
                 // B <- B P^T
-            applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, M, B, ldb, P);
+            applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, N, B, ldb, P);
         }
     }
 
