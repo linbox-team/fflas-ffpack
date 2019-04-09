@@ -493,10 +493,8 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     template <bool overflow, bool poweroftwo, int8_t shifter>
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
-//    static INLINE vect_t mod(vect_t &C, const vect_t &P, const __m256d &INVP, const vect_t &NEGP, const vect_t &POW50REM,
-//                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
-static INLINE vect_t mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
-                                                     const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T);
+    static INLINE vect_t mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
+                             const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T);
 
 protected:
     /* return the sign where vect_t is seen as eight int32_t */
@@ -771,7 +769,7 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P
     Cr50 = set1(0x3FFFFFFFFFFFFLL);
     Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
 
-    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ Ceq mod p
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ C[i] mod p
 
 #if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
     nCmod = _mm256_cvtepi64_pd(Ceq);
@@ -792,7 +790,7 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P
 //    __m128i Cp = _mm256_cvttpd_epi32(nCmod);
 //    C = _mm256_cvtepi32_epi64(Cp);
     double r[4];
-    _mm256_storeu_pd(r, nCmod);
+    _mm256_storeu_pd(r, nCmod); // could be changed to store if guaranteed to be aligned
     C = set((int64_t)r[0],(int64_t)r[1],(int64_t)r[2],(int64_t)r[3]);
 #endif
 

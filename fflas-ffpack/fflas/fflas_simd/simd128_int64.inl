@@ -452,6 +452,8 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
     template <bool overflow, bool poweroftwo, int8_t shifter>
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+    static INLINE vect_t mod(vect_t &C, const __m128d &P, const __m128d &INVP, const __m128d &NEGP, const vect_t &POW50REM,
+                             const __m128d &MIN, const __m128d &MAX, __m128d &Q, __m128d &T);
 
 protected:
     /* return the sign where vect_t is seen as four int32_t */
@@ -719,6 +721,43 @@ INLINE CONST vect_t Simd128_impl<true,true,true,8>::mod(vect_t &C, const vect_t 
     }
 #endif
     NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+    return C;
+}
+
+// FIXME why cannot use Simd128<double>::vect_t in the declaration instead of __m128d?
+// --**~~~~ Only suitable for use with Modular<int64_t> or ModularBalanced<int64_t>, so p <= max_cardinality < 2**33 ~~~~~**--
+INLINE vect_t Simd128_impl<true, true, true, 8>::mod(vect_t &C, const __m128d &P, const __m128d &INVP, const __m128d &NEGP, const vect_t &POW50REM,
+                                                     const __m128d &MIN, const __m128d &MAX, __m128d &Q, __m128d &T) {
+    vect_t Cq50, Cr50, Ceq;
+    __m128d nCmod;
+
+    // nothing so special with 50; could be something else
+
+    Cq50 = sra<50>(C);                      // Cq50[i] < 2**14
+    Cr50 = set1(0x3FFFFFFFFFFFFLL);
+    Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
+
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ C[i] mod p
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    nCmod = _mm_cvtepi64_pd(Ceq);
+#else
+    // ><
+    Converter cC;
+    cC.v = Ceq;
+    nCmod = _mm_set_pd((double)cC.t[1],(double)cC.t[0]);
+#endif
+
+    nCmod = Simd128<double>::mod(nCmod, P, INVP, NEGP, MIN, MAX, Q, T);
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    C = _mm_cvtpd_epi64(nCmod);
+#else
+    double r[2];
+    _mm_storeu_pd(r, nCmod); // could be changed to store if guaranteed to be aligned
+    C = set((int64_t)r[0],(int64_t)r[1]);
+#endif
+
     return C;
 }
 
