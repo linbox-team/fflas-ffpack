@@ -27,6 +27,14 @@
 #define __FFLASFFPACK_ffpack_rank_profiles_INL
 
 namespace FFPACK{
+    template <class Field>
+    inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* &rkprofile, const FFPACK_LU_TAG LuTag){
+        FFLAS::ParSeqHelper::Sequential seqH;
+        size_t R = FFPACK::RowRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
+        return R;
+    }
 
     template <class Field>
     inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
@@ -68,6 +76,15 @@ namespace FFPACK{
 
         FFLAS::fflas_delete (Q);
         FFLAS::fflas_delete (P);
+        return R;
+    }
+
+    template <class Field>
+    inline size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                                     typename Field::Element_ptr A, const size_t lda,
+                                     size_t* &rkprofile, const FFPACK_LU_TAG LuTag){
+        FFLAS::ParSeqHelper::Sequential seqH;
+        size_t R = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
         return R;
     }
 
