@@ -533,9 +533,6 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 
     static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
-    template <bool overflow, bool poweroftwo, int8_t shifter>
-    static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                             const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
     static INLINE vect_t mod(vect_t &C, const __m512d &P, const __m512d &INVP, const __m512d &NEGP, const vect_t &POW50REM,
                              const __m512d &MIN, const __m512d &MAX, __m512d &Q, __m512d &T);
 
@@ -784,39 +781,6 @@ INLINE CONST vect_t Simd512_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
     x1 = sub(x1, x0);
     // end fixing
     return x1;
-}
-
-template <bool overflow, bool poweroftwo, int8_t shifter>
-INLINE vect_t Simd512_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
-#ifdef __INTEL_COMPILER
-    // Works fine with ICC 15.0.1 - A.B.
-    C = _mm512_rem_epi64(C, P);
-#else
-    if (poweroftwo) {
-        Q = srl<63>(C);
-        vect_t un = set1(1);
-        T = sub(sll<shifter>(un), un);
-        Q = add(C, vand(Q, T));
-        Q = sll<shifter>(srl<shifter>(Q));
-        C = sub(C, Q);
-        Q = vand(greater(zero(), Q), P);
-        C = add(C, Q);
-    } else {
-        Q = mulhi_fast(C, magic);
-        if (overflow) {
-            Q = add(Q, C);
-        }
-        Q = sra<shifter>(Q);
-        vect_t q1 = Simd512_impl<true, true, false, 8>::mulx(Q, P);
-        vect_t q2 = sll<32>(Simd512_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
-        C = sub(C, add(q1, q2));
-        T = greater_eq(C, P);
-        C = sub(C, vand(T, P));
-    }
-#endif
-    NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
-    return C;
 }
 
 // FIXME why cannot use Simd512<double>::vect_t in the declaration instead of __m512d?
