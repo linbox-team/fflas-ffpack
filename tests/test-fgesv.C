@@ -241,10 +241,10 @@ int main(int argc, char** argv){
 
     Givaro::Integer q = -1;
     size_t b = 0;
-    size_t m = 197;
-    size_t n = 280;
+    size_t m = 257;
+    size_t n = 210;
     size_t k = 112;
-    size_t r = 107;
+    size_t r = 127;
     size_t iters = 4 ;
     bool loop=false;
     uint64_t seed = getSeed();
