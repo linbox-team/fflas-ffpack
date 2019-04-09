@@ -86,7 +86,7 @@ namespace FFLAS {
            typename Field::Element_ptr X, const size_t incX);
 
     /** finit
-     * \f$x \gets  initialized in F\f$.
+     * Initializes \p X in \p F$.
      * @param F field
      * @param n size of the vectors
      * \param X vector in \p F

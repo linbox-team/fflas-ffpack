@@ -212,7 +212,7 @@ namespace FFLAS {
            typename Field::Element_ptr A, const size_t lda);
 
     /** finit
-     * \f$A \gets  initialized in F\f$.
+     * Initializes \p A in \p F$.
      * @param F field
      * @param m number of rows
      * @param n number of cols
