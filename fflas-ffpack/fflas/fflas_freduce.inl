@@ -61,17 +61,28 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         return A % B; // B > 0
     }
 
-    template<>
-    inline float monfmod(float A, float B)
+    inline float monfmod(float A, float B, float invB, float min, float max)
     {
-        return fmodf(A,B);
+        float Q = A * invB;
+        Q = floorf(Q);
+        A = A - Q*B;
+        A = A < min ? A + B : A;
+        A = A > max ? A - B : A;
+        return A;
+//        return fmodf(A,B);
     }
 
-    template<>
-    inline double monfmod(double A, double B)
+    inline double monfmod(double A, double B, double invB, double min, double max)
     {
         //std::cerr<<"fmod"<<std::endl;
-        return fmod(A,B);
+        double Q = A * invB;
+        Q = floor(Q);
+        A = A - Q*B;
+        A = A < min ? A + B : A;
+        A = A > max ? A - B : A;
+        return A;
+
+//        return fmod(A,B);
     }
 
     template<size_t K, size_t MG>
@@ -135,7 +146,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         }
     }
     */
-    inline int64_t monfmod(int64_t A, int64_t p, double invp, int64_t pow50rem)
+    inline int64_t monfmod(int64_t A, int64_t p, double invp, double min, double max, int64_t pow50rem)
     {
         // assert(p < 1LL << 33);
         // nothing so special with 50; could be something else
@@ -144,13 +155,21 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         int64_t Ar50 = A & 0x3FFFFFFFFFFFFLL;           // Ar50 < 2**50
 
         int64_t Aeq  = Aq50 * pow50rem + Ar50;          // Aeq < 2**47 + 2**50 < 2**51; Aeq ~ A mod p
-        double nAmod = ((double)Aeq) * invp;
-        nAmod        = Aeq - floor(nAmod) * p;
-
-        if (nAmod < 0)
-            nAmod += p;
-
-        return (int64_t)nAmod;
+//        double nAmod = ((double)Aeq) * invp;
+//        nAmod        = Aeq - floor(nAmod) * p;
+//
+//        if (nAmod < 0)
+//            nAmod += p;
+//
+////        if ((int64_t)nAmod != (A%p))
+////        {
+////            printf("\nHad %lld ~~ expected %lld\n", (int64_t)nAmod, A%p);
+////        }
+////        assert((int64_t)nAmod == (A % p));
+//        int64_t res = (int64_t)nAmod;
+//        if (res == p)
+//            res = 0;
+        return static_cast<int64_t>(monfmod(static_cast<double>(Aeq),static_cast<double>(p), invp, min, max));
     }
 
 
@@ -254,11 +273,13 @@ namespace FFLAS { namespace vectorised {
     struct HelperMod<Field, ElementCategories::MachineIntTag> {
         typename Field::Element p;
         double invp;
+        double min;
+        double max;
         int64_t pow50rem;
 
         HelperMod()
         {
-            // std::cout << "empty cstor called" << std::endl;
+//             std::cout << "empty cstor called" << std::endl;
         } ;
 
         HelperMod( const Field & F)
@@ -266,7 +287,9 @@ namespace FFLAS { namespace vectorised {
 //             std::cout << "field cstor called" << std::endl;
             p =  (typename Field::Element) F.characteristic();
             pow50rem = (1LL << 50) % p;
-            invp = 1/((double)p);
+            invp = 1/static_cast<double>(p);
+            min = static_cast<double>(F.minElement());
+            max = static_cast<double>(F.maxElement());
         }
 
         int getAlgo() const
@@ -279,8 +302,8 @@ namespace FFLAS { namespace vectorised {
     struct HelperMod<Field, FFLAS::ElementCategories::MachineFloatTag> {
         typename Field::Element p;
         typename Field::Element invp;
-        // typename Field::Elmeent min ;
-        // typename Field::Elmeent max ;
+        typename Field::Element min ;
+        typename Field::Element max ;
 
         HelperMod() {} ;
 
@@ -288,8 +311,8 @@ namespace FFLAS { namespace vectorised {
         {
             p = (typename Field::Element) F.characteristic();
             invp = (typename Field::Element)1/p;
-            // min = F.minElement();
-            // max = F.maxElement();
+            min = F.minElement();
+            max = F.maxElement();
         }
 
         int getAlgo() const
@@ -426,16 +449,16 @@ namespace FFLAS { namespace vectorised {
         {
 //             std::cout << "HelperMod constructed " << this->shift << std::endl;
 #ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
-            P       = Simd128<double>::set1((double)(this->p));
-            NEGP    = Simd128<double>::set1(-(double)(this->p));
-            MIN     = Simd128<double>::set1((double)F.minElement());
-            MAX     = Simd128<double>::set1((double)F.maxElement());
+            P       = Simd128<double>::set1(static_cast<double>(this->p));
+            NEGP    = Simd128<double>::set1(-static_cast<double>(this->p));
+            MIN     = Simd128<double>::set1(this->min);
+            MAX     = Simd128<double>::set1(this->max);
             INVP    = Simd128<double>::set1(this->invp);
 #else
-            P       = Simd<double>::set1((double)(this->p));
-            NEGP    = Simd<double>::set1(-(double)(this->p));
-            MIN     = Simd<double>::set1((double)F.minElement());
-            MAX     = Simd<double>::set1((double)F.maxElement());
+            P       = Simd<double>::set1(static_cast<double>(this->p));
+            NEGP    = Simd<double>::set1(-static_cast<double>(this->p));
+            MIN     = Simd<double>::set1(this->min);
+            MAX     = Simd<double>::set1(this->max);
             INVP    = Simd<double>::set1(this->invp);
 #endif
             POW50REM= SimdT::set1(this->pow50rem);
@@ -445,18 +468,20 @@ namespace FFLAS { namespace vectorised {
         {
             this->p         = G.p;
             this->invp      = G.invp;
+            this->min       = G.min;
+            this->max       = G.max;
             this->pow50rem  = G.pow50rem;
 #ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
-            P               = Simd128<double>::set1((double)(this->p));
-            NEGP            = Simd128<double>::set1(-(double)(this->p));
-            MIN             = Simd128<double>::set1((double)F.minElement());
-            MAX             = Simd128<double>::set1((double)F.maxElement());
+            P               = Simd128<double>::set1(static_cast<double>(this->p));
+            NEGP            = Simd128<double>::set1(-static_cast<double>(this->p));
+            MIN             = Simd128<double>::set1(this->min);
+            MAX             = Simd128<double>::set1(this->max);
             INVP            = Simd128<double>::set1(this->invp);
 #else
-            P               = Simd<double>::set1((double)(this->p));
-            NEGP            = Simd<double>::set1(-(double)(this->p));
-            MIN             = Simd<double>::set1((double)F.minElement());
-            MAX             = Simd<double>::set1((double)F.maxElement());
+            P               = Simd<double>::set1(static_cast<double>(this->p));
+            NEGP            = Simd<double>::set1(-static_cast<double>(this->p));
+            MIN             = Simd<double>::set1(this->min);
+            MAX             = Simd<double>::set1(this->max);
             INVP            = Simd<double>::set1(this->invp);
 #endif
             POW50REM        = SimdT::set1(this->pow50rem);
@@ -480,26 +505,26 @@ namespace FFLAS { namespace vectorised {
         {
             P = SimdT::set1(this->p);
             NEGP = SimdT::set1(-(this->p));
-            // MIN = SimdT::set1(max);
-            MIN = SimdT::set1(F.minElement());
-            // MAX = SimdT::set1(min);
-            MAX = SimdT::set1(F.maxElement());
+            MIN = SimdT::set1(this->min);
+//            MIN = SimdT::set1(F.minElement());
+            MAX = SimdT::set1(this->max);
+//            MAX = SimdT::set1(F.maxElement());
             INVP = SimdT::set1(this->invp);
         }
 
         HelperModSimd( const Field & F, const HelperMod<Field> & G)
         {
-            this->p = G.p;
-            this->invp = G.invp ;
+            this->p     = G.p;
+            this->invp  = G.invp;
+            this->min   = G.min;
+            this->max   = G.max;
             P = SimdT::set1(this->p);
             NEGP = SimdT::set1(-this->p);
-            // MIN = SimdT::set1(max);
-            MIN = SimdT::set1(F.minElement());
-            // MAX = SimdT::set1(min);
-            MAX = SimdT::set1(F.maxElement());
+            MIN = SimdT::set1(this->min);
+//            MIN = SimdT::set1(F.minElement());
+            MAX = SimdT::set1(this->max);
+//            MAX = SimdT::set1(F.maxElement());
             INVP = SimdT::set1(this->invp);
-
-
         }
     } ;
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -533,7 +558,7 @@ namespace FFLAS { namespace vectorised {
     typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
     monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
     {
-        return monfmod(A, H.p, H.invp, H.pow50rem);
+        return monfmod(A, H.p, H.invp, H.min, H.max, H.pow50rem);
     }
 #endif // __x86_64__
 
@@ -552,7 +577,7 @@ namespace FFLAS { namespace vectorised {
     template<class Field, int ALGO>
     typename Field::Element monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineFloatTag> & H)
     {
-        return monfmod(A,H.p);
+        return monfmod(A, H.p, H.invp, H.min, H.max);
     }
 
     template<class Field, int ALGO>
