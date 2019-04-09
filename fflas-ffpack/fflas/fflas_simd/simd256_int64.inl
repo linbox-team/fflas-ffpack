@@ -4,6 +4,7 @@
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
  * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * Romain Lebreton <romain.lebreton@lirmm.fr>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========

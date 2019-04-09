@@ -2,6 +2,7 @@
  * Copyright (C) 2018 the FFLAS-FFPACK group
  *
  * Written by   Ozden Ozturk <ozden.ozturk@etu.univ-grenoble-alpes.fr>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
