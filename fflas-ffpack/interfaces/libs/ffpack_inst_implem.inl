@@ -93,8 +93,8 @@ namespace FFPACK {
     template INST_OR_DECL
     size_t PLUQ(const FFLAS_FIELD<FFLAS_ELT>& Fi, const FFLAS::FFLAS_DIAG Diag,
                 const size_t M, const size_t N,
-                FFLAS_ELT* A, const size_t lda,
-                size_t* P, size_t* Q, FFLAS::ParSeqHelper<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSH);
+                FFLAS_ELT* A, const size_t lda, size_t* P, size_t* Q,
+                const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads>& PSH);
 
     template INST_OR_DECL
     void fgetrs (const FFLAS_FIELD<FFLAS_ELT>& F,
