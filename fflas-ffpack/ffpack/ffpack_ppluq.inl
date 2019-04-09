@@ -82,7 +82,7 @@ namespace FFPACK {
     PLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
           const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda,
-          size_t* P, size_t* Q, int nt, FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSHelper)
+          size_t* P, size_t* Q, FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSHelper)
     {
 
         for (size_t i=0; i<M; ++i) P[i] = i;
@@ -145,7 +145,7 @@ namespace FFPACK {
 
         // A1 = P1 [ L1 ] [ U1 V1 ] Q1
         //        [ M1 ]
-        R1 = PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1, nt);
+        R1 = PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1, PSHelper.numthreads());
 
         typename Field::Element * A2 = A + N2;
         typename Field::Element * A3 = A + M2*lda;
@@ -198,8 +198,9 @@ namespace FFPACK {
                     //typename Field::Element * A4R2 = 0;
                     // F = P2 [ L2 ] [ U2 V2 ] Q2
                     //        [ M2 ]
-                    TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2,PSHelper) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
-                         R2 = PLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2, std::max(nt/2,1), PSHelper)
+                    pWH.set_numthreads(std::max((int)pWH.numthreads()/2,1));
+                    TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2,pWH) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
+                         R2 = PLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2, pWH )
                          //A4R2 = A4+R2;
                         );
 
@@ -209,8 +210,9 @@ namespace FFPACK {
                     Q3 = FFLAS::fflas_new<size_t>(N2-R1);
                     // G = P3 [ L3 ] [ U3 V3 ] Q3
                     //        [ M3 ]
-                    TASK(MODE(CONSTREFERENCE(Fi, G, Q3, P3, R3,PSHelper) WRITE(R3, P3, Q3) READWRITE(G[0])),
-                         R3 = PLUQ( Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3, std::max(nt/2,1), PSHelper));
+                    pWH.set_numthreads(std::max((int)pWH.numthreads()/2,1));
+                    TASK(MODE(CONSTREFERENCE(Fi, G, Q3, P3, R3,pWH) WRITE(R3, P3, Q3) READWRITE(G[0])),
+                         R3 = PLUQ( Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3, pWH));
 
                     // H <- A4 - ED
                     TASK(MODE(CONSTREFERENCE(Fi, A3, A2, A4, pWH) READ(M2, N2, R1, A3[0], A2[0]) READWRITE(A4[0])),
@@ -305,10 +307,11 @@ namespace FFPACK {
                     // H4 = P4 [ L4 ] [ U4 V4 ] Q4
                     //         [ M4 ]
                     //TASK(READ(Fi), NOWRITE(R4), READWRITE(R, P4, Q4), PPLUQ, R4, Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
-                    TASK(MODE(CONSTREFERENCE(Fi, R4, R, P4, Q4, R2, R3, M2, N2,PSHelper) READWRITE(R[0]) WRITE(R4, P4[0], Q4[0])),
+                    PH.set_numthreads(std::max((int)PH.numthreads(),1));
+                    TASK(MODE(CONSTREFERENCE(Fi, R4, R, P4, Q4, R2, R3, M2, N2,PH) READWRITE(R[0]) WRITE(R4, P4[0], Q4[0])),
                          P4 = FFLAS::fflas_new<size_t>(M-M2-R3);
                          Q4 = FFLAS::fflas_new<size_t>(N-N2-R2);
-                         R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4, std::max(nt,1), PSHelper);
+                         R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4, PH);
                         );
                     CHECK_DEPENDENCIES;
 
