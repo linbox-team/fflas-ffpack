@@ -64,6 +64,7 @@ BASIC_TESTS =               \
 		test-io      \
 		test-maxdelayeddim \
 		test-solve \
+		test-fgesv             \
 		test-simd \
 		test-fgemv \
 		test-nullspace \
@@ -88,7 +89,6 @@ NOT_A_TEST =  \
 		test-krylov-elim       \
 		test-fullranksubmatrix \
 		test-frobenius         \
-		test-fgesv             \
 		test-invert            \
 		test-sparse
 
@@ -145,7 +145,7 @@ test_ftrtri_SOURCES            = test-ftrtri.C
 #  test_fullranksubmatrix_SOURCES = test-fullranksubmatrix.C
 #  test_invert_SOURCES            = test-invert.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
-#  test_fgesv_SOURCES             = test-fgesv.C
+test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 test_nullspace_SOURCES = test-nullspace.C
 test_fdot_SOURCES = test-fdot.C
