@@ -122,7 +122,7 @@ namespace FFPACK {
                 FFLAS::fassign (F,R,NRHS,W,ldw,X,ldx);
                 FFLAS::fflas_delete (W);
 
-                FFLAS::fzero (F, N-R, NRHS, X+R, ldx);
+                FFLAS::fzero (F, N-R, NRHS, X+R*ldx, ldx);
 
                     // B <- Q^T B
                 applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, N, X, ldx, Q);
@@ -146,7 +146,7 @@ namespace FFPACK {
                 ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
                        R, NRHS, F.one, A, lda , X, ldx);
 
-                FFLAS::fzero (F, N-M, NRHS, X+M, ldx);
+                FFLAS::fzero (F, N-M, NRHS, X+M*ldx, ldx);
 
                     // B <- Q^T B
                 applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, N, X, ldx, Q);

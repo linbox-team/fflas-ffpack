@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
@@ -99,7 +100,7 @@ bool test_square_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, s
         WriteMatrix(std::cerr<<"B ="<<std::endl,F,brows,bcols,B,ldb);
         WriteMatrix(std::cerr<<"AX ="<<std::endl,F,brows,bcols,R,ldr);
     }
-    cout<<"...";
+    cout<<".";
 
     fflas_delete(A,B,X,Acop,R);
     return ok;
@@ -136,7 +137,7 @@ bool test_rect_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, siz
                 fgemm (F, FflasNoTrans, FflasNoTrans, m, k, n, F.one, A, lda, S, k, F.zero, B, ldb);
                 fflas_delete(S);
             } else {
-                typename Field::Element_ptr S = fflas_new(F, n, k);
+                typename Field::Element_ptr S = fflas_new(F, k, m);
                 RandomMatrix(F, k, m, S, m, G);
                 fgemm (F, FflasNoTrans, FflasNoTrans, k, n, m, F.one, S, m, A, lda, F.zero, B, ldb);
                 fflas_delete(S);
@@ -164,12 +165,12 @@ bool test_rect_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, siz
         if (side == FflasLeft) std::cerr<<"ERROR A X != B"<<std::endl;
         else std::cerr<<"ERROR X A != B"<<std::endl;
         WriteMatrix(std::cerr<<"A ="<<std::endl,F,m,n,Acop,lda);
-        WriteMatrix(std::cerr<<"X ="<<std::endl,F,brows,bcols,X,ldx);
+        WriteMatrix(std::cerr<<"X ="<<std::endl,F,xrows,xcols,X,ldx);
         WriteMatrix(std::cerr<<"B ="<<std::endl,F,brows,bcols,B,ldb);
         WriteMatrix(std::cerr<<"AX ="<<std::endl,F,brows,bcols,R,ldr);
     }
 
-    cout<<"...";
+    cout<<".";
 
     fflas_delete(A,B,X,Acop,R);
     return ok;
@@ -193,39 +194,35 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t k,
         cout<<"Checking ";
         cout.width(40);
         cout<<oss.str();
-        cout<<" ... ";
+        cout<<" ...";
 
-        cout<<"FR.sq..";
-        // ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, m, k, m, G);
-        // ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, m, k, m, G);
-        // cout<<"FR.rect..";
-        // ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, m, n, k, std::min(m,n), G);
-        // ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, m, n, k, std::min(m,n), G);
-        // cout<<"RD.sq..";
-        // ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, m, k, r, G);
-        // ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, m, k, r, G);
-        // cout<<"RD.rect..";
+            // Full rank instances
+        ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, m, k, m, G);
+        ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, m, k, m, G);
+        ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, m, n, k, std::min(m,n), G);
+        ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, m, n, k, std::min(m,n), G);
+            // Rank defficient instances
+        ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, m, k, r, G);
+        ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, m, k, r, G);
         ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, m, n, k, r, G);
         ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, m, n, k, r, G);
 
 
-        // size_t MM = (rand() % m)+50;
-        // size_t NN = (rand() % n)+50;
-        // size_t KK = (rand() % k)+50;
-        // size_t RR = (rand() % std::min(NN,MM));
-        // cout<<"Random dim...";
-        // cout<<"FR.sq..";
-        // ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, MM, KK, MM, G);
-        // ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, MM, KK, MM, G);
-        // cout<<"FR.rect..";
-        // ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, MM, NN, KK, std::min(MM,NN), G);
-        // ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, MM, NN, KK, std::min(MM,NN), G);
-        // cout<<"RD.sq..";
-        // ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, MM, KK, RR, G);
-        // ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, MM, KK, RR, G);
-        // cout<<"RD.rect..";
-        // ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, MM, NN, KK, RR, G);
-        // ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, MM, NN, KK, RR, G);
+            // Randomized dimensions
+        size_t MM = (rand() % m)+50;
+        size_t NN = (rand() % n)+50;
+        size_t KK = (rand() % k)+50;
+        size_t RR = (rand() % std::min(NN,MM));
+            // Full rank instances
+        ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, MM, KK, MM, G);
+        ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, MM, KK, MM, G);
+        ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, MM, NN, KK, std::min(MM,NN), G);
+        ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, MM, NN, KK, std::min(MM,NN), G);
+            // Rank defficient instances
+        ok = ok && test_square_fgesv (*F, FflasLeft, fileA, fileB, MM, KK, RR, G);
+        ok = ok && test_square_fgesv (*F, FflasRight, fileA, fileB, MM, KK, RR, G);
+        ok = ok && test_rect_fgesv (*F, FflasLeft, fileA, fileB, MM, NN, KK, RR, G);
+        ok = ok && test_rect_fgesv (*F, FflasRight, fileA, fileB, MM, NN, KK, RR, G);
 
         delete F;
 
