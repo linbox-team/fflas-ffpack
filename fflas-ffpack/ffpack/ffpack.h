@@ -786,6 +786,7 @@ namespace FFPACK { /* echelon */
                     typename Field::Element_ptr A, const size_t lda,
                     size_t* P, size_t* Qt, const bool transform = false,
                     const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
     template <class Field>
     size_t
     RowEchelonForm (const Field& F, const size_t M, const size_t N,
@@ -799,9 +800,6 @@ namespace FFPACK { /* echelon */
                        typename Field::Element_ptr A, const size_t lda,
                        size_t* P, size_t* Qt, bool transform,
                        const FFPACK_LU_TAG LuTag, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
-
-
-
 
 
 
@@ -831,6 +829,14 @@ namespace FFPACK { /* echelon */
                               size_t* P, size_t* Qt, const bool transform = false,
                               const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field, class PSHelper>
+    size_t
+    ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* P, size_t* Qt, const bool transform=false,
+                                  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+                                  PSHelper psH=FFLAS::ParSeqHelper::Sequential());
+
     /** Compute the Reduced Row Echelon form of the input matrix in-place.
      *
      * After the computation A = [ V1 M ] such that X A = R is a reduced row echelon
@@ -855,6 +861,14 @@ namespace FFPACK { /* echelon */
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* P, size_t* Qt, const bool transform = false,
                            const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field, class PSHelper>
+    size_t
+    ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* P, size_t* Qt, const bool transform = false,
+                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+                           PSHelper psH=FFLAS::ParSeqHelper::Sequential());
 
     namespace Protected {
         /**  @brief Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
