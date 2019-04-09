@@ -75,7 +75,7 @@ namespace FFPACK {
          const FFLAS::FFLAS_DIAG Diag)
     {
         FFLAS::ParSeqHelper::Sequential seqH;
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,Diag,seqH);
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,seqH,Diag);
         return det;
     }
 
@@ -84,11 +84,10 @@ namespace FFPACK {
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag, const FFLAS::ParSeqHelper::Sequential seqH)
+         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Sequential seqH, const FFLAS::FFLAS_DIAG Diag)
     {
 
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,Diag,seqH);
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,seqH,Diag);
         return det;
     }
 
@@ -97,11 +96,10 @@ namespace FFPACK {
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
+         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH, const FFLAS::FFLAS_DIAG Diag)
     {
 
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,Diag,parH);
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,parH,Diag);
         return det;
     }
 
@@ -110,8 +108,7 @@ namespace FFPACK {
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag, const PSHelper psH)
+         size_t* P, size_t* Q, const PSHelper psH, const FFLAS::FFLAS_DIAG Diag)
     {
         if ( (M==0) and (N==0) )
             return  F.assign(det,F.one) ;
@@ -173,7 +170,7 @@ namespace FFPACK {
     {
 
         typename Field::Element det; F.init(det);
-        det = FFPACK::Det(det,F,M,N,A,lda,parH);
+        det = FFPACK::Det(F,M,N,A,lda,parH);
         return det;
     }
 
@@ -185,7 +182,7 @@ namespace FFPACK {
         size_t *P = FFLAS::fflas_new<size_t>(N);
         size_t *Q = FFLAS::fflas_new<size_t>(M);
         typename Field::Element det; F.init(det);
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,FFLAS::FflasNonUnit,psH);
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,psH);
         FFLAS::fflas_delete( P);
         FFLAS::fflas_delete( Q);
         return det;
