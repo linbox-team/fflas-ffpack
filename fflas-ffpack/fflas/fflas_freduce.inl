@@ -400,6 +400,16 @@ namespace FFLAS { namespace vectorised {
     template<class Field, class SimdT>
     struct HelperModSimd<Field, SimdT, ElementCategories::MachineIntTag> : public HelperMod<Field> {
         typedef typename SimdT::vect_t vect_t ;
+#ifndef __FFLAS_FFPACK_HAVE_AVX2_INSTRUCTIONS
+        // with AVX but not AVX2, integral vectors are on 128 bits only
+        Simd128<double>::vect_t P ;
+        Simd128<double>::vect_t MIN ;
+        Simd128<double>::vect_t MAX ;
+        Simd128<double>::vect_t NEGP ;
+        Simd128<double>::vect_t Q ;
+        Simd128<double>::vect_t T ;
+        Simd128<double>::vect_t INVP;
+#else
         Simd<double>::vect_t P ;
         Simd<double>::vect_t MIN ;
         Simd<double>::vect_t MAX ;
@@ -407,17 +417,26 @@ namespace FFLAS { namespace vectorised {
         Simd<double>::vect_t Q ;
         Simd<double>::vect_t T ;
         Simd<double>::vect_t INVP;
+#endif
         vect_t POW50REM;
 
         HelperModSimd ( const Field & F) :
             HelperMod<Field>(F)
         {
 //             std::cout << "HelperMod constructed " << this->shift << std::endl;
+#ifndef __FFLAS_FFPACK_HAVE_AVX2_INSTRUCTIONS
+            P       = Simd128<double>::set1((double)(this->p));
+            NEGP    = Simd128<double>::set1(-(double)(this->p));
+            MIN     = Simd128<double>::set1((double)F.minElement());
+            MAX     = Simd128<double>::set1((double)F.maxElement());
+            INVP    = Simd128<double>::set1(this->invp);
+#else
             P       = Simd<double>::set1((double)(this->p));
             NEGP    = Simd<double>::set1(-(double)(this->p));
             MIN     = Simd<double>::set1((double)F.minElement());
             MAX     = Simd<double>::set1((double)F.maxElement());
             INVP    = Simd<double>::set1(this->invp);
+#endif
             POW50REM= SimdT::set1(this->pow50rem);
         }
 
@@ -426,11 +445,19 @@ namespace FFLAS { namespace vectorised {
             this->p         = G.p;
             this->invp      = G.invp;
             this->pow50rem  = G.pow50rem;
+#ifndef __FFLAS_FFPACK_HAVE_AVX2_INSTRUCTIONS
+            P               = Simd128<double>::set1((double)(this->p));
+            NEGP            = Simd128<double>::set1(-(double)(this->p));
+            MIN             = Simd128<double>::set1((double)F.minElement());
+            MAX             = Simd128<double>::set1((double)F.maxElement());
+            INVP            = Simd128<double>::set1(this->invp);
+#else
             P               = Simd<double>::set1((double)(this->p));
             NEGP            = Simd<double>::set1(-(double)(this->p));
             MIN             = Simd<double>::set1((double)F.minElement());
             MAX             = Simd<double>::set1((double)F.maxElement());
             INVP            = Simd<double>::set1(this->invp);
+#endif
             POW50REM        = SimdT::set1(this->pow50rem);
         }
 
