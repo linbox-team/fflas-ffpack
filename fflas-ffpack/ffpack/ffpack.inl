@@ -83,6 +83,7 @@ namespace FFPACK {
 
 
         size_t R(0);
+
         R = PLUQ(F,Diag,M,N,A,lda,P,Q);
         if (R<M) return F.assign(det,F.zero);
 

@@ -222,19 +222,19 @@ int main(int argc, char** argv) {
     size_t *P = FFLAS::fflas_new<size_t>(maxP);
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> H;
-
     Acop = FFLAS::fflas_new(F,m,n);
-    PARFOR1D(i,(size_t)m,H,
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                                  FFLAS::StrategyParameter::Threads> parH;
+    PARFOR1D(i,(size_t)m,parH,
              FFLAS::fassign(F, n, A + i*n, 1, Acop + i*n, 1);
              // for (size_t j=0; j<(size_t)n; ++j)
              //     Acop[i*n+j]= A[i*n+j];
             );
     for (size_t i=0;i<=iter;++i){
 
-        PARFOR1D(j,maxP,H, P[j]=0; );
-        PARFOR1D(j,maxQ,H, Q[j]=0; );
-        PARFOR1D(k,(size_t)m,H,
+        PARFOR1D(j,maxP,parH, P[j]=0; );
+        PARFOR1D(j,maxQ,parH, Q[j]=0; );
+        PARFOR1D(k,(size_t)m,parH,
                  FFLAS::fassign(F, n, Acop + k*n, 1, A + k*n, 1);
                  // for (size_t j=0; j<(size_t)n; ++j)
                  //     F.assign( A[k*n+j] , Acop[k*n+j]) ;
@@ -244,9 +244,9 @@ int main(int argc, char** argv) {
         if (i) chrono.start();
         if (par){
 
-
             PAR_BLOCK{
-                R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
+                parH.set_numthreads(t);
+                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, parH);
             }
         }
         else{

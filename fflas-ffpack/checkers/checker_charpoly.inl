@@ -115,6 +115,7 @@ namespace FFPACK {
                 inittime.stop(); _time = inittime;
                 Givaro::Timer pluqtime; pluqtime.start();
 #endif
+
 #ifndef ENABLE_CHECKER_PLUQ
                 size_t R =
 #endif
