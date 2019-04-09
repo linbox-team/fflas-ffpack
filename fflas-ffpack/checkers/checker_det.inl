@@ -153,10 +153,13 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer inittime; inittime.start();
 #endif
+            FFLAS::finit(F,n*2,u,1);
+            FFLAS::finit(F,n,w,1);
             FFLAS::frand(F,G,n,2,u,2);
             FFLAS::frand(F,G,n,w,1);
 
             typename Field::Element_ptr t(FFLAS::fflas_new(F,n));
+            FFLAS::finit(F,n,t,1);
 
             // t <-- w . A
             FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);

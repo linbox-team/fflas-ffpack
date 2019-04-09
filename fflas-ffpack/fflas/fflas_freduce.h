@@ -105,6 +105,23 @@ namespace FFLAS {
     }
 
 
+    template<class Field>
+    void
+    finit (const Field& F, const size_t n,
+           typename Field::Element_ptr X, const size_t incX)
+    {
+        typename Field::Element_ptr Xi = X ;
+
+        if (incX == 1)
+            for (; Xi < X + n ; ++Xi) {
+                F.init(*Xi);
+            }
+        else
+            for (; Xi < X+n*incX; Xi+=incX ) {
+                F.init(*Xi);
+            }
+    }
+
     /***************************/
     /*         LEVEL 2         */
     /***************************/
@@ -171,6 +188,19 @@ namespace FFLAS {
         else
             for (size_t i = 0 ; i < m ; ++i)
                 finit (F, n, B + i*ldb, 1, A + i*lda, 1);
+        return;
+    }
+
+    template<class Field>
+    void
+    finit (const Field& F, const size_t m , const size_t n,
+           typename Field::Element_ptr A, const size_t lda)
+    {
+        if (n == lda)
+            finit (F, n*m, A, 1);
+        else
+            for (size_t i = 0 ; i < m ; ++i)
+                finit (F, n, A + i*lda, 1);
         return;
     }
 
