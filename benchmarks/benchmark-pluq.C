@@ -224,7 +224,7 @@ int main(int argc, char** argv) {
 
     Acop = FFLAS::fflas_new(F,m,n);
     FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-FFLAS::StrategyParameter::TwoDAdaptive> parH;
+                                  FFLAS::StrategyParameter::Threads> parH;
     PARFOR1D(i,(size_t)m,parH,
              FFLAS::fassign(F, n, A + i*n, 1, Acop + i*n, 1);
              // for (size_t j=0; j<(size_t)n; ++j)

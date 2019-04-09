@@ -652,8 +652,8 @@ namespace FFPACK {
     inline size_t
     PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
           size_t M, size_t N,
-          typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q, size_t BCThreshold,
-          FFLAS::ParSeqHelper::Sequential& PSHelper)
+          typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q,
+          const FFLAS::ParSeqHelper::Sequential& PSHelper, size_t BCThreshold)
     {
         Checker_PLUQ<Field> checker (Fi,M,N,A,lda);
         size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q,BCThreshold);
@@ -665,12 +665,9 @@ namespace FFPACK {
     inline size_t
     PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
           size_t M, size_t N,
-          typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q, size_t BCThreshold)
+          typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q)
     {
-        Checker_PLUQ<Field> checker (Fi,M,N,A,lda);
-        size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q,BCThreshold);
-        checker.check(A,lda,Diag,R,P,Q);
-        return R;
+        return FFPACK::PLUQ (Fi,Diag,M,N,A,lda,P,Q,FFLAS::ParSeqHelper::Sequential());
     }
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL
