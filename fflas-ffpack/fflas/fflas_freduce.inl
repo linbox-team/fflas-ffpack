@@ -133,20 +133,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         int64_t Ar50 = A & 0x3FFFFFFFFFFFFLL;           // Ar50 < 2**50
 
         int64_t Aeq  = Aq50 * pow50rem + Ar50;          // Aeq < 2**47 + 2**50 < 2**51; Aeq ~ A mod p
-//        double nAmod = ((double)Aeq) * invp;
-//        nAmod        = Aeq - floor(nAmod) * p;
-//
-//        if (nAmod < 0)
-//            nAmod += p;
-//
-////        if ((int64_t)nAmod != (A%p))
-////        {
-////            printf("\nHad %lld ~~ expected %lld\n", (int64_t)nAmod, A%p);
-////        }
-////        assert((int64_t)nAmod == (A % p));
-//        int64_t res = (int64_t)nAmod;
-//        if (res == p)
-//            res = 0;
+
         return static_cast<int64_t>(reduce(static_cast<double>(Aeq),static_cast<double>(p), invp, min, max));
     }
 
