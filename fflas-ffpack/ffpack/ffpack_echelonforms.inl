@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_GAUSSJORDAN_BASECASE
 #define __FFLASFFPACK_GAUSSJORDAN_BASECASE 256
 #endif
-
+/*
 template <class Field>
 inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
                                          typename Field::Element_ptr A, const size_t lda,
@@ -51,7 +51,60 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
 
     return r;
 }
+*/
+template <class Field>
+inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag)
+{
+    FFLAS::ParSeqHelper::Sequential seqH;
+    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+    return r;
+}
 
+template <class Field>
+inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag, const FFLAS::ParSeqHelper::Sequential seqH)
+{
+    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+    return r;
+}
+
+template <class Field, class Cut, class Param>
+inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform, const FFPACK_LU_TAG LuTag,
+                                         const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
+{
+    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
+    return r;
+}
+
+template <class Field, class PSHelper>
+inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag, const PSHelper psH)
+{
+    size_t r;
+    if (LuTag == FFPACK::FfpackSlabRecursive)
+        r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
+    else{
+        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, psH);
+        }
+
+    if (transform){
+        ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
+        ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda);
+    }
+
+    return r;
+}
+
+/*
 template <class Field>
 inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
                                       typename Field::Element_ptr A, const size_t lda,
@@ -72,6 +125,61 @@ inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size
 
     return r;
 }
+*/
+template <class Field>
+inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag)
+{
+    FFLAS::ParSeqHelper::Sequential seqH;
+    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+    return r;
+}
+
+template <class Field>
+inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag, const FFLAS::ParSeqHelper::Sequential seqH)
+{
+    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+    return r;
+}
+
+template <class Field, class Cut, class Param>
+inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform, const FFPACK_LU_TAG LuTag,
+                                         const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
+{
+    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
+    return r;
+}
+
+template <class Field, class PSHelper>
+inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag, const PSHelper psH)
+{
+    size_t r;
+    if (LuTag == FFPACK::FfpackSlabRecursive)
+        r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
+    else{
+        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, psH);
+        }
+
+    if (transform){
+        ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
+        ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda);
+    }
+
+    return r;
+}
+
+
+
 
 template <class Field>
 inline size_t
