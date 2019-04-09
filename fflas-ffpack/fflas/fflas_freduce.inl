@@ -3,6 +3,7 @@
  *
  * Written by Pascal Giorgi <Pascal.Giorgi@lirmm.fr>
  * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  * Part of this code is taken from http://libdivide.com/
  *
@@ -400,7 +401,7 @@ namespace FFLAS { namespace vectorised {
     template<class Field, class SimdT>
     struct HelperModSimd<Field, SimdT, ElementCategories::MachineIntTag> : public HelperMod<Field> {
         typedef typename SimdT::vect_t vect_t ;
-#ifndef __FFLAS_FFPACK_HAVE_AVX2_INSTRUCTIONS
+#ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
         // with AVX but not AVX2, integral vectors are on 128 bits only
         Simd128<double>::vect_t P ;
         Simd128<double>::vect_t MIN ;
@@ -424,7 +425,7 @@ namespace FFLAS { namespace vectorised {
             HelperMod<Field>(F)
         {
 //             std::cout << "HelperMod constructed " << this->shift << std::endl;
-#ifndef __FFLAS_FFPACK_HAVE_AVX2_INSTRUCTIONS
+#ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
             P       = Simd128<double>::set1((double)(this->p));
             NEGP    = Simd128<double>::set1(-(double)(this->p));
             MIN     = Simd128<double>::set1((double)F.minElement());
@@ -445,7 +446,7 @@ namespace FFLAS { namespace vectorised {
             this->p         = G.p;
             this->invp      = G.invp;
             this->pow50rem  = G.pow50rem;
-#ifndef __FFLAS_FFPACK_HAVE_AVX2_INSTRUCTIONS
+#ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
             P               = Simd128<double>::set1((double)(this->p));
             NEGP            = Simd128<double>::set1(-(double)(this->p));
             MIN             = Simd128<double>::set1((double)F.minElement());
@@ -721,6 +722,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
     }
 #endif
 
+    /* Not used? PK - 2019
     // not vectorised but allows better code than % or fmod via helper
     template<class Field, bool round, int algo>
     inline typename std::enable_if< !FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
@@ -737,15 +739,15 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         size_t i = 0;
         for (; i < n ; i++)
         {
-//            if (round)
-//            {
-//                T[i] = monrint(U[i]);
-//                T[i] = monfmod<Field,algo>(T[i],H);
-//            }
-//            else
-//            {
+            if (round)
+            {
+                T[i] = monrint(U[i]);
+                T[i] = monfmod<Field,algo>(T[i],H);
+            }
+            else
+            {
                 T[i]=monfmod<Field,algo>(U[i],H);
-//            }
+            }
             if (!positive)
             {
                 T[i]-=(T[i]>max)?H.p:(typename Field::Element)0;
@@ -753,6 +755,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             T[i]+=(T[i]<min)?H.p:(typename Field::Element)0;
         }
     }
+    */
 
 } // unswitch
 } // vectorised
