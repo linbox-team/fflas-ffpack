@@ -119,7 +119,7 @@ namespace FFPACK {
         return det;
     }
 
-
+/*
     template <class Field>
     typename Field::Element_ptr
     Solve( const Field& F, const size_t M,
@@ -131,7 +131,7 @@ namespace FFPACK {
         size_t *P = FFLAS::fflas_new<size_t>(M);
         size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
-        if (LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP) < M){
+        if (PLUQ( F, FFLAS::FflasNonUnit, M, M, A, lda, P, rowP) < M){
             std::cerr<<"SINGULAR MATRIX"<<std::endl;
             FFLAS::fflas_delete( P);
             FFLAS::fflas_delete( rowP);
@@ -153,6 +153,75 @@ namespace FFPACK {
 
         }
     }
+*/
+
+    template <class Field>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb )
+    {
+        FFPACK::Solve(F, M, A, lda, x, incx, b, incb );
+        return x;
+    }
+
+    template <class Field>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, const FFLAS::ParSeqHelper::Sequential seqH)
+    {
+        FFPACK::Solve(F, M, A, lda, x, incx, b, incb, seqH);
+        return x;
+    }
+
+    template <class Field, class Cut, class Param>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
+    {
+        FFPACK::Solve(F, M, A, lda, x, incx, b, incb, parH);
+        return x;
+    }
+
+    template <class Field, class PSHelper>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, PSHelper& psH)
+    {
+
+        size_t *P = FFLAS::fflas_new<size_t>(M);
+        size_t *rowP = FFLAS::fflas_new<size_t>(M);
+
+        if (PLUQ( F, FFLAS::FflasNonUnit, M, M, A, lda, P, rowP, psH) < M){
+            std::cerr<<"SINGULAR MATRIX"<<std::endl;
+            FFLAS::fflas_delete( P);
+            FFLAS::fflas_delete( rowP);
+            return x;
+        }
+        else{
+            FFLAS::fassign( F, M, b, incb, x, incx );
+
+            ftrsv(F,  FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M,
+                  A, lda , x, incx);
+            ftrsv(F,  FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M,
+                  A, lda , x, incx);
+            applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+                    1, 0,(int) M, x, incx, P );
+            FFLAS::fflas_delete( rowP);
+            FFLAS::fflas_delete( P);
+
+            return x;
+
+        }
+    }
+
 
     template <class Field>
     void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,

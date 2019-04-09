@@ -1253,6 +1253,20 @@ namespace FFPACK { /* Solutions */
            typename Field::Element_ptr x, const int incx,
            typename Field::ConstElement_ptr b, const int incb );
 
+    template <class Field>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, const FFLAS::ParSeqHelper::Sequential seqH);
+
+    template <class Field, class Cut, class Param>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx, typename Field::ConstElement_ptr b, const int incb,
+           const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+
 
     //! Solve L X = B or X L = B in place.
     //! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
