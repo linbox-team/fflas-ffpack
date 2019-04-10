@@ -43,85 +43,6 @@
 #include "fflas-ffpack/checkers/checkers_ffpack.inl"
 
 using namespace FFLAS;
-template<class Field, class randIter>
-int test_det(typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::FFLAS_DIAG Diag, randIter& Rand, size_t n)
-{
-    int res = 0;
-        try {
-            FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
-            Givaro::Timer chrono; chrono.start();
-
-            FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
-
-            chrono.stop();
-            checker.check(det,A,n,Diag,P,Q);
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
-#ifdef TIME_CHECKER_Det
-            std::cerr << "Det COMPT: " << chrono << std::endl;
-#endif
-
-            res++;
-        } catch(FailureDetCheck &e) {
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
-        }
-    return res;
-}
-
-template<class Field,class PSHelper, class randIter>
-int test_det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Sequential seqH,
-         const FFLAS::FFLAS_DIAG Diag, randIter& Rand, size_t n)
-{
-    int res = 0;
-    res += test_det(det,F,n,n,A,n,P,Q,seqH,Diag,Rand, n);
-    return res;
-}
-template<class Field,class PSHelper, class randIter, class Cut, class Param>
-int test_det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH,
-         const FFLAS::FFLAS_DIAG Diag, randIter& Rand, size_t n)
-{
-    int res = 0;
-    parH.set_numthreads(NUM_THREADS);
-    res += test_det(det,F,n,n,A,n,P,Q,parH, Diag,Rand, n);
-    return res;
-}
-
-template<class Field,class PSHelper, class randIter>
-int test_det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const PSHelper psH,
-         const FFLAS::FFLAS_DIAG Diag, randIter& Rand, size_t n)
-{
-    int res = 0;
-        try {
-            FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
-            Givaro::Timer chrono; chrono.start();
-
-            FFPACK::Det(det,F,n,n,A,n,P,Q,psH,Diag);
-
-            chrono.stop();
-            checker.check(det,A,n,Diag,P,Q);
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
-#ifdef TIME_CHECKER_Det
-            std::cerr << "Det COMPT: " << chrono << std::endl;
-#endif
-
-            res++;
-        } catch(FailureDetCheck &e) {
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
-        }
-    return res;
-}
-
 
 int main(int argc, char** argv) {
     size_t iter = 3 ;
@@ -151,8 +72,7 @@ int main(int argc, char** argv) {
     srandom(seed);
 
     size_t pass = 0;	// number of tests that have successfully passed
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-    FFLAS::ParSeqHelper::Sequential seqH;
+
     FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
     for(size_t it=0; it<iter; ++it) {
 #ifdef TIME_CHECKER_Det
@@ -175,15 +95,21 @@ int main(int argc, char** argv) {
         std::cerr << "init: " << init << std::endl;
 
         Field::Element det; F.init(det);
-        int res = 0;
-        PAR_BLOCK{
-            res += test_det(det,F,n,n,A,n,P,Q,Diag,Rand, n);
-
-            res += test_det(det,F,n,n,A,n,P,Q,seqH,Diag,Rand, n);
-
-            res += test_det(det,F,n,n,A,n,P,Q,parH,Diag,Rand, n);
+        try {
+            FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
+            Givaro::Timer chrono; chrono.start();
+            FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
+            chrono.stop();
+            checker.check(det,A,n,Diag,P,Q);
+            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
+#ifdef TIME_CHECKER_Det
+            std::cerr << "Det COMPT: " << chrono << std::endl;
+#endif
+            pass++;
+        } catch(FailureDetCheck &e) {
+            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
         }
-        if(res==3) pass++;
+
         FFLAS::fflas_delete(A,P,Q);
         Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
     }
@@ -194,3 +120,4 @@ int main(int argc, char** argv) {
 }
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

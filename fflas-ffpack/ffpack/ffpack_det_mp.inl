@@ -34,73 +34,27 @@
 
 namespace FFPACK {
 
-    inline typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr
-    Det (const FFPACK::RNSInteger<FFPACK::rns_double>& F,
-         typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr det,
-         const size_t N,
-         typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr A, const size_t lda){
-
-        for(size_t i=0;i<F.size();i++){
-            const FFPACK::rns_double::ModField & Fmod =  F.rns()._field_rns[i];
-            Fmod.assign (*(det._ptr+i*det._stride), FFPACK::Det (Fmod, N, N, A._ptr+i*A._stride, lda));
-        }
-        return det;
-    }
-
     template<class PSHelper>
     inline typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr
     Det (const FFPACK::RNSInteger<FFPACK::rns_double>& F,
          typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr det,
          const size_t N,
          typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr A, const size_t lda,
-         const FFLAS::ParSeqHelper::Parallel<FFLAS::StructureHelper::Recursive,
-                                             FFLAS::StrategyParameter::Threads> parH){
+         const PSHelper& psH=FFLAS::ParSeqHelper::Sequential()){
 
         for(size_t i=0;i<F.size();i++){
             const FFPACK::rns_double::ModField & Fmod =  F.rns()._field_rns[i];
-            Fmod.assign (*(det._ptr+i*det._stride), FFPACK::Det (Fmod, N, N, A._ptr+i*A._stride, lda, parH));
+            Fmod.assign (*(det._ptr+i*det._stride), FFPACK::Det (Fmod, N, N, A._ptr+i*A._stride, lda, psH));
         }
         return det;
     }
 
 
-    template <>
-    inline Givaro::Integer
-    Det (const Givaro::ZRing<Givaro::Integer>& F,
-         const size_t M, const size_t N,  Givaro::Integer * A, const size_t lda){
-        Givaro::Integer d; F.init(d);
-        if ( (M==0) and (N==0) )
-            return  d = F.one ;
-        if ( (M==0) or (N==0) )
-            return  d = F.zero ;
-        if ( M != N )
-            return  d = F.zero ;
-
-        size_t Abs = FFLAS::bitsize(F,N,N,A,lda);
-        // Hadamard's bound on the bitsize of the determinant over Z
-        int64_t Detbs = (int64_t) ceil (N * (log(double(N))/(log(2.0)*2.0) + Abs));
-        Givaro::Integer Detbound = Givaro::Integer(1) << Detbs;
-        FFPACK::rns_double RNS(Detbound, 23);
-        typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
-        RnsDomain Zrns(RNS);
-        typename RnsDomain::Element_ptr Arns, Detrns;
-        Arns = FFLAS::fflas_new(Zrns,N,N);
-        Detrns = FFLAS::fflas_new(Zrns,1,1);
-
-        FFLAS::finit_rns(Zrns,N,N,(Abs/16)+((Abs%16)?1:0),A,lda,Arns);
-        Det(Zrns, Detrns, N, Arns, N);
-        FFLAS::fconvert_rns (Zrns,1,1, Givaro::Integer(1),&d, 1, Detrns);
-
-        FFLAS::fflas_delete(Arns);
-        FFLAS::fflas_delete(Detrns);
-        return d;
-    }
-
     template <class PSHelper>
     inline Givaro::Integer
     Det (const Givaro::ZRing<Givaro::Integer>& F,
          const size_t M, const size_t N,  Givaro::Integer * A, const size_t lda,
-         const PSHelper psH){
+         const PSHelper& psH=FFLAS::ParSeqHelper::Sequential()){
         Givaro::Integer d; F.init(d);
         if ( (M==0) and (N==0) )
             return  d = F.one ;

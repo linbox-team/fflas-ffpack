@@ -1198,14 +1198,14 @@ namespace FFPACK { /* Solutions */
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
          size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNoTrans);
+         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
 
     template <class Field, class PSHelper>
     typename Field::Element&
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const PSHelper psH, const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNoTrans);
+         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
 
     /** @brief Returns the determinant of the given matrix.
      * @details The method is a block elimination with early termination
@@ -1229,7 +1229,7 @@ namespace FFPACK { /* Solutions */
     template <class Field, class PSHelper>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const PSHelper psH);
+         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
 
 
     template <class Field>
@@ -1241,7 +1241,7 @@ namespace FFPACK { /* Solutions */
     typename Field::Element&
     Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         const PSHelper psH);
+         const PSHelper& psH);
 
 
     /*********/

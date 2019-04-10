@@ -84,7 +84,7 @@ namespace FFPACK {
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const PSHelper psH, const FFLAS::FFLAS_DIAG Diag)
+         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag)
     {
         if ( (M==0) and (N==0) )
             return  F.assign(det,F.one) ;
@@ -131,7 +131,7 @@ namespace FFPACK {
     template <class Field, class PSHelper>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const PSHelper psH)
+         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH)
     {
         size_t *P = FFLAS::fflas_new<size_t>(N);
         size_t *Q = FFLAS::fflas_new<size_t>(M);
