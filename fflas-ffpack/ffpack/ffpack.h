@@ -1198,24 +1198,14 @@ namespace FFPACK { /* Solutions */
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
          size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNoTrans);
 
-    template <class Field>
+    template <class Field, class PSHelper>
     typename Field::Element&
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Sequential seqH,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
-
-    template <class Field, class Cut, class Param>
-    typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
-
+         size_t* P, size_t* Q, const PSHelper psH, const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNoTrans);
 
     /** @brief Returns the determinant of the given matrix.
      * @details The method is a block elimination with early termination
@@ -1236,33 +1226,23 @@ namespace FFPACK { /* Solutions */
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda);
 
-    template <class Field>
+    template <class Field, class PSHelper>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH);
-
-    template <class Field, class Cut, class Param>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+         typename Field::Element_ptr A, const size_t lda, const PSHelper psH);
 
 
-/*
     template <class Field>
     typename Field::Element&
     Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda);
 
-    template <class Field>
+    template <class Field, class PSHelper>
     typename Field::Element&
     Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH);
+         typename Field::Element_ptr A, const size_t lda,
+         const PSHelper psH);
 
-    template <class Field, class Cut, class Param>
-    typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
-*/
 
     /*********/
     /* SOLVE */

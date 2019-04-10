@@ -79,31 +79,7 @@ namespace FFPACK {
         return det;
     }
 
-    template <class Field>
-    typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Sequential seqH, const FFLAS::FFLAS_DIAG Diag)
-    {
-
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,seqH,Diag);
-        return det;
-    }
-
-    template <class Field, class Cut, class Param>
-    typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH, const FFLAS::FFLAS_DIAG Diag)
-    {
-
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,parH,Diag);
-        return det;
-    }
-
-    template <class Field, typename PSHelper>
+    template <class Field, class PSHelper>
     typename Field::Element&
     Det( typename Field::Element& det,
          const Field& F, const size_t M, const size_t N,
@@ -152,29 +128,7 @@ namespace FFPACK {
         return det;
     }
 
-    template <class Field>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH)
-    {
-
-        typename Field::Element det; F.init(det);
-        det = FFPACK::Det(F,M,N,A,lda,seqH);
-        return det;
-    }
-
-    template <class Field, class Cut, class Param>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
-    {
-
-        typename Field::Element det; F.init(det);
-        det = FFPACK::Det(F,M,N,A,lda,parH);
-        return det;
-    }
-
-    template <class Field, typename PSHelper>
+    template <class Field, class PSHelper>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda, const PSHelper psH)
@@ -182,7 +136,7 @@ namespace FFPACK {
         size_t *P = FFLAS::fflas_new<size_t>(N);
         size_t *Q = FFLAS::fflas_new<size_t>(M);
         typename Field::Element det; F.init(det);
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,psH);
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,psH,FFLAS::FflasNonUnit);
         FFLAS::fflas_delete( P);
         FFLAS::fflas_delete( Q);
         return det;
