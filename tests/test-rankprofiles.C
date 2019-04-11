@@ -63,6 +63,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
         std::cout<<oss.str();
         std::cout<<" ... ";
 
+FFLAS::ParSeqHelper::Sequential seqH;
+FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+
         size_t lda = n;
         typename Field::Element_ptr A=fflas_new (*F, m,lda);
         typename Field::Element_ptr B=fflas_new (*F, m,lda);
@@ -74,7 +77,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             size_t* RP1, * RP2;
             FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+            FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive, seqH);
             for (size_t i=0; i<r; i++)
                 ok = ok && (RP1[i] == RP2[i]);
             fflas_delete(RP1);
@@ -83,7 +86,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             fassign (*F, m, n, B, lda, A, lda);
             FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+            FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive, seqH);
             for (size_t i=0; i<r; i++)
                 ok = ok && (RP1[i] == RP2[i]);
             fflas_delete(RP1);
@@ -132,11 +135,11 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             fassign (*F, m, n, A, lda, B, lda);
             size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive, parH);
             fassign (*F, m, n, B, lda, A, lda);
             size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+            size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive, parH);
             std::sort(CRP,CRP+r);
             std::sort(RRP,RRP+r);
             ok = ok && (cs==ct)&&(cs==rs)&&(cs==rt)&&(cs==r);
@@ -167,13 +170,13 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             // for (size_t i=0; i<r; i++)
             // 	F->assign(RPM[RRP[i]*n+CRP[i]],F->one);
             fassign (*F, n, n, A, lda, B, lda);
-            size_t cs = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+            size_t cs = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive, seqH);
             fassign (*F, n, n, B, lda, A, lda);
-            size_t ct = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            size_t ct = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive, parH);
             fassign (*F, n, n, B, lda, A, lda);
-            size_t rs = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+            size_t rs = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive, seqH);
             fassign (*F, n, n, B, lda, A, lda);
-            size_t rt = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+            size_t rt = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive, parH);
             std::sort(CRP,CRP+r);
             std::sort(RRP,RRP+r);
             ok = ok && (cs==ct) && (cs==rs) && (cs==rt) && (cs==r);
