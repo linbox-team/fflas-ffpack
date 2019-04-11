@@ -101,6 +101,18 @@ namespace FFPACK {
          size_t* P, size_t* Q,
          const FFLAS::FFLAS_DIAG Diag)
     {
+        FFLAS::ParSeqHelper::Sequential seqH;
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,seqH,Diag);
+        return det;
+    }
+
+    template <class Field, class PSHelper>
+    typename Field::Element&
+    Det( typename Field::Element& det,
+         const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag)
+    {
         if ( (M==0) and (N==0) )
             return  F.assign(det,F.one) ;
         if ( (M==0) or (N==0) )
@@ -111,7 +123,8 @@ namespace FFPACK {
 
         size_t R(0);
 
-        R = PLUQ(F,Diag,M,N,A,lda,P,Q);
+        R = PLUQ(F,Diag,M,N,A,lda,P,Q,psH);
+
         if (R<M) return F.assign(det,F.zero);
 
         F.assign(det,F.one);
@@ -130,17 +143,27 @@ namespace FFPACK {
             return det;
     }
 
-
-
     template <class Field>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda)
     {
+
+        typename Field::Element det; F.init(det);
+        FFLAS::ParSeqHelper::Sequential seqH;
+        det = FFPACK::Det(F,M,N,A,lda,seqH);
+        return det;
+    }
+
+    template <class Field, class PSHelper>
+    typename Field::Element
+    Det( const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH)
+    {
         size_t *P = FFLAS::fflas_new<size_t>(N);
         size_t *Q = FFLAS::fflas_new<size_t>(M);
         typename Field::Element det; F.init(det);
-        FFPACK::Det(det,F,M,N,A,lda,P,Q);
+        FFPACK::Det(det,F,M,N,A,lda,P,Q,psH,FFLAS::FflasNonUnit);
         FFLAS::fflas_delete( P);
         FFLAS::fflas_delete( Q);
         return det;

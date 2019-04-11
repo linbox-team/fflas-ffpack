@@ -281,6 +281,7 @@ namespace FFPACK { /* Permutations */
                         const size_t R1, const size_t R2,
                         const size_t R3, const size_t R4) ;
 
+
     /* \endcond */
 
     //#endif
@@ -1197,6 +1198,7 @@ namespace FFPACK { /* Solutions */
      * @param P the row permutation
      * @param Q the column permutation
      */
+
     template <class Field>
     typename Field::Element&
     Det( typename Field::Element& det,
@@ -1204,6 +1206,13 @@ namespace FFPACK { /* Solutions */
          typename Field::Element_ptr A, const size_t lda,
          size_t* P, size_t* Q,
          const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+
+    template <class Field, class PSHelper>
+    typename Field::Element&
+    Det( typename Field::Element& det,
+         const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
 
     /** @brief Returns the determinant of the given matrix.
      * @details The method is a block elimination with early termination
@@ -1218,15 +1227,29 @@ namespace FFPACK { /* Solutions */
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
      */
+
     template <class Field>
     typename Field::Element
     Det( const Field& F, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda);
 
+    template <class Field, class PSHelper>
+    typename Field::Element
+    Det( const Field& F, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
+
+
     template <class Field>
     typename Field::Element&
     Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
          typename Field::Element_ptr A, const size_t lda);
+
+    template <class Field, class PSHelper>
+    typename Field::Element&
+    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         const PSHelper& psH);
+
 
     /*********/
     /* SOLVE */

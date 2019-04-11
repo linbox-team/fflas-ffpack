@@ -50,19 +50,38 @@ bool test_det(Field &F, size_t n, int iter, RandIter& G)
     typedef typename Field::Element Element;
     //! @todo test with stride
     Element * A = fflas_new (F, n, n);
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+    FFLAS::ParSeqHelper::Sequential seqH;
 
     bool pass = true;
     Element d,dt;
     F.init(d); F.init(dt);
-    for(int i = 0;i<iter;++i){
-        G.random(dt);
-        FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
-        F.assign(d, FFPACK::Det (F, n, n, A, n));
-        if (!F.areEqual(dt,d)) {
-            pass = false;
-            break;
+    PAR_BLOCK{
+        for(int i = 0;i<iter;++i){
+            G.random(dt);
+            FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+            F.assign(d, FFPACK::Det (F, n, n, A, n));
+            if (!F.areEqual(dt,d)) {
+                pass = false;
+                break;
+            }
+
+            FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+            F.assign(d, FFPACK::Det(F,n,n,A,n,seqH));
+            if (!F.areEqual(dt,d)) {
+                pass = false;
+                break;
+            }
+            FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+            parH.set_numthreads(NUM_THREADS);
+            F.assign(d, FFPACK::Det(F,n,n,A,n,parH));
+            if (!F.areEqual(dt,d)) {
+                pass = false;
+                break;
+            }
+
+            ++dt;
         }
-        ++dt;
     }
     fflas_delete( A);
     return pass;
