@@ -80,6 +80,7 @@ namespace FFLAS {
             size_t k = (side==FFLAS::FflasLeft?m:n);
 
             typename Field::Element_ptr v1 = FFLAS::fflas_new(F,k);
+            FFLAS::finit(F,k,v1,1);
 
             if (side==FFLAS::FflasLeft) {
                 // (Left) v1 <- X.v
@@ -105,6 +106,8 @@ namespace FFLAS {
 
     private:
         inline void init(typename Field::RandIter &G, const size_t m, const size_t n, const typename Field::ConstElement_ptr B, size_t ldb, const typename Field::Element alpha) {
+            FFLAS::finit(F,n,v,1);
+            FFLAS::finit(F,m,w,1);
             FFLAS::frand(F,G,n,v,1);
 
             // w <- alpha.B.v

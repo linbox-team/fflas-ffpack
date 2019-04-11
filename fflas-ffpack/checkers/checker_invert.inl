@@ -65,6 +65,8 @@ namespace FFPACK {
 
     private:
         void init(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) {
+            FFLAS::finit(F,m,v,1);
+            FFLAS::finit(F,m,w,1);
             FFLAS::frand(F,G,m,v,1);
 
             // FFLAS::WriteMatrix (std::cerr<<"init A : ",F,m,m,A,lda,FflasMaple)<<std::endl;
