@@ -37,42 +37,11 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
                                          size_t* P, size_t* Qt, const bool transform,
                                          const FFPACK_LU_TAG LuTag)
 {
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
-}
-
-template <class Field>
-inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag, const FFLAS::ParSeqHelper::Sequential seqH)
-{
-    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
-}
-
-template <class Field, class Cut, class Param>
-inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform, const FFPACK_LU_TAG LuTag,
-                                         const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
-{
-    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
-    return r;
-}
-
-template <class Field, class PSHelper>
-inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag, const PSHelper psH)
-{
     size_t r;
     if (LuTag == FFPACK::FfpackSlabRecursive)
         r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
     else{
-        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, psH);
+        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P);
         }
 
     if (transform){
@@ -85,51 +54,20 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
 
 template <class Field>
 inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag)
-{
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
-}
-
-template <class Field>
-inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag, const FFLAS::ParSeqHelper::Sequential seqH)
-{
-    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
-}
-
-template <class Field, class Cut, class Param>
-inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform, const FFPACK_LU_TAG LuTag,
-                                         const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
-{
-    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
-    return r;
-}
-
-template <class Field, class PSHelper>
-inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
-                                         typename Field::Element_ptr A, const size_t lda,
-                                         size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag, PSHelper psH)
+                                      typename Field::Element_ptr A, const size_t lda,
+                                      size_t* P, size_t* Qt, const bool transform,
+                                      const FFPACK_LU_TAG LuTag)
 {
     size_t r;
     if (LuTag == FFPACK::FfpackSlabRecursive)
-        r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
+        r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
     else{
-        r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, psH);
+        r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt);
         }
 
     if (transform){
-        ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
-        ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda);
+        ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda);
+        ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-r, r, F.mOne, A, lda, A+r*lda, lda);
     }
 
     return r;
@@ -142,20 +80,8 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
                                   size_t* P, size_t* Qt, const bool transform,
                                   const FFPACK_LU_TAG LuTag)
 {
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
-}
-
-template <class Field, class PSHelper>
-inline size_t
-FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-                                  typename Field::Element_ptr A, const size_t lda,
-                                  size_t* P, size_t* Qt, const bool transform,
-                                  const FFPACK_LU_TAG LuTag, PSHelper psH)
-{
     size_t r;
-    r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, psH);
+    r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
 
     if (LuTag == FfpackSlabRecursive){
         // Putting Echelon in compressed triangular form : M = Q^T M
@@ -179,25 +105,12 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
     return r;
 }
 
-
 template <class Field>
 inline size_t
 FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
-                                  typename Field::Element_ptr A, const size_t lda,
-                                  size_t* P, size_t* Qt, const bool transform,
-                                  const FFPACK_LU_TAG LuTag)
-{
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
-}
-
-template <class Field, class PSHelper>
-inline size_t
-FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
-                                  typename Field::Element_ptr A, const size_t lda,
-                                  size_t* P, size_t* Qt, const bool transform,
-                                  const FFPACK_LU_TAG LuTag, PSHelper psH)
+                               typename Field::Element_ptr A, const size_t lda,
+                               size_t* P, size_t* Qt, const bool transform,
+                               const FFPACK_LU_TAG LuTag)
 {
     for (size_t i=0; i<N; i++) Qt[i] = i;
     for (size_t i=0; i<M; i++) P[i] = i;
@@ -224,7 +137,6 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
     }
     return r;
 }
-
 
 template <class Field>
 inline size_t
@@ -809,3 +721,4 @@ namespace FFPACK{
 #endif  // __FFLASFFPACK_ffpack_echelon_forms_INL
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

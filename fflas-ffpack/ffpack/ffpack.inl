@@ -30,7 +30,7 @@
 
 namespace FFPACK {
 
-
+/*
     template <class Field>
     size_t
     Rank (const Field& F, const size_t M, const size_t N,
@@ -46,6 +46,37 @@ namespace FFPACK {
         FFLAS::fflas_delete( P);
         return R;
     }
+*/
+    template <class Field>
+    size_t
+    Rank (const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda)
+    {
+        FFLAS::ParSeqHelper::Sequential seqH;
+        size_t R = Rank (F, M, N, A, lda, seqH);
+        return R;
+    }
+
+
+    template <class Field, class PSHelper>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH) 
+    {
+        if (M == 0 and  N  == 0)
+            return 0 ;
+
+        size_t *P = FFLAS::fflas_new<size_t>(M);
+        size_t *Q = FFLAS::fflas_new<size_t>(N);
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q, psH);
+        FFLAS::fflas_delete( Q);
+        FFLAS::fflas_delete( P);
+        return R;
+    }
+
+
+
+
 
     template <class Field>
     bool
