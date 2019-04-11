@@ -1129,6 +1129,7 @@ namespace FFPACK { /* Solutions */
      * @param N column dimension of the matrix
      * @param [in] A input matrix
      * @param lda leading dimension of A
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
     template <class Field>
     size_t
