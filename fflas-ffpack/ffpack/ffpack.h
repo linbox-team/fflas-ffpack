@@ -116,12 +116,19 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
-    template <class Field, class ParSeqH>
+    template <class Field>
     void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
                        const size_t width, const size_t M2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4,
-                       const ParSeqH psh);
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
@@ -217,13 +224,21 @@ namespace FFPACK { /* Permutations */
                  const size_t M, const size_t ibeg, const size_t iend,
                  typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
-    template<class Field, class ParSeqH>
+    template<class Field>
     void applyP( const Field& F,
                  const FFLAS::FFLAS_SIDE Side,
                  const FFLAS::FFLAS_TRANSPOSE Trans,
                  const size_t m, const size_t ibeg, const size_t iend,
                  typename Field::Element_ptr A, const size_t lda, const size_t * P,
-                 const ParSeqH psh);
+                 const FFLAS::ParSeqHelper::Sequential seq);
+
+    template<class Field, class Cut, class Param>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
