@@ -34,30 +34,31 @@
 
 namespace FFPACK {
 
-    inline typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr
+    template<class PSHelper>
+    inline typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr&
     Det (const FFPACK::RNSInteger<FFPACK::rns_double>& F,
-         typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr det,
+         typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr& det,
          const size_t N,
-         typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr A, const size_t lda){
+         typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr A, const size_t lda,
+         const PSHelper& psH){
 
         for(size_t i=0;i<F.size();i++){
             const FFPACK::rns_double::ModField & Fmod =  F.rns()._field_rns[i];
-            Fmod.assign (*(det._ptr+i*det._stride), FFPACK::Det (Fmod, N, N, A._ptr+i*A._stride, lda));
+            FFPACK::rns_double::ModField::Element dmf;
+            Fmod.assign (*(det._ptr+i*det._stride), FFPACK::Det (Fmod, dmf, N, A._ptr+i*A._stride, lda, psH));
         }
         return det;
     }
 
-    template <>
-    inline Givaro::Integer
-    Det (const Givaro::ZRing<Givaro::Integer>& F,
-         const size_t M, const size_t N,  Givaro::Integer * A, const size_t lda){
-        Givaro::Integer d; F.init(d);
-        if ( (M==0) and (N==0) )
-            return  d = F.one ;
-        if ( (M==0) or (N==0) )
-            return  d = F.zero ;
-        if ( M != N )
-            return  d = F.zero ;
+
+    template <class PSHelper>
+    inline Givaro::Integer&
+    Det (const Givaro::ZRing<Givaro::Integer>& F, Givaro::Integer& det,
+         const size_t N,  Givaro::Integer * A, const size_t lda,
+         const PSHelper& psH, size_t*P,size_t*Q){
+
+        if (N==0)
+            return  F.assign(det,F.one);
 
         size_t Abs = FFLAS::bitsize(F,N,N,A,lda);
         // Hadamard's bound on the bitsize of the determinant over Z
@@ -71,14 +72,13 @@ namespace FFPACK {
         Detrns = FFLAS::fflas_new(Zrns,1,1);
 
         FFLAS::finit_rns(Zrns,N,N,(Abs/16)+((Abs%16)?1:0),A,lda,Arns);
-        Det(Zrns, Detrns, N, Arns, N);
-        FFLAS::fconvert_rns (Zrns,1,1, Givaro::Integer(1),&d, 1, Detrns);
+        Det(Zrns, Detrns, N, Arns, N, psH);
+        FFLAS::fconvert_rns (Zrns,1,1, Givaro::Integer(1),&det, 1, Detrns);
 
         FFLAS::fflas_delete(Arns);
         FFLAS::fflas_delete(Detrns);
-        return d;
+        return det;
     }
-
 
 }
 
