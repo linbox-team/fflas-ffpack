@@ -1129,11 +1129,18 @@ namespace FFPACK { /* Solutions */
      * @param N column dimension of the matrix
      * @param [in] A input matrix
      * @param lda leading dimension of A
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda) ;
+
+    template <class Field, class PSHelper>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH) ;
+
 
     /********/
     /* DET  */
