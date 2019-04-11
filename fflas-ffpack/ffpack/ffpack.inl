@@ -34,44 +34,44 @@ namespace FFPACK {
     Rank (const Field& F, const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda)
     {
-        FFLAS::ParSeqHelper::Sequential seqH;
-        size_t R = FFPACK::Rank (F, M, N, A, lda, seqH);
+        if (M == 0 and  N  == 0)
+            return 0 ;
+
+        size_t *P = FFLAS::fflas_new<size_t>(N);
+        size_t *Q = FFLAS::fflas_new<size_t>(M);
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
+        FFLAS::fflas_delete( Q);
+        FFLAS::fflas_delete( P);
         return R;
     }
-
+/*
     template <class Field>
     size_t
     Rank (const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Sequential seqH)
+          typename Field::Element_ptr A, const size_t lda)
     {
-        size_t R = FFPACK::Rank (F, M, N, A, lda, seqH);
-        return R;
-    }
 
-    template <class Field, class Cut, class Param>
-    size_t
-    Rank (const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda, const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH)
-    {
-        size_t R = FFPACK::Rank (F, M, N, A, lda, parH);
+        FFLAS::ParSeqHelper::Sequential seqH;
+        size_t R = FFPACK::Rank (F, M, N, A, lda, seqH);
         return R;
     }
 
     template <class Field, class PSHelper>
     size_t
     Rank (const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda, PSHelper& psH)
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH)
     {
         if (M == 0 and  N  == 0)
             return 0 ;
 
         size_t *P = FFLAS::fflas_new<size_t>(N);
         size_t *Q = FFLAS::fflas_new<size_t>(M);
-        size_t R = FFPACK::PLUQ (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q, psH);
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q, psH);
         FFLAS::fflas_delete( Q);
         FFLAS::fflas_delete( P);
         return R;
     }
+*/
 
 
     template <class Field>

@@ -1146,25 +1146,17 @@ namespace FFPACK { /* Solutions */
      * @param [in] A input matrix
      * @param lda leading dimension of A
      */
-    template <class Field>
-    size_t
-    Rank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda) ;
 
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda,
-          const FFLAS::ParSeqHelper::Sequential seqH);
-
-    template <class Field, class Cut, class Param>
+          typename Field::Element_ptr A, const size_t lda);
+/*
+    template <class Field, class PSHelper>
     size_t
-    Rank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda,
-          const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH
-          =FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-                           FFLAS::StrategyParameter::Threads>());
-
+    Rank (const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
+*/
 
     /********/
     /* DET  */
@@ -1350,7 +1342,7 @@ namespace FFPACK { /* Solutions */
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
-
+/*
     template <class Field>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
@@ -1362,6 +1354,11 @@ namespace FFPACK { /* Solutions */
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* &rkprofile, const FFPACK_LU_TAG LuTag,
                            const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+*/
+    template <class Field, class PSHelper>
+    inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
 
     /**  @brief Computes the column rank profile of A.
      *
@@ -1381,7 +1378,7 @@ namespace FFPACK { /* Solutions */
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
                               size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
-
+/*
     template <class Field>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
@@ -1393,6 +1390,11 @@ namespace FFPACK { /* Solutions */
                               typename Field::Element_ptr A, const size_t lda,
                               size_t* &rkprofile, const FFPACK_LU_TAG LuTag,
                               const FFLAS::ParSeqHelper::Parallel<Cut,Param> parH);
+*/
+    template <class Field, class PSHelper>
+    size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
 
 
     /**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.

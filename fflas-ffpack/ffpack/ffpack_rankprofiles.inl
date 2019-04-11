@@ -35,7 +35,7 @@ namespace FFPACK{
         size_t R = FFPACK::RowRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
         return R;
     }
-
+/*
     template <class Field>
     inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                                   typename Field::Element_ptr A, const size_t lda,
@@ -53,7 +53,7 @@ namespace FFPACK{
         size_t R = FFPACK::RowRankProfile (F, M, N, A, lda, rkprofile, LuTag, parH);
         return R;
     }
-
+*/
     template <class Field, class PSHelper>
     inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                                   typename Field::Element_ptr A, const size_t lda,
@@ -87,7 +87,7 @@ namespace FFPACK{
         size_t R = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
         return R;
     }
-
+/*
     template <class Field>
     inline size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                                      typename Field::Element_ptr A, const size_t lda,
@@ -105,7 +105,7 @@ namespace FFPACK{
         size_t R = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, parH);
         return R;
     }
-
+*/
     template <class Field, class PSHelper>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
@@ -116,9 +116,9 @@ namespace FFPACK{
         size_t R;
 
         if (LuTag == FfpackSlabRecursive){
-            R = PLUQ (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q, psH);
+            R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
         } else
-            R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
+            R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q, psH);
 
         rkprofile = FFLAS::fflas_new<size_t> (R);
 
