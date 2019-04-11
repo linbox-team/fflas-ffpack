@@ -98,9 +98,9 @@ int main(int argc, char** argv) {
         try {
             FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
             Givaro::Timer chrono; chrono.start();
-            FFPACK::Det(F,det,n,A,n);
+            FFPACK::Det(F,det,n,A,n,P,Q);
             chrono.stop();
-            checker.check(det,A,n,Diag,P,Q); //TODO get P, Q from Det 
+            checker.check(det,A,n,Diag,P,Q);
             F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
             std::cerr << "Det COMPT: " << chrono << std::endl;
