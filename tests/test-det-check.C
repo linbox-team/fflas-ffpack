@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
 
     size_t pass = 0;	// number of tests that have successfully passed
 
-    FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
     for(size_t it=0; it<iter; ++it) {
 #ifdef TIME_CHECKER_Det
         FFLAS::Timer init;init.start();
@@ -100,18 +99,17 @@ int main(int argc, char** argv) {
             Givaro::Timer chrono; chrono.start();
             FFPACK::Det(F,det,n,A,n,P,Q);
             chrono.stop();
-            checker.check(det,A,n,Diag,P,Q);
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
+            checker.check(det,A,n,P,Q);
+            F.write(std::cerr << n << 'x' << n << ' ' << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
             std::cerr << "Det COMPT: " << chrono << std::endl;
 #endif
             pass++;
         } catch(FailureDetCheck &e) {
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
+            F.write(std::cerr << n << 'x' << n << ' ' << '(', det) << ')' << " Det verification FAILED!\n";
         }
 
         FFLAS::fflas_delete(A,P,Q);
-        Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
     }
 
     std::cerr << pass << "/" << iter << " tests SUCCESSFUL.\n";
