@@ -355,8 +355,9 @@ namespace FFPACK {
                             );
 
                         // A <-  S^T A
+                        PermParH.set_numthreads(std::max(nt,1));
                         TASK(MODE(READ(R1, R2, R3, R4) CONSTREFERENCE(Fi, A, R1, R2, R3, R4) READWRITE(A[0])),
-                             pMatrixApplyS( Fi, A, lda, N, M2, R1, R2, R3, R4));
+                             MatrixApplyS( Fi, A, lda, N, M2, R1, R2, R3, R4, PermParH) );
                         //MatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
                     }
 
@@ -378,7 +379,7 @@ namespace FFPACK {
 
                         // A <-   A T^T
                         TASK(MODE(READ(R1, R2, R3, R4) CONSTREFERENCE(Fi, A, R1, R2, R3, R4) READWRITE(A[0])),
-                             pMatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4));
+                             MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4, PermParH));
                         //			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
                     }
                     CHECK_DEPENDENCIES;

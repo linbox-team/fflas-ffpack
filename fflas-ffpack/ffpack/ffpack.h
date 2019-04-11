@@ -116,6 +116,20 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential par);
+
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
                      const size_t M2,
@@ -127,6 +141,20 @@ namespace FFPACK { /* Permutations */
                        const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
+
+    template <class Field>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut,Param> par);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
@@ -273,25 +301,6 @@ namespace FFPACK { /* Permutations */
                      typename Field::Element_ptr A, const size_t lda, const size_t incA,
                      const size_t * MathP, const size_t R, const size_t maxpiv,
                      const size_t rowstomove, const std::vector<bool> &ispiv);
-    /* \endcond */
-
-
-    //! Parallel applyT with OPENMP tasks
-    /* \cond */
-    template <class Field>
-    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    //! Parallel applyS tasks with OPENMP tasks
-    template <class Field>
-    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
     /* \endcond */
 
     //#endif
