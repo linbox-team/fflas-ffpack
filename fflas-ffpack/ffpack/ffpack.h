@@ -142,12 +142,19 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
-    template <class Field, class ParSeqH>
+    template <class Field>
     void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
                        const size_t width, const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4,
-                       const ParSeqH psh);
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
