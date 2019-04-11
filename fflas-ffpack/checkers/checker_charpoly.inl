@@ -94,6 +94,7 @@ namespace FFPACK {
             G.random(lambda);
 
             typename Field::Element_ptr Ac = FFLAS::fflas_new(F,n,n);
+            FFLAS::finit(F,n*n,Ac,1);
 
             // Ac <- A - lambda.I
             FFLAS::fassign(F,n,n,A,lda,Ac,n);

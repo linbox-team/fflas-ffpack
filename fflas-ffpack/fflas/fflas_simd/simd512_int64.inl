@@ -2,6 +2,7 @@
  * Copyright (C) 2018 the FFLAS-FFPACK group
  *
  * Written by   Ozden Ozturk <ozden.ozturk@etu.univ-grenoble-alpes.fr>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -532,9 +533,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 
     static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
-    template <bool overflow, bool poweroftwo, int8_t shifter>
-    static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                             const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+    static INLINE vect_t mod(vect_t &C, const __m512d &P, const __m512d &INVP, const __m512d &NEGP, const vect_t &POW50REM,
+                             const __m512d &MIN, const __m512d &MAX, __m512d &Q, __m512d &T);
 
 protected:
     /* return the sign where vect_t is seen as sixteen int32_t */
@@ -783,36 +783,26 @@ INLINE CONST vect_t Simd512_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
     return x1;
 }
 
-template <bool overflow, bool poweroftwo, int8_t shifter>
-INLINE vect_t Simd512_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
-#ifdef __INTEL_COMPILER
-    // Works fine with ICC 15.0.1 - A.B.
-    C = _mm512_rem_epi64(C, P);
-#else
-    if (poweroftwo) {
-        Q = srl<63>(C);
-        vect_t un = set1(1);
-        T = sub(sll<shifter>(un), un);
-        Q = add(C, vand(Q, T));
-        Q = sll<shifter>(srl<shifter>(Q));
-        C = sub(C, Q);
-        Q = vand(greater(zero(), Q), P);
-        C = add(C, Q);
-    } else {
-        Q = mulhi_fast(C, magic);
-        if (overflow) {
-            Q = add(Q, C);
-        }
-        Q = sra<shifter>(Q);
-        vect_t q1 = Simd512_impl<true, true, false, 8>::mulx(Q, P);
-        vect_t q2 = sll<32>(Simd512_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
-        C = sub(C, add(q1, q2));
-        T = greater_eq(C, P);
-        C = sub(C, vand(T, P));
-    }
-#endif
-    NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+// FIXME why cannot use Simd512<double>::vect_t in the declaration instead of __m512d?
+// --**~~~~ Only suitable for use with Modular<int64_t> or ModularBalanced<int64_t>, so p <= max_cardinality < 2**33 ~~~~~**--
+INLINE vect_t Simd512_impl<true, true, true, 8>::mod(vect_t &C, const __m512d &P, const __m512d &INVP, const __m512d &NEGP, const vect_t &POW50REM,
+                                                     const __m512d &MIN, const __m512d &MAX, __m512d &Q, __m512d &T) {
+    vect_t Cq50, Cr50, Ceq;
+    __m512d nCmod;
+
+    // nothing so special with 50; could be something else
+
+    Cq50 = sra<50>(C);                      // Cq50[i] < 2**14
+    Cr50 = set1(0x3FFFFFFFFFFFFLL);
+    Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
+
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ C[i] mod p
+
+    nCmod = _mm512_cvtepi64_pd(Ceq);
+    nCmod = Simd512<double>::mod(nCmod, P, INVP, NEGP, MIN, MAX, Q, T);
+
+    C = _mm512_cvtpd_epi64(nCmod);
+
     return C;
 }
 

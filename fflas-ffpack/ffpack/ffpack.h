@@ -291,8 +291,8 @@ namespace FFPACK { /* Permutations */
 namespace FFPACK { /* fgetrs, fgesv */
 
     /** Solve the system \f$A X = B\f$ or \f$X A = B\f$.
-     * Solving using the \c LQUP decomposition of \p A
-     * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Solving using the \c PLUQ decomposition of \p A
+     * already computed inplace with \c PLUQ (FFLAS::FflasNonUnit).
      * Version for A square.
      * If A is rank deficient, a solution is returned if the system is consistent,
      * Otherwise an info is 1
@@ -304,8 +304,8 @@ namespace FFPACK { /* fgetrs, fgesv */
      * @param R rank of \p A
      * @param A input matrix
      * @param lda leading dimension of \p A
-     * @param P column permutation of the \c LQUP decomposition of \p A
-     * @param Q column permutation of the \c LQUP decomposition of \p A
+     * @param P row permutation of the \c PLUQ decomposition of \p A
+     * @param Q column permutation of the \c PLUQ decomposition of \p A
      * @param B Right/Left hand side matrix. Initially stores \p B, finally stores the solution \p X.
      * @param ldb leading dimension of \p B
      * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
@@ -321,8 +321,8 @@ namespace FFPACK { /* fgetrs, fgesv */
             int * info);
 
     /** Solve the system A X = B or X A = B.
-     * Solving using the LQUP decomposition of A
-     * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Solving using the PLUQ decomposition of A
+     * already computed inplace with PLUQ(FFLAS::FflasNonUnit).
      * Version for A rectangular.
      * If A is rank deficient, a solution is returned if the system is consistent,
      * Otherwise an info is 1
@@ -335,8 +335,8 @@ namespace FFPACK { /* fgetrs, fgesv */
      * @param R rank of A
      * @param A input matrix
      * @param lda leading dimension of A
-     * @param P column permutation of the LQUP decomposition of A
-     * @param Q column permutation of the LQUP decomposition of A
+     * @param P row permutation of the PLUQ decomposition of A
+     * @param Q column permutation of the PLUQ decomposition of A
      * @param X solution matrix
      * @param ldx leading dimension of X
      * @param B Right/Left hand side matrix.
@@ -409,28 +409,11 @@ namespace FFPACK { /* fgetrs, fgesv */
            typename Field::Element_ptr X, const size_t ldx,
            typename Field::ConstElement_ptr B, const size_t ldb,
            int * info);
-
-    /**  Solve the system Ax=b.
-     * Solving using LQUP factorization and
-     * two triangular system resolutions.
-     * The input matrix is modified.
-     * @param F The computation domain
-     * @param M row dimension of the matrix
-     * @param A input matrix
-     * @param lda leading dimension of A
-     * @param x solution vector
-     * @param incx increment of x
-     * @param b right hand side vector
-     * @param incb increment of b
-     */
-
 } // FFPACK fgesv, fgetrs
 // #include "ffpack_fgesv.inl"
 // #include "ffpack_fgetrs.inl"
 
 namespace FFPACK { /* ftrtr */
-
-
 
     /** Compute the inverse of a triangular matrix.
      * @param F base field
@@ -1185,7 +1168,7 @@ namespace FFPACK { /* Solutions */
 
 
 
-    /** Computes the rank of the given matrix using a LQUP factorization.
+    /** Computes the rank of the given matrix using a PLUQ factorization.
      * The input matrix is modified.
      * @param F base field
      * @param M row dimension of the matrix
@@ -1224,7 +1207,7 @@ namespace FFPACK { /* Solutions */
 
     /** @brief Returns the determinant of the given matrix.
      * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
+     * using PLUQ factorization  with early termination. The input matrix A is overwritten.
      * If <code>M != N</code>,
      * then the matrix is virtually padded with zeros to make it square and
      * it's determinant is zero.
@@ -1247,7 +1230,7 @@ namespace FFPACK { /* Solutions */
 
     /** @brief Returns the determinant of the given matrix.
      * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
+     * using PLUQ factorization  with early termination. The input matrix A is overwritten.
      * If <code>M != N</code>,
      * then the matrix is virtually padded with zeros to make it square and
      * it's determinant is zero.
@@ -1274,7 +1257,7 @@ namespace FFPACK { /* Solutions */
 
 
     /**
-     * @brief Solves a linear system AX = b using LQUP factorization.
+     * @brief Solves a linear system AX = b using PLUQ factorization.
      * @oaram F base field
      * @oaram M matrix order
      * @param [in] A input matrix
