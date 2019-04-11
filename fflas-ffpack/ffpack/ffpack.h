@@ -1176,73 +1176,25 @@ namespace FFPACK { /* Solutions */
     IsSingular( const Field& F, const size_t M, const size_t N,
                 typename Field::Element_ptr A, const size_t lda);
 
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
+    /** @brief Returns the determinant of the given square matrix.
+     * @details The method is a block elimination
+     * using PLUQ factorization. The input matrix A is overwritten.
      * @warning The input matrix is modified.
      * @param F base field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
+     * @param [out] det the determinant of A
+     * @param N the order of the square matrix A.
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
-     * @param P the row permutation
-     * @param Q the column permutation
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
 
     template <class Field>
-    typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+    typename Field::Element& Det (const Field& F, typename Field::Element& det, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda);
 
     template <class Field, class PSHelper>
-    typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
-
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
-     * @warning The input matrix is modified.
-     * @param F field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
-     * @param [in,out] A input matrix
-     * @param lda leading dimension of A
-     */
-
-    template <class Field>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
-
-    template <class Field, class PSHelper>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
-
-
-    template <class Field>
-    typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
-
-    template <class Field, class PSHelper>
-    typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         const PSHelper& psH);
-
+    typename Field::Element& Det(const Field& F, typename Field::Element& det, const size_t N,
+                                 typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
 
     /*********/
     /* SOLVE */

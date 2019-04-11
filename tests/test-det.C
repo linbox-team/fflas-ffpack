@@ -60,21 +60,21 @@ bool test_det(Field &F, size_t n, int iter, RandIter& G)
         for(int i = 0;i<iter;++i){
             G.random(dt);
             FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
-            F.assign(d, FFPACK::Det (F, n, n, A, n));
+            FFPACK::Det (F, d, n, A, n);
             if (!F.areEqual(dt,d)) {
                 pass = false;
                 break;
             }
 
             FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
-            F.assign(d, FFPACK::Det(F,n,n,A,n,seqH));
+            FFPACK::Det(F,d,n,A,n,seqH);
             if (!F.areEqual(dt,d)) {
                 pass = false;
                 break;
             }
             FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
             parH.set_numthreads(NUM_THREADS);
-            F.assign(d, FFPACK::Det(F,n,n,A,n,parH));
+            FFPACK::Det(F,d,n,A,n,parH);
             if (!F.areEqual(dt,d)) {
                 pass = false;
                 break;
@@ -108,7 +108,11 @@ int main(int argc, char** argv)
     typedef Givaro::ModularBalanced<double> Field;
     Field F(p);
     Field::RandIter G(F,0,seed);
+    Givaro::ZRing<Givaro::Integer> ZZ;
+    Givaro::ZRing<Givaro::Integer>::RandIter GZZ(ZZ,0,seed);
+
     pass = pass && test_det(F,n,iters,G);
+        // pass = pass && test_det(ZZ,n,iters,GZZ); @fixme: need a specific random matrix generator over ZZ
 
     return ((pass==true)?0:1);
 }
