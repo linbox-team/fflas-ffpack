@@ -323,12 +323,12 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P )
+    inline void applyP( const Field& F,
+                        const FFLAS::FFLAS_SIDE Side,
+                        const FFLAS::FFLAS_TRANSPOSE Trans,
+                        const size_t M, const size_t ibeg, const size_t iend,
+                        typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                        const FFLAS::ParSeqHelper::Sequential seq)
     {
 
         const size_t bk = FFLASFFPACK_PERM_BKSIZE;
@@ -720,39 +720,31 @@ namespace FFPACK {
         }
     }
 
-
-    //#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
     template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P )
+    inline void applyP( const Field& F,
+                        const FFLAS::FFLAS_SIDE Side,
+                        const FFLAS::FFLAS_TRANSPOSE Trans,
+                        const size_t m, const size_t ibeg, const size_t iend,
+                        typename Field::Element_ptr A, const size_t lda, const size_t * P)
     {
-        int numthreads = MAX_THREADS;
-        size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
-        size_t NBlocks = m/BLOCKSIZE;
-        size_t LastBlockSize = m % BLOCKSIZE;
-        if (LastBlockSize)
-            NBlocks++;
-        else
-            LastBlockSize=BLOCKSIZE;
-
+        applyP(F, Side, Trans, m, ibeg, iend, A, lda, P, FFLAS::ParSeqHelper::Sequential());
+    }
+    //#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
+    template<class Field, class Cut, class Param>
+    inline void applyP( const Field& F,
+                        const FFLAS::FFLAS_SIDE Side,
+                        const FFLAS::FFLAS_TRANSPOSE Trans,
+                        const size_t m, const size_t ibeg, const size_t iend,
+                        typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                        const FFLAS::ParSeqHelper::Parallel<Cut, Param> PSH)//FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH)
+    {
+        size_t incBK = (Side == FFLAS::FflasRight)?lda:1;
         SYNCH_GROUP(
-                    for (size_t t = 0; t < NBlocks; ++t)
-                    {
-                    size_t BlockDim = BLOCKSIZE;
-                    if (t == NBlocks-1)
-                    BlockDim = LastBlockSize;
-
-                    TASK(MODE(CONSTREFERENCE(F, A,P) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
-                         applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
-
-                    }
-                   );
-        //#pragma omp taskwait
-
+            FORBLOCK1D(iter, m, PSH,
+                       TASK(MODE(CONSTREFERENCE(F, A,P) READWRITE(A[iter.begin()*incBK])),
+                            applyP(F, Side, Trans, iter.end()-iter.begin(), ibeg, iend, A+iter.begin()*incBK, lda, P));
+                       );
+                    );
     }
 
     template <class Field>

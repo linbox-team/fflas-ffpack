@@ -203,6 +203,25 @@ namespace FFPACK { /* Permutations */
             const size_t M, const size_t ibeg, const size_t iend,
             typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
+    //! Sequential applyP
+    template<class Field, class Cut, class Param>
+    void
+    applyP( const Field& F,
+            const FFLAS::FFLAS_SIDE Side,
+            const FFLAS::FFLAS_TRANSPOSE Trans,
+            const size_t m, const size_t ibeg, const size_t iend,
+            typename Field::Element_ptr A, const size_t lda, const size_t * P,
+            const FFLAS::ParSeqHelper::Parallel<Cut,Param> par);
+
+    //! Parallel applyP
+    template<class Field>
+    void
+    applyP( const Field& F,
+            const FFLAS::FFLAS_SIDE Side,
+            const FFLAS::FFLAS_TRANSPOSE Trans,
+            const size_t m, const size_t ibeg, const size_t iend,
+            typename Field::Element_ptr A, const size_t lda, const size_t * P,
+            const FFLAS::ParSeqHelper::Sequential seq);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
@@ -256,14 +275,6 @@ namespace FFPACK { /* Permutations */
                      const size_t rowstomove, const std::vector<bool> &ispiv);
     /* \endcond */
 
-    //! Parallel applyP with OPENMP tasks
-    template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
     //! Parallel applyT with OPENMP tasks
     /* \cond */
