@@ -158,9 +158,11 @@ namespace FFPACK {
 
         int nt = PSHelper.numthreads();
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-                                               FFLAS::StrategyParameter::TwoDAdaptive> MMParH (std::max(nt,1));
+                                               FFLAS::StrategyParameter::TwoDAdaptive> MMParH (std::max(nt/2,1));
+        typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                                               FFLAS::StrategyParameter::TwoDAdaptive> MMFullParH (std::max(nt,1));
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,
-                                               FFLAS::StrategyParameter::Threads> TRSMParH (std::max(nt,1));
+                                               FFLAS::StrategyParameter::Threads> TRSMParH (std::max(nt/2,1));
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
                                                FFLAS::StrategyParameter::Threads> PLUQParH1 (std::max(nt/2,1));
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
@@ -206,10 +208,7 @@ namespace FFPACK {
                     //        [ M2 ]
                     TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2, PLUQParH1) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
                          R2 = PLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2, PLUQParH1)
-                         //A4R2 = A4+R2;
-                        );
-
-                    //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
+                         );
 
                     P3 = FFLAS::fflas_new<size_t>(M-M2);
                     Q3 = FFLAS::fflas_new<size_t>(N2-R1);
@@ -235,7 +234,6 @@ namespace FFPACK {
                     // [ E2 ]
                     TASK(MODE(READ(P3) CONSTREFERENCE(Fi, P3, A3) READWRITE(A3[0])),
                          papplyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3));
-                    //applyP(  Fi, FflasLeft, FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
 
                     // [ M11 ] <- P2^T M1
                     // [ M12 ]
@@ -246,12 +244,10 @@ namespace FFPACK {
                     // [ D1 D2 ] <- D Q2^T
                     TASK(MODE(READ(Q2) CONSTREFERENCE(Fi, Q2, A2) READWRITE(A2[0])),
                          papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2));
-                    //papplyP( Fi, FflasRight, FflasTrans, R1, 0, N-N2, A2, lda, Q2);
 
                     // [ V1 V2 ] <- V1 Q3^T
                     TASK(MODE(READ(Q3) CONSTREFERENCE(Fi, Q3, A) READWRITE(A[R1])),
                          papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3));
-                    //applyP( Fi, FflasRight, FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3);
 
                     //    CHECK_DEPENDENCIES;
 
@@ -259,9 +255,9 @@ namespace FFPACK {
                     // K <- H3 U2^-1
                     TASK(MODE(READ(R2, F[0]) CONSTREFERENCE(Fi, A4, F, TRSMParH, R2) READWRITE(A4[0])),
                          ftrsm( Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, TRSMParH));
-                    //pftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda,  method, NUM);
-                    //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
+
                     CHECK_DEPENDENCIES;
+
                     typename Field::Element_ptr temp = 0;
 
                     TASK(MODE(READ(A4[0], R3) READWRITE(temp[0], R2) CONSTREFERENCE(Fi, A4, temp, R2, R3)),
@@ -284,7 +280,6 @@ namespace FFPACK {
                     TASK(MODE(READ(R2, F[R2]) CONSTREFERENCE(Fi, R2, A4, R3, temp, MMParH) READWRITE(A4[R2], temp[0])),
                          fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda, MMParH);
                          FFLAS::fflas_delete (temp);
-                         //		       delete[] temp;
                          temp=0;
                         );
 
@@ -294,13 +289,13 @@ namespace FFPACK {
                          R = A4 + R2 + R3*lda;
                          fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda, MMParH)
                         );
-                    //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
+
                     CHECK_DEPENDENCIES;
 
                     // R <- R - M3 O
                     TASK(MODE(READ(R3, R2, A4[R2], G[R3*lda]) CONSTREFERENCE(Fi, A4, R, R3, R2, G, MMParH) READWRITE(R[0])),
-                         fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda, MMParH));
-                    //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
+                         fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda, MMFullParH));
+
                     CHECK_DEPENDENCIES;
 
                     /*
