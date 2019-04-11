@@ -273,10 +273,10 @@ namespace FFPACK {
     bool IsSingular (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
                      FFLAS_ELT* A, const size_t lda);
     template INST_OR_DECL
-    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
+    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
                    FFLAS_ELT* A, const size_t lda);
     template INST_OR_DECL
-    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
+    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
                    FFLAS_ELT* A, const size_t lda,
                    const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
                                                        FFLAS::StrategyParameter::Threads>& parH);
