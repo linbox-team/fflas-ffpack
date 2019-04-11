@@ -116,19 +116,12 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
-    template <class Field>
+    template <class Field, class ParSeqH>
     void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
                        const size_t width, const size_t M2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4,
-                       const FFLAS::ParSeqHelper::Sequential seq);
-
-    template <class Field>
-    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                       const size_t width, const size_t M2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4,
-                       const FFLAS::ParSeqHelper::Sequential par);
+                       const ParSeqH psh);
 
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
@@ -142,19 +135,12 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
-    template <class Field>
+    template <class Field, class ParSeqH>
     void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
                        const size_t width, const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4,
-                       const FFLAS::ParSeqHelper::Sequential seq);
-
-    template <class Field, class Cut, class Param>
-    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                       const size_t width, const size_t N2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4,
-                       const FFLAS::ParSeqHelper::Parallel<Cut,Param> par);
+                       const ParSeqH psh);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
@@ -221,35 +207,23 @@ namespace FFPACK { /* Permutations */
      * @param A input matrix
      * @param lda leading dimension of A
      * @param P permutation in LAPACK format
+     * @param psh (optional): a sequential or parallel helper, to choose between sequential or parallel execution
      * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
      */
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P );
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t M, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
-    //! Sequential applyP
-    template<class Field, class Cut, class Param>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t m, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P,
-            const FFLAS::ParSeqHelper::Parallel<Cut,Param> par);
-
-    //! Parallel applyP
-    template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t m, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P,
-            const FFLAS::ParSeqHelper::Sequential seq);
+    template<class Field, class ParSeqH>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const ParSeqH psh);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
