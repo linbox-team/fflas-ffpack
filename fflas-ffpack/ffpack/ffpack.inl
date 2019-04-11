@@ -67,25 +67,31 @@ namespace FFPACK {
     }
 
     template <class Field>
-    typename Field::Element& Det (const Field& F, typename Field::Element& det, const size_t N,
-                                  typename Field::Element_ptr A, const size_t lda)
+    inline typename Field::Element&
+    Det (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, size_t * P, size_t * Q)
     {
-        return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential());
+        return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential(), P, Q);
     }
 
     template <class Field, class PSHelper>
-    typename Field::Element& Det (const Field& F, typename Field::Element& det, const size_t N,
-                                  typename Field::Element_ptr A, const size_t lda, const PSHelper& psH)
+    typename Field::Element&
+    Det (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH,
+         size_t* P, size_t * Q)
     {
         if (N==0)
             return  F.assign(det,F.one) ;
-
-        size_t* P = FFLAS::fflas_new<size_t>(N);
-        size_t* Q = FFLAS::fflas_new<size_t>(N);
+        bool allocPQ = false;
+        if (P==NULL || Q == NULL) {
+            allocPQ = true;
+            P = FFLAS::fflas_new<size_t>(N);
+            Q = FFLAS::fflas_new<size_t>(N);
+        }
         size_t R = PLUQ (F,FFLAS::FflasNonUnit,N,N,A,lda,P,Q,psH);
 
         if (R<N){
-            FFLAS::fflas_delete(P,Q);
+            if (allocPQ) FFLAS::fflas_delete(P,Q);
             return F.assign(det,F.zero);
         }
         F.assign(det,F.one);
@@ -98,7 +104,7 @@ namespace FFPACK {
             if (Q[i] != i) ++count;
         }
 
-        FFLAS::fflas_delete(P,Q);
+        if (allocPQ) FFLAS::fflas_delete(P,Q);
 
         if ((count&1) == 1)
             return F.negin(det);

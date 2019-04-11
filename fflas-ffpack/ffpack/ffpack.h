@@ -1186,15 +1186,20 @@ namespace FFPACK { /* Solutions */
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
      * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
+     * @param P,Q (optional) row and column permutations to be used by the PLUQ factorization. randomized checkers (see cherckes/checker_det.inl) need them for certification
      */
 
     template <class Field>
-    typename Field::Element& Det (const Field& F, typename Field::Element& det, const size_t N,
-                                  typename Field::Element_ptr A, const size_t lda);
+    typename Field::Element&
+    Det (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t * P = NULL, size_t * Q = NULL);
 
     template <class Field, class PSHelper>
-    typename Field::Element& Det(const Field& F, typename Field::Element& det, const size_t N,
-                                 typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
+    typename Field::Element&
+    Det(const Field& F, typename Field::Element& det, const size_t N,
+        typename Field::Element_ptr A, const size_t lda, const PSHelper& psH,
+        size_t * P = NULL, size_t * Q = NULL);
 
     /*********/
     /* SOLVE */
