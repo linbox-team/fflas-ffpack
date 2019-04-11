@@ -54,10 +54,11 @@ namespace FFPACK {
     template <class PSHelper>
     inline Givaro::Integer&
     Det (const Givaro::ZRing<Givaro::Integer>& F, Givaro::Integer& det,
-         const size_t N,  Givaro::Integer * A, const size_t lda, const PSHelper& psH){
+         const size_t N,  Givaro::Integer * A, const size_t lda,
+         const PSHelper& psH, size_t*P,size_t*Q){
 
         if (N==0)
-            return  det = F.one ;
+            return  F.assign(det,F.one);
 
         size_t Abs = FFLAS::bitsize(F,N,N,A,lda);
         // Hadamard's bound on the bitsize of the determinant over Z
