@@ -41,7 +41,7 @@ namespace FFPACK {
      * The non pivot elements, are located in montonically increasing order.
      */
     template<class Field>
-    void
+    inline void
     MonotonicApplyP (const Field& F,
                      const FFLAS::FFLAS_SIDE Side,
                      const FFLAS::FFLAS_TRANSPOSE Trans,
@@ -105,7 +105,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     MonotonicCompress (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
                        typename Field::Element_ptr A, const size_t lda, const size_t incA,
                        const size_t * MathP, const size_t R, const size_t maxpiv,
@@ -141,7 +141,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     MonotonicCompressMorePivots (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
                                  typename Field::Element_ptr A, const size_t lda, const size_t incA,
                                  const size_t * MathP, const size_t R, const size_t rowstomove, const size_t lenP)
@@ -218,7 +218,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
                              typename Field::Element_ptr A, const size_t lda, const size_t incA,
                              const size_t * MathP, const size_t lenP)
@@ -292,7 +292,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     applyP_block (const Field& F,
                   const FFLAS::FFLAS_SIDE Side,
                   const FFLAS::FFLAS_TRANSPOSE Trans,
@@ -372,11 +372,11 @@ namespace FFPACK {
         FFLAS::fflas_delete (tmp);
     }
     template <class Field, class Cut, class Param>
-    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                       const size_t width, const size_t M2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4,
-                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par)
+    inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                              const size_t width, const size_t M2,
+                              const size_t R1, const size_t R2,
+                              const size_t R3, const size_t R4,
+                              const FFLAS::ParSeqHelper::Parallel<Cut, Param> par)
     {
         SYNCH_GROUP(
             FORBLOCK1D(iter,width, par,
@@ -436,7 +436,7 @@ namespace FFPACK {
     }
 
     template <class Field, class Cut, class Param>
-    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+    inline void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
                        const size_t width, const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4,
@@ -784,7 +784,7 @@ namespace FFPACK {
                         const FFLAS::FFLAS_TRANSPOSE Trans,
                         const size_t m, const size_t ibeg, const size_t iend,
                         typename Field::Element_ptr A, const size_t lda, const size_t * P,
-                        const FFLAS::ParSeqHelper::Parallel<Cut, Param> PSH)//FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH)
+                        const FFLAS::ParSeqHelper::Parallel<Cut, Param> PSH)
     {
         size_t incBK = (Side == FFLAS::FflasRight)?lda:1;
         SYNCH_GROUP(
