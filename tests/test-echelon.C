@@ -70,14 +70,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
     size_t *Q = FFLAS::fflas_new<size_t>(m);
     size_t R = (size_t)-1;
 
-    //Additional tests for templated helper
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t seqR = (size_t)-1;
-    Element * seqA = FFLAS::fflas_new (F,m,n);
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-    parH.set_numthreads(NUM_THREADS);
-    size_t parR = (size_t)-1;
-    Element * parA = FFLAS::fflas_new (F,m,n);
+
 
     bool pass=true;
 
@@ -87,9 +80,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
 
-        //Additional tests for templated helper
-        FFLAS::fassign(F,m,n,A,lda,seqA,lda);
-        FFLAS::fassign(F,m,n,A,lda,parA,lda);
         
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
@@ -98,12 +88,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
         if (R != r) {pass = false; break;}
 
-
-        //Additional tests for templated helper
-        seqR = FFPACK::ColumnEchelonForm (F, m, n, seqA, n, P, Q, true, LuTag, seqH);
-        if (r != seqR) {pass = false; break; }        
-        parR = FFPACK::ColumnEchelonForm (F, m, n, parA, n, P, Q, true, LuTag, parH);
-        if (r != parR) {pass = false; break; }
 
 
         FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,U,n, LuTag);
@@ -145,10 +129,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
     }
 
 
-    FFLAS::fflas_delete( seqA);
-    FFLAS::fflas_delete( parA);
-
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -175,14 +155,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
     size_t *Q = FFLAS::fflas_new<size_t>(n);
     size_t R = (size_t)-1;
 
-    //Additional tests for templated helper
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t seqR = (size_t)-1;
-    Element * seqA = FFLAS::fflas_new (F,m,n);
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-    parH.set_numthreads(NUM_THREADS);
-    size_t parR = (size_t)-1;
-    Element * parA = FFLAS::fflas_new (F,m,n);
+
 
     bool pass=true;
 
@@ -191,9 +164,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
-        //Additional tests for templated helper
-        FFLAS::fassign(F,m,n,A,lda,seqA,lda);
-        FFLAS::fassign(F,m,n,A,lda,parA,lda);
 
 
         for (size_t j=0;j<m;j++) P[j]=0;
@@ -204,14 +174,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         if (R != r) {pass = false; break;}
 
 
-
-    //Additional tests for templated helper
-     seqR = FFPACK::RowEchelonForm (F, m, n, seqA, n, P, Q, true, LuTag,seqH);
-     parH.set_numthreads(NUM_THREADS);     
-     parR = FFPACK::RowEchelonForm (F, m, n, parA, n, P, Q, true, LuTag, parH);
-
-     if (r != seqR) {pass = false; break;}
-     if (r != parR) {pass = false; break;}
 
 
         FFPACK::getEchelonTransform (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,L,m, LuTag);
@@ -248,9 +210,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         }
     }
 
-    FFLAS::fflas_delete( seqA);
-    FFLAS::fflas_delete( parA);
-
 
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
@@ -278,14 +237,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *Q = FFLAS::fflas_new<size_t>(m);
     size_t R = (size_t)-1;
 
-    //Additional tests for templated helper
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t seqR = (size_t)-1;
-    Element * seqA = FFLAS::fflas_new (F,m,n);
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-    parH.set_numthreads(NUM_THREADS);
-    size_t parR = (size_t)-1;
-    Element * parA = FFLAS::fflas_new (F,m,n);
+
 
     bool pass=true;
 
@@ -294,9 +246,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
-        //Additional tests for templated helper
-        FFLAS::fassign(F,m,n,A,lda,seqA,lda);
-        FFLAS::fassign(F,m,n,A,lda,parA,lda);
 
 
         for (size_t j=0;j<n;j++) P[j]=0;
@@ -305,16 +254,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
         if (R != r) {pass = false; break;}
-
-
-
-    //Additional tests for templated helper
-     seqR = FFPACK::ReducedColumnEchelonForm (F, m, n, seqA, n, P, Q, true, LuTag,seqH);
-     parH.set_numthreads(NUM_THREADS);     
-     parR = FFPACK::ReducedColumnEchelonForm (F, m, n, parA, n, P, Q, true, LuTag, parH);
-
-     if (r != seqR) {pass = false; break;}
-     if (r != parR) {pass = false; break;}
 
 
         FFPACK::getReducedEchelonTransform (F, FFLAS::FflasLower, m,n,R,P,Q,A,lda,U,n, LuTag);
@@ -348,10 +287,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     }
 
 
-    FFLAS::fflas_delete( seqA);
-    FFLAS::fflas_delete( parA);
-
-
 
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
@@ -378,14 +313,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *Q = FFLAS::fflas_new<size_t>(n);
     size_t R = (size_t)-1;
 
-    //Additional tests for templated helper
-    FFLAS::ParSeqHelper::Sequential seqH;
-    size_t seqR = (size_t)-1;
-    Element * seqA = FFLAS::fflas_new (F,m,n);
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-    parH.set_numthreads(NUM_THREADS);
-    size_t parR = (size_t)-1;
-    Element * parA = FFLAS::fflas_new (F,m,n);
 
     bool pass=true;
 
@@ -396,9 +323,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
-        //Additional tests for templated helper
-        FFLAS::fassign(F,m,n,A,lda,seqA,lda);
-        FFLAS::fassign(F,m,n,A,lda,parA,lda);
 
 
         for (size_t j=0;j<m;j++) P[j]=0;
@@ -408,15 +332,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         if (R != r) {pass = false; break;}
 
-
-
-    //Additional tests for templated helper
-     seqR = FFPACK::ReducedRowEchelonForm (F, m, n, seqA, n, P, Q, true, LuTag,seqH);
-     parH.set_numthreads(NUM_THREADS);     
-     parR = FFPACK::ReducedRowEchelonForm (F, m, n, parA, n, P, Q, true, LuTag, parH);
-
-     if (r != seqR) {pass = false; break;}
-     if (r != parR) {pass = false; break;}
 
 
         FFPACK::getReducedEchelonTransform (F, FFLAS::FflasUpper, m,n,R,P,Q,A,lda,L,m, LuTag);
@@ -459,10 +374,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     }
 
 
-    FFLAS::fflas_delete( seqA);
-    FFLAS::fflas_delete( parA);
-
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -492,7 +403,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
         std::cout.width(40);
         std::cout<<oss.str();
         std::cout<<" .";
-PAR_BLOCK{
+
         ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
         std::cout<<".";
         ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
@@ -513,7 +424,7 @@ PAR_BLOCK{
         std::cout<<".";
         ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G);
         std::cout<<".";
-}
+
         nbit--;
         if ( !ok )
             std::cout << "FAILED with seed = "<<seed<<std::endl;
@@ -565,7 +476,7 @@ int main(int argc, char** argv){
         ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,r,iters,seed);
         //ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters,seed); // BUG: not available yet (missing division in the field
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters,seed);
-        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed); // BUG: not available yet in the given field
+        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed);
 
     } while (loop && ok);
 
