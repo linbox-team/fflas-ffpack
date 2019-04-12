@@ -765,16 +765,17 @@ IsSingular_modular_double( const double p, const size_t M, const size_t N,
 
 
 double
-Det_modular_double( const double p, const size_t M, const size_t N,
+Det_modular_double( const double p, const size_t N,
                     double * A, const size_t lda
                     , bool positive)
 {
+    double d;
     if (positive) {
         Modular<double> F(p);
-        return Det(F,M,N,A,lda);
+        return Det(F,d,N,A,lda);
     } else {
         ModularBalanced<double> F(p);
-        return Det(F,M,N,A,lda);
+        return Det(F,d,N,A,lda);
     }
 }
 
