@@ -52,7 +52,7 @@ namespace FFPACK {
         size_t* P = FFLAS::fflas_new<size_t>(Na);
         size_t* Q = FFLAS::fflas_new<size_t>(Na);
 
-        size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Na, Na, A, lda, P, Q);
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, Na, Na, A, lda, P, Q);
 
         fgetrs (F, Side, M, N, R, A, lda, P, Q, B, ldb, info);
 
@@ -73,15 +73,15 @@ namespace FFPACK {
            int * info)
     {
 
-        size_t* P = FFLAS::fflas_new<size_t>(N);
-        size_t* Q = FFLAS::fflas_new<size_t>(M);
+        size_t* P = FFLAS::fflas_new<size_t>(M);
+        size_t* Q = FFLAS::fflas_new<size_t>(N);
 
-        size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q);
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
 
         fgetrs (F, Side, M, N, NRHS, R, A, lda, P, Q, X, ldx, B, ldb, info);
 
-        FFLAS::fflas_delete( P);
-        FFLAS::fflas_delete( Q);
+        FFLAS::fflas_delete (P);
+        FFLAS::fflas_delete (Q);
 
         return R;
     }

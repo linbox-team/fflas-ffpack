@@ -91,10 +91,10 @@ namespace FFPACK {
                         const size_t R3, const size_t R4) ;
 
     template INST_OR_DECL
-    size_t pPLUQ(const FFLAS_FIELD<FFLAS_ELT>& Fi, const FFLAS::FFLAS_DIAG Diag,
-                 const size_t M, const size_t N,
-                 FFLAS_ELT* A, const size_t lda,
-                 size_t* P, size_t* Q, int nt);
+    size_t PLUQ(const FFLAS_FIELD<FFLAS_ELT>& Fi, const FFLAS::FFLAS_DIAG Diag,
+                const size_t M, const size_t N,
+                FFLAS_ELT* A, const size_t lda, size_t* P, size_t* Q,
+                const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads>& PSH);
 
     template INST_OR_DECL
     void fgetrs (const FFLAS_FIELD<FFLAS_ELT>& F,
@@ -148,7 +148,7 @@ namespace FFPACK {
     size_t PLUQ (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,
                  const size_t M, const size_t N,
                  FFLAS_ELT* A, const size_t lda,
-                 size_t*P, size_t *Q, size_t BCThreshold);
+                 size_t*P, size_t *Q);
 
     template INST_OR_DECL
     size_t LUdivine (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
@@ -273,8 +273,12 @@ namespace FFPACK {
     bool IsSingular (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
                      FFLAS_ELT* A, const size_t lda);
     template INST_OR_DECL
-    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
-                   FFLAS_ELT* A, const size_t lda);
+    FFLAS_ELT& Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
+                   FFLAS_ELT* A, const size_t lda, size_t *P, size_t *Q);
+    template INST_OR_DECL
+    FFLAS_ELT& Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
+                   FFLAS_ELT* A, const size_t lda,
+                   const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads>& parH, size_t *P, size_t *Q);
 
     template INST_OR_DECL
     FFLAS_ELT* Solve( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M,

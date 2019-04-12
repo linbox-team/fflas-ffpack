@@ -4,6 +4,7 @@
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
  * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * Romain Lebreton <romain.lebreton@lirmm.fr>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -449,9 +450,8 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 
     static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
-    template <bool overflow, bool poweroftwo, int8_t shifter>
-    static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                             const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+    static INLINE vect_t mod(vect_t &C, const __m128d &P, const __m128d &INVP, const __m128d &NEGP, const vect_t &POW50REM,
+                             const __m128d &MIN, const __m128d &MAX, __m128d &Q, __m128d &T);
 
 protected:
     /* return the sign where vect_t is seen as four int32_t */
@@ -687,38 +687,40 @@ INLINE CONST vect_t Simd128_impl<true,true,true,8>::mulhi_fast(vect_t x, vect_t 
     return x1;
 }
 
-// warning : may be off by 1 multiple, but we save a mul...
-template <bool overflow, bool poweroftwo, int8_t shifter>
-INLINE CONST vect_t Simd128_impl<true,true,true,8>::mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                                                        const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
-#ifdef __INTEL_COMPILER
-    // Works fine with ICC 15.0.1 - A.B.
-    // #warning "not tested"
-    C = _mm_rem_epi64(C, P);
+// FIXME why cannot use Simd128<double>::vect_t in the declaration instead of __m128d?
+// --**~~~~ Only suitable for use with Modular<int64_t> or ModularBalanced<int64_t>, so p <= max_cardinality < 2**33 ~~~~~**--
+INLINE vect_t Simd128_impl<true, true, true, 8>::mod(vect_t &C, const __m128d &P, const __m128d &INVP, const __m128d &NEGP, const vect_t &POW50REM,
+                                                     const __m128d &MIN, const __m128d &MAX, __m128d &Q, __m128d &T) {
+    vect_t Cq50, Cr50, Ceq;
+    __m128d nCmod;
+
+    // nothing so special with 50; could be something else
+
+    Cq50 = sra<50>(C);                      // Cq50[i] < 2**14
+    Cr50 = set1(0x3FFFFFFFFFFFFLL);
+    Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
+
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ C[i] mod p
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    nCmod = _mm_cvtepi64_pd(Ceq);
 #else
-    if (poweroftwo) {
-        Q = srl<63>(C);
-        vect_t un = set1(1);
-        T = sub(sll<shifter>(un), un);
-        Q = add(C, vand(Q, T));
-        Q = sll<shifter>(srl<shifter>(Q));
-        C = sub(C, Q);
-        Q = vand(greater(zero(), Q), P);
-        C = add(C, Q);
-    } else {
-        Q = mulhi_fast(C, magic);
-        if (overflow) {
-            Q = add(Q, C);
-        }
-        Q = sra<shifter>(Q);
-        vect_t q1 = Simd128_impl<true, true, false, 8>::mulx(Q, P);
-        vect_t q2 = sll<32>(Simd128_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
-        C = sub(C, add(q1, q2));
-        T = greater_eq(C, P);
-        C = sub(C, vand(T, P));
-    }
+    // ><
+    Converter cC;
+    cC.v = Ceq;
+    nCmod = _mm_set_pd(static_cast<double>(cC.t[1]),static_cast<double>(cC.t[0]));
 #endif
-    NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+
+    nCmod = Simd128<double>::mod(nCmod, P, INVP, NEGP, MIN, MAX, Q, T);
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    C = _mm_cvtpd_epi64(nCmod);
+#else
+    double r[2];
+    _mm_storeu_pd(r, nCmod); // could be changed to store if guaranteed to be aligned
+    C = set(static_cast<int64_t>(r[0]),static_cast<int64_t>(r[1]));
+#endif
+
     return C;
 }
 

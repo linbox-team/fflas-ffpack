@@ -76,6 +76,7 @@ namespace FFLAS {
 
             // w2 <- B.v
             typename Field::Element_ptr w2 = FFLAS::fflas_new(F,k);
+            FFLAS::finit(F,k,w2,1);
             FFLAS::fgemv(F, tb, Brows, Bcols, F.one, B, ldb, v, 1, F.zero, w2, 1);
 
             // w1 <- alpha.A.w2 - w1
@@ -91,6 +92,8 @@ namespace FFLAS {
 
     private:
         inline void init(typename Field::RandIter &G, const typename Field::Element beta, typename Field::Element_ptr C) {
+            FFLAS::finit(F,n,v,1);
+            FFLAS::finit(F,m,w1,1);
             FFLAS::frand(F,G,n,v,1);
 
             // w1 <- beta.C.v

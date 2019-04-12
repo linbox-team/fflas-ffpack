@@ -94,6 +94,7 @@ namespace FFPACK {
             G.random(lambda);
 
             typename Field::Element_ptr Ac = FFLAS::fflas_new(F,n,n);
+            FFLAS::finit(F,n*n,Ac,1);
 
             // Ac <- A - lambda.I
             FFLAS::fassign(F,n,n,A,lda,Ac,n);
@@ -114,11 +115,11 @@ namespace FFPACK {
                 inittime.stop(); _time = inittime;
                 Givaro::Timer pluqtime; pluqtime.start();
 #endif
-FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> PSHelper;
+
 #ifndef ENABLE_CHECKER_PLUQ
                 size_t R =
 #endif
-                FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q,PSHelper);
+                FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
 #ifdef TIME_CHECKER_CHARPOLY
                 pluqtime.stop();
                 std::cerr << "CHARPol server PLUQ : " << pluqtime << std::endl;

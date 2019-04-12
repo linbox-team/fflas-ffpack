@@ -71,12 +71,18 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 #ifdef DEBUG
     FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
 #endif
+
+FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+
+
     FFLAS::Timer t; t.clear();
     double time=0.0;
     t.clear();
     t.start();
-
-    FFPACK::Solve(F, m, A, lda, x, incx, B, incb);
+PAR_BLOCK{
+parH.set_numthreads(NUM_THREADS);
+    FFPACK::Solve(F, m, A, lda, x, incx, B, incb, parH);
+}
     t.stop();
     time+=t.usertime();
 

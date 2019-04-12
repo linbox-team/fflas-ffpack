@@ -317,7 +317,6 @@ ftrtrm_modular_double (const double p, const FFLAS::FFLAS_SIDE side, const enum 
 
 /* PLUQ */
 
-
 size_t
 PLUQ_modular_double (const double p, const enum FFLAS::FFLAS_DIAG Diag,
                      const size_t M, const size_t N,
@@ -333,9 +332,6 @@ PLUQ_modular_double (const double p, const enum FFLAS::FFLAS_DIAG Diag,
         return PLUQ(F,(enum FFLAS::FFLAS_DIAG)Diag,M,N,A,lda,P,Q);
     }
 }
-
-
-
 
 size_t
 LUdivine_modular_double (const double p, const enum FFLAS::FFLAS_DIAG Diag,  const enum FFLAS::FFLAS_TRANSPOSE Trans,
@@ -769,16 +765,17 @@ IsSingular_modular_double( const double p, const size_t M, const size_t N,
 
 
 double
-Det_modular_double( const double p, const size_t M, const size_t N,
+Det_modular_double( const double p, const size_t N,
                     double * A, const size_t lda
                     , bool positive)
 {
+    double d;
     if (positive) {
         Modular<double> F(p);
-        return Det(F,M,N,A,lda);
+        return Det(F,d,N,A,lda);
     } else {
         ModularBalanced<double> F(p);
-        return Det(F,M,N,A,lda);
+        return Det(F,d,N,A,lda);
     }
 }
 
