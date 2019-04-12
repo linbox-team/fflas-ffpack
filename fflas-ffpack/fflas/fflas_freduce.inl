@@ -84,12 +84,6 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 //        return fmod(A,B);
     }
 
-    template<size_t K, size_t MG>
-    inline RecInt::rmint<K,MG>& reduce(RecInt::rmint<K,MG>& A, RecInt::rmint<K,MG>& B)
-    {
-        return RecInt::rmint<K>::mod_n(A, B);
-    }
-
     inline int64_t reduce(int64_t A, int64_t p, double invp, double min, double max, int64_t pow50rem)
     {
         // assert(p < 1LL << 33);
@@ -315,6 +309,7 @@ namespace FFLAS { namespace vectorised {
 #endif // __x86_64__
 
 
+    // TODO when is this one used???
     template<class Field>
 #ifdef __x86_64__
     typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
@@ -443,6 +438,8 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         }
     }
 
+    // FIXME not actually called, even when support_simd_mod is false?!!
+    // Because of a bad switch in details, as unswitch::reduce's only called when support_simd_mod is true~
     // not vectorised but allows better code than % or fmod via helper
     template<class Field>
     inline typename std::enable_if< !FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
