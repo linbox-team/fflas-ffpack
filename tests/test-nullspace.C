@@ -97,7 +97,6 @@ bool test_nullspace(Field& F, FFLAS::FFLAS_SIDE side, size_t m, size_t n, size_t
     std::cout << "A: " << m << "x" << n << " (rank " << r << ")" << std::endl;
     std::cout << "NS: " << NSdim << std::endl;
 #endif
-
     if (side == FFLAS::FFLAS_SIDE::FflasRight) {
         // Right nullspace dimension + Rank == Matrix column dimension
         if (NSdim + r != n) return false;

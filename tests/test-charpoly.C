@@ -112,7 +112,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
     // Checking det(A) == charp[0]
     typename Field::Element det;
     F.init(det);
-    F.assign(det, FFPACK::Det(F, n, n, B, n));
+    FFPACK::Det(F, det, n, B, n);
     FFLAS::fflas_delete (B);
 
     if (n&1) F.negin(det); // p0 == (-1)^n det
