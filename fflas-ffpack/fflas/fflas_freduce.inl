@@ -357,6 +357,7 @@ namespace FFLAS { namespace vectorised {
 
 namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
     template<class Field>
     inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
     modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
@@ -437,6 +438,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             T[i] += (T[i] < min) ? H.p : 0;
         }
     }
+#endif
 
     // FIXME not actually called, even when support_simd_mod is false?!!
     // Because of a bad switch in details, as unswitch::reduce's only called when support_simd_mod is true~

@@ -85,7 +85,6 @@ namespace FFPACK {
          */
         inline bool check(const typename Field::Element& det,
                           typename Field::ConstElement_ptr LU, size_t lda,
-                          const FFLAS::FFLAS_DIAG Diag,
                           size_t *P, size_t *Q) const {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer checktime, overhead; checktime.start();
@@ -101,12 +100,11 @@ namespace FFPACK {
             overhead.start();
 #endif
             // u <-- U.u, v <-- U.v
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, LU, lda, u, 2);
+            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, n, 2, F.one, LU, lda, u, 2);
 
-            const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
             // w <-- w.L
             // Warning: should be ftrmv
-            FFLAS::ftrmm(F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, oppDiag, 1, n, F.one, LU, lda, w, n);
+            FFLAS::ftrmm(F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, 1, n, F.one, LU, lda, w, n);
 
 #ifdef TIME_CHECKER_Det
             overhead.stop();

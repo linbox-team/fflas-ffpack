@@ -498,7 +498,7 @@ extern "C" {
 
 
     double
-    Det_modular_double( const double p, const size_t M, const size_t N,
+    Det_modular_double( const double p, const size_t N,
                         double * A, const size_t lda
                         , bool positive );
 
