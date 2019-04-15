@@ -41,7 +41,7 @@ namespace FFPACK {
      * The non pivot elements, are located in montonically increasing order.
      */
     template<class Field>
-    void
+    inline void
     MonotonicApplyP (const Field& F,
                      const FFLAS::FFLAS_SIDE Side,
                      const FFLAS::FFLAS_TRANSPOSE Trans,
@@ -105,7 +105,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     MonotonicCompress (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
                        typename Field::Element_ptr A, const size_t lda, const size_t incA,
                        const size_t * MathP, const size_t R, const size_t maxpiv,
@@ -141,7 +141,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     MonotonicCompressMorePivots (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
                                  typename Field::Element_ptr A, const size_t lda, const size_t incA,
                                  const size_t * MathP, const size_t R, const size_t rowstomove, const size_t lenP)
@@ -218,7 +218,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
                              typename Field::Element_ptr A, const size_t lda, const size_t incA,
                              const size_t * MathP, const size_t lenP)
@@ -292,7 +292,7 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
+    inline void
     applyP_block (const Field& F,
                   const FFLAS::FFLAS_SIDE Side,
                   const FFLAS::FFLAS_TRANSPOSE Trans,
@@ -323,12 +323,12 @@ namespace FFPACK {
     }
 
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P )
+    inline void applyP( const Field& F,
+                        const FFLAS::FFLAS_SIDE Side,
+                        const FFLAS::FFLAS_TRANSPOSE Trans,
+                        const size_t M, const size_t ibeg, const size_t iend,
+                        typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                        const FFLAS::ParSeqHelper::Sequential seq)
     {
 
         const size_t bk = FFLASFFPACK_PERM_BKSIZE;
@@ -357,12 +357,35 @@ namespace FFPACK {
     inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
                               const size_t width, const size_t M2,
                               const size_t R1, const size_t R2,
-                              const size_t R3, const size_t R4)
+                              const size_t R3, const size_t R4){
+        MatrixApplyS (F, A, lda, width, M2, R1, R2, R3, R4, FFLAS::ParSeqHelper::Sequential());
+    }
+    template <class Field>
+    inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                              const size_t width, const size_t M2,
+                              const size_t R1, const size_t R2,
+                              const size_t R3, const size_t R4,
+                              const FFLAS::ParSeqHelper::Sequential seq)
     {
         typename Field::Element_ptr tmp = FFLAS::fflas_new (F, M2-R1-R2, width);
         doApplyS (F, A, lda, tmp, width, M2, R1, R2, R3, R4);
         FFLAS::fflas_delete (tmp);
     }
+    template <class Field, class Cut, class Param>
+    inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                              const size_t width, const size_t M2,
+                              const size_t R1, const size_t R2,
+                              const size_t R3, const size_t R4,
+                              const FFLAS::ParSeqHelper::Parallel<Cut, Param> par)
+    {
+        SYNCH_GROUP(
+            FORBLOCK1D(iter,width, par,
+                       TASK(MODE(CONSTREFERENCE(F,A) READ(A[BLOCKSIZE*t])),
+                            MatrixApplyS (F, A+iter.begin(), lda, iter.end()-iter.begin(), M2, R1, R2, R3, R4););
+                       );
+                   );
+    }
+
     template <class T>
     inline void PermApplyS (T* A, const size_t lda,
                             const size_t width, const size_t M2,
@@ -396,12 +419,37 @@ namespace FFPACK {
     inline void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
                               const size_t width, const size_t N2,
                               const size_t R1, const size_t R2,
-                              const size_t R3, const size_t R4)
+                              const size_t R3, const size_t R4){
+        MatrixApplyT (F, A, lda, width, N2, R1, R2, R3, R4, FFLAS::ParSeqHelper::Sequential());
+    }
+
+    template <class Field>
+    inline void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                              const size_t width, const size_t N2,
+                              const size_t R1, const size_t R2,
+                              const size_t R3, const size_t R4,
+                              const FFLAS::ParSeqHelper::Sequential seq)
     {
         typename Field::Element_ptr tmp = FFLAS::fflas_new (F, N2-R1, width);
         doApplyT (F, A, lda, tmp, width, N2, R1, R2, R3, R4);
         FFLAS::fflas_delete (tmp);
     }
+
+    template <class Field, class Cut, class Param>
+    inline void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par)
+    {
+        SYNCH_GROUP(
+            FORBLOCK1D(iter, width, par,
+                       TASK(MODE(CONSTREFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])),
+                            MatrixApplyT(F,A+iter.begin()*lda, lda, iter.end()-iter.begin(), N2, R1, R2, R3, R4) );
+                       );
+                    );
+    }
+
     template <class T>
     inline void PermApplyT (T* A, const size_t lda,
                             const size_t width, const size_t N2,
@@ -720,102 +768,32 @@ namespace FFPACK {
         }
     }
 
-
-    //#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
     template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P )
+    inline void applyP( const Field& F,
+                        const FFLAS::FFLAS_SIDE Side,
+                        const FFLAS::FFLAS_TRANSPOSE Trans,
+                        const size_t m, const size_t ibeg, const size_t iend,
+                        typename Field::Element_ptr A, const size_t lda, const size_t * P)
     {
-        int numthreads = MAX_THREADS;
-        size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
-        size_t NBlocks = m/BLOCKSIZE;
-        size_t LastBlockSize = m % BLOCKSIZE;
-        if (LastBlockSize)
-            NBlocks++;
-        else
-            LastBlockSize=BLOCKSIZE;
-
-        SYNCH_GROUP(
-                    for (size_t t = 0; t < NBlocks; ++t)
-                    {
-                    size_t BlockDim = BLOCKSIZE;
-                    if (t == NBlocks-1)
-                    BlockDim = LastBlockSize;
-
-                    TASK(MODE(CONSTREFERENCE(F, A,P) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
-                         applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
-
-                    }
-                   );
-        //#pragma omp taskwait
-
+        applyP(F, Side, Trans, m, ibeg, iend, A, lda, P, FFLAS::ParSeqHelper::Sequential());
     }
-
-    template <class Field>
-    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4)
+    //#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
+    template<class Field, class Cut, class Param>
+    inline void applyP( const Field& F,
+                        const FFLAS::FFLAS_SIDE Side,
+                        const FFLAS::FFLAS_TRANSPOSE Trans,
+                        const size_t m, const size_t ibeg, const size_t iend,
+                        typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                        const FFLAS::ParSeqHelper::Parallel<Cut, Param> PSH)
     {
-        int numthreads = MAX_THREADS;//omp_get_max_threads();
-        size_t BLOCKSIZE=std::max(width/numthreads,(size_t)1);
-        size_t NBlocks = width/BLOCKSIZE;
-        size_t LastBlockSize = width % BLOCKSIZE;
-        if (LastBlockSize)
-            NBlocks++;
-        else
-            LastBlockSize=BLOCKSIZE;
+        size_t incBK = (Side == FFLAS::FflasRight)?lda:1;
         SYNCH_GROUP(
-                    for (size_t t = 0; t < NBlocks; ++t)
-                    {
-                    size_t BlockDim = BLOCKSIZE;
-                    if (t == NBlocks-1)
-                    BlockDim = LastBlockSize;
-                    TASK(MODE(CONSTREFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])),
-                         {MatrixApplyT(F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);}
-                        );
-                    }
-                   );
-
+            FORBLOCK1D(iter, m, PSH,
+                       TASK(MODE(CONSTREFERENCE(F, A,P) READWRITE(A[iter.begin()*incBK])),
+                            applyP(F, Side, Trans, iter.end()-iter.begin(), ibeg, iend, A+iter.begin()*incBK, lda, P));
+                       );
+                    );
     }
-
-
-    template <class Field>
-    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4)
-    {
-        int numthreads = MAX_THREADS;//omp_get_max_threads();
-        size_t BLOCKSIZE=std::max(width/numthreads,(size_t)1);
-        size_t NBlocks = width/BLOCKSIZE;
-        size_t LastBlockSize = width % BLOCKSIZE;
-        if (LastBlockSize)
-            NBlocks++;
-        else
-            LastBlockSize=BLOCKSIZE;
-
-        SYNCH_GROUP(
-
-                    for (size_t t = 0; t < NBlocks; ++t)
-                    {
-                    size_t BlockDim = BLOCKSIZE;
-                    if (t == NBlocks-1)
-                    BlockDim = LastBlockSize;
-                    //#pragma omp task shared (F, A) firstprivate(BlockDim)
-                    TASK(MODE(CONSTREFERENCE(F,A) READ(A[BLOCKSIZE*t])),
-                         MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4););
-                    }
-                   );
-        //#pragma omp taskwait
-
-    }
-
-    //#endif // __FFLASFFPACK_USE_OPENMP
 
 } // FFPACK
 

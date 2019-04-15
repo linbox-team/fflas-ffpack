@@ -116,6 +116,20 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
+
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
                      const size_t M2,
@@ -127,6 +141,20 @@ namespace FFPACK { /* Permutations */
                        const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
+
+    template <class Field>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
@@ -193,16 +221,31 @@ namespace FFPACK { /* Permutations */
      * @param A input matrix
      * @param lda leading dimension of A
      * @param P permutation in LAPACK format
+     * @param psh (optional): a sequential or parallel helper, to choose between sequential or parallel execution
      * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
      */
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P );
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t M, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
+    template<class Field>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Sequential seq);
+
+    template<class Field, class Cut, class Param>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
@@ -255,35 +298,6 @@ namespace FFPACK { /* Permutations */
                      const size_t * MathP, const size_t R, const size_t maxpiv,
                      const size_t rowstomove, const std::vector<bool> &ispiv);
     /* \endcond */
-
-    //! Parallel applyP with OPENMP tasks
-    template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P );
-
-    //! Parallel applyT with OPENMP tasks
-    /* \cond */
-    template <class Field>
-    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    //! Parallel applyS tasks with OPENMP tasks
-    template <class Field>
-    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-    /* \endcond */
-
-    //#endif
 
 } // FFPACK permutations
 // #include "ffpack_permutation.inl"
@@ -727,6 +741,7 @@ namespace FFPACK { /* echelon */
                               const FFPACK_LU_TAG LuTag, const PSHelper psH);
 
 
+
     /**  Compute the Row Echelon form of the input matrix in-place.
      *
      * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ]
@@ -760,6 +775,7 @@ namespace FFPACK { /* echelon */
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* P, size_t* Qt, const bool transform,
                            const FFPACK_LU_TAG LuTag, PSHelper psH);
+
 
     /** Compute the Reduced Column Echelon form of the input matrix in-place.
      *
@@ -795,6 +811,7 @@ namespace FFPACK { /* echelon */
                               const FFPACK_LU_TAG LuTag, const PSHelper& psH);
 
 
+
     /** Compute the Reduced Row Echelon form of the input matrix in-place.
      *
      * After the computation A = [ V1 M ] such that X A = R is a reduced row echelon
@@ -820,12 +837,14 @@ namespace FFPACK { /* echelon */
                            size_t* P, size_t* Qt, const bool transform = false,
                            const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+
     template <class Field, class PSHelper>
     size_t
     ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* P, size_t* Qt, const bool transform,
                            const FFPACK_LU_TAG LuTag, const PSHelper& psH);
+
 
 
 
@@ -1160,11 +1179,18 @@ namespace FFPACK { /* Solutions */
      * @param N column dimension of the matrix
      * @param [in] A input matrix
      * @param lda leading dimension of A
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda) ;
+
+    template <class Field, class PSHelper>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH) ;
+
 
     /********/
     /* DET  */
@@ -1190,51 +1216,30 @@ namespace FFPACK { /* Solutions */
     IsSingular( const Field& F, const size_t M, const size_t N,
                 typename Field::Element_ptr A, const size_t lda);
 
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using PLUQ factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
+    /** @brief Returns the determinant of the given square matrix.
+     * @details The method is a block elimination
+     * using PLUQ factorization. The input matrix A is overwritten.
      * @warning The input matrix is modified.
      * @param F base field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
+     * @param [out] det the determinant of A
+     * @param N the order of the square matrix A.
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
-     * @param P the row permutation
-     * @param Q the column permutation
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
+     * @param P,Q (optional) row and column permutations to be used by the PLUQ factorization. randomized checkers (see cherckes/checker_det.inl) need them for certification
      */
+
     template <class Field>
     typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
+    Det (const Field& F, typename Field::Element& det, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+         size_t * P = NULL, size_t * Q = NULL);
 
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using PLUQ factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
-     * @warning The input matrix is modified.
-     * @param F field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
-     * @param [in,out] A input matrix
-     * @param lda leading dimension of A
-     */
-    template <class Field>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
-
-    template <class Field>
+    template <class Field, class PSHelper>
     typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
+    Det(const Field& F, typename Field::Element& det, const size_t N,
+        typename Field::Element_ptr A, const size_t lda, const PSHelper& psH,
+        size_t * P = NULL, size_t * Q = NULL);
 
     /*********/
     /* SOLVE */

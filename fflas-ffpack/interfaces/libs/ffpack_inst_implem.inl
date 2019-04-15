@@ -28,18 +28,6 @@
 
 namespace FFPACK {
 
-    template INST_OR_DECL
-    void MatrixApplyS (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda, const size_t width,
-                       const size_t M2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4);
-
-    template INST_OR_DECL
-    void MatrixApplyT (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda, const size_t width,
-                       const size_t N2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4);
-
     void composePermutationsLLM (size_t * MathP,
                                  const size_t * P1,
                                  const size_t * P2,
@@ -68,33 +56,6 @@ namespace FFPACK {
                  const FFLAS::FFLAS_TRANSPOSE Trans,
                  const size_t M, const size_t ibeg, const size_t iend,
                  FFLAS_ELT* A, const size_t lda, const size_t * P );
-
-
-    template INST_OR_DECL
-    void papplyP( const FFLAS_FIELD<FFLAS_ELT>& F,
-                  const FFLAS::FFLAS_SIDE Side,
-                  const FFLAS::FFLAS_TRANSPOSE Trans,
-                  const size_t m, const size_t ibeg, const size_t iend,
-                  FFLAS_ELT* A, const size_t lda, const size_t * P );
-
-    template INST_OR_DECL
-    void pMatrixApplyT (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    template INST_OR_DECL
-    void pMatrixApplyS (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-    template INST_OR_DECL
-    size_t PLUQ(const FFLAS_FIELD<FFLAS_ELT>& Fi, const FFLAS::FFLAS_DIAG Diag,
-                const size_t M, const size_t N,
-                FFLAS_ELT* A, const size_t lda, size_t* P, size_t* Q,
-                const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads>& PSH);
 
     template INST_OR_DECL
     void fgetrs (const FFLAS_FIELD<FFLAS_ELT>& F,
@@ -273,8 +234,12 @@ namespace FFPACK {
     bool IsSingular (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
                      FFLAS_ELT* A, const size_t lda);
     template INST_OR_DECL
-    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
-                   FFLAS_ELT* A, const size_t lda);
+    FFLAS_ELT& Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
+                   FFLAS_ELT* A, const size_t lda, size_t *P, size_t *Q);
+    template INST_OR_DECL
+    FFLAS_ELT& Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
+                   FFLAS_ELT* A, const size_t lda,
+                   const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads>& parH, size_t *P, size_t *Q);
 
     template INST_OR_DECL
     FFLAS_ELT* Solve( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M,

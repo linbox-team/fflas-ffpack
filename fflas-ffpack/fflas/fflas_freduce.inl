@@ -33,7 +33,6 @@
 #include <givaro/udl.h>
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
-#include "fflas-ffpack/utils/bit_manipulation.h"
 
 #define FFLASFFPACK_COPY_REDUCE 32 /*  TO BENCMARK LATER */
 
@@ -89,39 +88,6 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
     inline RecInt::rmint<K,MG>& reduce(RecInt::rmint<K,MG>& A, RecInt::rmint<K,MG>& B)
     {
         return RecInt::rmint<K>::mod_n(A, B);
-    }
-
-    template<class T>
-    inline typename std::enable_if< ! std::is_integral<T>::value, T>::type
-    monrint(T A)// @bug pass by reference ?
-    {
-        return rint(A);
-    }
-
-    template<class T>
-    inline typename std::enable_if< std::is_integral<T>::value, T>::type
-    monrint( T A)
-    {
-        return A ;
-    }
-
-    template<>
-    inline double monrint(double A)
-    {
-        return rint(A);
-    }
-
-
-    template<>
-    inline float monrint(float A)
-    {
-        return rintf(A);
-    }
-
-    template<>
-    inline Givaro::Integer monrint(Givaro::Integer A) // @bug B is not integer, but uint64_t usually
-    {
-        return A ; // B > 0
     }
 
     inline int64_t reduce(int64_t A, int64_t p, double invp, double min, double max, int64_t pow50rem)
@@ -420,7 +386,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             for (; i < n ; i++)
             {
                 T[i]=reduce<Field>(U[i],H);
-                if (!positive)
+                if (!positive) //TODO check that can be removed
                 {
                     T[i]-=(T[i]>max)?H.p:0;
                 }
@@ -440,7 +406,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
             {
                 T[i] = reduce<Field>(U[i],H);
-                if (!positive)
+                if (!positive) // TODO ditto
                 {
                     T[i] -= (T[i] > max) ? H.p : 0;
                 }
@@ -470,7 +436,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         {
 
             T[i] = reduce<Field>(U[i],H);
-            if (!positive)
+            if (!positive) // TODO ditto
             {
                 T[i] -= (T[i] > max) ? H.p : 0;
             }
@@ -479,9 +445,8 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
     }
 #endif
 
-    /* Not used? PK - 2019
     // not vectorised but allows better code than % or fmod via helper
-    template<class Field, bool round, int algo>
+    template<class Field>
     inline typename std::enable_if< !FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
     modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
          typename Field::Element_ptr T
@@ -496,24 +461,14 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         size_t i = 0;
         for (; i < n ; i++)
         {
-            if (round)
-            {
-                T[i] = monrint(U[i]);
-                T[i] = reduce<Field,algo>(T[i],H);
-            }
-            else
-            {
-                T[i]=reduce<Field,algo>(U[i],H);
-            }
-            if (!positive)
+            T[i]=reduce<Field>(U[i],H);
+            if (!positive) // TODO ditto
             {
                 T[i]-=(T[i]>max)?H.p:(typename Field::Element)0;
             }
             T[i]+=(T[i]<min)?H.p:(typename Field::Element)0;
         }
     }
-    */
-
 } // unswitch
 } // vectorised
 } // FFLAS
