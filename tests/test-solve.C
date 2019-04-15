@@ -22,7 +22,7 @@
  * ========LICENCE========
  *.
  */
-#define  __FFLASFFPACK_SEQUENTIAL
+//#define  __FFLASFFPACK_SEQUENTIAL
 
 //#define ENABLE_ALL_CHECKINGS 1
 
@@ -79,10 +79,10 @@ FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyP
     double time=0.0;
     t.clear();
     t.start();
-PAR_BLOCK{
-parH.set_numthreads(NUM_THREADS);
-    FFPACK::Solve(F, m, A, lda, x, incx, B, incb, parH);
-}
+    PAR_BLOCK{
+        parH.set_numthreads(NUM_THREADS);
+        FFPACK::Solve(F, m, A, lda, x, incx, B, incb, parH);
+    }
     t.stop();
     time+=t.usertime();
 
