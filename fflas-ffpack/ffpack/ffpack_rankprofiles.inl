@@ -278,7 +278,7 @@ namespace FFPACK{
         // X <- (Qt.L.Q)^(-1)
         //invL( F, rank, A_factors, lda, X, ldx);
         ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, rank, A_factors, lda);
-        FFLAS::fassign(F,rank,rank,X,ldx,A_factors,lda);
+        FFLAS::fassign(F,rank,rank,A_factors,lda,X,ldx);
 
         // X = U^-1.X
         ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans,

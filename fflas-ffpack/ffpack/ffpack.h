@@ -116,6 +116,20 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
+
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
                      const size_t M2,
@@ -127,6 +141,20 @@ namespace FFPACK { /* Permutations */
                        const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
+
+    template <class Field>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
@@ -193,16 +221,31 @@ namespace FFPACK { /* Permutations */
      * @param A input matrix
      * @param lda leading dimension of A
      * @param P permutation in LAPACK format
+     * @param psh (optional): a sequential or parallel helper, to choose between sequential or parallel execution
      * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
      */
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P );
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t M, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
+    template<class Field>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Sequential seq);
+
+    template<class Field, class Cut, class Param>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
@@ -256,44 +299,14 @@ namespace FFPACK { /* Permutations */
                      const size_t rowstomove, const std::vector<bool> &ispiv);
     /* \endcond */
 
-    //! Parallel applyP with OPENMP tasks
-    template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P );
-
-    //! Parallel applyT with OPENMP tasks
-    /* \cond */
-    template <class Field>
-    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    //! Parallel applyS tasks with OPENMP tasks
-    template <class Field>
-    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    /* \endcond */
-
-    //#endif
-
 } // FFPACK permutations
 // #include "ffpack_permutation.inl"
 
 namespace FFPACK { /* fgetrs, fgesv */
 
     /** Solve the system \f$A X = B\f$ or \f$X A = B\f$.
-     * Solving using the \c LQUP decomposition of \p A
-     * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Solving using the \c PLUQ decomposition of \p A
+     * already computed inplace with \c PLUQ (FFLAS::FflasNonUnit).
      * Version for A square.
      * If A is rank deficient, a solution is returned if the system is consistent,
      * Otherwise an info is 1
@@ -305,8 +318,8 @@ namespace FFPACK { /* fgetrs, fgesv */
      * @param R rank of \p A
      * @param A input matrix
      * @param lda leading dimension of \p A
-     * @param P column permutation of the \c LQUP decomposition of \p A
-     * @param Q column permutation of the \c LQUP decomposition of \p A
+     * @param P row permutation of the \c PLUQ decomposition of \p A
+     * @param Q column permutation of the \c PLUQ decomposition of \p A
      * @param B Right/Left hand side matrix. Initially stores \p B, finally stores the solution \p X.
      * @param ldb leading dimension of \p B
      * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
@@ -322,8 +335,8 @@ namespace FFPACK { /* fgetrs, fgesv */
             int * info);
 
     /** Solve the system A X = B or X A = B.
-     * Solving using the LQUP decomposition of A
-     * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Solving using the PLUQ decomposition of A
+     * already computed inplace with PLUQ(FFLAS::FflasNonUnit).
      * Version for A rectangular.
      * If A is rank deficient, a solution is returned if the system is consistent,
      * Otherwise an info is 1
@@ -336,8 +349,8 @@ namespace FFPACK { /* fgetrs, fgesv */
      * @param R rank of A
      * @param A input matrix
      * @param lda leading dimension of A
-     * @param P column permutation of the LQUP decomposition of A
-     * @param Q column permutation of the LQUP decomposition of A
+     * @param P row permutation of the PLUQ decomposition of A
+     * @param Q column permutation of the PLUQ decomposition of A
      * @param X solution matrix
      * @param ldx leading dimension of X
      * @param B Right/Left hand side matrix.
@@ -410,28 +423,11 @@ namespace FFPACK { /* fgetrs, fgesv */
            typename Field::Element_ptr X, const size_t ldx,
            typename Field::ConstElement_ptr B, const size_t ldb,
            int * info);
-
-    /**  Solve the system Ax=b.
-     * Solving using LQUP factorization and
-     * two triangular system resolutions.
-     * The input matrix is modified.
-     * @param F The computation domain
-     * @param M row dimension of the matrix
-     * @param A input matrix
-     * @param lda leading dimension of A
-     * @param x solution vector
-     * @param incx increment of x
-     * @param b right hand side vector
-     * @param incb increment of b
-     */
-
 } // FFPACK fgesv, fgetrs
 // #include "ffpack_fgesv.inl"
 // #include "ffpack_fgetrs.inl"
 
 namespace FFPACK { /* ftrtr */
-
-
 
     /** Compute the inverse of a triangular matrix.
      * @param F base field
@@ -1139,19 +1135,26 @@ namespace FFPACK { /* Solutions */
 
 
 
-    /** Computes the rank of the given matrix using a LQUP factorization.
+    /** Computes the rank of the given matrix using a PLUQ factorization.
      * The input matrix is modified.
      * @param F base field
      * @param M row dimension of the matrix
      * @param N column dimension of the matrix
      * @param [in] A input matrix
      * @param lda leading dimension of A
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
 
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda);
+
+
+    template <class Field, class PSHelper>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH) ;
 
 
     /********/
@@ -1178,73 +1181,30 @@ namespace FFPACK { /* Solutions */
     IsSingular( const Field& F, const size_t M, const size_t N,
                 typename Field::Element_ptr A, const size_t lda);
 
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
+    /** @brief Returns the determinant of the given square matrix.
+     * @details The method is a block elimination
+     * using PLUQ factorization. The input matrix A is overwritten.
      * @warning The input matrix is modified.
      * @param F base field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
+     * @param [out] det the determinant of A
+     * @param N the order of the square matrix A.
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
-     * @param P the row permutation
-     * @param Q the column permutation
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
+     * @param P,Q (optional) row and column permutations to be used by the PLUQ factorization. randomized checkers (see cherckes/checker_det.inl) need them for certification
      */
 
     template <class Field>
     typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
+    Det (const Field& F, typename Field::Element& det, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
+         size_t * P = NULL, size_t * Q = NULL);
 
     template <class Field, class PSHelper>
     typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
-
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
-     * @warning The input matrix is modified.
-     * @param F field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
-     * @param [in,out] A input matrix
-     * @param lda leading dimension of A
-     */
-
-    template <class Field>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
-
-    template <class Field, class PSHelper>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH);
-
-
-    template <class Field>
-    typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
-
-    template <class Field, class PSHelper>
-    typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         const PSHelper& psH);
-
+    Det(const Field& F, typename Field::Element& det, const size_t N,
+        typename Field::Element_ptr A, const size_t lda, const PSHelper& psH,
+        size_t * P = NULL, size_t * Q = NULL);
 
     /*********/
     /* SOLVE */
@@ -1252,7 +1212,7 @@ namespace FFPACK { /* Solutions */
 
 
     /**
-     * @brief Solves a linear system AX = b using LQUP factorization.
+     * @brief Solves a linear system AX = b using PLUQ factorization.
      * @oaram F base field
      * @oaram M matrix order
      * @param [in] A input matrix

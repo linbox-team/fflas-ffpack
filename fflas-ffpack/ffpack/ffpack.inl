@@ -35,12 +35,22 @@ namespace FFPACK {
     Rank (const Field& F, const size_t M, const size_t N,
           typename Field::Element_ptr A, const size_t lda)
     {
+        size_t R = Rank (F, M, N, A, lda, FFLAS::ParSeqHelper::Sequential());
+        return R;
+    }
+
+
+    template <class Field, class PSHelper>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH) 
+    {
         if (M == 0 and  N  == 0)
             return 0 ;
 
-        size_t *P = FFLAS::fflas_new<size_t>(N);
-        size_t *Q = FFLAS::fflas_new<size_t>(M);
-        size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q);
+        size_t *P = FFLAS::fflas_new<size_t>(M);
+        size_t *Q = FFLAS::fflas_new<size_t>(N);
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q, psH);
         FFLAS::fflas_delete( Q);
         FFLAS::fflas_delete( P);
         return R;
@@ -67,48 +77,44 @@ namespace FFPACK {
     }
 
     template <class Field>
-    typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag)
+    inline typename Field::Element&
+    Det (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, size_t * P, size_t * Q)
     {
-        FFLAS::ParSeqHelper::Sequential seqH;
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,seqH,Diag);
-        return det;
+        return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential(), P, Q);
     }
 
     template <class Field, class PSHelper>
     typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q, const PSHelper& psH, const FFLAS::FFLAS_DIAG Diag)
+    Det (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH,
+         size_t* P, size_t * Q)
     {
-        if ( (M==0) and (N==0) )
+        if (N==0)
             return  F.assign(det,F.one) ;
-        if ( (M==0) or (N==0) )
-            return  F.assign(det,F.zero) ;
-        if ( M != N )
-            return  F.assign(det,F.zero) ;
+        bool allocPQ = false;
+        if (P==NULL || Q == NULL) {
+            allocPQ = true;
+            P = FFLAS::fflas_new<size_t>(N);
+            Q = FFLAS::fflas_new<size_t>(N);
+        }
+        size_t R = PLUQ (F,FFLAS::FflasNonUnit,N,N,A,lda,P,Q,psH);
 
-
-        size_t R(0);
-
-        R = PLUQ(F,Diag,M,N,A,lda,P,Q,psH);
-
-        if (R<M) return F.assign(det,F.zero);
-
+        if (R<N){
+            if (allocPQ) FFLAS::fflas_delete(P,Q);
+            return F.assign(det,F.zero);
+        }
         F.assign(det,F.one);
         typename Field::Element_ptr Ai=A;
-        for (; Ai < A+ M*lda+N; Ai+=lda+1 )
+        for (; Ai < A+ N*(lda+1); Ai+=lda+1 )
             F.mulin( det, *Ai );
         int count=0;
-        for (size_t i=0;i<M;++i)
+        for (size_t i=0;i<N;++i){
             if (P[i] != i) ++count;
-        for (size_t i=0;i<N;++i)
             if (Q[i] != i) ++count;
+        }
+
+        if (allocPQ) FFLAS::fflas_delete(P,Q);
 
         if ((count&1) == 1)
             return F.negin(det);
@@ -117,58 +123,29 @@ namespace FFPACK {
     }
 
     template <class Field>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda)
-    {
-
-        typename Field::Element det; F.init(det);
-        FFLAS::ParSeqHelper::Sequential seqH;
-        det = FFPACK::Det(F,M,N,A,lda,seqH);
-        return det;
-    }
-
-    template <class Field, class PSHelper>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, const PSHelper& psH)
-    {
-        size_t *P = FFLAS::fflas_new<size_t>(N);
-        size_t *Q = FFLAS::fflas_new<size_t>(M);
-        typename Field::Element det; F.init(det);
-        FFPACK::Det(det,F,M,N,A,lda,P,Q,psH,FFLAS::FflasNonUnit);
-        FFLAS::fflas_delete( P);
-        FFLAS::fflas_delete( Q);
-        return det;
-    }
-
-
-    template <class Field>
     typename Field::Element_ptr
-    Solve( const Field& F, const size_t M,
+    Solve (const Field& F, const size_t M,
            typename Field::Element_ptr A, const size_t lda,
            typename Field::Element_ptr x, const int incx,
-           typename Field::ConstElement_ptr b, const int incb )
+           typename Field::ConstElement_ptr b, const int incb)
     {
 
         size_t *P = FFLAS::fflas_new<size_t>(M);
         size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
-        if (LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP) < M){
+        if (PLUQ (F, FFLAS::FflasNonUnit, M, M, A, lda, rowP, P) < M){
             std::cerr<<"SINGULAR MATRIX"<<std::endl;
-            FFLAS::fflas_delete( P);
-            FFLAS::fflas_delete( rowP);
+            FFLAS::fflas_delete (P);
+            FFLAS::fflas_delete (rowP);
             return x;
         }
         else{
             FFLAS::fassign( F, M, b, incb, x, incx );
 
-            ftrsv(F,  FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M,
-                  A, lda , x, incx);
-            ftrsv(F,  FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M,
-                  A, lda , x, incx);
-            applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-                    1, 0,(int) M, x, incx, P );
+            applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0,(int) M, x, incx, rowP );
+            ftrsv (F, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, A, lda , x, incx);
+            ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M, A, lda , x, incx);
+            applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1, 0,(int) M, x, incx, P );
             FFLAS::fflas_delete( rowP);
             FFLAS::fflas_delete( P);
 
@@ -185,16 +162,16 @@ namespace FFPACK {
     {
         // Right kernel vector: X s.t. AX == 0
         if (Side == FFLAS::FflasRight) {
-            size_t* P = FFLAS::fflas_new<size_t>(N);
-            size_t* Qt = FFLAS::fflas_new<size_t>(M);
+            size_t* P = FFLAS::fflas_new<size_t>(M);
+            size_t* Q = FFLAS::fflas_new<size_t>(N);
 
-            size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
-            FFLAS::fflas_delete(Qt);
+            size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
+            FFLAS::fflas_delete(P);
 
             // Nullspace is {0}
             if (N == R) {
                 FFLAS::fzero(F, N, X, incX);
-                FFLAS::fflas_delete(P);
+                FFLAS::fflas_delete(Q);
                 return;
             }
 
@@ -207,7 +184,7 @@ namespace FFPACK {
 
             // Nullspace is total, any random vector would do
             if (R == 0) {
-                FFLAS::fflas_delete(P);
+                FFLAS::fflas_delete(Q);
                 return;
             }
 
@@ -219,18 +196,18 @@ namespace FFPACK {
             FFLAS::ftrsv(F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R,
                          A, lda, X, (int)incX);
 
-            applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1u, 0u, (int) R, X, 1u, P);
+            applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1u, 0u, (int) N, X, 1u, Q);
 
-            FFLAS::fflas_delete(P);
+            FFLAS::fflas_delete(Q);
         }
 
         // Left kernel vector
         else {
             size_t* P = FFLAS::fflas_new<size_t>(M);
-            size_t* Qt = FFLAS::fflas_new<size_t>(N);
+            size_t* Q = FFLAS::fflas_new<size_t>(N);
 
-            size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
-            FFLAS::fflas_delete(Qt);
+            size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
+            FFLAS::fflas_delete(Q);
 
             // Nullspace is {0}
             if (M == R) {
@@ -257,10 +234,10 @@ namespace FFPACK {
                          F.mOne, A + R * lda, lda, X + R * incX, incX, 0u, X, incX);
 
             // Now get t1 such that t1 * L1 == -t2 * L2
-            FFLAS::ftrsv(F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R,
+            FFLAS::ftrsv(F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasUnit, R,
                          A, lda, X, (int)incX);
 
-            applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1u, 0u, (int) R, X, 1u, P);
+            applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1u, 0u, (int) M, X, 1u, P);
 
             FFLAS::fflas_delete(P);
         }
@@ -273,18 +250,19 @@ namespace FFPACK {
                            typename Field::Element_ptr& NS, size_t& ldn,
                            size_t& NSdim)
     {
-        if (Side == FFLAS::FflasRight) { // Right NullSpace
-            size_t* P = FFLAS::fflas_new<size_t>(N);
-            size_t* Qt = FFLAS::fflas_new<size_t>(M);
+        size_t* P = FFLAS::fflas_new<size_t>(M);
+        size_t* Q = FFLAS::fflas_new<size_t>(N);
+        
+        size_t R = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, P, Q);
 
-            size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
-            FFLAS::fflas_delete(Qt);
+        if (Side == FFLAS::FflasRight) { // Right NullSpace
+            FFLAS::fflas_delete(P);
 
             ldn = N-R;
             NSdim = ldn;
 
             if (NSdim == 0) {
-                FFLAS::fflas_delete( P);
+                FFLAS::fflas_delete (Q);
                 NS = NULL ;
                 return NSdim ;
             }
@@ -292,37 +270,32 @@ namespace FFPACK {
             NS = FFLAS::fflas_new (F, N, ldn);
 
             if (R == 0) {
-                FFLAS::fflas_delete( P);
+                FFLAS::fflas_delete(Q);
                 FFLAS::fidentity(F,N,ldn,NS,ldn);
                 return NSdim;
             }
 
-            FFLAS::fassign (F, R, ldn,  A + R,  lda, NS , ldn );
+            FFLAS::fassign (F, R, ldn,  A + R,  lda, NS , ldn);
 
             ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
                    F.mOne, A, lda, NS, ldn);
 
             FFLAS::fidentity(F,NSdim,NSdim,NS+R*ldn,ldn);
 
-            applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-                    NSdim, 0,(int) R, NS, ldn, P);
+            applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NSdim, 0,(int) N, NS, ldn, Q);
 
-            FFLAS::fflas_delete(P);
+            FFLAS::fflas_delete(Q);
 
             return NSdim;
         }
         else { // Left NullSpace
-            size_t* P = FFLAS::fflas_new<size_t>(M);
-            size_t* Qt = FFLAS::fflas_new<size_t>(N);
-
-            size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
-            FFLAS::fflas_delete(Qt);
+            FFLAS::fflas_delete(Q);
 
             ldn = M;
             NSdim = M-R;
 
             if (NSdim == 0) {
-                FFLAS::fflas_delete( P);
+                FFLAS::fflas_delete (P);
                 NS = NULL;
                 return NSdim;
             }
@@ -336,10 +309,10 @@ namespace FFPACK {
             }
 
             FFLAS::fassign (F, NSdim, R, A + R *lda, lda, NS, ldn);
-            ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R, F.mOne, A, lda, NS, ldn);
+            ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, NSdim, R, F.mOne, A, lda, NS, ldn);
 
             FFLAS::fidentity(F,NSdim,NSdim,NS+R,ldn);
-            applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NSdim, 0,(int) R, NS, ldn, P);
+            applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NSdim, 0,(int) M, NS, ldn, P);
 
             FFLAS::fflas_delete(P);
             return NSdim;
