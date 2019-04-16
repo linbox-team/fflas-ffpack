@@ -38,8 +38,7 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
                                          const FFPACK_LU_TAG LuTag)
 {
     FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
+    return FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
 }
 
 template <class Field, class PSHelper>
@@ -71,8 +70,7 @@ inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size
                                          const FFPACK_LU_TAG LuTag)
 {
     FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
+    return FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
 }
 
 template <class Field, class PSHelper>
@@ -105,8 +103,7 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
                                   const FFPACK_LU_TAG LuTag)
 {
     FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = ReducedColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
+    return ReducedColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
 }
 
 template <class Field, class PSHelper>
@@ -150,8 +147,7 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
                                const FFPACK_LU_TAG LuTag)
 {
     FFLAS::ParSeqHelper::Sequential seqH;
-    size_t r = ReducedRowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
-    return r;
+    return ReducedRowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
 }
 
 template <class Field, class PSHelper>
