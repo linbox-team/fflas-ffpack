@@ -738,7 +738,7 @@ namespace FFPACK { /* echelon */
     ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
                               size_t* P, size_t* Qt, const bool transform,
-                              const FFPACK_LU_TAG LuTag, const PSHelper psH);
+                              const FFPACK_LU_TAG LuTag, const PSHelper& psH);
 
 
 
@@ -774,7 +774,7 @@ namespace FFPACK { /* echelon */
     RowEchelonForm (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* P, size_t* Qt, const bool transform,
-                           const FFPACK_LU_TAG LuTag, PSHelper psH);
+                           const FFPACK_LU_TAG LuTag, const PSHelper& psH);
 
 
     /** Compute the Reduced Column Echelon form of the input matrix in-place.

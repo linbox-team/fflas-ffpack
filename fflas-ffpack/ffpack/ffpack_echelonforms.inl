@@ -45,7 +45,7 @@ template <class Field, class PSHelper>
 inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
                                          typename Field::Element_ptr A, const size_t lda,
                                          size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag, const PSHelper psH)
+                                         const FFPACK_LU_TAG LuTag, const PSHelper& psH)
 {
 
     size_t r;
@@ -77,7 +77,7 @@ template <class Field, class PSHelper>
 inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
                                          typename Field::Element_ptr A, const size_t lda,
                                          size_t* P, size_t* Qt, const bool transform,
-                                         const FFPACK_LU_TAG LuTag, PSHelper psH)
+                                         const FFPACK_LU_TAG LuTag, const PSHelper& psH)
 {
     size_t r;
     if (LuTag == FFPACK::FfpackSlabRecursive)
@@ -113,8 +113,7 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
                                   size_t* P, size_t* Qt, const bool transform,
                                   const FFPACK_LU_TAG LuTag, const PSHelper& psH)
 {
-    size_t r;
-    r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
+    size_t r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
 
     if (LuTag == FfpackSlabRecursive){
         // Putting Echelon in compressed triangular form : M = Q^T M
@@ -161,8 +160,7 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
     for (size_t i=0; i<M; i++) P[i] = i;
     if ((LuTag == FfpackGaussJordanSlab || LuTag == FfpackGaussJordanTile) && transform)
         return Protected::GaussJordan(F, M, N, A, lda, 0, 0, N, P, Qt, LuTag);
-    size_t r;
-    r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
+    size_t r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
     if (LuTag == FfpackSlabRecursive){
         // Putting Echelon in compressed triangular form : M = M Q
         for (size_t i=0; i<r; ++i)
