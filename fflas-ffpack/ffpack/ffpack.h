@@ -1322,7 +1322,7 @@ namespace FFPACK { /* Solutions */
                            size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
     template <class Field, class PSHelper>
-    inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+    size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                                   typename Field::Element_ptr A, const size_t lda,
                                   size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
 

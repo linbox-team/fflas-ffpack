@@ -65,8 +65,7 @@ namespace FFPACK{
                                      typename Field::Element_ptr A, const size_t lda,
                                      size_t* &rkprofile, const FFPACK_LU_TAG LuTag){
         FFLAS::ParSeqHelper::Sequential seqH;
-        size_t R = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
-        return R;
+        return FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
     }
 
     template <class Field, class PSHelper>
