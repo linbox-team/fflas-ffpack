@@ -158,24 +158,28 @@ namespace FFPACK {
 
         int nt = PSHelper.numthreads();
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-                                               FFLAS::StrategyParameter::TwoDAdaptive> MMParH (std::max(nt,1));
+                                               FFLAS::StrategyParameter::TwoDAdaptive> MMParH (std::max(nt/2,1));
+        typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                                               FFLAS::StrategyParameter::TwoDAdaptive> MMFullParH (std::max(nt,1));
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,
-                                               FFLAS::StrategyParameter::Threads> TRSMParH (std::max(nt,1));
+                                               FFLAS::StrategyParameter::Threads> TRSMParH (std::max(nt/2,1));
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
                                                FFLAS::StrategyParameter::Threads> PLUQParH1 (std::max(nt/2,1));
         typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
                                                FFLAS::StrategyParameter::Threads> PLUQParH2 (std::max(nt-nt/2,1));
 
+        typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,
+                                               FFLAS::StrategyParameter::Threads> PermParH (std::max(nt/2,1));
         SYNCH_GROUP(
 
                     // [ B1 ] <- P1^T A2
                     // [ B2 ]
                     TASK(MODE(READ(P1) CONSTREFERENCE(Fi, P1, A2) READWRITE(A2[0])),
-                         { papplyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1); }
+                         { applyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1, PermParH); }
                         );
                     // [ C1 C2 ] <- A3 Q1^T
                     TASK(MODE(READ(Q1) CONSTREFERENCE(Fi, Q1, A3) READWRITE(A3[0])),
-                         papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1););
+                         applyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1,PermParH););
                     // [ C1 C2 ] <- A3 Q1^T
 
                     CHECK_DEPENDENCIES;
@@ -206,10 +210,7 @@ namespace FFPACK {
                     //        [ M2 ]
                     TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2, PLUQParH1) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
                          R2 = PLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2, PLUQParH1)
-                         //A4R2 = A4+R2;
-                        );
-
-                    //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
+                         );
 
                     P3 = FFLAS::fflas_new<size_t>(M-M2);
                     Q3 = FFLAS::fflas_new<size_t>(N2-R1);
@@ -226,32 +227,31 @@ namespace FFPACK {
 
                     // [ H1 H2 ] <- P3^T H Q2^T
                     // [ H3 H4 ]
+                    PermParH.set_numthreads(std::max(nt,1));
                     TASK(MODE(READ(P3, Q2) CONSTREFERENCE(Fi, A4, Q2, P3) READWRITE(A4[0])),
-                         papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
-                         papplyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3););
+                         applyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2, PermParH);
+                         applyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3, PermParH););
 
                     CHECK_DEPENDENCIES;
                     // [ E1 ] <- P3^T E
                     // [ E2 ]
-                    TASK(MODE(READ(P3) CONSTREFERENCE(Fi, P3, A3) READWRITE(A3[0])),
-                         papplyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3));
-                    //applyP(  Fi, FflasLeft, FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
+                    PermParH.set_numthreads(std::max(nt/4,1)); // TODO adjust the value to the size of each block
+                    TASK(MODE(READ(P3) CONSTREFERENCE(Fi, P3, A3, PermParH) READWRITE(A3[0])),
+                         applyP( Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3, PermParH));
 
                     // [ M11 ] <- P2^T M1
                     // [ M12 ]
-                    TASK(MODE(READ(P2) CONSTREFERENCE(P2, A, Fi) READWRITE(A[R1*lda])),
-                         papplyP(Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2));
+                    TASK(MODE(READ(P2) CONSTREFERENCE(P2, A, Fi, PermParH) READWRITE(A[R1*lda])),
+                         applyP(Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2, PermParH));
                     //applyP(Fi, FflasLeft, FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2);
 
                     // [ D1 D2 ] <- D Q2^T
-                    TASK(MODE(READ(Q2) CONSTREFERENCE(Fi, Q2, A2) READWRITE(A2[0])),
-                         papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2));
-                    //papplyP( Fi, FflasRight, FflasTrans, R1, 0, N-N2, A2, lda, Q2);
+                    TASK(MODE(READ(Q2) CONSTREFERENCE(Fi, Q2, A2, PermParH) READWRITE(A2[0])),
+                         applyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2, PermParH));
 
                     // [ V1 V2 ] <- V1 Q3^T
-                    TASK(MODE(READ(Q3) CONSTREFERENCE(Fi, Q3, A) READWRITE(A[R1])),
-                         papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3));
-                    //applyP( Fi, FflasRight, FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3);
+                    TASK(MODE(READ(Q3) CONSTREFERENCE(Fi, Q3, A, PermParH) READWRITE(A[R1])),
+                         applyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3, PermParH));
 
                     //    CHECK_DEPENDENCIES;
 
@@ -259,9 +259,9 @@ namespace FFPACK {
                     // K <- H3 U2^-1
                     TASK(MODE(READ(R2, F[0]) CONSTREFERENCE(Fi, A4, F, TRSMParH, R2) READWRITE(A4[0])),
                          ftrsm( Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, TRSMParH));
-                    //pftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda,  method, NUM);
-                    //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
+
                     CHECK_DEPENDENCIES;
+
                     typename Field::Element_ptr temp = 0;
 
                     TASK(MODE(READ(A4[0], R3) READWRITE(temp[0], R2) CONSTREFERENCE(Fi, A4, temp, R2, R3)),
@@ -284,7 +284,6 @@ namespace FFPACK {
                     TASK(MODE(READ(R2, F[R2]) CONSTREFERENCE(Fi, R2, A4, R3, temp, MMParH) READWRITE(A4[R2], temp[0])),
                          fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda, MMParH);
                          FFLAS::fflas_delete (temp);
-                         //		       delete[] temp;
                          temp=0;
                         );
 
@@ -294,13 +293,13 @@ namespace FFPACK {
                          R = A4 + R2 + R3*lda;
                          fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda, MMParH)
                         );
-                    //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
+
                     CHECK_DEPENDENCIES;
 
                     // R <- R - M3 O
                     TASK(MODE(READ(R3, R2, A4[R2], G[R3*lda]) CONSTREFERENCE(Fi, A4, R, R3, R2, G, MMParH) READWRITE(R[0])),
-                         fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda, MMParH));
-                    //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
+                         fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda, MMFullParH));
+
                     CHECK_DEPENDENCIES;
 
                     /*
@@ -318,10 +317,11 @@ namespace FFPACK {
                         );
                     CHECK_DEPENDENCIES;
 
+                    PermParH.set_numthreads(std::max(nt/2,1));
                     // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
                     // [ E22 M32 0 K2 ]
                     TASK(MODE(READ(P4[0], R2, R3, M2) CONSTREFERENCE(Fi, P4, A3, R2, R3) READWRITE(A3[R3*lda])),
-                         papplyP(Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4));
+                         applyP(Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4, PermParH));
                     //applyP( Fi, FflasLeft, FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
 
                     // [ D21 D22 ]     [ D2 ]
@@ -329,7 +329,7 @@ namespace FFPACK {
                     // [  0   0  ]     [  0 ]
                     // [ O1   O2 ]     [  O ]
                     TASK(MODE(READ(Q4[0], R2, N2, M2, R3) CONSTREFERENCE(Fi, Q4, A2, R2, R3) READWRITE(A2[R2])),
-                         papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4));
+                         applyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4, PermParH));
                     //applyP( Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 
                     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
@@ -355,8 +355,9 @@ namespace FFPACK {
                             );
 
                         // A <-  S^T A
+                        PermParH.set_numthreads(std::max(nt,1));
                         TASK(MODE(READ(R1, R2, R3, R4) CONSTREFERENCE(Fi, A, R1, R2, R3, R4) READWRITE(A[0])),
-                             pMatrixApplyS( Fi, A, lda, N, M2, R1, R2, R3, R4));
+                             MatrixApplyS( Fi, A, lda, N, M2, R1, R2, R3, R4, PermParH) );
                         //MatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
                     }
 
@@ -378,7 +379,7 @@ namespace FFPACK {
 
                         // A <-   A T^T
                         TASK(MODE(READ(R1, R2, R3, R4) CONSTREFERENCE(Fi, A, R1, R2, R3, R4) READWRITE(A[0])),
-                             pMatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4));
+                             MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4, PermParH));
                         //			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
                     }
                     CHECK_DEPENDENCIES;

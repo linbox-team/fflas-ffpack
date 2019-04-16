@@ -56,6 +56,7 @@ namespace FFPACK {
         return R;
     }
 
+
     template <class Field>
     bool
     IsSingular (const Field& F, const size_t M, const size_t N,
