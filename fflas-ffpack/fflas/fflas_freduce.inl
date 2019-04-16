@@ -34,8 +34,9 @@
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
-#define FFLASFFPACK_COPY_REDUCE 32 /*  TO BENCMARK LATER */
+#define FFLASFFPACK_COPY_REDUCE 32 /*  TODO TO BENCMARK LATER */
 
+// TODO: no vectorisation doesn't mean that no helper-based reduction is impossible
 
 
 namespace FFLAS { namespace vectorised { /*  for casts (?) */
@@ -68,7 +69,6 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         A = A < min ? A + B : A;
         A = A > max ? A - B : A;
         return A;
-//        return fmodf(A,B);
     }
 
     inline double reduce(double A, double B, double invB, double min, double max)
@@ -80,8 +80,6 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
         A = A < min ? A + B : A;
         A = A > max ? A - B : A;
         return A;
-
-//        return fmod(A,B);
     }
 
     inline int64_t reduce(int64_t A, int64_t p, double invp, double min, double max, int64_t pow50rem)
@@ -310,16 +308,16 @@ namespace FFLAS { namespace vectorised {
 
 
     // TODO when is this one used???
-    template<class Field>
-#ifdef __x86_64__
-    typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
-#else
-    typename Field::Element
-#endif // __x86_64__
-    reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
-    {
-        return reduce(A,H.p);
-    }
+//    template<class Field>
+//#ifdef __x86_64__
+//    typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
+//#else
+//    typename Field::Element
+//#endif // __x86_64__
+//    reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
+//    {
+//        return reduce(A,H.p);
+//    }
 
     template<class Field>
     typename Field::Element reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineFloatTag> & H)
@@ -368,10 +366,8 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
         //		std::cerr<<"modp vectorized"<<std::endl;
         typedef typename Field::Element Element;
-        Element min = (Element)F.minElement(), max = (Element)F.maxElement();
         using simd = Simd<Element>;
         using vect_t = typename simd::vect_t;
-        bool positive = ! FieldTraits<Field>::balanced ; // known at compile time
         HelperModSimd<Field,simd> H(F,G);
 
         size_t i = 0;
@@ -381,11 +377,6 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             for (; i < n ; i++)
             {
                 T[i]=reduce<Field>(U[i],H);
-                if (!positive) //TODO check that can be removed
-                {
-                    T[i]-=(T[i]>max)?H.p:0;
-                }
-                T[i]+=(T[i]<min)?H.p:0;
             }
             return;
         }
@@ -401,11 +392,6 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
             {
                 T[i] = reduce<Field>(U[i],H);
-                if (!positive) // TODO ditto
-                {
-                    T[i] -= (T[i] > max) ? H.p : 0;
-                }
-                T[i] += (T[i] < min) ? H.p : 0;
             }
         }
 
@@ -431,11 +417,64 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         {
 
             T[i] = reduce<Field>(U[i],H);
-            if (!positive) // TODO ditto
+        }
+    }
+
+    // Using fast reduce, and possibly gathers
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n, const size_t & incX,
+         typename Field::Element_ptr T
+         , HelperMod<Field> & G
+        )
+    {
+
+        //		std::cerr<<"modp vectorized"<<std::endl;
+        typedef typename Field::Element Element;
+        using simd = Simd<Element>;
+        using vect_t = typename simd::vect_t;
+        HelperModSimd<Field,simd> H(F,G);
+
+        // Too few elements to vectorise
+        size_t i = 0;
+        typename Field::ConstElement_ptr Xi = U;
+        if (n < simd::vect_size)
+        {
+            //			std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
+            for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
             {
-                T[i] -= (T[i] > max) ? H.p : 0;
+                T[i]=reduce<Field>(*Xi,H);
             }
-            T[i] += (T[i] < min) ? H.p : 0;
+            return;
+        }
+
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+        // can use a ``fast'' gather
+        vect_t C;
+
+        // FIXME do a compile-time thingy
+        if (simd::vect_size == 8)
+        {
+            Simd512<int64_t>::vect_t Idx;
+            Simd512<int64_t>::vect_t Inc;
+
+            Idx = Simd512<int64_t>::set(0, incX, 2*incX, 3*incX, 4*incX, 5*incX, 6*incX, 7*incX);
+            Inc = Simd512<int64_t>::set1(incX);
+
+            for (; Xi <= U+n*incX*simd::vect_size ; Xi+=incX*simd::vect_size,i += incX*simd::vect_size)
+            {
+                C = simd::gather(U, Idx);
+                VEC_MOD<Field,simd>(C,H);
+                simd::scatter(T, Idx, C);
+                Idx = Simd512<int64_t>::add(Idx, Inc);
+            }
+        }
+#endif
+
+        // perform the last elt from T without SIMD
+        for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
+        {
+            T[i]=reduce<Field>(*Xi,H);
         }
     }
 #endif
@@ -484,6 +523,17 @@ namespace FFLAS { namespace vectorised {
         unswitch::modp<Field>(F,U,n,T,H);
     }
 
+    template<class Field>
+    //inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    void
+    modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n, const size_t & incX,
+         typename Field::Element_ptr T)
+    {
+        HelperMod<Field> H(F);
+
+        unswitch::modp<Field>(F,U,n,incX,T,H);
+    }
+
 } // vectorised
 } // FFLAS
 
@@ -502,9 +552,10 @@ namespace FFLAS { namespace details {
         }
         else { /*  faster with copy, use incX=1, copy back ? */
             if (m < FFLASFFPACK_COPY_REDUCE) {
-                typename Field::Element_ptr Xi = A ;
-                for (; Xi < A+m*incX; Xi+=incX )
-                    F.reduce(*Xi);
+//                typename Field::Element_ptr Xi = A ;
+//                for (; Xi < A+m*incX; Xi+=incX )
+//                    F.reduce(*Xi); // TODO FIXME why F.reduce and not a faster helper-based reduction? Check elsewhere too!
+                vectorised::modp<Field>(F,A,m,incX,A);
             }
             else {
                 typename Field::Element_ptr Ac = fflas_new (F,m) ;
@@ -528,7 +579,7 @@ namespace FFLAS { namespace details {
         // else {
         typename Field::Element_ptr  Xi = A ;
         for (; Xi < A+m*incX; Xi+=incX )
-            F.reduce(*Xi);
+            F.reduce(*Xi); // TODO
         // }
     }
 
