@@ -1144,10 +1144,12 @@ namespace FFPACK { /* Solutions */
      * @param lda leading dimension of A
      * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
+
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda) ;
+          typename Field::Element_ptr A, const size_t lda);
+
 
     template <class Field, class PSHelper>
     size_t
@@ -1317,9 +1319,12 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
-                           size_t* &rkprofile,
-                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field, class PSHelper>
+    size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
 
     /**  @brief Computes the column rank profile of A.
      *
@@ -1338,8 +1343,13 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
-                              size_t* &rkprofile,
-                              const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field, class PSHelper>
+    size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
+
 
     /**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
      *
