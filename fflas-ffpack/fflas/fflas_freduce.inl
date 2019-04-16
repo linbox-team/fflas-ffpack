@@ -452,16 +452,16 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         // can use a ``fast'' gather
         vect_t C;
 
-        // FIXME do a compile-time thingy
+        // FIXME do a compile-time thingy?
         if (simd::vect_size == 8)
         {
             Simd512<int64_t>::vect_t Idx;
             Simd512<int64_t>::vect_t Inc;
 
             Idx = Simd512<int64_t>::set(0, incX, 2*incX, 3*incX, 4*incX, 5*incX, 6*incX, 7*incX);
-            Inc = Simd512<int64_t>::set1(incX);
+            Inc = Simd512<int64_t>::set1(8*incX);
 
-            for (; Xi <= U+n*incX*simd::vect_size ; Xi+=incX*simd::vect_size,i += incX*simd::vect_size)
+            for (; Xi <= U+incX*(n - simd::vect_size) ; Xi+=incX*simd::vect_size,i += incX*simd::vect_size)
             {
                 C = simd::gather(U, Idx);
                 VEC_MOD<Field,simd>(C,H);
