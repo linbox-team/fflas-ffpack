@@ -35,19 +35,14 @@ namespace FFLAS { namespace vectorised {
     inline typename std::enable_if<is_simd<SimdT>::value, void>::type
     VEC_SCAL(SimdT & C, SimdT & ALPHA, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & INVP, SimdT & MIN, SimdT & MAX)
     {
+        // TODO make using simd::mod instead
         using simd = Simd<Element>;
-        Q = simd::mul(C,INVP);
         C = simd::mul(C,ALPHA);
-        Q = simd::floor(Q);
-        C = simd::fnmadd(C,Q,P);
-        Q = simd::greater(C,MAX);
-        T = simd::lesser(C,MIN);
-        Q = simd::vand(Q,NEGP);
-        T = simd::vand(T,P);
-        Q = simd::vor(Q,T);
-        C = simd::add(C,Q);
+        C = simd::mod(C, P, INVP, NEGP, MIN, MAX, Q, T);
     }
 
+    // Note: T and U may be aliased in the call -- PK 2019
+    // Note: invp is not in fact 1/p but alpha/p? FIXME
     template<class Element, class T1, class T2>
     inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
     scalp(Element *T, const Element alpha, const Element * U, const size_t n, const Element p, const Element invp, const T1 min_, const T2 max_)
@@ -62,9 +57,30 @@ namespace FFLAS { namespace vectorised {
         {
             for (; i < n ; i++)
             {
-                T[i]=reduce(alpha*U[i], p);
-                T[i] -= (T[i] > max) ? p : 0;
-                T[i] += (T[i] < min) ? p : 0;
+//                printf("%f %f %f %f=> ",(double)alpha,(double)U[i],(double)p,(double)invp);
+//                T[i]=reduce(alpha*U[i], p);
+//                Element q = U[i]*invp;
+//                T[i] = alpha*U[i];
+//                printf("%f ", (double)T[i]);
+//                q = floor(q);
+//                printf("%f ", q);
+//                T[i] = T[i] - q*p;
+//                printf("%f ", (double)T[i]);
+
+//                Element invp2 = invp/alpha;
+//
+//                T[i] = alpha*U[i];
+//                Element q = T[i]*invp2;
+//                q = floor(q);
+//                T[i] = T[i] - q*p;
+//
+//
+//
+//
+//                T[i] -= (T[i] > max) ? p : 0;
+//                T[i] += (T[i] < min) ? p : 0;
+//                printf("%f\n",(double)T[i]);
+                T[i] = reduce(alpha*U[i], p, invp, min, max);
             }
             return;
 
@@ -81,9 +97,7 @@ namespace FFLAS { namespace vectorised {
         { // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j+=sizeof(Element), i++)
             {
-                T[i] = reduce(alpha*U[i], p);
-                T[i] -= (T[i] > max) ? p : 0;
-                T[i] += (T[i] < min) ? p : 0;
+                T[i] = reduce(alpha*U[i], p, invp, min, max);
             }
         }
         FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
@@ -100,9 +114,7 @@ namespace FFLAS { namespace vectorised {
         // perform the last elt from T without SIMD
         for (; i < n ; i++)
         {
-            T[i] = reduce(alpha*U[i],p);
-            T[i] -= (T[i] > max) ? p : 0;
-            T[i] += (T[i] < min) ? p : 0;
+            T[i] = reduce(alpha*U[i], p, invp, min, max);
         }
     }
 
@@ -119,9 +131,7 @@ namespace FFLAS { namespace vectorised {
         {
             for (; i < n ; i++)
             {
-                T[i]=reduce(alpha*U[i], p);
-                T[i] -= (T[i] > max) ? p : 0;
-                T[i] += (T[i] < min) ? p : 0;
+                T[i] = reduce(alpha*U[i], p, invp, min, max);
             }
             return;
 
@@ -174,6 +184,7 @@ namespace FFLAS {
     }
 
     template<class Field>
+//    inline typename std::enable_if<!support_fast_mod<Field>::value, void>::type
     inline void
     fscalin (const Field& F, const size_t n, const typename Field::Element a,
              typename Field::Element_ptr X, const size_t incX)
@@ -256,7 +267,6 @@ namespace FFLAS {
         cblas_sscal( (int)N, a, y, (int)incy);
     }
 
-
     template<>
     inline void
     fscalin( const Givaro::Modular<float>& F , const size_t N,
@@ -264,9 +274,10 @@ namespace FFLAS {
              float * X, const size_t incX )
     {
         if(incX == 1) {
+            vectorised::HelperMod<Givaro::Modular<float>> H(F);
             float p, invp;
             p=(float)F.cardinality();
-            invp=a/p;
+            invp=1/p;
             vectorised::scalp(X,a,X,N,p,invp,0,p-1);
         }
         else {
@@ -286,7 +297,7 @@ namespace FFLAS {
         if(incX == 1) {
             float p, invp;
             p=(float)F.cardinality();
-            invp=a/p;
+            invp=1/p;
             vectorised::scalp(X,a,X,N,p,invp,F.minElement(),F.maxElement());
         }
         else {
@@ -306,7 +317,7 @@ namespace FFLAS {
         if(incX == 1) {
             double p, invp;
             p=(double)F.cardinality();
-            invp=a/p;
+            invp=1/p;
             vectorised::scalp(X,a,X,N,p,invp,0,p-1);
         }
         else {
@@ -327,7 +338,7 @@ namespace FFLAS {
         if(incX == 1 && incY==1) {
             double p, invp;
             p=(double)F.cardinality();
-            invp=a/p;
+            invp=1/p;
             vectorised::scalp(Y,a,X,N,p,invp,0,p-1);
         }
         else {
@@ -348,7 +359,7 @@ namespace FFLAS {
         if(incX == 1) {
             double p, invp;
             p=(double)F.cardinality();
-            invp=a/p;
+            invp=1/p;
             vectorised::scalp(X,a,X,N,p,invp,F.minElement(),F.maxElement());
         }
         else {
@@ -359,13 +370,30 @@ namespace FFLAS {
         }
     }
 
+//    template<>
+//    inline void
+//    fscalin( const Givaro::Modular<int64_t>& F , const size_t N,
+//             const int64_t a,
+//             int64_t * X, const size_t incX )
+//    {
+//        printf("New special coucou 2\n");
+//    }
+//
+//    template<>
+//    inline void
+//    fscalin( const Givaro::ModularBalanced<int64_t>& F , const size_t N,
+//             const int64_t a,
+//             int64_t * X, const size_t incX )
+//    {
+//        printf("New special coucou\n");
+//    }
+
 
     /***************************/
     /*         LEVEL 2         */
     /***************************/
 
-
-
+    // TODO keep generic?
     template<class Field>
     void
     fscalin (const Field& F, const size_t m , const size_t n,
@@ -387,7 +415,9 @@ namespace FFLAS {
             }
             else {
                 for (size_t i = 0 ; i < m ; ++i)
+                {
                     fscalin(F,n,a,A+i*lda,1);
+                }
             }
 
             return;

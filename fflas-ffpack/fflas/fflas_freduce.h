@@ -48,6 +48,15 @@ namespace FFLAS {
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
+    template<class T>
+    struct support_fast_mod  : public std::false_type {} ;
+    template<>
+    struct support_fast_mod<float> : public std::true_type {} ;
+    template<>
+    struct support_fast_mod<double> : public std::true_type {} ;
+    template<>
+    struct support_fast_mod<int64_t> : public std::true_type {} ;
+
 } // FFLAS
 
 #include "fflas-ffpack/fflas/fflas_freduce.inl"
