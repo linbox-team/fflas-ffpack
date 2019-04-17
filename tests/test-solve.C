@@ -22,7 +22,7 @@
  * ========LICENCE========
  *.
  */
-#define  __FFLASFFPACK_SEQUENTIAL
+//#define  __FFLASFFPACK_SEQUENTIAL
 
 //#define ENABLE_ALL_CHECKINGS 1
 
