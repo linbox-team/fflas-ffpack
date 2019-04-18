@@ -472,7 +472,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 namespace FFLAS { namespace vectorised {
 
 
-    // fast_mod => simd_mod, so this declaration's one in two
+    // simd_mod => fast_mod, so this declaration's one in two
     template<class Field>
     inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
