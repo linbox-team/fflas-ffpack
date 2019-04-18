@@ -26,7 +26,6 @@
 
 #include "givaro/givinteger.h" /* for Givaro::Integer */
 #include "givaro/givprint.h" /* for operator<< with vector */
-#include "givaro/modular-general.h" /* for make_unsigned_int */
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/utils/args-parser.h" /* for parsing command-line args */
