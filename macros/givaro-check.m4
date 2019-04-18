@@ -145,3 +145,23 @@ unset saved_LD_RUN_PATH
 #unset LD_LIBRARY_PATH
 
 ])
+
+AC_DEFUN([FF_CHECK_GIVARO_USABILITY],
+[
+    dnl backup
+    BACKUP_CXXFLAGS=${CXXFLAGS}
+    BACKUP_LIBS=${LIBS}
+    dnl add GIVARO flags
+	CXXFLAGS="${BACKUP_CXXFLAGS} ${GIVARO_CFLAGS}"
+	LIBS="${BACKUP_LIBS} ${GIVARO_LIBS}"
+    dnl try to compile a small example
+    AC_MSG_CHECKING([for GIVARO usability])
+    AC_TRY_LINK([#include <givaro/givinteger.h>], [Givaro::Integer a;],
+                [AC_MSG_RESULT(yes)],
+                [AC_MSG_RESULT(no)
+                 AC_MSG_ERROR(The Givaro library could not be used with the compiler and the flags set up by the configure script)
+                ])
+    dnl restore backu
+    CXXFLAGS=${BACKUP_CXXFLAGS}
+    LIBS=${BACKUP_LIBS}
+])
