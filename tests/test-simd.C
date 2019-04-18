@@ -124,7 +124,7 @@ eval_func_on_array (function<Ret()> f, array<T, 0> arr)
 template <class Ret, class T, class...TArgs>
 Ret
 eval_func_on_array (function<Ret(T, TArgs...)> f,
-                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> arr)
+                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> &arr)
 {
     function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return f(arr[0], args...);};
     array<typename remove_reference<T>::type, sizeof...(TArgs)> newarr;
