@@ -364,7 +364,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         )
     {
 
-        //		std::cerr<<"modp vectorized"<<std::endl;
+        // std::cerr<<"modp vectorized"<<std::endl;
         typedef typename Field::Element Element;
         using simd = Simd<Element>;
         using vect_t = typename simd::vect_t;
@@ -373,7 +373,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         size_t i = 0;
         if (n < simd::vect_size)
         {
-            //			std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
+            // std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
             for (; i < n ; i++)
             {
                 T[i]=reduce<Field>(U[i],H);
@@ -387,7 +387,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
         if (st)
         {
-            //			std::cerr<< st << " not aligned on  "<<simd::alignment<<std::endl;
+            // std::cerr<< st << " not aligned on  "<<simd::alignment<<std::endl;
 
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
             {
@@ -412,99 +412,46 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         }
 
         // perform the last elt from T without SIMD
-        //		std::cerr<< n-i<< " unaligned elements left "<<std::endl;
+        // std::cerr<< n-i<< " unaligned elements left "<<std::endl;
         for (;i<n;i++)
         {
 
             T[i] = reduce<Field>(U[i],H);
         }
     }
-
-    // Using fast reduce, and possibly gathers
-    template<class Field>
-    inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-    modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n, const size_t & incX,
-         typename Field::Element_ptr T
-         , HelperMod<Field> & G
-        )
-    {
-
-        //		std::cerr<<"modp vectorized"<<std::endl;
-        typedef typename Field::Element Element;
-        using simd = Simd<Element>;
-        using vect_t = typename simd::vect_t;
-        HelperModSimd<Field,simd> H(F,G);
-
-        // Too few elements to vectorise
-        size_t i = 0;
-        typename Field::ConstElement_ptr Xi = U;
-        if (n < simd::vect_size)
-        {
-            //			std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
-            for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
-            {
-                T[i]=reduce<Field>(*Xi,H);
-            }
-            return;
-        }
-
-#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-        // can use a ``fast'' gather
-        vect_t C;
-
-        // FIXME do a compile-time thingy?
-        if (simd::vect_size == 8)
-        {
-            Simd512<int64_t>::vect_t Idx;
-            Simd512<int64_t>::vect_t Inc;
-
-            Idx = Simd512<int64_t>::set(0, incX, 2*incX, 3*incX, 4*incX, 5*incX, 6*incX, 7*incX);
-            Inc = Simd512<int64_t>::set1(8*incX);
-
-            for (; Xi <= U+incX*(n - simd::vect_size) ; Xi+=incX*simd::vect_size,i += incX*simd::vect_size)
-            {
-                C = simd::gather(U, Idx);
-                VEC_MOD<Field,simd>(C,H);
-                simd::scatter(T, Idx, C);
-                Idx = Simd512<int64_t>::add(Idx, Inc);
-            }
-        }
 #endif
 
-        // perform the last elt from T without SIMD
-        for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
-        {
-            T[i]=reduce<Field>(*Xi,H);
-        }
-    }
-#endif
-
-    // FIXME not actually called, even when support_simd_mod is false?!!
-    // Because of a bad switch in details, as unswitch::reduce's only called when support_simd_mod is true~
     // not vectorised but allows better code than % or fmod via helper
     template<class Field>
-    inline typename std::enable_if< !FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    inline typename std::enable_if<!FFLAS::support_simd_mod<typename Field::Element>::value && FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
          typename Field::Element_ptr T
          , HelperMod<Field> & H
         )
     {
-        //		std::cerr<<"modp not vectorized"<<std::endl;
-        typedef typename Field::Element Element;
-        Element min = (Element)F.minElement(), max = (Element)F.maxElement();
-        bool positive = ! FieldTraits<Field>::balanced ;
-
         size_t i = 0;
         for (; i < n ; i++)
         {
             T[i]=reduce<Field>(U[i],H);
-            if (!positive) // TODO ditto
-            {
-                T[i]-=(T[i]>max)?H.p:(typename Field::Element)0;
-            }
-            T[i]+=(T[i]<min)?H.p:(typename Field::Element)0;
         }
     }
+
+    // Using fast helper-based reduce for non-local input
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n, const size_t & incX,
+         typename Field::Element_ptr T
+         , HelperMod<Field> & H
+        )
+    {
+        size_t i = 0;
+        typename Field::ConstElement_ptr Xi = U;
+        for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
+        {
+            T[i]=reduce<Field>(*Xi,H);
+        }
+    }
+
 } // unswitch
 } // vectorised
 } // FFLAS
@@ -512,9 +459,9 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 namespace FFLAS { namespace vectorised {
 
 
+    // fast_mod => simd_mod, so this declaration's one in two
     template<class Field>
-    //inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-    void
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
          typename Field::Element_ptr T)
     {
@@ -524,8 +471,7 @@ namespace FFLAS { namespace vectorised {
     }
 
     template<class Field>
-    //inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-    void
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n, const size_t & incX,
          typename Field::Element_ptr T)
     {
@@ -541,23 +487,49 @@ namespace FFLAS { namespace vectorised {
 namespace FFLAS { namespace details {
 
 
-    // specialised
+    /*** Entry-point for specialised code ***/
+
+//    template<class Field>
+//    typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+//    freduce (const Field & F, const size_t m,
+//             typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
+//    {
+//        if(incX == 1) {
+//            vectorised::modp<Field>(F,A,m,A);
+//        }
+//        else { /*  faster with copy, use incX=1, copy back ? */
+//            if (m < FFLASFFPACK_COPY_REDUCE) {
+//                vectorised::modp<Field>(F,A,m,incX,A);
+//            }
+//            else {
+//                typename Field::Element_ptr Ac = fflas_new (F,m) ;
+//                fassign (F,m,A,incX,Ac,1);
+//                freduce (F,m,Ac,1,FieldCategories::ModularTag());
+//                fassign (F,m,Ac,1,A,incX);
+//                fflas_delete (Ac);
+//            }
+//        }
+//    }
+//
+    // simd_mod => fast_mod;
+    // this one will default to the best supported option
     template<class Field>
-    typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value  , void>::type
     freduce (const Field & F, const size_t m,
              typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
     {
-        if(incX == 1) {
+        if(incX == 1)
+        {
             vectorised::modp<Field>(F,A,m,A);
         }
-        else { /*  faster with copy, use incX=1, copy back ? */
-            if (m < FFLASFFPACK_COPY_REDUCE) {
-//                typename Field::Element_ptr Xi = A ;
-//                for (; Xi < A+m*incX; Xi+=incX )
-//                    F.reduce(*Xi); // TODO FIXME why F.reduce and not a faster helper-based reduction? Check elsewhere too!
+        else
+        { /*  faster with copy, use incX=1, copy back ? */
+            if (m < FFLASFFPACK_COPY_REDUCE)
+            {
                 vectorised::modp<Field>(F,A,m,incX,A);
             }
-            else {
+            else
+            {
                 typename Field::Element_ptr Ac = fflas_new (F,m) ;
                 fassign (F,m,A,incX,Ac,1);
                 freduce (F,m,Ac,1,FieldCategories::ModularTag());
@@ -567,21 +539,18 @@ namespace FFLAS { namespace details {
         }
     }
 
+    /*** Non-specialised code ***/
+
     template<class Field>
-    typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value &&  ! FFLAS::support_fast_mod<typename Field::Element>::value  , void>::type
     freduce (const Field & F, const size_t m,
              typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
-    { /* ??? ( faster with copy, use incX=1, copy back ? */
-        // CP: no SIMD supported here!
-        // if(incX == 1) {
-        // 	vectorised::modp<Field,false>(F,A,m,A);
-        // }
-        // else {
+    {
         typename Field::Element_ptr  Xi = A ;
         for (; Xi < A+m*incX; Xi+=incX )
-            F.reduce(*Xi); // TODO
-        // }
+            F.reduce(*Xi);
     }
+
 
     template<class Field>
     void
@@ -612,7 +581,6 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::ModularTag)
     {
-
         if(incX == 1 && incY == 1) {
             vectorised::modp<Field>(F,B,m,A);
         }
@@ -631,7 +599,6 @@ namespace FFLAS { namespace details {
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::ModularTag)
     {
-
         typename Field::Element_ptr Xi = A ;
         typename Field::ConstElement_ptr Yi = B ;
         for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
