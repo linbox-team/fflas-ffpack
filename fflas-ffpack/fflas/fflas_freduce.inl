@@ -36,9 +36,6 @@
 
 #define FFLASFFPACK_COPY_REDUCE 32 /*  TODO TO BENCMARK LATER */
 
-// TODO: no vectorisation doesn't mean that no helper-based reduction is impossible
-
-
 namespace FFLAS { namespace vectorised { /*  for casts (?) */
 
     template<class T>
@@ -297,6 +294,7 @@ namespace FFLAS { namespace vectorised {
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 
+    //TODO why should this be in this ifdef??
 #ifdef __x86_64__
     template<class Field>
     typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
@@ -307,17 +305,25 @@ namespace FFLAS { namespace vectorised {
 #endif // __x86_64__
 
 
-    // TODO when is this one used???
-//    template<class Field>
-//#ifdef __x86_64__
-//    typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
-//#else
-//    typename Field::Element
-//#endif // __x86_64__
-//    reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
-//    {
-//        return reduce(A,H.p);
-//    }
+    template<class Field>
+#ifdef __x86_64__
+    typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
+#else
+    typename Field::Element
+#endif // __x86_64__
+    reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
+    {
+        bool positive = !FieldTraits<Field>::balanced;
+        typename Field::Element r = reduce(A,H.p);
+
+        if(!positive)
+        {
+            r = r > H.max ? r - H.p : r;
+        }
+        r = r < H.min ? r + H.p : r;
+
+        return r;
+    }
 
     template<class Field>
     typename Field::Element reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineFloatTag> & H)
@@ -328,9 +334,17 @@ namespace FFLAS { namespace vectorised {
     template<class Field>
     typename Field::Element reduce (typename Field::Element A, HelperMod<Field,ElementCategories::ArbitraryPrecIntTag> & H)
     {
-        return reduce(A,H.p);
-    }
+        bool positive = !FieldTraits<Field>::balanced;
+        typename Field::Element r = reduce(A,H.p);
 
+        if(!positive)
+        {
+            r = r > H.max ? r - H.p : r;
+        }
+        r = r < H.min ? r + H.p : r;
+
+        return r;
+    }
 
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
@@ -384,7 +398,6 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         long st = long(T) % simd::alignment;
 
         // the array T is not aligned (process few elements s.t. (T+i) is 32 bytes aligned)
-
         if (st)
         {
             // std::cerr<< st << " not aligned on  "<<simd::alignment<<std::endl;
@@ -487,32 +500,10 @@ namespace FFLAS { namespace vectorised {
 namespace FFLAS { namespace details {
 
 
-    /*** Entry-point for specialised code ***/
-
-//    template<class Field>
-//    typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-//    freduce (const Field & F, const size_t m,
-//             typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
-//    {
-//        if(incX == 1) {
-//            vectorised::modp<Field>(F,A,m,A);
-//        }
-//        else { /*  faster with copy, use incX=1, copy back ? */
-//            if (m < FFLASFFPACK_COPY_REDUCE) {
-//                vectorised::modp<Field>(F,A,m,incX,A);
-//            }
-//            else {
-//                typename Field::Element_ptr Ac = fflas_new (F,m) ;
-//                fassign (F,m,A,incX,Ac,1);
-//                freduce (F,m,Ac,1,FieldCategories::ModularTag());
-//                fassign (F,m,Ac,1,A,incX);
-//                fflas_delete (Ac);
-//            }
-//        }
-//    }
-//
+    /*** Entry-points for specialised code ***/
     // simd_mod => fast_mod;
-    // this one will default to the best supported option
+    // will default to the best supported option in unswitch
+
     template<class Field>
     typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value  , void>::type
     freduce (const Field & F, const size_t m,
@@ -539,52 +530,19 @@ namespace FFLAS { namespace details {
         }
     }
 
-    /*** Non-specialised code ***/
-
     template<class Field>
-    typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value &&  ! FFLAS::support_fast_mod<typename Field::Element>::value  , void>::type
-    freduce (const Field & F, const size_t m,
-             typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
-    {
-        typename Field::Element_ptr  Xi = A ;
-        for (; Xi < A+m*incX; Xi+=incX )
-            F.reduce(*Xi);
-    }
-
-
-    template<class Field>
-    void
-    freduce (const Field & F, const size_t m,
-             typename Field::Element_ptr A, const size_t incX,
-             FieldCategories::GenericTag)
-    {
-        typename Field::Element_ptr Xi = A ;
-        for (; Xi < A+m*incX; Xi+=incX )
-            F.reduce (*Xi);
-    }
-
-    template<class Field>
-    void
-    freduce (const Field & F, const size_t m,
-             typename Field::Element_ptr A, const size_t incX,
-             FieldCategories::UnparametricTag)
-    {
-        typename Field::Element_ptr Xi = A ;
-        for (; Xi < A+m*incX; Xi+=incX )
-            F.reduce (*Xi);
-    }
-
-    template<class Field>
-    typename std::enable_if< FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    typename std::enable_if< FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     freduce (const Field & F, const size_t m,
              typename Field::ConstElement_ptr  B, const size_t incY,
              typename Field::Element_ptr A, const size_t incX,
              FieldCategories::ModularTag)
     {
-        if(incX == 1 && incY == 1) {
+        if(incX == 1 && incY == 1)
+        {
             vectorised::modp<Field>(F,B,m,A);
         }
-        else {
+        else
+        {
             typename Field::Element_ptr Xi = A ;
             typename Field::ConstElement_ptr Yi = B ;
             for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
@@ -592,37 +550,25 @@ namespace FFLAS { namespace details {
         }
     }
 
-    template<class Field>
-    typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    /*** Non-specialised code ***/
+
+    template<class Field, class FC>
+    void
     freduce (const Field & F, const size_t m,
-             typename Field::ConstElement_ptr  B, const size_t incY,
              typename Field::Element_ptr A, const size_t incX,
-             FieldCategories::ModularTag)
+             FC)
     {
         typename Field::Element_ptr Xi = A ;
-        typename Field::ConstElement_ptr Yi = B ;
-        for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-            F.reduce (*Xi , *Yi);
+        for (; Xi < A+m*incX; Xi+=incX )
+            F.reduce (*Xi);
     }
 
-    template<class Field>
+    template<class Field, class FC>
     void
     freduce (const Field & F, const size_t m,
              typename Field::ConstElement_ptr  B, const size_t incY,
              typename Field::Element_ptr A, const size_t incX,
-             FieldCategories::GenericTag)
-    {
-        typename Field::Element_ptr Xi = A ;
-        typename Field::ConstElement_ptr Yi = B ;
-        for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-            F.reduce (*Xi , *Yi);
-    }
-    template<class Field>
-    void
-    freduce (const Field & F, const size_t m,
-             typename Field::ConstElement_ptr  B, const size_t incY,
-             typename Field::Element_ptr A, const size_t incX,
-             FieldCategories::UnparametricTag)
+             FC)
     {
         typename Field::Element_ptr Xi = A ;
         typename Field::ConstElement_ptr Yi = B ;

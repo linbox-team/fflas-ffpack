@@ -48,6 +48,7 @@ namespace FFLAS {
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
+    /* Note that support_simd_mod => support_fast_mod */
     template<class T>
     struct support_fast_mod  : public std::false_type {} ;
     template<>
