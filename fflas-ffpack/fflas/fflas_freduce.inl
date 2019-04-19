@@ -390,7 +390,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
             // std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
             for (; i < n ; i++)
             {
-                T[i]=reduce<Field>(U[i],H);
+                T[i]=reduce(U[i],H);
             }
             return;
         }
@@ -404,7 +404,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
             {
-                T[i] = reduce<Field>(U[i],H);
+                T[i] = reduce(U[i],H);
             }
         }
 
@@ -429,7 +429,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         for (;i<n;i++)
         {
 
-            T[i] = reduce<Field>(U[i],H);
+            T[i] = reduce(U[i],H);
         }
     }
 #endif
@@ -445,7 +445,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         size_t i = 0;
         for (; i < n ; i++)
         {
-            T[i]=reduce<Field>(U[i],H);
+            T[i]=reduce(U[i],H);
         }
     }
 
@@ -461,7 +461,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
         typename Field::ConstElement_ptr Xi = U;
         for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
         {
-            T[i]=reduce<Field>(*Xi,H);
+            T[i]=reduce(*Xi,H);
         }
     }
 
@@ -480,7 +480,7 @@ namespace FFLAS { namespace vectorised {
     {
         HelperMod<Field> H(F);
 
-        unswitch::modp<Field>(F,U,n,T,H);
+        unswitch::modp(F,U,n,T,H);
     }
 
     template<class Field>
@@ -490,7 +490,7 @@ namespace FFLAS { namespace vectorised {
     {
         HelperMod<Field> H(F);
 
-        unswitch::modp<Field>(F,U,n,incX,T,H);
+        unswitch::modp(F,U,n,incX,T,H);
     }
 
 } // vectorised
@@ -511,13 +511,13 @@ namespace FFLAS { namespace details {
     {
         if(incX == 1)
         {
-            vectorised::modp<Field>(F,A,m,A);
+            vectorised::modp(F,A,m,A);
         }
         else
         { /*  faster with copy, use incX=1, copy back ? */
             if (m < FFLASFFPACK_COPY_REDUCE)
             {
-                vectorised::modp<Field>(F,A,m,incX,A);
+                vectorised::modp(F,A,m,incX,A);
             }
             else
             {
@@ -539,7 +539,7 @@ namespace FFLAS { namespace details {
     {
         if(incX == 1 && incY == 1)
         {
-            vectorised::modp<Field>(F,B,m,A);
+            vectorised::modp(F,B,m,A);
         }
         else
         {
