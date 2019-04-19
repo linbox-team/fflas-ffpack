@@ -32,6 +32,7 @@ namespace FFLAS { namespace vectorised {
 
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
+// FIXME teh genericity call ><
 // TODO do the non-vectorised properly, incl. w/fastmod
 // TODO do the fastmod for non-local
 
@@ -155,11 +156,10 @@ namespace FFLAS {
                 F.mul( *Yi, a, *Xi );
     }
 
-    template<class Field>
-//    inline typename std::enable_if<!support_fast_mod<Field>::value, void>::type
+    template<class Field, class FC>
     inline void
     fscalin (const Field& F, const size_t n, const typename Field::Element a,
-             typename Field::Element_ptr X, const size_t incX)
+             typename Field::Element_ptr X, const size_t incX, FC)
     {
         if (F.isOne(a))
             return ;
@@ -184,6 +184,46 @@ namespace FFLAS {
             for (; Xi < X+n*incX; Xi+=incX )
                 F.mulin( *Xi, a);
     }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    fscalin( const Field & F , const size_t N,
+             const typename Field::Element a,
+             typename Field::Element_ptr  X, const size_t incX, FieldCategories::ModularTag)
+    {
+        if(incX == 1)
+        {
+            vectorised::HelperMod<Field> H(F);
+            vectorised::scalp(F,X,a,X,N,H);
+        }
+        else
+        {
+            if (N < FFLASFFPACK_COPY_REDUCE)
+            {
+                typename Field::Element_ptr Xi = X;
+                for (; Xi < X+N*incX; Xi+=incX)
+                    F.mulin( *Xi , a); // TODO use helper-based inversion too
+            }
+            else
+            {
+                typename Field::Element_ptr Xc = fflas_new (F,N) ;
+                fassign (F,N,X,incX,Xc,1);
+                fscalin (F,N,a,Xc,1,FieldCategories::ModularTag());
+                fassign (F,N,Xc,1,X,incX);
+                fflas_delete (Xc);
+            }
+        }
+    }
+
+    template<class Field>
+    inline void
+    fscalin (const Field& F, const size_t n, const typename Field::Element a,
+             typename Field::Element_ptr X, const size_t incX)
+    {
+        fscalin(F,n,a,X,incX,typename FieldTraits<Field>::category());
+    }
+
+
 
     template<>
     inline void
@@ -237,25 +277,6 @@ namespace FFLAS {
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_sscal( (int)N, a, y, (int)incy);
-    }
-
-    template<class Field>
-    inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-    fscalin( const Field & F , const size_t N,
-             const typename Field::Element a,
-             typename Field::Element_ptr * X, const size_t incX )
-    {
-        if(incX == 1)
-        {
-            vectorised::HelperMod<Field> H(F);
-            vectorised::scalp(F,X,a,X,N,H);
-        }
-        else
-        {
-            typename Field::Element_ptr * Xi = X;
-            for (; Xi < X+N*incX; Xi+=incX)
-                F.mulin( *Xi , a); // TODO use helper-based inversion too
-        }
     }
 
     template<class Field>
