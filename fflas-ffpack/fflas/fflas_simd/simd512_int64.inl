@@ -117,16 +117,6 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
         return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]]);
     }
-    static INLINE PURE vect_t gather(const scalar_t *const p, const __m512i idx) {
-        return _mm512_i64gather_epi64(idx, p, 8);
-    }
-
-    /* Scatter double-precision (64-bit) floating point elements of v into memory at indices idx[0], ... from vect_t
-     * into memory pointed from p
-     */
-    static INLINE void scatter(scalar_t *p, const __m512i idx, const vect_t a) {
-        return _mm512_i64scatter_epi64(p, idx, a, 8);
-    }
 
     /*
      * Load 512-bits of integer data from memory into dst.

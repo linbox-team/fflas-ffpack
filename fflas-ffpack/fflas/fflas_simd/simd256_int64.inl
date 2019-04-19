@@ -112,9 +112,6 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
         return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]);
     }
-//    static INLINE PURE vect_t gather(const scalar_t *const p, const __m256i idx) {
-//        return _mm256_i64gather_epi64(p, idx, 8);
-//    }
 
     /*
      *  Extract one 64-bit integer from src at index idx

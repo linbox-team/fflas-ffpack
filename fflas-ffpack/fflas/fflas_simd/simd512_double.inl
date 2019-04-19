@@ -95,17 +95,6 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
     template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
         return _mm512_set_pd(p[idx[7]], p[idx[6]], p[idx[5]], p[idx[4]] ,p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
     }
-    static INLINE PURE vect_t gather(const scalar_t *const p, const __m512i idx) {
-        return _mm512_i64gather_pd(idx, p, 8);
-    }
-
-    /* Scatter double-precision (64-bit) floating point elements of v into memory at indices idx[0], ... from vect_t
-     * into memory pointed from p
-     */
-    static INLINE void scatter(scalar_t *p, const __m512i idx, const vect_t a) {
-        return _mm512_i64scatter_pd(p, idx, a, 8);
-    }
-
 
     /*
      * Load 512-bits (composed of 8 packed double-precision (64-bit) floating-point elements) from memory into vect_t.

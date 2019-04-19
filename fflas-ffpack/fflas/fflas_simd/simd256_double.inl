@@ -94,11 +94,6 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
     template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
         return _mm256_set_pd(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
     }
-#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
-    static INLINE PURE vect_t gather(const scalar_t *const p, const __m256i idx) {
-        return _mm256_i64gather_pd(p, idx, 8);
-    }
-#endif
 
     /*
      * Load 256-bits (composed of 4 packed double-precision (64-bit) floating-point elements) from memory into vect_t.

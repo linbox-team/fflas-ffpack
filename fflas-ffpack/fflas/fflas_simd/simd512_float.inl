@@ -95,16 +95,6 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
         // TODO AVX2 Gather
         return _mm512_set_ps(p[idx[15]], p[idx[14]], p[idx[13]], p[idx[12]], p[idx[11]], p[idx[10]], p[idx[9]], p[idx[8]], p[idx[7]], p[idx[6]], p[idx[5]], p[idx[4]], p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
     }
-    static INLINE PURE vect_t gather(const scalar_t *const p, const __m512i idx) {
-        return _mm512_i32gather_ps(idx, p, 4);
-    }
-
-    /* Scatter single-precision (32-bit) floating point elements of v into memory at indices idx[0], ... from vect_t
-     * into memory pointed from p
-     */
-    static INLINE void scatter(scalar_t *p, const __m512i idx, const vect_t a) {
-        return _mm512_i32scatter_ps(p, idx, a, 4);
-    }
 
     /*
      * Load 512-bits (composed of 16 packed single-precision (32-bit) floating-point elements) from memory into vect_t.
