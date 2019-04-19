@@ -116,6 +116,20 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
+
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
                      const size_t M2,
@@ -127,6 +141,20 @@ namespace FFPACK { /* Permutations */
                        const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
+
+    template <class Field>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
@@ -193,16 +221,31 @@ namespace FFPACK { /* Permutations */
      * @param A input matrix
      * @param lda leading dimension of A
      * @param P permutation in LAPACK format
+     * @param psh (optional): a sequential or parallel helper, to choose between sequential or parallel execution
      * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
      */
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P );
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t M, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
+    template<class Field>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Sequential seq);
+
+    template<class Field, class Cut, class Param>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
@@ -255,36 +298,6 @@ namespace FFPACK { /* Permutations */
                      const size_t * MathP, const size_t R, const size_t maxpiv,
                      const size_t rowstomove, const std::vector<bool> &ispiv);
     /* \endcond */
-
-    //! Parallel applyP with OPENMP tasks
-    template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P );
-
-    //! Parallel applyT with OPENMP tasks
-    /* \cond */
-    template <class Field>
-    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    //! Parallel applyS tasks with OPENMP tasks
-    template <class Field>
-    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    /* \endcond */
-
-    //#endif
 
 } // FFPACK permutations
 // #include "ffpack_permutation.inl"
@@ -1131,10 +1144,12 @@ namespace FFPACK { /* Solutions */
      * @param lda leading dimension of A
      * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
+
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda) ;
+          typename Field::Element_ptr A, const size_t lda);
+
 
     template <class Field, class PSHelper>
     size_t
@@ -1304,9 +1319,12 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
-                           size_t* &rkprofile,
-                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field, class PSHelper>
+    size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
 
     /**  @brief Computes the column rank profile of A.
      *
@@ -1325,8 +1343,13 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
-                              size_t* &rkprofile,
-                              const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field, class PSHelper>
+    size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
+
 
     /**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
      *
