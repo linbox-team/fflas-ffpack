@@ -92,7 +92,6 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
      *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]]
      */
     template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
-        // TODO AVX2 Gather
         return _mm256_set_pd(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
     }
 
