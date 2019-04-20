@@ -297,7 +297,7 @@ namespace FFLAS { namespace vectorised {
     //TODO why should this be in this ifdef??
 #ifdef __x86_64__
     template<class Field>
-    typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
+    inline typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
     reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
     {
         return reduce(A, H.p, H.invp, H.min, H.max, H.pow50rem);
@@ -307,9 +307,9 @@ namespace FFLAS { namespace vectorised {
 
     template<class Field>
 #ifdef __x86_64__
-    typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
+    inline typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
 #else
-    typename Field::Element
+    inline typename Field::Element
 #endif // __x86_64__
     reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
     {
@@ -326,13 +326,14 @@ namespace FFLAS { namespace vectorised {
     }
 
     template<class Field>
+    inline
     typename Field::Element reduce (typename Field::Element A, HelperMod<Field,ElementCategories::MachineFloatTag> & H)
     {
         return reduce(A, H.p, H.invp, H.min, H.max);
     }
 
     template<class Field>
-    typename Field::Element reduce (typename Field::Element A, HelperMod<Field,ElementCategories::ArbitraryPrecIntTag> & H)
+    inline typename Field::Element reduce (typename Field::Element A, HelperMod<Field,ElementCategories::ArbitraryPrecIntTag> & H)
     {
         bool positive = !FieldTraits<Field>::balanced;
         typename Field::Element r = reduce(A,H.p);
@@ -505,7 +506,7 @@ namespace FFLAS { namespace details {
     // will default to the best supported option in unswitch
 
     template<class Field>
-    typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value  , void>::type
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value  , void>::type
     freduce (const Field & F, const size_t m,
              typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
     {
@@ -531,7 +532,7 @@ namespace FFLAS { namespace details {
     }
 
     template<class Field>
-    typename std::enable_if< FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    inline typename std::enable_if< FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     freduce (const Field & F, const size_t m,
              typename Field::ConstElement_ptr  B, const size_t incY,
              typename Field::Element_ptr A, const size_t incX,
@@ -553,7 +554,7 @@ namespace FFLAS { namespace details {
     /*** Non-specialised code ***/
 
     template<class Field, class FC>
-    void
+    inline void
     freduce (const Field & F, const size_t m,
              typename Field::Element_ptr A, const size_t incX,
              FC)
@@ -564,7 +565,7 @@ namespace FFLAS { namespace details {
     }
 
     template<class Field, class FC>
-    void
+    inline void
     freduce (const Field & F, const size_t m,
              typename Field::ConstElement_ptr  B, const size_t incY,
              typename Field::Element_ptr A, const size_t incX,

@@ -33,7 +33,7 @@ namespace FFLAS { namespace vectorised { namespace unswitch {
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
     template<class Field, class SimdT>
-    void
+    inline void
     VEC_SCAL(typename SimdT::vect_t & C, typename SimdT::vect_t & ALPHA, HelperModSimd<Field,SimdT> & H)
     {
         C = SimdT::mul(C,ALPHA);
@@ -151,7 +151,7 @@ namespace FFLAS { namespace details {
     // will default to the best supported option in unswitch
 
     template<class Field>
-    typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     fscalin( const Field & F , const size_t N,
              const typename Field::Element a,
              typename Field::Element_ptr  X, const size_t incX, FieldCategories::ModularTag)
@@ -178,7 +178,7 @@ namespace FFLAS { namespace details {
     }
 
     template<class Field>
-    typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     fscal( const Field & F , const size_t N,
            const typename Field::Element a,
            typename  Field::ConstElement_ptr X, const size_t incX,
@@ -197,7 +197,7 @@ namespace FFLAS { namespace details {
 
 
     template<class Field, class FC>
-    void
+    inline void
     fscalin (const Field& F, const size_t n, const typename Field::Element a,
              typename Field::Element_ptr X, const size_t incX, FC)
     {
@@ -227,7 +227,7 @@ namespace FFLAS { namespace details {
 
 
     template<class Field, class FC>
-    void
+    inline void
     fscal( const Field& F, const size_t N,
            const typename Field::Element a,
            typename Field::ConstElement_ptr X, const size_t incX,
@@ -344,7 +344,7 @@ namespace FFLAS {
     /***************************/
 
     template<class Field>
-    void
+    inline void
     fscalin (const Field& F, const size_t m , const size_t n,
              const typename Field::Element a,
              typename Field::Element_ptr A, const size_t lda)
@@ -374,7 +374,7 @@ namespace FFLAS {
     }
 
     template<class Field>
-    void
+    inline void
     fscal (const Field& F, const size_t m , const size_t n,
            const typename Field::Element a,
            typename Field::ConstElement_ptr A, const size_t lda,
