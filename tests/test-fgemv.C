@@ -175,7 +175,7 @@ bool launch_MV(const Field & F,
                 MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> >  WH;
 
                 PAR_BLOCK{
-                    pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+                    fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
         }else{
@@ -201,7 +201,7 @@ bool launch_MV(const Field & F,
                 MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Threads> >  WH;
 
                 PAR_BLOCK{
-                    pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+                    fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
         }else{

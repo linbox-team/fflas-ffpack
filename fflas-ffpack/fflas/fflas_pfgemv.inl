@@ -77,7 +77,7 @@ namespace FFLAS {
            ParSeqHelper::Parallel<Cut,Param> parH){
 
         MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > pH (F,m,n,1,parH);
-        return pfgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
 
     template<class Field>

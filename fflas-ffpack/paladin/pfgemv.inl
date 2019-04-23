@@ -28,7 +28,7 @@ namespace FFLAS
 
     template<class Field, class AlgoT, class FieldTrait>
     typename Field::Element_ptr
-    pfgemv(const Field& F,
+    fgemv(const Field& F,
            const FFLAS_TRANSPOSE ta,
            const size_t m,
            const size_t n,
@@ -57,17 +57,17 @@ namespace FFLAS
                         typename Field::Element_ptr C2 = Y + Ydim2*incY;
                         if (ta==FflasNoTrans){
                         TASK(CONSTREFERENCE(F,H1) MODE( READ(A1,X) READWRITE(C1)),
-                             {pfgemv( F, ta,  Ydim2, n, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
+                             {fgemv( F, ta,  Ydim2, n, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
                             );
                         TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,X) READWRITE(C2)),
-                             {pfgemv(F, ta, m-Ydim2, n, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
+                             {fgemv(F, ta, m-Ydim2, n, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
                             );
                         } else {
                         TASK(CONSTREFERENCE(F,H1) MODE( READ(A1,X) READWRITE(C1)),
-                             {pfgemv( F, ta,  m, Ydim2, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
+                             {fgemv( F, ta,  m, Ydim2, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
                             );
                         TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,X) READWRITE(C2)),
-                             {pfgemv(F, ta, m, n-Ydim2, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
+                             {fgemv(F, ta, m, n-Ydim2, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
                             );
                         }
                         )
@@ -78,7 +78,7 @@ namespace FFLAS
 
     template<class Field, class AlgoT, class FieldTrait, class Cut>
     typename Field::Element_ptr
-    pfgemv(const Field& F,
+    fgemv(const Field& F,
            const FFLAS_TRANSPOSE ta,
            const size_t m,
            const size_t n,
