@@ -224,10 +224,10 @@ bool launch_MV(const Field & F,
         fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
-                ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  WH(4);;
+                ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  WH(4);
 
                 PAR_BLOCK{
-                    pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+                    fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
         }else{
