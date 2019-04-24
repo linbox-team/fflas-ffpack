@@ -1017,6 +1017,18 @@ namespace FFPACK { /* charpoly */
                            typename PolRing::Domain_t::RandIter& G,
                            const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
 
+        template <class PolRing>
+        inline std::list<typename PolRing::Element>&
+        KrylovPreconditionner (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+                               const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                               typename PolRing::Domain_t::RandIter& g,
+                               const size_t degree);
+
+        template <class PolRing>
+        inline std::list<typename PolRing::Element>&
+        ArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+                   const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                   const size_t degree);
 
         template <class Field, class Polynomial>
         std::list<Polynomial>&

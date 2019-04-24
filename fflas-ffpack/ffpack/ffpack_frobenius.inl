@@ -34,92 +34,97 @@
 //
 namespace FFPACK { namespace Protected {
     template <class Field>
-    void CompressRows (Field& F, const size_t M,
+    inline void CompressRows (Field& F, const size_t M,
                        typename Field::Element_ptr A, const size_t lda,
                        typename Field::Element_ptr tmp, const size_t ldtmp,
                        const size_t * d, const size_t nb_blocs);
 
     template <class Field>
-    void CompressRowsQK (Field& F, const size_t M,
+    inline void CompressRowsQK (Field& F, const size_t M,
                          typename Field::Element_ptr A, const size_t lda,
                          typename Field::Element_ptr tmp, const size_t ldtmp,
                          const size_t * d,const size_t deg, const size_t nb_blocs);
 
     template <class Field>
-    void DeCompressRows (Field& F, const size_t M, const size_t N,
+    inline void DeCompressRows (Field& F, const size_t M, const size_t N,
                          typename Field::Element_ptr A, const size_t lda,
                          typename Field::Element_ptr tmp, const size_t ldtmp,
                          const size_t * d, const size_t nb_blocs);
 
     template <class Field>
-    void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
+    inline void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            typename Field::Element_ptr tmp, const size_t ldtmp,
                            const size_t * d, const size_t deg, const size_t nb_blocs);
 
     template <class Field>
-    void CompressRowsQA (Field& F, const size_t M,
+    inline void CompressRowsQA (Field& F, const size_t M,
                          typename Field::Element_ptr A, const size_t lda,
                          typename Field::Element_ptr tmp, const size_t ldtmp,
                          const size_t * d, const size_t nb_blocs);
 
     template <class Field>
-    void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
+    inline void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            typename Field::Element_ptr tmp, const size_t ldtmp,
                            const size_t * d, const size_t nb_blocs);
 
     template <class PolRing>
-    std::list<typename PolRing::Element>&
+    inline std::list<typename PolRing::Element>&
     CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
                        const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
                        typename PolRing::Domain_t::RandIter& g,
-                       const size_t block_size)
+                       const size_t block_size){
+        return KrylovPreconditionner(PR, frobeniusForm, N, A, lda, g, block_size);
+    }
+
+    template <class PolRing>
+    inline std::list<typename PolRing::Element>&
+    KrylovPreconditionner (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+                           const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                           typename PolRing::Domain_t::RandIter& g,
+                           const size_t degree)
     {
         typedef typename PolRing::Domain_t Field;
         typedef typename PolRing::Element Polynomial;
         const Field& F = PR.getdomain();
 
-        FFLASFFPACK_check(block_size);
-        size_t c = block_size;
-        size_t * rp = FFLAS::fflas_new<size_t>(2*N);
-        size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
-        size_t Nnoc = N*noc;
-
+        FFLASFFPACK_check(degree);
+        size_t noc = (N-1)/degree + 1;
         // Building the workplace matrix
-        typename Field::Element_ptr K  = FFLAS::fflas_new (F, Nnoc, c);
-        typename Field::Element_ptr K2 = FFLAS::fflas_new (F, Nnoc, c);
-        // for (size_t i = 0 ; i < Nnoc*c ; ++i)
-        // K[i] = F.zero;
+        typename Field::Element_ptr K  = FFLAS::fflas_new (F, degree*noc, N);
+        typename Field::Element_ptr K2 = FFLAS::fflas_new (F, degree*noc, N);
         size_t ldk = N;
+        size_t bk_stride = noc*ldk;
 
         size_t *dA = FFLAS::fflas_new<size_t>(N); //PA
-        size_t *dK = FFLAS::fflas_new<size_t>(noc*c);
+        size_t *dK = FFLAS::fflas_new<size_t>(noc*degree);
         for (size_t i=0; i<noc; ++i)
             dK[i]=0;
 
         // Picking a random noc x N block vector U^T
         Givaro::GeneralRingNonZeroRandIter<Field> nzg (g);
-        NonZeroRandomMatrix (F, noc, N, K, ldk, g);
+        RandomMatrix (F, noc, N, K, ldk, g);
 
         for (size_t i = 0; i < noc; ++i)
-            nzg.random (*(K + i*ldk +i));
+            nzg.random (*(K + i*(ldk+1)));
 
         // Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
-        for (size_t i = 1; i<c; ++i){
+        for (size_t i = 1; i<degree; ++i){
             // #warning "leaks here"
             fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N,F.one,
-                   K+(i-1)*Nnoc, ldk, A, lda, F.zero, K+i*Nnoc, ldk);
+                   K+(i-1)*bk_stride, ldk, A, lda, F.zero, K+i*bk_stride, ldk);
         }
         // K2 <- K (re-ordering)
         //! @todo swap to save space ??
+        //! @todo don't assing K2 c*noc x N but only mas (c,noc) x N and store each one after the other 
         size_t w_idx = 0;
         for (size_t i=0; i<noc; ++i)
-            for (size_t j=0; j<c; ++j, w_idx++)
+            for (size_t j=0; j<degree; ++j, w_idx++)
                 FFLAS::fassign(F, N, (K+(i+j*noc)*ldk), 1, (K2+(w_idx)*ldk), 1);
 
         // Copying K <- K2
-        for (size_t i=0; i<noc*c; ++i)
+        for (size_t i=0; i<noc*degree; ++i)
             FFLAS::fassign (F, N, K2+i*ldk, 1, (K+i*ldk), 1);
 
         size_t * Pk = FFLAS::fflas_new<size_t>(N);
@@ -129,21 +134,21 @@ namespace FFPACK { namespace Protected {
         for (size_t i=0; i<N; ++i)
             Pk[i] = 0;
 
+            // @todo: replace by PLUQ
         size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk);
         size_t row_idx = 0;
         size_t ii=0;
-        size_t dold = c;
+        size_t dold = degree;
         size_t nb_full_blocks = 0;
         size_t Mk = 0;
         // Determining the degree sequence dK
         for (size_t k = 0; k<noc; ++k){
             size_t d = 0;
-            while ( (d<c) && (row_idx<R) && (Qk[row_idx] == ii)) {ii++; row_idx++; d++;}
+            while ( (d<degree) && (row_idx<R) && (Qk[row_idx] == ii)) {ii++; row_idx++; d++;}
             if (d > dold){
                 // std::cerr << "FAIL in preconditionning phase:"
                 //           << " degree sequence is not monotonically not increasing"
                 // 	     << std::endl;
-                FFLAS::fflas_delete( rp);
                 FFLAS::fflas_delete (K);
                 FFLAS::fflas_delete( Pk);
                 FFLAS::fflas_delete( Qk);
@@ -153,7 +158,7 @@ namespace FFPACK { namespace Protected {
             }
             dK[k] = dold = d;
             Mk++;
-            if (d == c)
+            if (d == degree)
                 nb_full_blocks++;
             if (row_idx < N)
                 ii = Qk[row_idx];
@@ -166,7 +171,7 @@ namespace FFPACK { namespace Protected {
         size_t bk_idx = 0;
         for (size_t i = 0; i < Mk; ++i){
             FFLAS::fassign (F, N, (K2 + (bk_idx + dK[i]-1)*ldk), 1, (K3+i*ldk), 1);
-            bk_idx += c;
+            bk_idx += degree;
         }
         FFLAS::fflas_delete (K2);
 
@@ -205,7 +210,6 @@ namespace FFPACK { namespace Protected {
                         FFLAS::fflas_delete (K);
                         FFLAS::fflas_delete( Pk);
                         FFLAS::fflas_delete(Qk);
-                        FFLAS::fflas_delete( rp);
                         FFLAS::fflas_delete( dA);
                         FFLAS::fflas_delete( dK);
                         throw CharpolyFailed();
@@ -231,7 +235,6 @@ namespace FFPACK { namespace Protected {
                         FFLAS::fflas_delete (K);
                         FFLAS::fflas_delete( Pk);
                         FFLAS::fflas_delete( Qk);
-                        FFLAS::fflas_delete( rp);
                         FFLAS::fflas_delete( dA);
                         FFLAS::fflas_delete( dK);
                         throw CharpolyFailed();
@@ -252,6 +255,7 @@ namespace FFPACK { namespace Protected {
                     N, 0,(int) R, A, lda, Pk);
 
             // Copy K2_ = (A'_2)^t
+            //@todo assigb
             for (Ki = K21, Ai = A+R; Ki != K21 + Nrest*ldk; Ai++, Ki+=ldk-N)
                 for ( size_t j=0; j<N*lda; j+=lda )
                     *(Ki++) = *(Ai+j);
@@ -284,34 +288,70 @@ namespace FFPACK { namespace Protected {
             polyList.clear();
 
             // Recursive call on the complementary subspace
-            CharpolyArithProg (PR, polyList, Nrest, Arec, ldarec,g,c);
+            CharpolyArithProg (PR, polyList, Nrest, Arec, ldarec,g,degree);
             FFLAS::fflas_delete (Arec);
             frobeniusForm.merge(polyList);
         }
 
         FFLAS::fflas_delete( Pk);
         FFLAS::fflas_delete( Qk);
-        size_t deg = c+1;
         for (size_t i=0; i<Mk; ++i)
             dA[i] = dK[i];
         bk_idx = 0;
 
-        typename Field::Element_ptr Arp = FFLAS::fflas_new (F, Ncurr, Ma);
         typename Field::Element_ptr Ac = FFLAS::fflas_new (F, Ncurr, Ma);
         size_t ldac = Ma;
-        size_t ldarp = Ncurr;
 
-        for (size_t i=0; i < Ncurr; ++i)
-            for (size_t j=0; j<Ma; ++j)
-                *(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
+            //for (size_t i=0; i < Ncurr; ++i)
+        for (size_t j=0; j<Ma; ++j)
+        //          *(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
+            FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, Ac+j, ldac);
         FFLAS::fflas_delete (K4);
 
+            // Calling the main algorithm on the preconditionned part
+        return ArithProg (PR, frobeniusForm, Ncurr, Ac, ldac, degree);
+    }
 
-        // Main loop of the arithmetic progession
+    template <class PolRing>
+    inline std::list<typename PolRing::Element>&
+    ArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+               const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+               const size_t degree)
+    {
+
+        typedef typename PolRing::Domain_t Field;
+        typedef typename PolRing::Element Polynomial;
+        const Field& F = PR.getdomain();
+
+	size_t nb_full_blocks, Mk, Ma;
+	Mk = Ma = nb_full_blocks = (N-1)/degree +1;
+	typename Field::Element_ptr K, K3, Ac;
+	size_t ldk=Ma;
+	size_t ldac = Ma;
+	K = FFLAS::fflas_new(F, N, ldk);
+	Ac = FFLAS::fflas_new(F, N, ldac);
+
+	FFLAS::fassign(F, N, Ma, A, lda, Ac, ldac);
+	FFLAS::fassign(F, N, Ma, Ac, lda, K, ldk);
+
+        size_t Ncurr=N;
+
+        size_t * dA = FFLAS::fflas_new<size_t>(Ma);
+	size_t * dK = FFLAS::fflas_new<size_t>(Mk);
+	for (size_t i=0; i<Ma; i++){
+		dK[i] = dA[i] = degree;
+	}
+	size_t rdeg = N % degree;
+	if (rdeg)
+		dK[Mk-1] = dA[Ma-1] = rdeg;
+
+        typename Field::Element_ptr Arp = FFLAS::fflas_new (F, Ncurr, Ma);
+        size_t ldarp = Ncurr;
+        size_t deg = degree+1;
+        size_t * rp=NULL;
+            // Main loop of the arithmetic progession
         while ((nb_full_blocks >= 1) && (Mk > 1)) {
             size_t block_idx, it_idx, rp_val;
-            FFLAS::fflas_delete (K);
-            FFLAS::fflas_delete (K3);
             K = FFLAS::fflas_new (F, Ncurr, Ma);
             K3 = FFLAS::fflas_new (F, Ncurr, Ma);
             ldk = Ma;
@@ -320,6 +360,7 @@ namespace FFPACK { namespace Protected {
             for (size_t i=0; i < Ncurr; ++i)
                 for (size_t j=0; j < Ma; ++j)
                     *(Arp + j*ldarp + Ncurr-i-1) = *(Ac + i*ldac + j);
+            rp = FFLAS::fflas_new<size_t>(2*Ncurr);
             for (size_t i=0; i<2*Ncurr; ++i)
                 rp[i] = 0;
             size_t RR;
@@ -414,7 +455,7 @@ namespace FFPACK { namespace Protected {
                 FFLAS::fassign(F, nb_full_blocks, Arp+i*ldarp, 1, K+(Ncurr-Ma+i)*ldk, 1);
 
             // Copying the last rows of A times K
-            offset = (deg-2)*nb_full_blocks;
+            size_t offset = (deg-2)*nb_full_blocks;
             for (size_t i = nb_full_blocks; i < Mk; ++i) {
                 for (size_t j=0; j<Ncurr; ++j)
                     F.assign(*(K+i+j*ldk), F.zero);
@@ -503,6 +544,9 @@ namespace FFPACK { namespace Protected {
                 FFLAS::fassign (F, Mk, K + i*ldk, 1, Ac + i*ldac, 1);
 
             deg++;
+            FFLAS::fflas_delete (K3, rp);
+            if ((nb_full_blocks > 0) && (Mk > 1))
+                FFLAS::fflas_delete(K);
 
         }
 
@@ -512,11 +556,9 @@ namespace FFPACK { namespace Protected {
         for (size_t j=0; j < dK[0]; ++j)
             F.neg( Pl[j], *(K  + j*ldk));
         frobeniusForm.push_front(Pl);
-        FFLAS::fflas_delete( rp);
         FFLAS::fflas_delete (Arp);
         FFLAS::fflas_delete (Ac);
         FFLAS::fflas_delete (K);
-        FFLAS::fflas_delete (K3);
         FFLAS::fflas_delete( dA);
         FFLAS::fflas_delete( dK);
         return frobeniusForm;
