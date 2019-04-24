@@ -149,11 +149,7 @@ namespace FFPACK { namespace Protected {
                 // std::cerr << "FAIL in preconditionning phase:"
                 //           << " degree sequence is not monotonically not increasing"
                 // 	     << std::endl;
-                FFLAS::fflas_delete (K);
-                FFLAS::fflas_delete( Pk);
-                FFLAS::fflas_delete( Qk);
-                FFLAS::fflas_delete(dA);
-                FFLAS::fflas_delete( dK);
+                FFLAS::fflas_delete (K, Pk, Qk, dA, dK);
                 throw CharpolyFailed();
             }
             dK[k] = dold = d;
@@ -179,22 +175,19 @@ namespace FFPACK { namespace Protected {
         fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N,F.one,  K3, ldk, A, lda, F.zero, K4, ldk);
 
         // K <- K P^T
-        applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                Mk, 0,(int) R, K4, ldk, Pk);
+        applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Mk, 0,(int) R, K4, ldk, Pk);
 
         // K <- K U^-1
         ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, R,F.one, K, ldk, K4, ldk);
 
         // L <-  Q^T L
-        applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-               N, 0,(int) R, K, ldk, Qk);
+        applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0,(int) R, K, ldk, Qk);
 
         // K <- K L^-1
         ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, R,F.one, K, ldk, K4, ldk);
 
         //undoing permutation on L
-        applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-               N, 0,(int) R, K, ldk, Qk);
+        applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0,(int) R, K, ldk, Qk);
 
         // Recovery of the completed invariant factors
         size_t Ma = Mk;
@@ -205,13 +198,7 @@ namespace FFPACK { namespace Protected {
                 for (size_t j = offset+1; j<R; ++j)
                     if (!F.isZero(*(K4 + i*ldk + j))){
                         //std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
-                        FFLAS::fflas_delete (K3);
-                        FFLAS::fflas_delete (K4);
-                        FFLAS::fflas_delete (K);
-                        FFLAS::fflas_delete( Pk);
-                        FFLAS::fflas_delete(Qk);
-                        FFLAS::fflas_delete( dA);
-                        FFLAS::fflas_delete( dK);
+                        FFLAS::fflas_delete (K,K3,K4,Pk,Qk,dA,dK);
                         throw CharpolyFailed();
                     }
                 Polynomial P (dK [i]+1);
@@ -227,27 +214,20 @@ namespace FFPACK { namespace Protected {
         Mk = Ma;
 
         if (R<N){
-            for (size_t i=0; i<nb_full_blocks + 1; ++i)
-                for (size_t j=R; j<N; ++j){
-                    if (!F.isZero( *(K4+i*ldk+j) )){
-                        FFLAS::fflas_delete (K3);
-                        FFLAS::fflas_delete (K4);
-                        FFLAS::fflas_delete (K);
-                        FFLAS::fflas_delete( Pk);
-                        FFLAS::fflas_delete( Qk);
-                        FFLAS::fflas_delete( dA);
-                        FFLAS::fflas_delete( dK);
+                // The Krylov basis did not span the whole space
+                // Recurse on the complementary subspace
+            if (! FFLAS::fiszero (F, nb_full_blocks+1, N-R, K4+R, ldk)){
+                
+            // for (size_t i=0; i<nb_full_blocks + 1; ++i)
+            //     for (size_t j=R; j<N; ++j){
+            //         if (!F.isZero( *(K4+i*ldk+j) )){
+                        FFLAS::fflas_delete (K3, K4, K, Pk, Qk, dA, dK);
                         throw CharpolyFailed();
-                    }
-                }
+            }
 
-            //std::cerr<<"Preconditionning failed; missing rank = "<<N-R
-            //	 <<" completing the Krylov matrix"
-            //	 <<std::endl;
             size_t Nrest = N-R;
             typename Field::Element_ptr K21 = K + R*ldk;
             typename Field::Element_ptr K22 = K21 + R;
-            typename Field::Element_ptr Ki, Ai;
 
             //  Compute the n-k last rows of A' = P A^T P^T in K2_
             // A = A . P^t
@@ -255,34 +235,25 @@ namespace FFPACK { namespace Protected {
                     N, 0,(int) R, A, lda, Pk);
 
             // Copy K2_ = (A'_2)^t
-            //@todo assigb
-            for (Ki = K21, Ai = A+R; Ki != K21 + Nrest*ldk; Ai++, Ki+=ldk-N)
-                for ( size_t j=0; j<N*lda; j+=lda )
-                    *(Ki++) = *(Ai+j);
-
+            for (size_t i=0; i<Nrest; i++)
+                FFLAS::fassign (F, N, A+R+i, lda, K21+i*ldk, 1);
+            
             // A = A . P : Undo the permutation on A
-            applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                    N, 0,(int) R, A, lda, Pk);
+            applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, 0,(int) R, A, lda, Pk);
 
             // K2_ = K2_ . P^t (=  ( P A^t P^t )2_ )
-            applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                    Nrest, 0,(int) R, K21, ldk, Pk);
+            applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0,(int) R, K21, ldk, Pk);
 
             // K21 = K21 . S1^-1
-            ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Nrest, R,
-                   F.one, K, ldk, K21, ldk);
+            ftrsm (F, FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, Nrest, R, F.one, K, ldk, K21, ldk);
 
             typename Field::Element_ptr Arec = FFLAS::fflas_new (F, Nrest, Nrest);
             size_t ldarec = Nrest;
 
             // Creation of the matrix A2 for recursive call
-            for (Ki = K22,  Ai = Arec;
-                 Ki != K22 + Nrest*ldk;
-                 Ki += (ldk-Nrest) )
-                for ( size_t j=0; j<Nrest; ++j )
-                    *(Ai++) = *(Ki++);
-            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mOne,
-                   K21, ldk, K+R, ldk,F.one, Arec, ldarec);
+            FFLAS::fassign (F, Nrest, Nrest, K22, ldk, Arec, ldarec);
+
+            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mOne, K21, ldk, K+R, ldk,F.one, Arec, ldarec);
 
             std::list<Polynomial> polyList;
             polyList.clear();
@@ -302,9 +273,7 @@ namespace FFPACK { namespace Protected {
         typename Field::Element_ptr Ac = FFLAS::fflas_new (F, Ncurr, Ma);
         size_t ldac = Ma;
 
-            //for (size_t i=0; i < Ncurr; ++i)
         for (size_t j=0; j<Ma; ++j)
-        //          *(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
             FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, Ac+j, ldac);
         FFLAS::fflas_delete (K4);
 
@@ -367,24 +336,12 @@ namespace FFPACK { namespace Protected {
             try{
                 RR = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
             } catch (CharpolyFailed){
-                FFLAS::fflas_delete (Arp);
-                FFLAS::fflas_delete (Ac);
-                FFLAS::fflas_delete (K);
-                FFLAS::fflas_delete (K3);
-                FFLAS::fflas_delete( rp);
-                FFLAS::fflas_delete( dA);
-                FFLAS::fflas_delete( dK);
+                FFLAS::fflas_delete (Arp, Ac, K, K3, rp, dA, dK);
                 throw CharpolyFailed();
             }
             if (RR < Ncurr){
                 //std::cerr<<"FAIL RR<Ncurr"<<std::endl;
-                FFLAS::fflas_delete (Arp);
-                FFLAS::fflas_delete (Ac);
-                FFLAS::fflas_delete (K);
-                FFLAS::fflas_delete (K3);
-                FFLAS::fflas_delete( rp);
-                FFLAS::fflas_delete( dA);
-                FFLAS::fflas_delete( dK);
+                FFLAS::fflas_delete (Arp, Ac, K, K3, rp, dA, dK);
                 throw CharpolyFailed();
             }
 
@@ -399,13 +356,7 @@ namespace FFPACK { namespace Protected {
                 do {gg++; rp_val++; it_idx++;}
                 while ( /*(gg<Ncurr ) &&*/ (rp[gg] == rp_val) && (it_idx < deg ));
                 if ((block_idx)&&(it_idx > dK[block_idx-1])){
-                    FFLAS::fflas_delete (Arp);
-                    FFLAS::fflas_delete (Ac);
-                    FFLAS::fflas_delete (K);
-                    FFLAS::fflas_delete (K3);
-                    FFLAS::fflas_delete( rp);
-                    FFLAS::fflas_delete( dA);
-                    FFLAS::fflas_delete(dK);
+                    FFLAS::fflas_delete (Arp, Ac, K, K3, rp, dA, dK);
                     throw CharpolyFailed();
                     //std::cerr<<"FAIL d non decreasing"<<std::endl;
                     //exit(-1);
@@ -522,13 +473,7 @@ namespace FFPACK { namespace Protected {
                 for (size_t j=0; j<nb_full_blocks+1; ++j){
                     if (!F.isZero( *(K+i*ldk+j) )){
                         //std::cerr<<"FAIL C != 0"<<std::endl;
-                        FFLAS::fflas_delete( rp);
-                        FFLAS::fflas_delete (Arp);
-                        FFLAS::fflas_delete (Ac);
-                        FFLAS::fflas_delete (K);
-                        FFLAS::fflas_delete (K3);
-                        FFLAS::fflas_delete( dA);
-                        FFLAS::fflas_delete( dK);
+                        FFLAS::fflas_delete (rp, Arp, Ac, K, K3, dA, dK);
                         throw CharpolyFailed();
                     }
                 }
@@ -556,11 +501,7 @@ namespace FFPACK { namespace Protected {
         for (size_t j=0; j < dK[0]; ++j)
             F.neg( Pl[j], *(K  + j*ldk));
         frobeniusForm.push_front(Pl);
-        FFLAS::fflas_delete (Arp);
-        FFLAS::fflas_delete (Ac);
-        FFLAS::fflas_delete (K);
-        FFLAS::fflas_delete( dA);
-        FFLAS::fflas_delete( dK);
+        FFLAS::fflas_delete (Arp, Ac, K, dA, dK);
         return frobeniusForm;
     }
 
