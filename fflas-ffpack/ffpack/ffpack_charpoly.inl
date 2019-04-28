@@ -69,40 +69,53 @@ namespace FFPACK {
             else if (N< __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD)
                 tag = FfpackLUK;
             else
-                tag = FfpackArithProg;
+                tag = FfpackArithProgKrylovPrecond;
         }
         switch (tag){
-        case FfpackDanilevski: return Danilevski (F, charp, N, A, lda);
-        case FfpackLUK:
-                               {
-                                   typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
-                                   Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
-                                   FFLAS::fflas_delete (X);
-                                   return charp;
-                               }
-        case FfpackArithProg:
-                               {
-                                   size_t attempts=0;
-                                   bool cont;
-
-                                   Givaro::Integer p = F.characteristic();
-                                   if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
-                                       return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
-                                   do{
-                                       cont=false;
-                                       try {
-                                           Protected::CharpolyArithProg (R, charp, N, A, lda, G);
-                                       }
-                                       catch (CharpolyFailed){
-                                           charp.clear();
-                                           if (++attempts < 2)
-                                               cont = true;
-                                           else
-                                               return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
-                                       }
+            case FfpackDanilevski: return Danilevski (F, charp, N, A, lda);
+            case FfpackLUK:
+            {
+                typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
+                Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
+                FFLAS::fflas_delete (X);
+                return charp;
+            }
+            case FfpackArithProgKrylovPrecond:
+            {
+                size_t attempts=0;
+                bool cont;
+                
+                Givaro::Integer p = F.characteristic();
+                if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
+                    return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
+                do{
+                    cont=false;
+                    try {
+                        size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD; // @todo: value passed as a parameter
+                            // Preconditionning by a random block Krylov matrix.
+                            // Some invariant factors may be discovered in the process and are stored in charp.
+                        typename Field::Element_ptr B;
+                        size_t ldb, Nb;
+                        Protected::RandomKrylovPrecond (R, charp, N, A, lda, Nb, B, ldb, G, degree);
+                            // Calling the main algorithm on the preconditionned part
+                        Protected::ArithProg (R, charp, Nb, B, ldb, degree);
+                        FFLAS::fflas_delete(B);
+                    }
+                    catch (CharpolyFailed){
+                        charp.clear();
+                        if (++attempts < 2)
+                            cont = true;
+                        else
+                            return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
+                    }
                                    } while (cont);
-                                   return charp;
-                               }
+                return charp;
+            }
+            case FfpackArithProg:
+            {
+                return Protected::ArithProg (R, charp, N, A, lda, 1);
+            }
+
         case FfpackKG: return Protected::KellerGehrig (F, charp, N, A, lda);
         case FfpackKGFast:
                        {

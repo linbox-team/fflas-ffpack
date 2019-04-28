@@ -78,11 +78,12 @@ namespace FFPACK  { /* tags */
         FfpackAuto = 0,
         FfpackDanilevski = 1,
         FfpackLUK = 2,
-        FfpackArithProg = 3,
-        FfpackKG = 4,
-        FfpackKGFast = 5,
-        FfpackHybrid = 6,
-        FfpackKGFastG = 7
+        FfpackArithProgKrylovPrecond = 3,
+        FfpackArithProg = 4,
+        FfpackKG = 5,
+        FfpackKGFast = 6,
+        FfpackHybrid = 7,
+        FfpackKGFastG = 8
     };
     /* \endcond */
     class CharpolyFailed{};
@@ -1008,22 +1009,14 @@ namespace FFPACK { /* charpoly */
         Danilevski (const Field& F, std::list<Polynomial>& charp,
                     const size_t N, typename Field::Element_ptr A, const size_t lda);
 
-        template <class PolRing>
-        std::list<typename PolRing::Element>&
-        CharpolyArithProg (const PolRing& R,
-                           std::list<typename PolRing::Element>& frobeniusForm,
-                           const size_t N,
-                           typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                           typename PolRing::Domain_t::RandIter& G,
-                           const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
 
         template <class PolRing>
-        inline std::list<typename PolRing::Element>&
-        KrylovPreconditionner (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
-                               const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                               typename PolRing::Domain_t::RandIter& g,
-                               const size_t degree);
-
+        inline void
+        RandomKrylovPrecond (const PolRing& PR, std::list<typename PolRing::Element>& completedFactors, const size_t N,
+                             typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                             size_t& Nb, typename PolRing::Domain_t::Element_ptr& B, size_t& ldb,
+                             typename PolRing::Domain_t::RandIter& g, const size_t degree=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+        
         template <class PolRing>
         inline std::list<typename PolRing::Element>&
         ArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,

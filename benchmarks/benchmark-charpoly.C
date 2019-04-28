@@ -43,11 +43,12 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
     case 0: CT = FfpackAuto; break;
     case 1: CT = FfpackDanilevski; break;
     case 2: CT = FfpackLUK; break;
-    case 3: CT = FfpackArithProg; break;
-    case 4: CT = FfpackKG; break;
-    case 5: CT = FfpackKGFast; break;
-    case 6: CT = FfpackHybrid; break;
-    case 7: CT = FfpackKGFastG; break;
+    case 3: CT = FfpackArithProgKrylovPrecond; break;
+    case 4: CT = FfpackArithProg; break;
+    case 5: CT = FfpackKG; break;
+    case 6: CT = FfpackKGFast; break;
+    case 7: CT = FfpackHybrid; break;
+    case 8: CT = FfpackKGFastG; break;
     default: CT = FfpackAuto; break;
     }
     FFLAS::Timer chrono;

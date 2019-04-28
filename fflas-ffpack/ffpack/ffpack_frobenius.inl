@@ -69,21 +69,13 @@ namespace FFPACK { namespace Protected {
                            typename Field::Element_ptr tmp, const size_t ldtmp,
                            const size_t * d, const size_t nb_blocs);
 
-    template <class PolRing>
-    inline std::list<typename PolRing::Element>&
-    CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
-                       const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                       typename PolRing::Domain_t::RandIter& g,
-                       const size_t block_size){
-        return KrylovPreconditionner(PR, frobeniusForm, N, A, lda, g, block_size);
-    }
 
     template <class PolRing>
-    inline std::list<typename PolRing::Element>&
-    KrylovPreconditionner (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
-                           const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                           typename PolRing::Domain_t::RandIter& g,
-                           const size_t degree)
+    inline void
+    RandomKrylovPrecond (const PolRing& PR, std::list<typename PolRing::Element>& completedFactors, const size_t N,
+                         typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                         size_t & Nb, typename PolRing::Domain_t::Element_ptr& B, size_t& ldb,
+                         typename PolRing::Domain_t::RandIter& g, const size_t degree)
     {
         typedef typename PolRing::Domain_t Field;
         typedef typename PolRing::Element Polynomial;
@@ -205,7 +197,7 @@ namespace FFPACK { namespace Protected {
                 F.assign(P[dK[i]],F.one);
                 for (size_t j=0; j < dK [i]; ++j)
                     F.neg (P [dK [i]-j-1], *(K4 + i*ldk + (offset-j)));
-                frobeniusForm.push_front(P);
+                completedFactors.push_front(P);
                 offset -= dK [i];
                 Ncurr -= dK [i];
                 Ma--;
@@ -259,9 +251,9 @@ namespace FFPACK { namespace Protected {
             polyList.clear();
 
             // Recursive call on the complementary subspace
-            CharpolyArithProg (PR, polyList, Nrest, Arec, ldarec,g,degree);
+            CharPoly (PR, polyList, Nrest, Arec, ldarec, g, FfpackArithProgKrylovPrecond);
             FFLAS::fflas_delete (Arec);
-            frobeniusForm.merge(polyList);
+            completedFactors.merge(polyList);
         }
 
         FFLAS::fflas_delete( Pk);
@@ -270,15 +262,13 @@ namespace FFPACK { namespace Protected {
             dA[i] = dK[i];
         bk_idx = 0;
 
-        typename Field::Element_ptr Ac = FFLAS::fflas_new (F, Ncurr, Ma);
-        size_t ldac = Ma;
+        ldb = Ma;
+        Nb = Ncurr;
+        B = FFLAS::fflas_new (F, Ncurr, ldb);
 
         for (size_t j=0; j<Ma; ++j)
-            FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, Ac+j, ldac);
+            FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, B+j, ldb);
         FFLAS::fflas_delete (K4);
-
-            // Calling the main algorithm on the preconditionned part
-        return ArithProg (PR, frobeniusForm, Ncurr, Ac, ldac, degree);
     }
 
     template <class PolRing>
