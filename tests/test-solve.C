@@ -47,8 +47,8 @@ using Givaro::Modular;
 using Givaro::ModularBalanced;
 
 
-template<typename Field, class RandIter>
-bool check_solve(const Field &F, size_t m, RandIter& Rand){
+template<typename Field, class RandIter, class PSH>
+bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSH& psh){
 
     typename Field::Element_ptr A, A2, B, B2, x;
 
@@ -72,33 +72,27 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
     FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
 #endif
 
-FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-
-
     FFLAS::Timer t; t.clear();
     double time=0.0;
     t.clear();
     t.start();
-    PAR_BLOCK{
-        parH.set_numthreads(NUM_THREADS);
-        FFPACK::Solve(F, m, A, lda, x, incx, B, incb, parH);
-    }
+    FFPACK::Solve(F, m, A, lda, x, incx, B, incb, psh);
     t.stop();
-    time+=t.usertime();
+    time+=t.realtime();
 
     FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A2, lda, x, incx, F.zero, B, incb);
 
     bool ok = true;
     if (FFLAS::fequal (F, m, 1, B2, incb, B, incb)){
 
-        cout << "PASSED ("<<time<<")"<<endl;
+        cout << " PASSED ("<<time<<")";
 
     } else{
 #ifdef DEBUG
         FFLAS::WriteMatrix(std::cout<<"A*x:="<<std::endl,F,m,1,B2,incb)<<std::endl;
         FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
 #endif
-        cout << "FAILED ("<<time<<")"<<endl;
+        cout << " FAILED ("<<time<<")";
         ok=false;
 
     }
@@ -131,8 +125,18 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
         std::cout<<oss.str();
         std::cout<<" ... ";
 
-        ok = ok && check_solve(*F,m,G);
+            // testing a sequential run
+        std::cout<<" seq: ";
+        ok = ok && check_solve(*F,m,G, FFLAS::ParSeqHelper::Sequential());
 
+            // testing a parallel run
+        std::cout<<" par: ";
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+        PAR_BLOCK{
+            parH.set_numthreads(NUM_THREADS);
+            ok = ok && check_solve(*F,m,G, parH);
+        }
+        std::cout<<std::endl;
         nbit--;
         delete F;
 
@@ -146,16 +150,15 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t m=300;
+    size_t m=1000;
 
-    size_t iters=30;
+    size_t iters=4;
     bool loop=false;
     uint64_t seed = getSeed();
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
         { 'm', "-m M", "Set the dimension of unknown square matrix.",      TYPE_INT , &m },
-
         { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
         { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
         { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },

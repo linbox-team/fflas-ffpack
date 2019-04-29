@@ -121,49 +121,14 @@ namespace FFPACK {
         else
             return det;
     }
-/*
+
     template <class Field>
-    typename Field::Element_ptr
+    inline typename Field::Element_ptr
     Solve (const Field& F, const size_t M,
            typename Field::Element_ptr A, const size_t lda,
            typename Field::Element_ptr x, const int incx,
-           typename Field::ConstElement_ptr b, const int incb)
-    {
-
-        size_t *P = FFLAS::fflas_new<size_t>(M);
-        size_t *rowP = FFLAS::fflas_new<size_t>(M);
-
-        if (PLUQ (F, FFLAS::FflasNonUnit, M, M, A, lda, rowP, P) < M){
-            std::cerr<<"SINGULAR MATRIX"<<std::endl;
-            FFLAS::fflas_delete (P);
-            FFLAS::fflas_delete (rowP);
-            return x;
-        }
-        else{
-            FFLAS::fassign( F, M, b, incb, x, incx );
-
-            applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0,(int) M, x, incx, rowP );
-            ftrsv (F, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, A, lda , x, incx);
-            ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M, A, lda , x, incx);
-            applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1, 0,(int) M, x, incx, P );
-            FFLAS::fflas_delete( rowP);
-            FFLAS::fflas_delete( P);
-
-            return x;
-
-        }
-    }
-*/
-    template <class Field>
-    typename Field::Element_ptr
-    Solve (const Field& F, const size_t M,
-           typename Field::Element_ptr A, const size_t lda,
-           typename Field::Element_ptr x, const int incx,
-           typename Field::ConstElement_ptr b, const int incb)
-    {
-        FFLAS::ParSeqHelper::Sequential seqH;
-        FFPACK::Solve(F, M, A, lda, x, incx, b, incb, seqH);
-        return x;
+           typename Field::ConstElement_ptr b, const int incb) {
+        return FFPACK::Solve(F, M, A, lda, x, incx, b, incb, FFLAS::ParSeqHelper::Sequential());
     }
 
     template <class Field, class PSHelper>
@@ -198,9 +163,6 @@ namespace FFPACK {
 
         }
     }
-
-
-
 
     template <class Field>
     void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
@@ -450,4 +412,3 @@ namespace FFPACK {
 #endif // __FFLASFFPACK_ffpack_INL
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
