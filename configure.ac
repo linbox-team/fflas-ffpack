@@ -236,6 +236,7 @@ echo "-----------------------------------------------"
 #FF_CHECK_GMP
 
 PKG_CHECK_MODULES([GIVARO],[givaro >= 4.1.0])
+FF_CHECK_GIVARO_USABILITY()
 
 
 dnl FF_CHECK_GIVARO(,,[

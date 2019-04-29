@@ -93,7 +93,6 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
      *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]]]
      */
     template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
-        // TODO AVX2 Gather
         return _mm512_set_pd(p[idx[7]], p[idx[6]], p[idx[5]], p[idx[4]] ,p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
     }
 

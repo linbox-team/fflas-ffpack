@@ -26,7 +26,6 @@
 
 #include "givaro/givinteger.h" /* for Givaro::Integer */
 #include "givaro/givprint.h" /* for operator<< with vector */
-#include "givaro/modular-general.h" /* for make_unsigned_int */
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/utils/args-parser.h" /* for parsing command-line args */
@@ -125,7 +124,7 @@ eval_func_on_array (function<Ret()> f, array<T, 0> arr)
 template <class Ret, class T, class...TArgs>
 Ret
 eval_func_on_array (function<Ret(T, TArgs...)> f,
-                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> arr)
+                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> &arr)
 {
     function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return f(arr[0], args...);};
     array<typename remove_reference<T>::type, sizeof...(TArgs)> newarr;
@@ -211,37 +210,36 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_floating_point<Element>::value>::type>
 {
-    using UintTypeSameLength = typename make_unsigned_int<Element>::type;
     static Element zero () {
         return 0.0;
     }
     static Element vand (Element x1, Element x2) {
-        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
-        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
-        UintTypeSameLength t = *y1 & *y2;
-        Element *r = reinterpret_cast<Element*>(&t);
-        return *r;
+        unsigned char *p1 = reinterpret_cast<unsigned char *>(&x1);
+        unsigned char *p2 = reinterpret_cast<unsigned char *>(&x2);
+        for (unsigned int i = 0; i < sizeof (Element); i++)
+            p1[i] &= p2[i];
+        return x1;
     }
     static Element vor (Element x1, Element x2) {
-        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
-        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
-        UintTypeSameLength t = *y1 | *y2;
-        Element *r = reinterpret_cast<Element*>(&t);
-        return *r;
+        unsigned char *p1 = reinterpret_cast<unsigned char *>(&x1);
+        unsigned char *p2 = reinterpret_cast<unsigned char *>(&x2);
+        for (unsigned int i = 0; i < sizeof (Element); i++)
+            p1[i] |= p2[i];
+        return x1;
     }
     static Element vxor (Element x1, Element x2) {
-        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
-        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
-        UintTypeSameLength t = *y1 ^ *y2;
-        Element *r = reinterpret_cast<Element*>(&t);
-        return *r;
+        unsigned char *p1 = reinterpret_cast<unsigned char *>(&x1);
+        unsigned char *p2 = reinterpret_cast<unsigned char *>(&x2);
+        for (unsigned int i = 0; i < sizeof (Element); i++)
+            p1[i] ^= p2[i];
+        return x1;
     }
     static Element vandnot (Element x1, Element x2) {
-        UintTypeSameLength *y1 = reinterpret_cast<UintTypeSameLength*>(&x1);
-        UintTypeSameLength *y2 = reinterpret_cast<UintTypeSameLength*>(&x2);
-        UintTypeSameLength t = (~*y1) & *y2;
-        Element *r = reinterpret_cast<Element*>(&t);
-        return *r;
+        unsigned char *p1 = reinterpret_cast<unsigned char *>(&x1);
+        unsigned char *p2 = reinterpret_cast<unsigned char *>(&x2);
+        for (unsigned int i = 0; i < sizeof (Element); i++)
+            p1[i] = (~p1[i]) & p2[i];
+        return x1;
     }
     static Element ceil (Element x) {
         return std::ceil(x);
