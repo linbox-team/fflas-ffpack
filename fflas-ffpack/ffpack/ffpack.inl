@@ -56,6 +56,7 @@ namespace FFPACK {
         return R;
     }
 
+
     template <class Field>
     bool
     IsSingular (const Field& F, const size_t M, const size_t N,
@@ -122,17 +123,27 @@ namespace FFPACK {
     }
 
     template <class Field>
-    typename Field::Element_ptr
+    inline typename Field::Element_ptr
     Solve (const Field& F, const size_t M,
            typename Field::Element_ptr A, const size_t lda,
            typename Field::Element_ptr x, const int incx,
-           typename Field::ConstElement_ptr b, const int incb)
+           typename Field::ConstElement_ptr b, const int incb) {
+        return FFPACK::Solve(F, M, A, lda, x, incx, b, incb, FFLAS::ParSeqHelper::Sequential());
+    }
+
+    template <class Field, class PSHelper>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, PSHelper& psH)
     {
 
         size_t *P = FFLAS::fflas_new<size_t>(M);
         size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
-        if (PLUQ (F, FFLAS::FflasNonUnit, M, M, A, lda, rowP, P) < M){
+        if (PLUQ( F, FFLAS::FflasNonUnit, M, M, A, lda, rowP, P, psH) < M){
+
             std::cerr<<"SINGULAR MATRIX"<<std::endl;
             FFLAS::fflas_delete (P);
             FFLAS::fflas_delete (rowP);
