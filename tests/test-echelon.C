@@ -70,16 +70,12 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
     size_t *Q = FFLAS::fflas_new<size_t>(m);
     size_t R = (size_t)-1;
 
-
-
     bool pass=true;
 
     for (size_t  l=0;l<iters;l++){
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
-
-
         
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
@@ -87,8 +83,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
         if (R != r) {pass = false; break;}
-
-
 
         FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,U,n, LuTag);
 
@@ -111,8 +105,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
         pass = pass && FFLAS::fequal(F, m, n, L, n, X, n);
-
-
 
         if (!pass) {
             std::cerr<<"FAIL (column echelon LuTag="<<LuTag<<")"<<std::endl;
@@ -154,8 +146,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
     size_t *P = FFLAS::fflas_new<size_t>(m);
     size_t *Q = FFLAS::fflas_new<size_t>(n);
     size_t R = (size_t)-1;
-
-
 
     bool pass=true;
 
@@ -246,15 +236,12 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
-
-
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
 
         R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
         if (R != r) {pass = false; break;}
-
 
         FFPACK::getReducedEchelonTransform (F, FFLAS::FflasLower, m,n,R,P,Q,A,lda,U,n, LuTag);
 
@@ -323,16 +310,12 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
-
-
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
 
 
         R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         if (R != r) {pass = false; break;}
-
-
 
         FFPACK::getReducedEchelonTransform (F, FFLAS::FflasUpper, m,n,R,P,Q,A,lda,L,m, LuTag);
 
