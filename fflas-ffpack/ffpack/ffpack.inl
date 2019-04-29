@@ -128,7 +128,8 @@ namespace FFPACK {
            typename Field::Element_ptr A, const size_t lda,
            typename Field::Element_ptr x, const int incx,
            typename Field::ConstElement_ptr b, const int incb) {
-        return FFPACK::Solve(F, M, A, lda, x, incx, b, incb, FFLAS::ParSeqHelper::Sequential());
+           FFLAS::ParSeqHelper::Sequential seqH;
+        return FFPACK::Solve(F, M, A, lda, x, incx, b, incb, seqH);
     }
 
     template <class Field, class PSHelper>
