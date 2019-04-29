@@ -76,6 +76,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+        
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
 
@@ -117,7 +118,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -150,6 +150,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
 
@@ -190,7 +191,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -216,13 +216,13 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *P = FFLAS::fflas_new<size_t>(n);
     size_t *Q = FFLAS::fflas_new<size_t>(m);
     size_t R = (size_t)-1;
-
     bool pass=true;
 
     for (size_t  l=0;l<iters;l++){
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
 
@@ -259,7 +259,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -285,6 +284,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *Q = FFLAS::fflas_new<size_t>(n);
     size_t R = (size_t)-1;
 
+
     bool pass=true;
 
     for (size_t  l=0;l<iters;l++){
@@ -293,11 +293,11 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
 
         R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
-
         if (R != r) {pass = false; break;}
 
         FFPACK::getReducedEchelonTransform (F, FFLAS::FflasUpper, m,n,R,P,Q,A,lda,L,m, LuTag);
@@ -338,7 +338,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -389,6 +388,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
         std::cout<<".";
         ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G);
         std::cout<<".";
+
         nbit--;
         if ( !ok )
             std::cout << "FAILED with seed = "<<seed<<std::endl;
@@ -438,7 +438,7 @@ int main(int argc, char** argv){
         ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,r,iters,seed);
         //ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters,seed); // BUG: not available yet (missing division in the field
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters,seed);
-        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed); // BUG: not available yet in the given field
+        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed);
 
     } while (loop && ok);
 
