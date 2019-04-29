@@ -117,10 +117,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
             FFLAS::WriteMatrix(std::cerr<<"B x X  = "<<std::endl,F,m,n,X,n);
             break;
         }
-
     }
-
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -154,17 +151,12 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
 
-
-
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
 
         R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
         if (R != r) {pass = false; break;}
-
-
-
 
         FFPACK::getEchelonTransform (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,L,m, LuTag);
 
@@ -199,8 +191,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
             break;
         }
     }
-
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -226,9 +216,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *P = FFLAS::fflas_new<size_t>(n);
     size_t *Q = FFLAS::fflas_new<size_t>(m);
     size_t R = (size_t)-1;
-
-
-
     bool pass=true;
 
     for (size_t  l=0;l<iters;l++){
@@ -272,9 +259,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
             break;
         }
     }
-
-
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -312,7 +296,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
-
 
         R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         if (R != r) {pass = false; break;}
@@ -355,8 +338,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
             break;
         }
     }
-
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -415,8 +396,6 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
             std::cout << "PASSED "<<std::endl;
         delete F;
     }
-
-
     return ok;
 }
 
