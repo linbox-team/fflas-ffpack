@@ -1229,6 +1229,13 @@ namespace FFPACK { /* Solutions */
            typename Field::Element_ptr x, const int incx,
            typename Field::ConstElement_ptr b, const int incb );
 
+    template <class Field, class PSHelper>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, PSHelper& psH);
+
 
     //! Solve L X = B or X L = B in place.
     //! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
@@ -1762,3 +1769,4 @@ namespace FFPACK { /* not used */
 
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

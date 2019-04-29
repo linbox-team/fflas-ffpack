@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 
     double d;
     FFPACK::Det(F, d, n, A, n);
+
     std::cout << d << std::endl;
 
     FFLAS::fflas_delete(A);
