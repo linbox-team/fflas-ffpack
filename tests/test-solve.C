@@ -150,8 +150,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 
             // testing a parallel run
         std::cout<<" par: ";
-        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-        ok = ok && check_solve(*F,m,G, parH);
+        ok = ok && check_solve(*F,m,G,
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads>());
 
         std::cout<<std::endl;
         nbit--;
