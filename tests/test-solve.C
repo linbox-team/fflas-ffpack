@@ -46,9 +46,27 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
+template<typename Field, class Cut, class Param>
+void run_solve(const Field &F, size_t m,
+    typename Field::Element_ptr A, const size_t lda,
+    typename Field::Element_ptr x, const int incx,
+    typename Field::ConstElement_ptr b, const int incb,
+    const FFLAS::ParSeqHelper::Parallel<Cut,Param>& parH)
+{
+    FFPACK::pSolve(F, m, A, lda, x, incx, b, incb);
+}
+template<typename Field>
+void run_solve(const Field &F, size_t m,
+    typename Field::Element_ptr A, const size_t lda,
+    typename Field::Element_ptr x, const int incx,
+    typename Field::ConstElement_ptr b, const int incb,
+    const FFLAS::ParSeqHelper::Sequential& seqH)
+{
+    FFPACK::Solve(F, m, A, lda, x, incx, b, incb);
+}
 
-template<typename Field, class RandIter, class PSH>
-bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSH& psh){
+template<typename Field, class RandIter, class PSHelper>
+bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSHelper& psH){
 
     typename Field::Element_ptr A, A2, B, B2, x;
 
@@ -76,7 +94,7 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSH& psh){
     double time=0.0;
     t.clear();
     t.start();
-    FFPACK::Solve(F, m, A, lda, x, incx, B, incb, psh);
+    run_solve(F, m, A, lda, x, incx, B, incb, psH);
     t.stop();
     time+=t.realtime();
 
@@ -104,6 +122,7 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSH& psh){
     FFLAS::fflas_delete(x);
     return ok;
 }
+
 template <class Field>
 bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64_t seed){
     bool ok = true ;
@@ -132,10 +151,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
             // testing a parallel run
         std::cout<<" par: ";
         FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-        PAR_BLOCK{
-            parH.set_numthreads(NUM_THREADS);
-            ok = ok && check_solve(*F,m,G, parH);
-        }
+        ok = ok && check_solve(*F,m,G, parH);
+
         std::cout<<std::endl;
         nbit--;
         delete F;

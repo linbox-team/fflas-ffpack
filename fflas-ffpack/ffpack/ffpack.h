@@ -1273,6 +1273,12 @@ namespace FFPACK { /* Solutions */
            typename Field::Element_ptr x, const int incx,
            typename Field::ConstElement_ptr b, const int incb, PSHelper& psH);
 
+    template <class Field>
+    typename Field::Element_ptr
+    pSolve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb );
 
     //! Solve L X = B or X L = B in place.
     //! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
