@@ -46,27 +46,8 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
-template<typename Field, class Cut, class Param>
-void run_solve(const Field &F, size_t m,
-    typename Field::Element_ptr A, const size_t lda,
-    typename Field::Element_ptr x, const int incx,
-    typename Field::ConstElement_ptr b, const int incb,
-    const FFLAS::ParSeqHelper::Parallel<Cut,Param>& parH)
-{
-    FFPACK::pSolve(F, m, A, lda, x, incx, b, incb);
-}
-template<typename Field>
-void run_solve(const Field &F, size_t m,
-    typename Field::Element_ptr A, const size_t lda,
-    typename Field::Element_ptr x, const int incx,
-    typename Field::ConstElement_ptr b, const int incb,
-    const FFLAS::ParSeqHelper::Sequential& seqH)
-{
-    FFPACK::Solve(F, m, A, lda, x, incx, b, incb);
-}
-
-template<typename Field, class RandIter, class PSHelper>
-bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSHelper& psH){
+template<typename Field, class RandIter>
+bool check_solve(const Field &F, size_t m, RandIter& Rand, bool isParallel){
 
     typename Field::Element_ptr A, A2, B, B2, x;
 
@@ -94,7 +75,12 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand, const PSHelper& psH){
     double time=0.0;
     t.clear();
     t.start();
-    run_solve(F, m, A, lda, x, incx, B, incb, psH);
+    if(isParallel){
+        FFPACK::pSolve(F, m, A, lda, x, incx, B, incb);
+    }else{
+        FFPACK::Solve(F, m, A, lda, x, incx, B, incb);
+    }
+
     t.stop();
     time+=t.realtime();
 
@@ -146,12 +132,11 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 
             // testing a sequential run
         std::cout<<" seq: ";
-        ok = ok && check_solve(*F,m,G, FFLAS::ParSeqHelper::Sequential());
+        ok = ok && check_solve(*F,m,G,false);
 
             // testing a parallel run
         std::cout<<" par: ";
-        ok = ok && check_solve(*F,m,G,
-        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads>());
+        ok = ok && check_solve(*F,m,G,true);
 
         std::cout<<std::endl;
         nbit--;
