@@ -87,38 +87,46 @@ namespace FFPACK { namespace Protected {
         typename Field::Element_ptr K  = FFLAS::fflas_new (F, degree*noc, N);
         typename Field::Element_ptr K2 = FFLAS::fflas_new (F, degree*noc, N);
         size_t ldk = N;
-        size_t bk_stride = noc*ldk;
+//        size_t bk_stride = noc*ldk;
 
         size_t *dA = FFLAS::fflas_new<size_t>(N); //PA
         size_t *dK = FFLAS::fflas_new<size_t>(noc*degree);
         for (size_t i=0; i<noc; ++i)
             dK[i]=0;
 
-        // Picking a random noc x N block vector U^T
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        Givaro::Timer timkrylov, timelim, timsimilar, timrest;
+        timkrylov.start();
+#endif
+            // Picking a random noc x N block vector U^T
         Givaro::GeneralRingNonZeroRandIter<Field> nzg (g);
-        RandomMatrix (F, noc, N, K, ldk, g);
-
+        RandomMatrix (F, noc, N, K, ldk*degree, g);
         for (size_t i = 0; i < noc; ++i)
-            nzg.random (*(K + i*(ldk+1)));
+            nzg.random (*(K + i*(degree*ldk+1)));
 
         // Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
         for (size_t i = 1; i<degree; ++i){
-            // #warning "leaks here"
             fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N,F.one,
-                   K+(i-1)*bk_stride, ldk, A, lda, F.zero, K+i*bk_stride, ldk);
+                   K+(i-1)*ldk, degree*ldk, A, lda, F.zero, K+i*ldk, degree*ldk);
         }
         // K2 <- K (re-ordering)
         //! @todo swap to save space ??
         //! @todo don't assing K2 c*noc x N but only mas (c,noc) x N and store each one after the other 
-        size_t w_idx = 0;
-        for (size_t i=0; i<noc; ++i)
-            for (size_t j=0; j<degree; ++j, w_idx++)
-                FFLAS::fassign(F, N, (K+(i+j*noc)*ldk), 1, (K2+(w_idx)*ldk), 1);
+        // size_t w_idx = 0;
+        // for (size_t i=0; i<noc; ++i)
+        //     for (size_t j=0; j<degree; ++j, w_idx++)
+        //         FFLAS::fassign(F, N, (K+(i+j*noc)*ldk), 1, (K2+(w_idx)*ldk), 1);
 
-        // Copying K <- K2
-        for (size_t i=0; i<noc*degree; ++i)
-            FFLAS::fassign (F, N, K2+i*ldk, 1, (K+i*ldk), 1);
+        // Copying K2 <- K
+//        for (size_t i=0; i<noc*degree; ++i)
+        FFLAS::fassign (F, noc*degree, N, K, ldk, K2, ldk);
 
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        timkrylov.stop();
+         std::cerr<<"Random Krylov Preconditionning:"<<std::endl
+                 <<"  Krylov basis computation : "<<timkrylov.usertime()<<std::endl;
+        timelim.start();
+#endif
         size_t * Pk = FFLAS::fflas_new<size_t>(N);
         size_t * Qk = FFLAS::fflas_new<size_t>(N);
         for (size_t i=0; i<N; ++i)
@@ -151,6 +159,11 @@ namespace FFPACK { namespace Protected {
             if (row_idx < N)
                 ii = Qk[row_idx];
         }
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        timelim.stop();
+        std::cerr <<"  LU (Krylov)              : "<<timelim.usertime()<<std::endl;
+        timsimilar.start();
+#endif
 
         // Selection of the last iterate of each block
 
@@ -205,6 +218,11 @@ namespace FFPACK { namespace Protected {
         }
         Mk = Ma;
 
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        timsimilar.stop();
+        std::cerr <<"  Similarity)              : "<<timsimilar.usertime()<<std::endl;
+        timrest.start();
+#endif
         if (R<N){
                 // The Krylov basis did not span the whole space
                 // Recurse on the complementary subspace
@@ -255,6 +273,10 @@ namespace FFPACK { namespace Protected {
             FFLAS::fflas_delete (Arec);
             completedFactors.merge(polyList);
         }
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+            timrest.stop();
+            std::cerr<<"  left-over                : "<<timrest.usertime()<<std::endl;
+#endif
 
         FFLAS::fflas_delete( Pk);
         FFLAS::fflas_delete( Qk);
@@ -269,6 +291,7 @@ namespace FFPACK { namespace Protected {
         for (size_t j=0; j<Ma; ++j)
             FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, B+j, ldb);
         FFLAS::fflas_delete (K4);
+
     }
 
     template <class PolRing>
@@ -282,6 +305,8 @@ namespace FFPACK { namespace Protected {
         typedef typename PolRing::Element Polynomial;
         const Field& F = PR.getdomain();
 
+        Givaro::Timer tim;
+        tim.start();
 	size_t nb_full_blocks, Mk, Ma;
 	Mk = Ma = nb_full_blocks = (N-1)/degree +1;
 	typename Field::Element_ptr K, K3, Ac;
@@ -492,6 +517,9 @@ namespace FFPACK { namespace Protected {
             F.neg( Pl[j], *(K  + j*ldk));
         frobeniusForm.push_front(Pl);
         FFLAS::fflas_delete (Arp, Ac, K, dA, dK);
+        tim.stop();
+        std::cerr<<"Arith Prog                 : "<<tim.usertime()<<std::endl;
+
         return frobeniusForm;
     }
 

@@ -52,7 +52,8 @@ namespace FFPACK {
     std::list<typename PolRing::Element>&
     CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-              typename PolRing::Domain_t::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
+              typename PolRing::Domain_t::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag,
+              const size_t degree)
     {
         // if (Protected::AreEqual<PolRing::Domain_t, Givaro::Modular<double> >::value ||
         //     Protected::AreEqual<PolRing::Domain_t, Givaro::ModularBalanced<double> >::value){
@@ -64,9 +65,9 @@ namespace FFPACK {
 
         FFPACK_CHARPOLY_TAG tag = CharpTag;
         if (tag == FfpackAuto){
-            if (N < __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD)
+            if (N < degree)
                 tag = FfpackDanilevski;
-            else if (N< __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD)
+            else if (N < degree)
                 tag = FfpackLUK;
             else
                 tag = FfpackArithProgKrylovPrecond;
@@ -91,7 +92,6 @@ namespace FFPACK {
                 do{
                     cont=false;
                     try {
-                        size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD; // @todo: value passed as a parameter
                             // Preconditionning by a random block Krylov matrix.
                             // Some invariant factors may be discovered in the process and are stored in charp.
                         typename Field::Element_ptr B;
@@ -148,7 +148,8 @@ namespace FFPACK {
     typename PolRing::Element&
     CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-              typename PolRing::Domain_t::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+              typename PolRing::Domain_t::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag,
+              const size_t degree){
 
         typedef typename PolRing::Domain_t Field;
         typedef typename PolRing::Element Polynomial;
@@ -159,7 +160,7 @@ namespace FFPACK {
         Checker_charpoly<Field,Polynomial> checker(R.getdomain(),N,A,lda);
 
         std::list<Polynomial> factor_list;
-        CharPoly (R, factor_list, N, A, lda, G, CharpTag);
+        CharPoly (R, factor_list, N, A, lda, G, CharpTag, degree);
         typename std::list<Polynomial>::const_iterator it;
         it = factor_list.begin();
 
