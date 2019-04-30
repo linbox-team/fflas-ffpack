@@ -104,7 +104,7 @@ namespace FFPACK { namespace Protected {
         for (size_t i = 0; i < noc; ++i)
             nzg.random (*(K + i*(degree*ldk+1)));
 
-        // Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
+        // Computing the bloc Krylov matrix [u1 Au1 .. A^(c-1) u1 u2 Au2 ...]^T
         for (size_t i = 1; i<degree; ++i){
             fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N,F.one,
                    K+(i-1)*ldk, degree*ldk, A, lda, F.zero, K+i*ldk, degree*ldk);
@@ -305,8 +305,10 @@ namespace FFPACK { namespace Protected {
         typedef typename PolRing::Element Polynomial;
         const Field& F = PR.getdomain();
 
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
         Givaro::Timer tim;
         tim.start();
+#endif
 	size_t nb_full_blocks, Mk, Ma;
 	Mk = Ma = nb_full_blocks = (N-1)/degree +1;
 	typename Field::Element_ptr K, K3, Ac;
@@ -517,9 +519,10 @@ namespace FFPACK { namespace Protected {
             F.neg( Pl[j], *(K  + j*ldk));
         frobeniusForm.push_front(Pl);
         FFLAS::fflas_delete (Arp, Ac, K, dA, dK);
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
         tim.stop();
         std::cerr<<"Arith Prog                 : "<<tim.usertime()<<std::endl;
-
+#endif
         return frobeniusForm;
     }
 
