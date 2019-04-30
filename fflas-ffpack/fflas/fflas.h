@@ -108,7 +108,7 @@
 #include "fflas_pfgemm.inl"
 // fgemm must be before fgemv according to ScalAndReduce function declaration ?!? PG
 #include "fflas_fgemv.inl"
-#include "fflas_pfgemv.inl"//#include "fflas-ffpack/paladin/pfgemv.inl"
+#include "fflas-ffpack/paladin/pfgemv.inl"
 #include "fflas_freivalds.inl"
 #include "fflas_fger.inl"
 #include "fflas_fsyrk.inl"
