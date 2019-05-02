@@ -179,6 +179,20 @@ namespace FFPACK {
     }
 
     template <class Field>
+    inline typename Field::Element_ptr
+    pSolve (const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb) {
+           FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+            PAR_BLOCK{
+                parH.set_numthreads(NUM_THREADS);
+                FFPACK::Solve(F, M, A, lda, x, incx, b, incb, parH);
+            }
+            return x;
+    }
+
+    template <class Field>
     void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
                                 const size_t M, const size_t N,
                                 typename Field::Element_ptr A, const size_t lda,
