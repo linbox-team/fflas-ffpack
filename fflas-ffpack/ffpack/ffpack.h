@@ -592,6 +592,12 @@ namespace FFPACK {
                  size_t*P, size_t *Q);
 
     template<class Field>
+    size_t pPLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                 const size_t M, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 size_t*P, size_t *Q);
+
+    template<class Field>
     size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
                  const size_t M, const size_t N,
                  typename Field::Element_ptr A, const size_t lda,

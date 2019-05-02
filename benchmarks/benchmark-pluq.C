@@ -243,11 +243,13 @@ int main(int argc, char** argv) {
 
         if (i) chrono.start();
         if (par){
-
+/*
             PAR_BLOCK{
                 parH.set_numthreads(t);
                 R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q, parH);
             }
+*/
+            R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q);
         }
         else{
             if (slab)
