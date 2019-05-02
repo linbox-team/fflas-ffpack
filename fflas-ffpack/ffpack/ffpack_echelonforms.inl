@@ -41,6 +41,21 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
     return FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
 }
 
+template <class Field>
+inline size_t FFPACK::pColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag)
+{
+    size_t r;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+    PAR_BLOCK{
+        parH.set_numthreads(NUM_THREADS);
+        r = FFPACK::ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
+    }
+    return r;
+}
+
 template <class Field, class PSHelper>
 inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
                                          typename Field::Element_ptr A, const size_t lda,
@@ -71,6 +86,21 @@ inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size
 {
     FFLAS::ParSeqHelper::Sequential seqH;
     return FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+}
+
+template <class Field>
+inline size_t FFPACK::pRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                                         typename Field::Element_ptr A, const size_t lda,
+                                         size_t* P, size_t* Qt, const bool transform,
+                                         const FFPACK_LU_TAG LuTag)
+{
+    size_t r;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+    PAR_BLOCK{
+        parH.set_numthreads(NUM_THREADS);
+        r = FFPACK::RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
+    }
+    return r;
 }
 
 template <class Field, class PSHelper>
@@ -104,6 +134,22 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 {
     FFLAS::ParSeqHelper::Sequential seqH;
     return ReducedColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+}
+
+template <class Field>
+inline size_t
+FFPACK::pReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* P, size_t* Qt, const bool transform,
+                                  const FFPACK_LU_TAG LuTag)
+{
+    size_t r;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+    PAR_BLOCK{
+        parH.set_numthreads(NUM_THREADS);
+        r = ReducedColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
+    }
+    return r;
 }
 
 template <class Field, class PSHelper>
@@ -147,6 +193,22 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 {
     FFLAS::ParSeqHelper::Sequential seqH;
     return ReducedRowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, seqH);
+}
+
+template <class Field>
+inline size_t
+FFPACK::pReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                               typename Field::Element_ptr A, const size_t lda,
+                               size_t* P, size_t* Qt, const bool transform,
+                               const FFPACK_LU_TAG LuTag)
+{
+    size_t r;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+    PAR_BLOCK{
+        parH.set_numthreads(NUM_THREADS);
+        r = ReducedRowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, parH);
+    }
+    return r;
 }
 
 template <class Field, class PSHelper>

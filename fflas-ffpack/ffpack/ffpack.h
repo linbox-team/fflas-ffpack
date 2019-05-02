@@ -733,6 +733,13 @@ namespace FFPACK { /* echelon */
                        size_t* P, size_t* Qt, bool transform=false,
                        const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field>
+    size_t
+    pColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                       typename Field::Element_ptr A, const size_t lda,
+                       size_t* P, size_t* Qt, bool transform=false,
+                       const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
     template <class Field, class PSHelper>
     size_t
     ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
@@ -765,6 +772,13 @@ namespace FFPACK { /* echelon */
     template <class Field>
     size_t
     RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                    typename Field::Element_ptr A, const size_t lda,
+                    size_t* P, size_t* Qt, const bool transform=false,
+                    const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field>
+    size_t
+    pRowEchelonForm (const Field& F, const size_t M, const size_t N,
                     typename Field::Element_ptr A, const size_t lda,
                     size_t* P, size_t* Qt, const bool transform=false,
                     const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
@@ -803,6 +817,13 @@ namespace FFPACK { /* echelon */
                               size_t* P, size_t* Qt, const bool transform = false,
                               const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field>
+    size_t
+    pReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* P, size_t* Qt, const bool transform = false,
+                              const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
     template <class Field, class PSHelper>
     size_t
     ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
@@ -837,6 +858,12 @@ namespace FFPACK { /* echelon */
                            size_t* P, size_t* Qt, const bool transform = false,
                            const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field>
+    size_t
+    pReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* P, size_t* Qt, const bool transform = false,
+                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
     template <class Field, class PSHelper>
     size_t
