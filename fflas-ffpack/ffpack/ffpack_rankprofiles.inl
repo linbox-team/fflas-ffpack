@@ -35,6 +35,19 @@ namespace FFPACK{
         return FFPACK::RowRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
     }
 
+    template <class Field>
+    inline size_t pRowRankProfile (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* &rkprofile, const FFPACK_LU_TAG LuTag){
+        size_t r;
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+        PAR_BLOCK{
+            parH.set_numthreads(NUM_THREADS);
+            r = FFPACK::RowRankProfile (F, M, N, A, lda, rkprofile, LuTag, parH);
+        }
+        return r;
+    }
+
     template <class Field, class PSHelper>
     inline size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                                   typename Field::Element_ptr A, const size_t lda,
@@ -66,6 +79,19 @@ namespace FFPACK{
                                      size_t* &rkprofile, const FFPACK_LU_TAG LuTag){
         FFLAS::ParSeqHelper::Sequential seqH;
         return FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, seqH);
+    }
+
+    template <class Field>
+    inline size_t pColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                                     typename Field::Element_ptr A, const size_t lda,
+                                     size_t* &rkprofile, const FFPACK_LU_TAG LuTag){
+        size_t r;
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+        PAR_BLOCK{
+            parH.set_numthreads(NUM_THREADS);
+            r = FFPACK::ColumnRankProfile (F, M, N, A, lda, rkprofile, LuTag, parH);
+        }
+        return r;
     }
 
     template <class Field, class PSHelper>
