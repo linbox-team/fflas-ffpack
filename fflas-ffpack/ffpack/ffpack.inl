@@ -84,6 +84,19 @@ namespace FFPACK {
         return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential(), P, Q);
     }
 
+    template <class Field>
+    inline typename Field::Element&
+    pDet (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda, size_t * P, size_t * Q)
+    {
+        //return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential(), P, Q);
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+        PAR_BLOCK{
+            FFPACK::Det (F, det, N, A, lda, parH, P, Q);
+        }
+        return det;
+    }
+
     template <class Field, class PSHelper>
     typename Field::Element&
     Det (const Field& F, typename Field::Element& det, const size_t N,
