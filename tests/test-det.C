@@ -83,6 +83,17 @@ bool test_det(Field &F, size_t n, int iter, RandIter& G)
             ++dt;
         }
     }
+
+    //test the wrapped Det without the need of using a PAR_BLOCK macro to label the desired parallel region
+    for(int i = 0;i<iter;++i){
+        FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+        FFPACK::pDet(F,d,n,A,n);
+        if (!F.areEqual(dt,d)) {
+            pass = false;
+            break;
+        }
+    }
+
     fflas_delete( A);
     return pass;
 }

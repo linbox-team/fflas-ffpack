@@ -1237,6 +1237,12 @@ namespace FFPACK { /* Solutions */
          typename Field::Element_ptr A, const size_t lda,
          size_t * P = NULL, size_t * Q = NULL);
 
+    template <class Field>
+    typename Field::Element&
+    pDet (const Field& F, typename Field::Element& det, const size_t N,
+         typename Field::Element_ptr A, const size_t lda,
+         size_t * P = NULL, size_t * Q = NULL);
+
     template <class Field, class PSHelper>
     typename Field::Element&
     Det(const Field& F, typename Field::Element& det, const size_t N,
