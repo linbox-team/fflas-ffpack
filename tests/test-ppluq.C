@@ -170,6 +170,7 @@ int main(int argc, char** argv)
 
     enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
     size_t R;
+    size_t RR;
 
     const Field F((double)p);
     // Field::RandIter G(F, seed1);
@@ -193,8 +194,10 @@ int main(int argc, char** argv)
 
     // FFLAS::fflas_new<Field::Element>(n*m);
     Field::Element* A = FFLAS::fflas_new<Field::Element>(n*m);
+    Field::Element* A2 = FFLAS::fflas_new<Field::Element>(n*m);
 #if __FFLASFFPACK_DEBUG
     Field::Element* Adebug = FFLAS::fflas_new<Field::Element>(n*m);
+    Field::Element* Adebug2 = FFLAS::fflas_new<Field::Element>(n*m);
 #endif
     // std::vector<size_t> Index_P(r);
 
@@ -215,12 +218,16 @@ int main(int argc, char** argv)
     size_t *P = FFLAS::fflas_new<size_t>(maxP);
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
+    size_t *P2 = FFLAS::fflas_new<size_t>(maxP);
+    size_t *Q2 = FFLAS::fflas_new<size_t>(maxQ);
 
     PARFOR1D(i, (size_t)m, H,
              for (size_t j=0; j<(size_t)n; ++j) {
              *(A+i*n+j) = *(Acop+i*n+j) ;
+             *(A2+i*n+j) = *(Acop+i*n+j) ;
 #if __FFLASFFPACK_DEBUG
              *(Adebug+i*n+j) = *(Acop+i*n+j) ;
+             *(Adebug2+i*n+j) = *(Acop+i*n+j) ;
 #endif
              }
             );
@@ -228,14 +235,20 @@ int main(int argc, char** argv)
 
 
     for ( int i=0;i<nbf+1;i++){
-        for (size_t j=0;j<maxP;j++)
+        for (size_t j=0;j<maxP;j++){
             P[j]=0;
-        for (size_t j=0;j<maxQ;j++)
+            P2[j]=0;
+        }
+        for (size_t j=0;j<maxQ;j++){
             Q[j]=0;
+            Q2[j]=0;
+        }
 
         PARFOR1D(i, (size_t)m, H,
-                 for (size_t j=0; j<(size_t)n; ++j)
+                 for (size_t j=0; j<(size_t)n; ++j){
                  *(A+i*n+j) = *(Acop+i*n+j) ;
+                 *(A2+i*n+j) = *(Acop+i*n+j) ;
+                 }
                 );
 
 
@@ -247,6 +260,8 @@ int main(int argc, char** argv)
         }
         clock_gettime(CLOCK_REALTIME, &t1);
         delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
+
+        RR = pPLUQ(F, diag, (size_t)m, (size_t)n, A2, (size_t)n, P2, Q2);// Parallel pPLUQ
 
         if(i)
             t_total +=delay;
@@ -269,7 +284,9 @@ int main(int argc, char** argv)
 #if __FFLASFFPACK_DEBUG
     cout<<"check equality A == PLUQ ?"<<endl;
     verification_PLUQ(F,Adebug,A,P,Q,m,n,R);
+    verification_PLUQ(F,Adebug2,A,P2,Q2,m,n,RR);
     FFLAS::fflas_delete( Adebug);
+    FFLAS::fflas_delete( Adebug2);
 #endif
 #if(SEQ==1)
     struct timespec  tt0, tt1;

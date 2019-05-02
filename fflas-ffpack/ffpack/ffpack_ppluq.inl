@@ -407,6 +407,22 @@ namespace FFPACK {
                     //#endif
     }
 
+    template<class Field>
+    inline size_t
+    pPLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+          size_t M, size_t N,
+          typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q)
+    {
+        size_t r;
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                                    FFLAS::StrategyParameter::Threads> PSHelper;
+        PAR_BLOCK{
+            PSHelper.set_numthreads(NUM_THREADS);
+            r = FFPACK::PLUQ (Fi,Diag,M,N,A,lda,P,Q,PSHelper);
+        }
+        return r;
+    }
+
 }// namespace FFPACK
 
 //#endif // OPENMP
