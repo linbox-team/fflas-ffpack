@@ -41,6 +41,35 @@ namespace FFPACK{
                                   const FFPACK::FFPACK_LU_TAG LuTag){
         return NAME(ReducedRowEchelonForm_modular) (F.cardinality(), M, N, A, lda, P, Qt, transform, LuTag, FFLAS_POSITIVE);
     }
+        // Parallel versions
+    template <>
+    size_t pColumnEchelonForm (const  Givaro::FFLAS_FIELD<FFLAS_TYPE>& F, const size_t M, const size_t N,
+                              FFLAS_TYPE* A, const size_t lda,
+                              size_t* P, size_t* Qt, bool transform,
+                              const FFPACK::FFPACK_LU_TAG LuTag){
+        return NAME(pColumnEchelonForm_modular) (F.cardinality(), M, N, A, lda, P, Qt, transform, LuTag, FFLAS_POSITIVE);
+    }
+    template <>
+    size_t pRowEchelonForm (const Givaro::FFLAS_FIELD<FFLAS_TYPE>& F, const size_t M, const size_t N,
+                           FFLAS_TYPE* A, const size_t lda,
+                           size_t* P, size_t* Qt, bool transform,
+                           const FFPACK::FFPACK_LU_TAG LuTag){
+        return NAME(pRowEchelonForm_modular) (F.cardinality(), M, N, A, lda, P, Qt, transform, LuTag, FFLAS_POSITIVE);
+    }
+    template <>
+    size_t pReducedColumnEchelonForm (const Givaro::FFLAS_FIELD<FFLAS_TYPE>& F, const size_t M, const size_t N,
+                                     FFLAS_TYPE* A, const size_t lda,
+                                     size_t* P, size_t* Qt, bool transform,
+                                     const FFPACK::FFPACK_LU_TAG LuTag){
+        return NAME(pReducedColumnEchelonForm_modular) (F.cardinality(), M, N, A, lda, P, Qt, transform, LuTag, FFLAS_POSITIVE);
+    }
+    template <>
+    size_t pReducedRowEchelonForm (const Givaro::FFLAS_FIELD<FFLAS_TYPE>& F, const size_t M, const size_t N,
+                                  FFLAS_TYPE* A, const size_t lda,
+                                  size_t* P, size_t* Qt, bool transform,
+                                  const FFPACK::FFPACK_LU_TAG LuTag){
+        return NAME(pReducedRowEchelonForm_modular) (F.cardinality(), M, N, A, lda, P, Qt, transform, LuTag, FFLAS_POSITIVE);
+    }
 }
 
 #undef FFLAS_POSITIVE
