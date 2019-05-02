@@ -122,16 +122,16 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
       switch (p){
       case 1:{
 	ParSeqHelper::Parallel<rec, threads>  H(t);
-	FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	break;}
       case 2:{
 	ParSeqHelper::Parallel<row, threads>  H(t);
-	FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	break;
       }
       case 3:{
 	ParSeqHelper::Parallel<row, grain>  H(GrainSize);
-	FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	break;
       }
       default:{

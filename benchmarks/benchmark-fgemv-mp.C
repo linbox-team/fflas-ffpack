@@ -150,7 +150,8 @@ int tmain(){
         // RNS MUL_LA
         chrono.clear();chrono.start();
         {
-            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc);
+            FFLAS::ParSeqHelper::Sequential seqH;
+            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
         }
         chrono.stop();
         time+=chrono.realtime();
