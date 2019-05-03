@@ -39,6 +39,19 @@ namespace FFPACK {
         return R;
     }
 
+    template <class Field>
+    size_t
+    pRank (const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda)
+    {
+        size_t R;
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+        PAR_BLOCK{
+            parH.set_numthreads(NUM_THREADS);
+            R = Rank (F, M, N, A, lda, parH);
+        }
+        return R;
+    }
 
     template <class Field, class PSHelper>
     size_t

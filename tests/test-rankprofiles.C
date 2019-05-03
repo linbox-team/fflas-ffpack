@@ -43,7 +43,7 @@ using namespace FFLAS;
 
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters, uint64_t seed){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters, uint64_t seed, bool par){
     bool ok = true ;
     int nbit=(int)iters;
 
@@ -73,18 +73,31 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
         {
             // Testing if LUdivine and PLUQ return the same result
             size_t* RP1, * RP2;
-            FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+            if(!par)
+                FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+            else
+                FFPACK::pRowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+            if(!par)
+                FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+            else
+                FFPACK::pRowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
             for (size_t i=0; i<r; i++)
                 ok = ok && (RP1[i] == RP2[i]);
             fflas_delete(RP1);
             fflas_delete(RP2);
 
             fassign (*F, m, n, B, lda, A, lda);
-            FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+            if(!par)
+                FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+            else
+                FFPACK::pColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+            if(!par)
+                FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+            else
+                FFPACK::pColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+
             for (size_t i=0; i<r; i++)
                 ok = ok && (RP1[i] == RP2[i]);
             fflas_delete(RP1);
@@ -102,9 +115,16 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
                 size_t mm = 1 + (rand() % m);
                 size_t nn = 1 + (rand() % n);
                 fassign (*F, m, n, B, lda, A, lda);
-                size_t rr = FFPACK::ColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+                size_t rr;
+                if(!par)
+                    rr = FFPACK::ColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+                else
+                    rr = FFPACK::pColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
                 fassign (*F, m, n, B, lda, A, lda);
-                FFPACK::RowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
+                if(!par)
+                    FFPACK::RowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
+                else
+                    FFPACK::pRowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
                 size_t* RRP = fflas_new<size_t>(r);
                 size_t* CRP = fflas_new<size_t>(r);
 
@@ -129,15 +149,28 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 
             RandomRankProfileMatrix (m, n, r, RRP, CRP);
             RandomMatrixWithRankandRPM(*F,m,n,r,A,lda, RRP, CRP, G);
-
+            size_t cs, ct;
             fassign (*F, m, n, A, lda, B, lda);
-            size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+            if(!par)
+                cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+            else
+                cs = FFPACK::pColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            if(!par)
+                ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            else
+                ct = FFPACK::pColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+            size_t rs, rt;
+            if(!par)
+                rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+            else
+                rs = FFPACK::pRowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
-            size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+            if(!par)
+                rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+            else
+                rt = FFPACK::pRowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
             std::sort(CRP,CRP+r);
             std::sort(RRP,RRP+r);
             ok = ok && (cs==ct)&&(cs==rs)&&(cs==rt)&&(cs==r);
@@ -167,14 +200,28 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             // fzero(*F,n,n,RPM,n);
             // for (size_t i=0; i<r; i++)
             // 	F->assign(RPM[RRP[i]*n+CRP[i]],F->one);
+            size_t cs, ct;
             fassign (*F, n, n, A, lda, B, lda);
-            size_t cs = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+            if(!par)
+                cs= FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+            else
+                cs = FFPACK::pColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
             fassign (*F, n, n, B, lda, A, lda);
-            size_t ct = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            if(!par)
+                ct = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            else
+                ct = FFPACK::pColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+            size_t rs, rt;
             fassign (*F, n, n, B, lda, A, lda);
-            size_t rs = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+            if(!par)
+                rs = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+            else
+                rs = FFPACK::pRowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
             fassign (*F, n, n, B, lda, A, lda);
-            size_t rt = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+            if(!par)
+                rt = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+            else
+                rt = FFPACK::pRowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
             std::sort(CRP,CRP+r);
             std::sort(RRP,RRP+r);
             ok = ok && (cs==ct) && (cs==rs) && (cs==rt) && (cs==r);
@@ -236,15 +283,25 @@ int main(int argc, char** argv){
 
     bool ok=true;
     do{
-        ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed,false);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed,false);
+
+        ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed,true);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed,true);
     } while (loop && ok);
 
     return !ok;
