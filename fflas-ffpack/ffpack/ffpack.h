@@ -78,11 +78,12 @@ namespace FFPACK  { /* tags */
         FfpackAuto = 0,
         FfpackDanilevski = 1,
         FfpackLUK = 2,
-        FfpackArithProg = 3,
-        FfpackKG = 4,
-        FfpackKGFast = 5,
-        FfpackHybrid = 6,
-        FfpackKGFastG = 7
+        FfpackArithProgKrylovPrecond = 3,
+        FfpackArithProg = 4,
+        FfpackKG = 5,
+        FfpackKGFast = 6,
+        FfpackHybrid = 7,
+        FfpackKGFastG = 8
     };
     /* \endcond */
     class CharpolyFailed{};
@@ -998,11 +999,12 @@ namespace FFPACK { /* charpoly */
      * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
      */
     template <class PolRing>
-    std::list<typename PolRing::Element>&
+    inline std::list<typename PolRing::Element>&
     CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
               typename PolRing::Domain_t::RandIter& G,
-              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto,
+              const size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD);
 
     /**
      * @brief Compute the characteristic polynomial of the matrix A.
@@ -1015,11 +1017,12 @@ namespace FFPACK { /* charpoly */
      * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
      */
     template <class PolRing>
-    typename PolRing::Element&
+    inline typename PolRing::Element&
     CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
               typename PolRing::Domain_t::RandIter& G,
-              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto,
+              const size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD);
 
     /**
      * @brief Compute the characteristic polynomial of the matrix A.
@@ -1031,12 +1034,13 @@ namespace FFPACK { /* charpoly */
      * @param CharpTag the algorithmic variant
      */
     template <class PolRing>
-    typename PolRing::Element&
+    inline typename PolRing::Element&
     CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto){
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto,
+              const size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD){
         typename PolRing::Domain_t::RandIter G(R.getdomain());
-        return CharPoly (R, charp, N, A, lda, G, CharpTag);
+        return CharPoly (R, charp, N, A, lda, G, CharpTag, degree);
     }
 
 
@@ -1078,15 +1082,19 @@ namespace FFPACK { /* charpoly */
         Danilevski (const Field& F, std::list<Polynomial>& charp,
                     const size_t N, typename Field::Element_ptr A, const size_t lda);
 
-        template <class PolRing>
-        std::list<typename PolRing::Element>&
-        CharpolyArithProg (const PolRing& R,
-                           std::list<typename PolRing::Element>& frobeniusForm,
-                           const size_t N,
-                           typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                           typename PolRing::Domain_t::RandIter& G,
-                           const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
 
+        template <class PolRing>
+        inline void
+        RandomKrylovPrecond (const PolRing& PR, std::list<typename PolRing::Element>& completedFactors, const size_t N,
+                             typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                             size_t& Nb, typename PolRing::Domain_t::Element_ptr& B, size_t& ldb,
+                             typename PolRing::Domain_t::RandIter& g, const size_t degree=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+        
+        template <class PolRing>
+        inline std::list<typename PolRing::Element>&
+        ArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+                   const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                   const size_t degree);
 
         template <class Field, class Polynomial>
         std::list<Polynomial>&

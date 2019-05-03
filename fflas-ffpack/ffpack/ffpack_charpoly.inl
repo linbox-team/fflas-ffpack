@@ -52,7 +52,8 @@ namespace FFPACK {
     std::list<typename PolRing::Element>&
     CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-              typename PolRing::Domain_t::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
+              typename PolRing::Domain_t::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag,
+              const size_t degree)
     {
         // if (Protected::AreEqual<PolRing::Domain_t, Givaro::Modular<double> >::value ||
         //     Protected::AreEqual<PolRing::Domain_t, Givaro::ModularBalanced<double> >::value){
@@ -64,45 +65,57 @@ namespace FFPACK {
 
         FFPACK_CHARPOLY_TAG tag = CharpTag;
         if (tag == FfpackAuto){
-            if (N < __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD)
+            if (N < degree)
                 tag = FfpackDanilevski;
-            else if (N< __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD)
+            else if (N < degree)
                 tag = FfpackLUK;
             else
-                tag = FfpackArithProg;
+                tag = FfpackArithProgKrylovPrecond;
         }
         switch (tag){
-        case FfpackDanilevski: return Danilevski (F, charp, N, A, lda);
-        case FfpackLUK:
-                               {
-                                   typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
-                                   Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
-                                   FFLAS::fflas_delete (X);
-                                   return charp;
-                               }
-        case FfpackArithProg:
-                               {
-                                   size_t attempts=0;
-                                   bool cont;
-
-                                   Givaro::Integer p = F.characteristic();
-                                   if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
-                                       return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
-                                   do{
-                                       cont=false;
-                                       try {
-                                           Protected::CharpolyArithProg (R, charp, N, A, lda, G);
-                                       }
-                                       catch (CharpolyFailed){
-                                           charp.clear();
-                                           if (++attempts < 2)
-                                               cont = true;
-                                           else
-                                               return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
-                                       }
+            case FfpackDanilevski: return Danilevski (F, charp, N, A, lda);
+            case FfpackLUK:
+            {
+                typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
+                Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
+                FFLAS::fflas_delete (X);
+                return charp;
+            }
+            case FfpackArithProgKrylovPrecond:
+            {
+                size_t attempts=0;
+                bool cont;
+                
+                Givaro::Integer p = F.characteristic();
+                if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
+                    return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
+                do{
+                    cont=false;
+                    try {
+                            // Preconditionning by a random block Krylov matrix.
+                            // Some invariant factors may be discovered in the process and are stored in charp.
+                        typename Field::Element_ptr B;
+                        size_t ldb, Nb;
+                        Protected::RandomKrylovPrecond (R, charp, N, A, lda, Nb, B, ldb, G, degree);
+                            // Calling the main algorithm on the preconditionned part
+                        Protected::ArithProg (R, charp, Nb, B, ldb, degree);
+                        FFLAS::fflas_delete(B);
+                    }
+                    catch (CharpolyFailed){
+                        charp.clear();
+                        if (++attempts < 2)
+                            cont = true;
+                        else
+                            return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
+                    }
                                    } while (cont);
-                                   return charp;
-                               }
+                return charp;
+            }
+            case FfpackArithProg:
+            {
+                return Protected::ArithProg (R, charp, N, A, lda, 1);
+            }
+
         case FfpackKG: return Protected::KellerGehrig (F, charp, N, A, lda);
         case FfpackKGFast:
                        {
@@ -135,7 +148,8 @@ namespace FFPACK {
     typename PolRing::Element&
     CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-              typename PolRing::Domain_t::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+              typename PolRing::Domain_t::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag,
+              const size_t degree){
 
         typedef typename PolRing::Domain_t Field;
         typedef typename PolRing::Element Polynomial;
@@ -146,7 +160,7 @@ namespace FFPACK {
         Checker_charpoly<Field,Polynomial> checker(R.getdomain(),N,A,lda);
 
         std::list<Polynomial> factor_list;
-        CharPoly (R, factor_list, N, A, lda, G, CharpTag);
+        CharPoly (R, factor_list, N, A, lda, G, CharpTag, degree);
         typename std::list<Polynomial>::const_iterator it;
         it = factor_list.begin();
 

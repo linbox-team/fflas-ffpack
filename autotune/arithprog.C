@@ -80,7 +80,7 @@ int main (int argc, char** argv) {
     << "Threshold for ArithProg CharPoly algorithm";
     F.write(cerr << " (using ") << ')' << endl << endl;
 
-    cerr << "Charpoly:  n = "<<dim<<"  block_size   seconds            Gfops"<< std::endl;
+    cerr << "Charpoly:  n = "<<dim<<"  degree    seconds            Gfops"<< std::endl;
     double CurrTime;
     double PrevTime = 1000000;
     double BestTime = 1000000;
@@ -90,7 +90,7 @@ int main (int argc, char** argv) {
         //warm up computation
         std::list<Polynomial> charp_list;
         try{
-            Protected::CharpolyArithProg (PolDom, charp_list, dim, A, lda, g, n);
+            Protected::CharpolyArithProgKrylovPrecond (PolDom, charp_list, dim, A, lda, g, n);
         }
         catch (CharpolyFailed){}
         FFLAS::fassign (F, dim, dim, B, lda, A, lda);
@@ -98,7 +98,7 @@ int main (int argc, char** argv) {
         for (size_t i=0;i<iter;i++){
             chrono.start();
             try{
-                Protected::CharpolyArithProg (PolDom, charp_list, dim, A, lda, g, n);
+                Protected::CharpolyArithProgKrylovPrecond (PolDom, charp_list, dim, A, lda, g, n);
             }
             catch (CharpolyFailed){	i--;}
             chrono.stop();
