@@ -83,6 +83,7 @@ namespace FFLAS {
     // BB hack. might not work.
     // Calling fgemm, TODO: really specialize fgemv
     // specialization of the fgemv function for the field Givaro::ZRing<Givaro::Integer>
+    template<class ParSeq>
     inline Givaro::Integer* fgemv (const Givaro::ZRing<Givaro::Integer>& F,
                                    const FFLAS_TRANSPOSE ta,
                                    const size_t m, const size_t n,
@@ -91,15 +92,16 @@ namespace FFLAS {
                                    Givaro::Integer* X, const size_t ldx,
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
-                                   MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
+                                   MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> & H)
     {
-        MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
+        MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2;
         fgemm(F,ta,FFLAS::FflasNoTrans, (ta==FFLAS::FflasNoTrans)?m:n, 1,(ta==FFLAS::FflasNoTrans)?n:m, alpha,A,lda,X,ldx,beta,Y,ldy,H2);
         return Y;
     }
 
     // specialization of the fgemv function for the field Givaro::Modular<Givaro::Integer>
     // Calling fgemm, TODO: really specialize fgemv
+    template<class ParSeq>
     inline Givaro::Integer* fgemv (const Givaro::Modular<Givaro::Integer>& F,
                                    const FFLAS_TRANSPOSE ta,
                                    const size_t m, const size_t n,
@@ -108,9 +110,9 @@ namespace FFLAS {
                                    Givaro::Integer* X, const size_t ldx,
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
-                                   MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
+                                   MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> & H)
     {
-        MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
+        MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2;
         fgemm(F,ta,FFLAS::FflasNoTrans,(ta==FFLAS::FflasNoTrans)?m:n,1,(ta==FFLAS::FflasNoTrans)?n:m,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
         return Y;
     }
@@ -131,7 +133,7 @@ namespace FFLAS {
            MMHelperAlgo::Classic,
            ModeCategories::ConvertTo<ElementCategories::RNSElementTag>,
            ParSeq >  & H) {
-        MMHelper<Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
+        MMHelper<Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2;
         fgemm (F,ta,FflasNoTrans,(ta==FFLAS::FflasNoTrans)?m:n,1,(ta==FFLAS::FflasNoTrans)?n:m,alpha,A,lda,X,incx,beta,Y,incy,H2);
         return Y;
     }

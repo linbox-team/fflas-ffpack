@@ -150,8 +150,16 @@ int tmain(){
         // RNS MUL_LA
         chrono.clear();chrono.start();
         {
-            FFLAS::ParSeqHelper::Sequential seqH;
-            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
+//@TODO: Still need to use PAR_BLOCK to label the parallel region, impl as pDet to wrap this into one function
+//            FFLAS::ParSeqHelper::Sequential seqH;
+//            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
+PAR_BLOCK{
+            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
+                                          FFLAS::StrategyParameter::Threads> parH;
+parH.set_numthreads(NUM_THREADS);
+
+            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,parH);
+}
         }
         chrono.stop();
         time+=chrono.realtime();
