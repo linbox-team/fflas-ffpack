@@ -1372,7 +1372,7 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t pRowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
-                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
@@ -1401,7 +1401,7 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t pColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
-                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
