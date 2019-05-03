@@ -1,4 +1,4 @@
-2019-02-19 v2.4.0
+2019-04-03 v2.4.0
 	New features:
 	* fsytrf: a symmetric triangular factorization, revealign the RPM
 	* fsyrk, fsyr2k, ftrssyr2k, ftrstr: subroutines for symmetric operations
@@ -12,6 +12,8 @@
 	* update to the Givaro's revamped modular fields
 	* improved igemm
 	* improved test coverage for SIMD
+	* improved charpoly
+	* improved freduce and consequently speed of most routines
 
 2017-12-21 v2.3.2
 	Improvements:
