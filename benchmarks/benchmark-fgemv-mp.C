@@ -31,7 +31,6 @@
 #define STD_RECINT_SIZE 8
 #endif
 
-
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <typeinfo>
@@ -50,34 +49,6 @@ using namespace std;
 #endif
 
 
-template<typename T>
-std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
-
-    size_t www(size_t((double(p.bitsize())*log(2.))/log(10.)));
-    out<<"Matrix("<<m<<','<<n<<",[[";
-    out.width(www+1);
-    out<<std::right<<C[0];
-    for (size_t j=1;j<n;++j){
-        out<<',';
-        out.width(www);
-        out<<std::right<<C[j];
-    }
-    out<<']';
-    for (size_t i=1;i<m;++i){
-        out<<endl<<",[";
-        out.width(www+1);
-        out<<std::right<<C[i*ldc];
-        for (size_t j=1;j<n;++j){
-            out<<',';
-            out.width(www);
-            out<<std::right<<C[i*ldc+j];
-        }
-        out<<']';
-    }
-    return out<<"])";
-}
-
-
 static size_t iters = 3 ;
 static Givaro::Integer q = -1 ;
 static unsigned long b = 512 ;
@@ -85,6 +56,10 @@ static size_t m = 512 ;
 static size_t k = 512 ;
 static int nbw = -1 ;
 static size_t seed= time(NULL);
+static int par = 0;
+int t;
+
+size_t GrainSize = 64;
 static Argument as[] = {
     { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
     { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
@@ -93,8 +68,36 @@ static Argument as[] = {
     { 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
     { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iters },
     { 's', "-s S", "Sets seed.",                            				TYPE_INT , &seed },
+    { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row,Grain>.",
+                                                                                    TYPE_INT , &par },
+    { 'g', "-g G", "Sets GrainSize.",                            			        TYPE_INT , &GrainSize },
+    { 't', "-t T", "number of virtual threads to drive the partition.",             TYPE_INT , &t },
     END_OF_ARGUMENTS
 };
+
+template <class Field, class Matrix, class Vector>
+bool check_result(Field& F, size_t m, size_t lda, Matrix& A, Vector& X, size_t incX, Vector& Y, size_t incY){
+  //Naive result checking by comparing result from pfgemv against the one from fgemv
+  typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
+  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
+
+  for(size_t j=0; j<m; ++j){
+    if(!F.areEqual(Y2[j],Y[j])){
+      FFLAS::fflas_delete(Y2);
+      return false;
+    }
+  }
+  FFLAS::fflas_delete(Y2);
+  return true;
+}
+
+template <class Field, class arg>
+void benchmark_disp(Field& F, double& time, size_t iters, int p,  size_t m, size_t k, arg& as){
+
+  std::cout << "Time: " << time / double(iters)
+     << " Gflops: " << (2.*double(m)/1000.*double(k)/1000.0/1000.0) / time * double(iters);
+        FFLAS::writeCommandString(std::cout, as) << std::endl;
+}
 
 template<typename Ints>
 int tmain(){
@@ -124,17 +127,8 @@ int tmain(){
         A= FFLAS::fflas_new(F,m,lda);
         B= FFLAS::fflas_new(F,k,ldb);
         C= FFLAS::fflas_new(F,m,ldc);
-
-        // 		for (size_t i=0;i<m;++i)
-        // 			for (size_t j=0;j<k;++j)
-        // 				Rand.random(A[i*lda+j]);
-        // 		for (size_t i=0;i<k;++i)
-        // 			for (size_t j=0;j<n;++j)
-        // 				Rand.random(B[i*ldb+j]);
-        // 		for (size_t i=0;i<m;++i)
-        // 			for (size_t j=0;j<n;++j)
-        // 				Rand.random(C[i*ldc+j]);
-
+        
+        //Fill with random value datum
         PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/size_t(MAX_THREADS)); }
         PAR_BLOCK { FFLAS::pfrand(F,Rand, k,1,B,k/MAX_THREADS); }
         PAR_BLOCK { FFLAS::pfzero(F, m,1,C,m/MAX_THREADS); }
@@ -148,41 +142,72 @@ int tmain(){
         using  FFLAS::CuttingStrategy::Recursive;
         using  FFLAS::StrategyParameter::TwoDAdaptive;
         // RNS MUL_LA
-        chrono.clear();chrono.start();
-        {
-//@TODO: Still need to use PAR_BLOCK to label the parallel region, impl as pDet to wrap this into one function
-//            FFLAS::ParSeqHelper::Sequential seqH;
-//            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
-PAR_BLOCK{
-            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-                                          FFLAS::StrategyParameter::Threads> parH;
-parH.set_numthreads(NUM_THREADS);
+        chrono.clear();
 
-            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,parH);
-}
+        //@TODO: Still need to use PAR_BLOCK to label the parallel region, impl as pDet to wrap this into one function
+        PAR_BLOCK {
+            if (par){
+              typedef FFLAS::CuttingStrategy::Row row;
+              typedef FFLAS::CuttingStrategy::Recursive rec;
+              typedef FFLAS::StrategyParameter::Threads threads;
+              typedef FFLAS::StrategyParameter::Grain grain;
+
+              if (loop) { chrono.start(); }
+
+              switch (par){
+
+              case 1:{
+	        FFLAS::ParSeqHelper::Parallel<rec, threads>  H(t);
+	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	        break;
+	            }
+              case 2:{
+	        FFLAS::ParSeqHelper::Parallel<row, threads>  H(t);
+	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	        break;
+              }
+              case 3:{
+	        FFLAS::ParSeqHelper::Parallel<row, grain>  H(GrainSize);
+	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	        break;
+              }
+              default:{
+	        FFLAS::ParSeqHelper::Sequential  H;
+	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	        break;
+              }
+              }
+
+              if (loop) {chrono.stop(); time+=chrono.realtime();}
+            }else{
+              if (loop) chrono.start();
+              FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc);
+              if (loop) {chrono.stop(); time+=chrono.realtime();}
+            }
+
+                time+=chrono.realtime();
+
+                FFLAS::fflas_delete(A);
+                FFLAS::fflas_delete(B);
+                FFLAS::fflas_delete(C);
+
+            }
+            
+            if(!check_result(F, m, lda,  A,  B, ldb,  C, ldc)){
+              std::cerr<<"Computation failed with wrong result"<<std::endl;
+              break;
+            }
         }
-        chrono.stop();
-        time+=chrono.realtime();
 
-        FFLAS::fflas_delete(A);
-        FFLAS::fflas_delete(B);
-        FFLAS::fflas_delete(C);
-
-    }
-
-    double Mflops=((2.*double(m)-1)/1000.*double(k)/1000.0) /time * double(iters);
-    // 	Mflops*=p.bitsize()/16.;
-    cout << "Time: "<< (time/double(iters))  <<" Gfops: "<<Mflops*1.0/1000.0
-    << " (total:" << time <<") "
-    <<typeid(Ints).name()
-    <<" perword: "<< (Mflops*double(p.bitsize()))/64. ;
-    FFLAS::writeCommandString(std::cout << " | " << p << " (" << p.bitsize()<<")|", as)  << std::endl;
+    Field F;
+    benchmark_disp(F, time, iters, p, m, k, as);
     return 0;
 }
 
-
-
 int main(int argc, char** argv){
+    //Set the defaut value to the number of all available threads
+    PAR_BLOCK { t = NUM_THREADS; };
+
     FFLAS::parseArguments(argc,argv,as);
 
     int r1 = tmain<Givaro::Integer>();
