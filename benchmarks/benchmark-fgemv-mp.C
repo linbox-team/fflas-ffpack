@@ -54,10 +54,10 @@ static Givaro::Integer q = -1 ;
 static unsigned long b = 512 ;
 static size_t m = 512 ;
 static size_t k = 512 ;
-static int nbw = -1 ;
+
 static size_t seed= time(NULL);
 static int par = 0;
-int t;
+int t = 1;
 
 size_t GrainSize = 64;
 static Argument as[] = {
@@ -65,7 +65,7 @@ static Argument as[] = {
     { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
     { 'm', "-m M", "Set the dimension m of the matrix.",                    TYPE_INT , &m },
     { 'k', "-k K", "Set the dimension k of the matrix.",                    TYPE_INT , &k },
-    { 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
+
     { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iters },
     { 's', "-s S", "Sets seed.",                            				TYPE_INT , &seed },
     { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row,Grain>.",
@@ -157,24 +157,24 @@ int tmain(){
               switch (par){
 
               case 1:{
-	        FFLAS::ParSeqHelper::Parallel<rec, threads>  H(t);
-	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	        break;
+	            FFLAS::ParSeqHelper::Parallel<rec, threads>  H(t);
+	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	            break;
 	            }
               case 2:{
-	        FFLAS::ParSeqHelper::Parallel<row, threads>  H(t);
-	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	        break;
+	            FFLAS::ParSeqHelper::Parallel<row, threads>  H(t);
+	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	            break;
               }
               case 3:{
-	        FFLAS::ParSeqHelper::Parallel<row, grain>  H(GrainSize);
-	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	        break;
+	            FFLAS::ParSeqHelper::Parallel<row, grain>  H(GrainSize);
+	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	            break;
               }
               default:{
-	        FFLAS::ParSeqHelper::Sequential  H;
-	        FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	        break;
+	            FFLAS::ParSeqHelper::Sequential  H;
+	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
+	            break;
               }
               }
 
@@ -192,11 +192,12 @@ int tmain(){
                 FFLAS::fflas_delete(C);
 
             }
-            
+/*
             if(!check_result(F, m, lda,  A,  B, ldb,  C, ldc)){
               std::cerr<<"Computation failed with wrong result"<<std::endl;
               break;
             }
+*/
         }
 
     Field F;
@@ -206,7 +207,7 @@ int tmain(){
 
 int main(int argc, char** argv){
     //Set the defaut value to the number of all available threads
-    PAR_BLOCK { t = NUM_THREADS; };
+    //PAR_BLOCK { t = NUM_THREADS; };
 
     FFLAS::parseArguments(argc,argv,as);
 
