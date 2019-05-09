@@ -134,7 +134,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 /* 256 SIMD registers are not supported by gcc on CYGWIN
  * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54412
  */
-#if not defined(__CYGWIN__) or not define(__GNUC__)
+#if not defined(__CYGWIN__) or not defined(__GNUC__)
 
 /* Define if avx instructions are supported */
 #ifdef __AVX__
