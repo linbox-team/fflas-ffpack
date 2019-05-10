@@ -20,6 +20,8 @@
  */
 //#define __FFLASFFPACK_ARITHPROG_PROFILING
 
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -83,6 +85,10 @@ void run_with_field(int q, size_t bits, size_t n, size_t d, size_t iter, std::st
 }
 
 int main(int argc, char** argv) {
+
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 
     size_t iter = 1;
     int    q    = 131071;

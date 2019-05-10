@@ -64,7 +64,7 @@ namespace FFLAS {
            Givaro::DoubleDomain::Element_ptr y, const size_t incy )
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_daxpy( (int)N, a, x, (int)incx, y, (int)incy);
@@ -78,7 +78,7 @@ namespace FFLAS {
            Givaro::FloatDomain::Element_ptr y, const size_t incy )
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_saxpy( (int)N, a, x, (int)incx, y, (int)incy);

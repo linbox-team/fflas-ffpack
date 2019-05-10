@@ -43,6 +43,10 @@
 #define MONOTONIC_APPLYP
 #endif
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include <givaro/givranditer.h>
@@ -156,6 +160,10 @@ void Rec_Initialize(Field &F, Field::Element * C, size_t m, size_t n, size_t ldc
 }
 
 int main(int argc, char** argv) {
+
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 
     size_t iter = 3 ;
     bool slab=false;

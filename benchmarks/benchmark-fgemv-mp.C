@@ -24,6 +24,10 @@
  *.
  */
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #if not defined(MG_DEFAULT)
 #define MG_DEFAULT MG_ACTIVE
 #endif
@@ -175,6 +179,11 @@ int tmain(){
 
 
 int main(int argc, char** argv){
+
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+
     FFLAS::parseArguments(argc,argv,as);
 
     int r1 = tmain<Givaro::Integer>();
