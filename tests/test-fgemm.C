@@ -367,7 +367,7 @@ int main(int argc, char** argv)
     std::cerr<<setprecision(17);
 
     uint64_t seed = getSeed();
-    size_t iters = 3 ;
+    size_t iters = 2 ;
     Givaro::Integer q = -1 ;
     uint64_t b = 0 ;
     int m = -50 ;

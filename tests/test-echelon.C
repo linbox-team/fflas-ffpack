@@ -437,9 +437,9 @@ int main(int argc, char** argv){
 
     Givaro::Integer q = -1;
     size_t b = 0;
-    size_t m = 284;
-    size_t n = 154;
-    size_t r = 54;
+    size_t m = 124;
+    size_t n = 64;
+    size_t r = 34;
     size_t iters = 3 ;
     bool loop = false;
     uint64_t seed =  getSeed();

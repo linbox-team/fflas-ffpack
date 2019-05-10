@@ -188,8 +188,8 @@ int main(int argc, char** argv)
 {
     Givaro::Integer q = -1; // characteristic
     uint64_t     bits = 0;       // bit size
-    size_t       iter = 3; // repetitions
-    size_t       n = 300;
+    size_t       iter = 2; // repetitions
+    size_t       n = 150;
     std::string  file = "" ; // file where
     bool loop = false; // loop infintely
     std::string  mat_file = "" ; // input matrix file

@@ -390,8 +390,8 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    int k=85;
-    int n=179;
+    int k=35;
+    int n=109;
     int a=-1;
     int c=1;
     size_t iters=3;
