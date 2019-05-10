@@ -83,7 +83,7 @@ bin_SCRIPTS=fflas-ffpack-config
 git:
 	git commit -a; git pull; git push
 
-VERSION=2.4.0rc1
+VERSION=2.4.0
 
 #  EXTRA_DIST=incremente-versions
 
