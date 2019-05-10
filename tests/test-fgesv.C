@@ -123,6 +123,8 @@ bool test_rect_fgesv (Field& F, FFLAS_SIDE side, string fileA, string fileB, siz
     if (!fileB.empty()){
         ReadMatrix (fileB, F, brows, bcols, B);
         ldb = ldr = bcols;
+        if (side == FflasLeft) {ldx = xcols = bcols; xrows = n; nbeq = m;}
+        else {ldx = xcols = m; xrows = brows; nbeq = n;}
     } else {
         if (side == FflasLeft) {brows = m; bcols = k;ldx = xcols = k; xrows = n; nbeq = m;}
         else {brows = k; bcols = n;ldx = xcols = m; xrows = k; nbeq = n;}
