@@ -23,6 +23,8 @@
 #undef __FFPACK_FSYTRF_BC_RL
 #define __FFPACK_FSYTRF_BC_CROUT
 
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -36,6 +38,10 @@
 using namespace std;
 
 int main(int argc, char** argv) {
+
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 
     size_t iter = 3;
     int    q    = 131071;
