@@ -33,7 +33,7 @@
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and defined(__x86_64__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
-
+//!Function converting to float field for the provided field
 namespace FFLAS{ namespace Protected {
     template <typename FloatElement, class Field>
     inline typename Field::Element_ptr
@@ -82,7 +82,7 @@ namespace FFLAS{ namespace Protected {
     }
 }// Protected
 }// FFLAS
-
+//!Convert to either float or double according to field's cardinality
 namespace FFLAS {
     template<class Field>
     inline  typename Field::Element_ptr
@@ -114,7 +114,7 @@ namespace FFLAS {
     // Computes  Y <- alpha.op(A).X + beta.Y
     // A is M*N,
     //---------------------------------------------------------------------
-
+    //! Performs Matrix Vector Multiplication with delayed mod reductions. Ensures result is reduced.
     template<class Field>
     inline typename Field::Element_ptr
     fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
@@ -126,7 +126,6 @@ namespace FFLAS {
            typename Field::Element_ptr Y, const size_t incY,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> & H)
     {
-
         if (!M) {return Y;}
         size_t Ydim = (ta == FflasNoTrans)?M:N;
         size_t Xdim = (ta == FflasNoTrans)?N:M;

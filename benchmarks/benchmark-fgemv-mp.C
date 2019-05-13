@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
@@ -24,6 +25,11 @@
  *.
  */
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
+
 #if not defined(MG_DEFAULT)
 #define MG_DEFAULT MG_ACTIVE
 #endif
@@ -38,8 +44,9 @@
 #include <string>
 using namespace std;
 
-#include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "givaro/modular-integer.h"
 #include "givaro/givcaster.h"
@@ -48,56 +55,37 @@ using namespace std;
 #include "recint/recint.h"
 #endif
 
+#ifdef	BENCH_FLINT
+#define __GMP_BITS_PER_MP_LIMB 64
+extern "C" {
+#include "flint/longlong.h"
+#include "flint/long_extras.h"
+#include "flint/fmpz_mat.h"
+#include "flint/fmpz.h"
+#include "flint/flint.h"
+}
+#endif
+
 
 static size_t iters = 3 ;
 static Givaro::Integer q = -1 ;
 static unsigned long b = 512 ;
 static size_t m = 512 ;
 static size_t k = 512 ;
-
+static size_t n = 512 ;
+static int nbw = -1 ;
 static size_t seed= time(NULL);
-static int par = 0;
-int t = 1;
-
-size_t GrainSize = 64;
 static Argument as[] = {
     { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
     { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
     { 'm', "-m M", "Set the dimension m of the matrix.",                    TYPE_INT , &m },
     { 'k', "-k K", "Set the dimension k of the matrix.",                    TYPE_INT , &k },
-
+    { 'n', "-n N", "Set the dimension n of the matrix.",                    TYPE_INT , &n },
+    { 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
     { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iters },
     { 's', "-s S", "Sets seed.",                            				TYPE_INT , &seed },
-    { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row,Grain>.",
-                                                                                    TYPE_INT , &par },
-    { 'g', "-g G", "Sets GrainSize.",                            			        TYPE_INT , &GrainSize },
-    { 't', "-t T", "number of virtual threads to drive the partition.",             TYPE_INT , &t },
     END_OF_ARGUMENTS
 };
-
-template <class Field, class Matrix, class Vector>
-bool check_result(Field& F, size_t m, size_t lda, Matrix& A, Vector& X, size_t incX, Vector& Y, size_t incY){
-  //Naive result checking by comparing result from pfgemv against the one from fgemv
-  typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
-  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
-
-  for(size_t j=0; j<m; ++j){
-    if(!F.areEqual(Y2[j],Y[j])){
-      FFLAS::fflas_delete(Y2);
-      return false;
-    }
-  }
-  FFLAS::fflas_delete(Y2);
-  return true;
-}
-
-template <class Field, class arg>
-void benchmark_disp(Field& F, double& time, size_t iters, int p,  size_t m, size_t k, arg& as){
-
-  std::cout << "Time: " << time / double(iters)
-     << " Gflops: " << (2.*double(m)/1000.*double(k)/1000.0/1000.0) / time * double(iters);
-        FFLAS::writeCommandString(std::cout, as) << std::endl;
-}
 
 template<typename Ints>
 int tmain(){
@@ -108,7 +96,10 @@ int tmain(){
     typedef Givaro::Modular<Ints> Field;
     Givaro::Integer p;
     FFLAS::Timer chrono, TimFreivalds;
-    double time=0.;
+    double time=0.,timev=0.;
+#ifdef BENCH_FLINT
+    double timeFlint=0.;
+#endif
     for (size_t loop=0;loop<iters;loop++){
         Givaro::Integer::random_exact_2exp(p, b);
         Givaro::IntPrimeDom IPD;
@@ -119,19 +110,28 @@ int tmain(){
         Field F(ip);
         size_t lda,ldb,ldc;
         lda=k;
-        ldb=1;
-        ldc=1;
+        ldb=n;
+        ldc=n;
 
         typename Field::RandIter Rand(F,seed);
         typename Field::Element_ptr A,B,C;
         A= FFLAS::fflas_new(F,m,lda);
         B= FFLAS::fflas_new(F,k,ldb);
         C= FFLAS::fflas_new(F,m,ldc);
-        
-        //Fill with random value datum
+
+        // 		for (size_t i=0;i<m;++i)
+        // 			for (size_t j=0;j<k;++j)
+        // 				Rand.random(A[i*lda+j]);
+        // 		for (size_t i=0;i<k;++i)
+        // 			for (size_t j=0;j<n;++j)
+        // 				Rand.random(B[i*ldb+j]);
+        // 		for (size_t i=0;i<m;++i)
+        // 			for (size_t j=0;j<n;++j)
+        // 				Rand.random(C[i*ldc+j]);
+
         PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/size_t(MAX_THREADS)); }
-        PAR_BLOCK { FFLAS::pfrand(F,Rand, k,1,B,k/MAX_THREADS); }
-        PAR_BLOCK { FFLAS::pfzero(F, m,1,C,m/MAX_THREADS); }
+        PAR_BLOCK { FFLAS::pfrand(F,Rand, k,n,B,k/MAX_THREADS); }
+        PAR_BLOCK { FFLAS::pfzero(F, m,n,C,m/MAX_THREADS); }
 
 
         Ints alpha,beta;
@@ -139,75 +139,101 @@ int tmain(){
         beta=F.zero;
 
 
+#ifdef	BENCH_FLINT
+        // FLINT MUL //
+        fmpz_t modp,tmp;
+        fmpz_init(modp);
+        fmpz_init(tmp);
+        fmpz_set_mpz(modp, *(reinterpret_cast<const mpz_t*>(&p)));
+        fmpz_mat_t AA,BB,CC,DD;
+        fmpz_mat_init (AA, m, k);
+        fmpz_mat_init (BB, k, n);
+        fmpz_mat_init (CC, m, n);
+        fmpz_mat_init (DD, m, n);
+        fmpz_t aalpha, bbeta;
+        fmpz_set_mpz(aalpha,*(reinterpret_cast<const mpz_t*>(&alpha)));
+        fmpz_set_mpz(bbeta,*(reinterpret_cast<const mpz_t*>(&beta)));
+
+        for (size_t i=0;i<m;++i)
+            for (size_t j=0;j<k;++j)
+                fmpz_set_mpz(fmpz_mat_entry(AA,i,j),*(reinterpret_cast<const mpz_t*>(A+i*lda+j)));
+        for (size_t i=0;i<k;++i)
+            for (size_t j=0;j<n;++j)
+                fmpz_set_mpz(fmpz_mat_entry(BB,i,j),*(reinterpret_cast<const mpz_t*>(B+i*ldb+j)));
+        for (size_t i=0;i<m;++i)
+            for (size_t j=0;j<n;++j)
+                fmpz_set_mpz(fmpz_mat_entry(CC,i,j),*(reinterpret_cast<const mpz_t*>(C+i*ldc+j)));
+        chrono.clear();chrono.start();
+        // DD= A.B
+        fmpz_mat_mul(DD,AA,BB);
+        // CC = beta.C
+        fmpz_mat_scalar_mul_fmpz(CC,CC,bbeta);
+        // CC = CC + DD.alpha
+        fmpz_mat_scalar_addmul_fmpz(CC,DD,aalpha);
+        // CC = CC mod p
+        for (size_t i=0;i<m;++i)
+            for (size_t j=0;j<n;++j)
+                fmpz_mod(fmpz_mat_entry(CC,i,j),fmpz_mat_entry(CC,i,j),modp);
+
+        chrono.stop();
+        timeFlint+=chrono.usertime();
+        fmpz_mat_clear(AA);
+        fmpz_mat_clear(BB);
+#endif
+        //END FLINT CODE //
         using  FFLAS::CuttingStrategy::Recursive;
         using  FFLAS::StrategyParameter::TwoDAdaptive;
         // RNS MUL_LA
-        chrono.clear();
-
-        //@TODO: Still need to use PAR_BLOCK to label the parallel region, impl as pDet to wrap this into one function
-        PAR_BLOCK {
-            if (par){
-              typedef FFLAS::CuttingStrategy::Row row;
-              typedef FFLAS::CuttingStrategy::Recursive rec;
-              typedef FFLAS::StrategyParameter::Threads threads;
-              typedef FFLAS::StrategyParameter::Grain grain;
-
-              if (loop) { chrono.start(); }
-
-              switch (par){
-
-              case 1:{
-	            FFLAS::ParSeqHelper::Parallel<rec, threads>  H(t);
-	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	            break;
-	            }
-              case 2:{
-	            FFLAS::ParSeqHelper::Parallel<row, threads>  H(t);
-	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	            break;
-              }
-              case 3:{
-	            FFLAS::ParSeqHelper::Parallel<row, grain>  H(GrainSize);
-	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	            break;
-              }
-              default:{
-	            FFLAS::ParSeqHelper::Sequential  H;
-	            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, H);
-	            break;
-              }
-              }
-
-              if (loop) {chrono.stop(); time+=chrono.realtime();}
-            }else{
-              if (loop) chrono.start();
-              FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc);
-              if (loop) {chrono.stop(); time+=chrono.realtime();}
-            }
-
-                time+=chrono.realtime();
-
-                FFLAS::fflas_delete(A);
-                FFLAS::fflas_delete(B);
-                FFLAS::fflas_delete(C);
-
-            }
-/*
-            if(!check_result(F, m, lda,  A,  B, ldb,  C, ldc)){
-              std::cerr<<"Computation failed with wrong result"<<std::endl;
-              break;
-            }
-*/
+        chrono.clear();chrono.start();
+        // 		PAR_BLOCK{
+        //             FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc, SPLITTER(NUM_THREADS,Recursive,TwoDAdaptive) );
+        // 		}
+        {
+            FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
         }
 
-    Field F;
-    benchmark_disp(F, time, iters, p, m, k, as);
+        chrono.stop();
+        time+=chrono.realtime();
+
+        TimFreivalds.start();
+        bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, alpha, A, k, B, n, C,n);
+        TimFreivalds.stop();
+        timev+=TimFreivalds.usertime();
+        if (!pass) {
+            std::cout<<"FAILED"<<std::endl;
+            std::cout << "p:=" << p << ';'<<std::endl;
+            FFLAS::WriteMatrix (std::cout<<"A:=",F,m,k,A,lda)<<';'<<std::endl;
+            FFLAS::WriteMatrix(std::cout<<"B:=",F,k,n,B,ldb)<<';'<<std::endl;
+            FFLAS::WriteMatrix(std::cout<<"C:=",F,m,n,C,ldc)<<';'<<std::endl;
+        }
+
+        FFLAS::fflas_delete(A);
+        FFLAS::fflas_delete(B);
+        FFLAS::fflas_delete(C);
+
+    }
+
+    double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iters);
+    // 	Gflops*=p.bitsize()/16.;
+    cout  << "Time: "<< (time/double(iters))
+    <<" Gfops: "<<Gflops
+    << " (total:" << time <<") "
+    <<typeid(Ints).name()
+    <<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;
+
+    FFLAS::writeCommandString(std::cout << '|' << p << " (" << p.bitsize()<<")|", as) << "  | Freivalds: "<< timev/double(iters) << std::endl;
+
+#ifdef BENCH_FLINT
+    cout<<"Time FLINT: "<<timeFlint<<endl;
+#endif
     return 0;
 }
 
 int main(int argc, char** argv){
-    //Set the defaut value to the number of all available threads
-    //PAR_BLOCK { t = NUM_THREADS; };
+  
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 
     FFLAS::parseArguments(argc,argv,as);
 
