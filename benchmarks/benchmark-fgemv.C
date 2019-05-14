@@ -84,7 +84,9 @@ void genData(Field& F,
 	     Matrix& A, Vector& X, Vector& Y,
 	     size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
 	     int bitsize, uint64_t seed){
-  typename Field::RandIter Rand(F,bitsize,seed);
+    typename Field::Residu_t samplesize(1);
+    samplesize <<= bitsize;
+  typename Field::RandIter Rand(F,seed,samplesize);
   fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
 }
 

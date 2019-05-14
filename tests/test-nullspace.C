@@ -73,7 +73,7 @@ typename Field::Element_ptr readOrRandomMatrixWithRankAndRandomRPM(const Field& 
     else {
         lda = std::max(m, n) + (rand() % 13);
         A = FFLAS::fflas_new(F, m, lda);
-        typename Field::RandIter G(F, 0, seed);
+        typename Field::RandIter G(F, seed);
         FFPACK::RandomMatrixWithRankandRandomRPM(F, m, n, r, A, lda, G);
     }
 

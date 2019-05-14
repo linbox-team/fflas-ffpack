@@ -304,7 +304,8 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
         F->write(std::cerr) << std::endl;
 #endif
         typedef typename Field::Element  Element ;
-        typename Field::RandIter R(*F,b,seed++);
+        typename Field::Residu_t samplesize(1); samplesize <<= b;
+        typename Field::RandIter R(*F,seed++,samplesize);
         typename Field::NonZeroRandIter NZR(R);
 
         //size_t k = 0 ;

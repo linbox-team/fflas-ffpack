@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     srandom(seed);
 
     typename Field::Element alpha,tmp;
-    Field::RandIter Rand(F,0,seed);
+    Field::RandIter Rand(F,seed);
     Field::NonZeroRandIter NZRand(Rand);
 
     size_t pass = 0;

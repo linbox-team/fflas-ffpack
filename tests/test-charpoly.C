@@ -151,7 +151,8 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
         if (F==nullptr){
             return true;
         }
-        typename Field::RandIter R(*F,bits,seed++);
+        typename Field::Residu_t samplesize(1); samplesize <<= bits;
+        typename Field::RandIter R(*F,seed++,samplesize);
 
         typename Field::Element * A=NULL;
 

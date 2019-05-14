@@ -2298,7 +2298,7 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k, 	int iter
 
 
     Field F(p);
-    typename Field::RandIter G(F,0,seed);
+    typename Field::RandIter G(F,seed);
     F.write(std::cout<< " * Field " ) << std::endl;
 
     typedef typename changeField<Field>::other Field_f  ;

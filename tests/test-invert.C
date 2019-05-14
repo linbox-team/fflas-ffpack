@@ -64,7 +64,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
         typename Field::Element_ptr A = fflas_new(*F, n, lda);
         typename Field::Element_ptr X = fflas_new(*F, n, ldx);
 
-        typename Field::RandIter R(*F,b,seed++);
+        typename Field::Residu_t samplesize(1); samplesize <<= b;
+        typename Field::RandIter R(*F,seed++,samplesize);
 
         RandomMatrixWithRankandRandomRPM (*F, A, lda, n, n, n, G);
 
