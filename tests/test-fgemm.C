@@ -31,6 +31,8 @@
 // #define WINOTHRESHOLD 100
 // #define OLD_DYNAMIC_PEELING
 
+
+
 #define ENABLE_CHECKER_fgemm 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -304,8 +306,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
         F->write(std::cerr) << std::endl;
 #endif
         typedef typename Field::Element  Element ;
-        typename Field::Residu_t samplesize(1); samplesize <<= b;
-        typename Field::RandIter R(*F,seed++,samplesize);
+        typename Field::RandIter R(*F,seed++);
         typename Field::NonZeroRandIter NZR(R);
 
         //size_t k = 0 ;

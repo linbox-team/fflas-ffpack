@@ -153,8 +153,7 @@ bool run_with_Integer (size_t BS, size_t n, size_t iters, uint64_t seed){
     Givaro::IntegerDom IPD;
     typedef Givaro::ZRing<Givaro::Integer> Field;
     Field F;
-    Givaro::Integer samplesize(1); samplesize <<= BS;
-    Field::RandIter G(F,seed, samplesize);
+    Field::RandIter G(F,seed, BS);
 
     while (ok &&  nbit){
 
