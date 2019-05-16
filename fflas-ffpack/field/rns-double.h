@@ -53,7 +53,7 @@
 namespace FFPACK {
 
     /* Structure that handles rns representation given a bound and bitsize for prime moduli
-     * support sign representation (i.e. the bound must be twice larger then ||A||)
+     * support sign representation (i.e. the bound must be twice larger than ||A||)
      */
     struct rns_double {
         typedef Givaro::Integer integer;

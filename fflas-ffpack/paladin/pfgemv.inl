@@ -25,7 +25,7 @@
 namespace FFLAS
 {
 
-    // specialization of the fgemv function for the MMHelper with CuttingStrategy::Recursive
+    // specialization of the fgemv function for the MMHelper with CuttingStrategy::Recursive but templated for all possible field type so that the corresponding templated sequential implementation will be invoked in the parallel code region
     template<class Field, class AlgoT, class FieldTrait>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -74,7 +74,7 @@ namespace FFLAS
         return Y;
     }
 
-    // specialization of the fgemv function for the MMHelper with CuttingStrategy::Row
+    // specialization of the fgemv function for the MMHelper with CuttingStrategy::Row but templated for all possible field type so that the corresponding templated sequential implementation will be invoked in the parallel code region
     template<class Field, class AlgoT, class FieldTrait, class Cut>
     typename Field::Element_ptr
     fgemv(const Field& F,

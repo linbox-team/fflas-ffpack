@@ -403,6 +403,8 @@ namespace FFLAS{
 #endif
         return Y;
     }
+
+    //specialization for ZRing<double>
     inline Givaro::DoubleDomain::Element_ptr
     fgemv (const Givaro::DoubleDomain& F, const FFLAS_TRANSPOSE ta,
            const size_t M, const size_t N,
@@ -441,6 +443,7 @@ namespace FFLAS{
         return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);
     }
 
+    ////specialization for ZRing<float>
     inline Givaro::FloatDomain::Element_ptr
     fgemv (const Givaro::FloatDomain& F, const FFLAS_TRANSPOSE ta,
            const size_t M, const size_t N,
@@ -462,6 +465,7 @@ namespace FFLAS{
         return Y;
     }
 
+    //Common interface for fgemv with ParSeqHelper::Parallel input parameter in which the corresponding parallel implementation will be called for the given field ref. pfgemv.inl
     template<class Field, class Cut, class Param>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -478,6 +482,7 @@ namespace FFLAS{
         return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
 
+    //Common interface for fgemv with ParSeqHelper::Sequential input parameter in which the corresponding sequential implementation will be called for the given field type either for common field implementated as above or multiprcesion field ref. fflas_fgemv_mp.inl
     template<class Field>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -493,7 +498,7 @@ namespace FFLAS{
         MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> pH(F,m,n,1,seqH);
         return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
-//TODO: Not sure about the defaut parameters, it is required to benchmark for different cutting strategies and parameters so as to find out the best defaut values for cutting strategies and parameters
+//TODO: Not sure about the defaut parameters, it is required to benchmark for different cutting strategies and parameters so as to find out the best defaut values for the defaut parallel implementation
 /*
     template<class Field>
     typename Field::Element_ptr

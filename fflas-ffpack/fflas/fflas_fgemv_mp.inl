@@ -31,8 +31,6 @@
 
 namespace FFLAS {
 
-//@TODO: Only RNSInteger<rns_double> and  RNSIntegerMod<rns_double> are implemented other type like Integer is not taken into account
-
     // specialization of the fgemv function for the field RNSInteger<rns_double>
     inline FFPACK::rns_double::Element_ptr
     fgemv (const FFPACK::RNSInteger<FFPACK::rns_double>& F, const FFLAS_TRANSPOSE ta,
@@ -57,7 +55,6 @@ namespace FFLAS {
         }
         return Y;
     }
-
 
     // specialization of the fgemv function for the field RNSIntegerMod<rns_double>
     inline FFPACK::rns_double::Element_ptr
