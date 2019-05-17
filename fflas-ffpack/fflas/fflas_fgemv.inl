@@ -477,9 +477,10 @@ namespace FFLAS{
            const typename Field::ConstElement_ptr X, const size_t incX,
            const typename Field::Element beta,
            typename Field::Element_ptr Y, const size_t incY,
-           ParSeqHelper::Parallel<Cut,Param>& parH){
+           ParSeqHelper::Parallel<Cut,Param>& parH){std::cout<<omp_get_thread_num()<<" >>>>>>>>>>>>>>>>>>>>>> "<<std::endl;
         MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > pH (F,m,n,1,parH);
-        return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        return Y;
     }
 
     //Common interface for fgemv with ParSeqHelper::Sequential input parameter in which the corresponding sequential implementation will be called for the given field type either for common field implementated as above or multiprcesion field ref. fflas_fgemv_mp.inl
@@ -523,6 +524,27 @@ namespace FFLAS{
             return Y;
     }
 */
+
+
+    template<class Field, class Cut, class Param>
+    typename Field::Element_ptr
+    fgemv(const Field& F,
+           const FFLAS_TRANSPOSE ta,
+           const size_t m,
+           const size_t n,
+           const typename Field::Element alpha,
+           const typename Field::ConstElement_ptr A, const size_t lda,
+           const typename Field::ConstElement_ptr X, const size_t incX,
+           const typename Field::Element beta,
+           typename Field::Element_ptr Y, const size_t incY,
+           FFLAS::ParSeqHelper::Compose<FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, Param>,
+           FFLAS::ParSeqHelper::Parallel<Cut, Param> >& cpsH){
+           MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > pH(F,-1,cpsH);
+std::cout<<omp_get_thread_num()<<" >>>>>>>>>>>>>>>>>>>>>> "<<std::endl;
+        fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+std::cout<<omp_get_thread_num()<<" <<<<<<<<<<<<<<<<<<<<<< "<<std::endl;
+        return Y;
+    }
 }
 
 #endif //  __FFLASFFPACK_fgemv_INL

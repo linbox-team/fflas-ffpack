@@ -112,14 +112,14 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
 
     if (p){
 
-      typedef CuttingStrategy::Row row;
+      typedef CuttingStrategy::Row row;typedef CuttingStrategy::Block block;
       typedef CuttingStrategy::Recursive rec;
       typedef StrategyParameter::Threads threads;
       typedef StrategyParameter::Grain grain;
 
       if (i) { chrono.start(); }
 
-      switch (p){
+      switch (p){/*
       case 1:{
 	ParSeqHelper::Parallel<rec, threads>  H(t);
 	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
@@ -133,12 +133,24 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
 	ParSeqHelper::Parallel<row, grain>  H(GrainSize);
 	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	break;
-      }
+      }*/
       case 4:{
-	ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain>  H(t);
+      ParSeqHelper::Parallel<block, threads> PSH(t);
+      MMHelper<Field, MMHelperAlgo::Classic, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<block, threads>> H(F,m,k,1,PSH);
+//	ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, threads>, ParSeqHelper::Parallel<rec, threads>> H(1,1);
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	break;
+      }/*
+      case 5:{
+	ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, threads>, ParSeqHelper::Parallel<row, threads>> H(t);
 	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	break;
       }
+      case 6:{
+	ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain>, ParSeqHelper::Parallel<row, grain>> H(GrainSize);
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	break;
+      }*/
       default:{
 	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
 	break;
@@ -271,7 +283,7 @@ int main(int argc, char** argv) {
       //benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
 
       //benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-      benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
+      //benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
       //benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
     }
   }

@@ -90,7 +90,7 @@ namespace FFLAS {
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
                                    MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> & H)
-    {
+    {std::cout<<"("<<omp_get_thread_num()<<") Givaro::ZRing<Givaro::Integer>   <<<<<<<<<<<<<<<<< "<<std::endl;
         MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2(H);
         fgemm(F,ta,FFLAS::FflasNoTrans, (ta==FFLAS::FflasNoTrans)?m:n, 1,(ta==FFLAS::FflasNoTrans)?n:m, alpha,A,lda,X,ldx,beta,Y,ldy,H2);
         return Y;
@@ -108,7 +108,7 @@ namespace FFLAS {
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
                                    MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> & H)
-    {
+    {std::cout<<"("<<omp_get_thread_num()<<") Givaro::Modular<Givaro::Integer>   <<<<<<<<<<<<<<<<< "<<std::endl;
         MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2(H);
         fgemm(F,ta,FFLAS::FflasNoTrans,(ta==FFLAS::FflasNoTrans)?m:n,1,(ta==FFLAS::FflasNoTrans)?n:m,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
         return Y;
