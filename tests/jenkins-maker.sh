@@ -37,7 +37,7 @@ BLAS_NAME=openblas
 
 # Change these if necessary
 
-if [ "$ARCH" == "linbox-macosx" ]; then
+if [ "$ARCH" == "linbox-osx" ]; then
     BLAS_LIBS="-framework Accelerate"
 else
     BLAS_LIBS="-L$BLAS_HOME/lib/ -l$BLAS_NAME"
