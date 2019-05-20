@@ -344,7 +344,8 @@ namespace FFLAS{
         int max_std_funcs = abcd[1];
         if(cpuid_is_vendor(abcd,"GenuineIntel"))
             queryCacheSizes_intel(l1,l2,l3,max_std_funcs);
-        else if(cpuid_is_vendor(abcd,"AuthenticAMD") || cpuid_is_vendor(abcd,"AMDisbetter!"))
+        else if(cpuid_is_vendor(abcd,"AuthenticAMD") || cpuid_is_vendor(abcd,"AMDisbetter!")
+          || cpuid_is_vendor(abcd, "HygonGenuine"))
             queryCacheSizes_amd(l1,l2,l3);
         else
             // by default let's use Intel's API
