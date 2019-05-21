@@ -40,7 +40,7 @@ namespace FFLAS {
         struct Column{};
         struct Block{};
         struct Recursive{};
-        typedef Row RNSModulus;
+        struct RNSModulus{};
     }
 
     namespace StrategyParameter{

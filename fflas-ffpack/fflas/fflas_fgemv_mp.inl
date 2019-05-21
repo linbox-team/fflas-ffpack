@@ -80,21 +80,47 @@ namespace FFLAS {
     // BB hack. might not work.
     // Calling fgemm, TODO: really specialize fgemv
     // specialization of the fgemv function for the field Givaro::ZRing<Givaro::Integer>
-    template<class ParSeq>
+    template<class AlgoT>
     inline Givaro::Integer* fgemv (const Givaro::ZRing<Givaro::Integer>& F,
                                    const FFLAS_TRANSPOSE ta,
                                    const size_t m, const size_t n,
                                    const Givaro::Integer alpha,
-                                   Givaro::Integer* A, const size_t lda,
-                                   Givaro::Integer* X, const size_t ldx,
+                                   const Givaro::Integer* A, const size_t lda, // @fixme Why not originally const?
+                                   const Givaro::Integer* X, const size_t ldx,
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
-                                   MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> & H)
-    {std::cout<<"("<<omp_get_thread_num()<<") Givaro::ZRing<Givaro::Integer>   <<<<<<<<<<<<<<<<< "<<std::endl;
-        MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2(H);
-        fgemm(F,ta,FFLAS::FflasNoTrans, (ta==FFLAS::FflasNoTrans)?m:n, 1,(ta==FFLAS::FflasNoTrans)?n:m, alpha,A,lda,X,ldx,beta,Y,ldy,H2);
-        return Y;
+                                   MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> & H) {
+      fgemm(F,ta,FFLAS::FflasNoTrans, (ta==FFLAS::FflasNoTrans)?m:n, 1,(ta==FFLAS::FflasNoTrans)?n:m, alpha,A,lda,X,ldx,beta,Y,ldy,H);
+      return Y;
     }
+  template<class AlgoT, class Param>
+    inline Givaro::Integer* fgemv (const Givaro::ZRing<Givaro::Integer>& F,
+                                   const FFLAS_TRANSPOSE ta,
+                                   const size_t m, const size_t n,
+                                   const Givaro::Integer alpha,
+                                   const Givaro::Integer* A, const size_t lda, // @fixme Why not originally const?
+                                   const Givaro::Integer* X, const size_t ldx,
+                                   Givaro::Integer beta,
+                                   Givaro::Integer* Y, const size_t ldy,
+                                   MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Parallel<CuttingStrategy::RNSModulus,Param>> & H){
+      MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, Param>,ParSeqHelper::Sequential>>  Hc(H);
+      fgemv(F,ta, m, n, alpha,A,lda,X,ldx,beta,Y,ldy,Hc);
+      return Y;
+    }
+  template<class AlgoT, class Param, class ... ComposeArgs>
+    inline Givaro::Integer* fgemv (const Givaro::ZRing<Givaro::Integer>& F,
+                                   const FFLAS_TRANSPOSE ta,
+                                   const size_t m, const size_t n,
+                                   const Givaro::Integer alpha,
+                                   const Givaro::Integer* A, const size_t lda, // @fixme Why not originally const?
+                                   const Givaro::Integer* X, const size_t ldx,
+                                   Givaro::Integer beta,
+                                   Givaro::Integer* Y, const size_t ldy,
+                                   MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, Param>,ComposeArgs...>> & H){
+      fgemm(F,ta,FFLAS::FflasNoTrans, (ta==FFLAS::FflasNoTrans)?m:n, 1,(ta==FFLAS::FflasNoTrans)?n:m, alpha,A,lda,X,ldx,beta,Y,ldy,H);
+      return Y;
+    }
+
 
     // specialization of the fgemv function for the field Givaro::Modular<Givaro::Integer>
     // Calling fgemm, TODO: really specialize fgemv
@@ -108,7 +134,7 @@ namespace FFLAS {
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
                                    MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> & H)
-    {std::cout<<"("<<omp_get_thread_num()<<") Givaro::Modular<Givaro::Integer>   <<<<<<<<<<<<<<<<< "<<std::endl;
+    {
         MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2(H);
         fgemm(F,ta,FFLAS::FflasNoTrans,(ta==FFLAS::FflasNoTrans)?m:n,1,(ta==FFLAS::FflasNoTrans)?n:m,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
         return Y;
