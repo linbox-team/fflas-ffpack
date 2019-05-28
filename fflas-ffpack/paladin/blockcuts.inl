@@ -96,10 +96,10 @@ namespace FFLAS {
         struct Compose{
 
             Compose() : _comp1 (), _comp2 () {}
-            Compose(const Compose & other) : _comp1 (other.first_component()), _comp2 (other.second_component()) {}
+	  Compose(const Compose & other) : _comp1 (other.first_component()), _comp2 (other.second_component()) {}
             Compose(const Sequential & S) : _comp1 (1), _comp2 (1) {}
             Compose(size_t th1, size_t th2) : _comp1 (th1), _comp2 (th2) {}
-            Compose(const H1 & o1, const H2 & o2) : _comp1 (o1), _comp2 (o2) {}
+	  Compose(const H1 & o1, const H2 & o2) : _comp1 (o1), _comp2 (o2) {}
 
             H1 first_component () const { return _comp1; }
             H2 second_component () const { return _comp2; }
@@ -336,8 +336,8 @@ namespace FFLAS {
 
             if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
                 numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
-            } else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) {
-                numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);
+            } else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) {std::cout<<"H:  "<<H<<"  H.numthreads():="<<H.numthreads()<<"             n:="<<n<<"           n/ (blocksize_t)(H.numthreads())="<<n/ (blocksize_t)(H.numthreads())<<std::endl;
+                numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);std::cout<<"Protected::AreEqual<Param,StrategyParameter::Grain>    numBlock:="<<numBlock<<std::endl;
             } else {
                 numBlock = std::max(n/(blocksize_t)(__FFLASFFPACK_MINBLOCKCUTS),(blocksize_t)1);
             }

@@ -103,10 +103,11 @@ namespace FFLAS {
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
                                    MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Parallel<CuttingStrategy::RNSModulus,Param>> & H){
-      MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, Param>,ParSeqHelper::Sequential>>  Hc(H);
-      fgemv(F,ta, m, n, alpha,A,lda,X,ldx,beta,Y,ldy,Hc);
-      return Y;
-    }
+    ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, Param>,ParSeqHelper::Sequential> CompHelper (H.parseq, ParSeqHelper::Sequential());
+    MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, Param>,ParSeqHelper::Sequential>>  Hc(F,m,1,n, CompHelper);
+    fgemv(F,ta, m, n, alpha,A,lda,X,ldx,beta,Y,ldy,Hc);
+    return Y;
+  }
   template<class AlgoT, class Param, class ... ComposeArgs>
     inline Givaro::Integer* fgemv (const Givaro::ZRing<Givaro::Integer>& F,
                                    const FFLAS_TRANSPOSE ta,
@@ -117,7 +118,9 @@ namespace FFLAS {
                                    Givaro::Integer beta,
                                    Givaro::Integer* Y, const size_t ldy,
                                    MMHelper<Givaro::ZRing<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, Param>,ComposeArgs...>> & H){
+
       fgemm(F,ta,FFLAS::FflasNoTrans, (ta==FFLAS::FflasNoTrans)?m:n, 1,(ta==FFLAS::FflasNoTrans)?n:m, alpha,A,lda,X,ldx,beta,Y,ldy,H);
+
       return Y;
     }
 
