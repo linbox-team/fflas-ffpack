@@ -336,8 +336,8 @@ namespace FFLAS {
 
             if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
                 numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
-            } else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) {std::cout<<"H:  "<<H<<"  H.numthreads():="<<H.numthreads()<<"             n:="<<n<<"           n/ (blocksize_t)(H.numthreads())="<<n/ (blocksize_t)(H.numthreads())<<std::endl;
-                numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);std::cout<<"Protected::AreEqual<Param,StrategyParameter::Grain>    numBlock:="<<numBlock<<std::endl;
+            } else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) {
+                numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);
             } else {
                 numBlock = std::max(n/(blocksize_t)(__FFLASFFPACK_MINBLOCKCUTS),(blocksize_t)1);
             }

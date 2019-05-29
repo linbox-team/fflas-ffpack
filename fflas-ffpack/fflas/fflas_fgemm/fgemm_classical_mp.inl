@@ -55,7 +55,7 @@ namespace FFLAS {
         MMHelper() : normA(0), normB(0), recLevel(-1) {}
         template <class F2, class A2, class M2, class PS2>
         MMHelper(MMHelper<F2, A2, M2, PS2> H2) :
-            normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {std::cerr<<"copy constructor of MMHelper: H2 = "<<H2<<" self = "<<(*this)<<std::endl;}
+            normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
         MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
         MMHelper(const Field& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
         : recLevel(-1), parseq(PS)
@@ -204,37 +204,33 @@ namespace FFLAS {
            const typename FFPACK::RNSInteger<RNS>::Element beta,
            typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
            MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, param>, ParSeqTrait> > & H)
-    {//std::cout<<"H.parseq.first_component(): "<<H.parseq.first_component()<<std::endl;std::cout<<"H.parseq.second_component(): "<<H.parseq.second_component()<<std::endl;std::cout<<"NUM_THREADS:"<<NUM_THREADS<<std::endl;std::cout<<"lda:="<<lda<<std::endl;std::cout<<"ldb:="<<ldb<<std::endl;std::cout<<"ldc:="<<ldc<<std::endl;
+    {
 #ifdef PROFILE_FGEMM_MP
         Givaro::Timer t;t.start();
 #endif
-        size_t rns_size = F.size();//std::cout<<"rns_size: "<<rns_size<<std::endl;
+        size_t rns_size = F.size();
         typedef MMHelper<typename RNS::ModField, MMHelperAlgo::Auto, typename ModeTraits<typename RNS::ModField>::value, ParSeqTrait> SubHelper;
-SYNCH_GROUP({
- //   if(H.parseq.first_component().numthreads()>1){
-//      std::cout<<"Thread("<<omp_get_thread_num()<<") ------------------------------------>"<<std::endl;////////////
-      FORBLOCK1D(iter, rns_size, H.parseq.first_component(),
-		    TASK(MODE(CONSTREFERENCE(F,H)),
-                        {
-                        for(auto i=iter.begin(); i!=iter.end(); ++i)
-                        {//std::cerr<<"Thread("<<omp_get_thread_num()<<") works on  i:="<<i<<std::endl;//////////////
-                        SubHelper Hsub (F.rns()._field_rns[i], H.recLevel, H.parseq.second_component());//std::cerr<<"Thread("<<omp_get_thread_num()<<") >>>>> works on  i:="<<i<<std::endl;//////////////
-                        FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
-                                     m, n, k, alpha._ptr[i*alpha._stride],
-                                     Ad._ptr+i*Ad._stride, lda,
-                                     Bd._ptr+i*Bd._stride, ldb,
-                                     beta._ptr[i*beta._stride],
-                                     Cd._ptr+i*Cd._stride, ldc
-                                     , Hsub
-                                     );//std::cerr<<"Thread("<<omp_get_thread_num()<<") <<<< works on  i:="<<i<<std::endl;//////////////
-                        }
-                        })
-                  );
-//std::cout<<"Thread("<<omp_get_thread_num()<<") <------------------------------------"<<std::endl;//////////////
-});
-/*    }else{
-      FFLAS::fgemm(F,ta,tb,m, n, k, alpha,Ad, lda,Bd, ldb, beta, Cd, ldc, H.parseq.second_component());
-    }*/
+        SYNCH_GROUP({
+              FORBLOCK1D(iter, rns_size, H.parseq.first_component(),
+		            TASK(MODE(CONSTREFERENCE(F,H)),
+                                {
+                                for(auto i=iter.begin(); i!=iter.end(); ++i)
+                                {
+                                SubHelper Hsub (F.rns()._field_rns[i], H.recLevel, H.parseq.second_component());
+                                FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
+                                             m, n, k, alpha._ptr[i*alpha._stride],
+                                             Ad._ptr+i*Ad._stride, lda,
+                                             Bd._ptr+i*Bd._stride, ldb,
+                                             beta._ptr[i*beta._stride],
+                                             Cd._ptr+i*Cd._stride, ldc
+                                             , Hsub
+                                             );
+                                }
+                                })
+                          );
+
+        });
+
 #ifdef PROFILE_FGEMM_MP
         t.stop();
         std::cerr<<"=========================================="<<std::endl

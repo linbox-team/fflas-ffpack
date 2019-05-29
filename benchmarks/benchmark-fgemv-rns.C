@@ -82,9 +82,6 @@ void genData(Field& F,
 	     int bitsize, uint64_t seed){
   typename Field::RandIter Rand(F,bitsize,seed);
   fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
-  std::cerr<<"filled A:"<<A[0]<<std::endl;
-  std::cerr<<"filled X:"<<X[0]<<std::endl;
-  std::cerr<<"filled Y:"<<Y[0]<<std::endl;
 }
 
 template <class Field, class Matrix, class Vector>
@@ -93,11 +90,11 @@ bool check_result(Field& F, size_t m, size_t lda, Matrix& A, Vector& X, size_t i
   typename Field::Element_ptr Y2 = FFLAS::fflas_new(F,m,1);
   FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y2,  incY);
 
-  for(size_t j=0; j<m; ++j){std::cerr<<"---------> check_result"<<std::endl;
+  for(size_t j=0; j<m; ++j){
     if(!F.areEqual(Y2[j],Y[j])){
       FFLAS::fflas_delete(Y2);
       return false;
-    }std::cerr<<"<--------- check_result"<<std::endl;
+    }
   }
   FFLAS::fflas_delete(Y2);
   return true;
@@ -124,21 +121,19 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
 
       switch (p){
           case 1:{
-	        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain> H(GrainSize);//TODO: The exectuion always appears toe be sequential, but why ?
-		std::cerr<<"fresh PSH<RNSModulus, grain> -> "<<H<<std::endl;
+	        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain> H(GrainSize);
 	        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	        break;
           }
           case 2:{
-	        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, threads> H(t);//TODO: The exectuion always appears toe be sequential, but why ?
-		std::cerr<<"fresh PSH<RNSModulus, grain> -> "<<H<<std::endl;
+	        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, threads> H(t);
 	        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 	        break;
           }
           case 3:{
-          	// ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain>, ParSeqHelper::Parallel<rec, StrategyParameter::TwoDAdaptive>> H(GrainSize,t);//TODO: GrainSize should be >= t ot have parallelization otherwise the execution will be sequential, but why ?
+            ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain>, ParSeqHelper::Parallel<rec, StrategyParameter::TwoDAdaptive>> H(GrainSize,t);
 
-          	// FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+            FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
           	break;
           }
           default:{
