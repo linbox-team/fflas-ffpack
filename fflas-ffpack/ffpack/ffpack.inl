@@ -105,6 +105,7 @@ namespace FFPACK {
         //return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential(), P, Q);
         FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
         PAR_BLOCK{
+            parH.set_numthreads(NUM_THREADS);
             FFPACK::Det (F, det, N, A, lda, parH, P, Q);
         }
         return det;
