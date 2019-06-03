@@ -465,7 +465,7 @@ namespace FFLAS{
         return Y;
     }
 
-
+    //specialization for Givaro::ZRing<Givaro::Integer> with ParSeqHelper::Compose
     template<class... ComposeArgs>
     Givaro::Integer*
     fgemv(const Givaro::ZRing<Givaro::Integer>& F,
@@ -483,6 +483,7 @@ namespace FFLAS{
         return Y;
     }
 
+    //specialization for Givaro::Modular<Givaro::Integer> with ParSeqHelper::Compose
     template<class... ComposeArgs>
     Givaro::Integer*
     fgemv(const Givaro::Modular<Givaro::Integer>& F,
@@ -502,7 +503,7 @@ namespace FFLAS{
 
 
 
-    //Common interface for fgemv with ParSeqHelper::Parallel input parameter in which the corresponding parallel implementation will be called for the given field ref. pfgemv.inl
+    //Common interface for fgemv with ParSeqHelper::Parallel input parameter in which the corresponding parallel implementation will be called for the given field (ref. pfgemv.inl)
     template<class Field, class Cut, class Param>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -536,7 +537,7 @@ namespace FFLAS{
         MMHelper<Field, MMHelperAlgo::Auto, ModeCategories::DefaultTag> pH(F,m,n,1,seqH);
         return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
-//TODO: Not sure about the defaut parameters, it is required to benchmark for different cutting strategies and parameters so as to find out the best defaut values for the defaut parallel implementation
+
 /*
     template<class Field>
     typename Field::Element_ptr
@@ -560,9 +561,7 @@ namespace FFLAS{
             }
             return Y;
     }
-*/
 
-/*
     template<class Field, class Cut, class Param>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -581,7 +580,8 @@ std::cout<<omp_get_thread_num()<<" >>>>>>>>>>>>>>>>>>>>>> "<<std::endl;
         fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
 std::cout<<omp_get_thread_num()<<" <<<<<<<<<<<<<<<<<<<<<< "<<std::endl;
         return Y;
-    }*/
+    }
+*/
 }
 
 #endif //  __FFLASFFPACK_fgemv_INL
