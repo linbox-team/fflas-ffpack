@@ -1,4 +1,9 @@
-2019-04-10 v2.4.0
+2019-06-07 v2.4.1
+	Minor updates:
+	* fix setnumthreads in pDet
+	* add README.md in distribution
+	* support for Hygon Dhyana
+2019-05-10 v2.4.0
 	New features:
 	* fsytrf: a symmetric triangular factorization, revealign the RPM
 	* fsyrk, fsyr2k, ftrssyr2k, ftrstr: subroutines for symmetric operations
