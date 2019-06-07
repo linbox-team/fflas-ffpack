@@ -42,12 +42,12 @@ namespace FFPACK {
     template <class Field>
     size_t
     pRank (const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda)
+           typename Field::Element_ptr A, const size_t lda, size_t numthreads)
     {
         size_t R;
-        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
         PAR_BLOCK{
-            parH.set_numthreads(NUM_THREADS);
+            size_t nt = numthreads ? numthreads : NUM_THREADS;
+            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH(nt);
             R = Rank (F, M, N, A, lda, parH);
         }
         return R;
@@ -100,12 +100,12 @@ namespace FFPACK {
     template <class Field>
     inline typename Field::Element&
     pDet (const Field& F, typename Field::Element& det, const size_t N,
-         typename Field::Element_ptr A, const size_t lda, size_t * P, size_t * Q)
+          typename Field::Element_ptr A, const size_t lda, size_t numthreads, size_t * P, size_t * Q)
     {
         //return FFPACK::Det (F, det, N, A, lda, FFLAS::ParSeqHelper::Sequential(), P, Q);
-        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
         PAR_BLOCK{
-            parH.set_numthreads(NUM_THREADS);
+            size_t nt = numthreads ? numthreads : NUM_THREADS;
+            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH(nt);
             FFPACK::Det (F, det, N, A, lda, parH, P, Q);
         }
         return det;
@@ -195,15 +195,15 @@ namespace FFPACK {
     template <class Field>
     inline typename Field::Element_ptr
     pSolve (const Field& F, const size_t M,
-           typename Field::Element_ptr A, const size_t lda,
-           typename Field::Element_ptr x, const int incx,
-           typename Field::ConstElement_ptr b, const int incb) {
-           FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
-            PAR_BLOCK{
-                parH.set_numthreads(NUM_THREADS);
-                FFPACK::Solve(F, M, A, lda, x, incx, b, incb, parH);
-            }
-            return x;
+            typename Field::Element_ptr A, const size_t lda,
+            typename Field::Element_ptr x, const int incx,
+            typename Field::ConstElement_ptr b, const int incb, size_t numthreads) {
+        PAR_BLOCK{
+            size_t nt = numthreads ? numthreads : NUM_THREADS;
+            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH(nt);
+            FFPACK::Solve(F, M, A, lda, x, incx, b, incb, parH);
+        }
+        return x;
     }
 
     template <class Field>

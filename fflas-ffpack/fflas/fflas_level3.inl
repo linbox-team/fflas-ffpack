@@ -476,6 +476,27 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            const ParSeqHelper::Parallel<Cut,Param> par);
 
+    template<typename Field>
+    typename Field::Element_ptr
+    pfgemm (const Field& F,
+            const FFLAS_TRANSPOSE ta,
+            const FFLAS_TRANSPOSE tb,
+            const size_t m,
+            const size_t n,
+            const size_t k,
+            const typename Field::Element alpha,
+            typename Field::ConstElement_ptr A, const size_t lda,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            const typename Field::Element beta,
+            typename Field::Element_ptr C, const size_t ldc,
+            size_t numthreads = 0){
+        PAR_BLOCK{
+            size_t nt = numthreads ? numthreads : NUM_THREADS;
+            ParSeqHelper::Parallel<CuttingStrategy::Block,StrategyParameter::Threads> par(nt);
+            fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,par);
+        }
+    }
+
     template<class Field>
     typename Field::Element*
     pfgemm_1D_rec( const Field& F,
