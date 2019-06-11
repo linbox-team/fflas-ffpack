@@ -593,10 +593,10 @@ pColumnEchelonForm_modular_double (const double p, const size_t M, const size_t 
 {
     if (positive) {
         Modular<double> F(p);
-        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<double> F(p);
-        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -610,10 +610,10 @@ pRowEchelonForm_modular_double (const double p, const size_t M, const size_t N,
 {
     if (positive) {
         Modular<double> F(p);
-        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<double> F(p);
-        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -628,10 +628,10 @@ pReducedColumnEchelonForm_modular_double (const double p, const size_t M, const 
 {
     if (positive) {
         Modular<double> F(p);
-        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<double> F(p);
-        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -646,10 +646,10 @@ pReducedRowEchelonForm_modular_double (const double p, const size_t M, const siz
 {
     if (positive) {
         Modular<double> F(p);
-        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<double> F(p);
-        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -662,10 +662,10 @@ pColumnEchelonForm_modular_float (const float p, const size_t M, const size_t N,
 {
     if (positive) {
         Modular<float> F(p);
-        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<float> F(p);
-        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -679,10 +679,10 @@ pRowEchelonForm_modular_float (const float p, const size_t M, const size_t N,
 {
     if (positive) {
         Modular<float> F(p);
-        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<float> F(p);
-        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,0,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -697,10 +697,10 @@ pReducedColumnEchelonForm_modular_float (const float p, const size_t M, const si
 {
     if (positive) {
         Modular<float> F(p);
-        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<float> F(p);
-        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -715,10 +715,10 @@ pReducedRowEchelonForm_modular_float (const float p, const size_t M, const size_
 {
     if (positive) {
         Modular<float> F(p);
-        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<float> F(p);
-        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -731,10 +731,10 @@ pColumnEchelonForm_modular_int32_t (const int32_t p, const size_t M, const size_
 {
     if (positive) {
         Modular<int32_t> F(p);
-        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<int32_t> F(p);
-        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pColumnEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -748,10 +748,10 @@ pRowEchelonForm_modular_int32_t (const int32_t p, const size_t M, const size_t N
 {
     if (positive) {
         Modular<int32_t> F(p);
-        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pRowEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<int32_t> F(p);
-        return pRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pRowEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -766,10 +766,10 @@ pReducedColumnEchelonForm_modular_int32_t (const int32_t p, const size_t M, cons
 {
     if (positive) {
         Modular<int32_t> F(p);
-        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<int32_t> F(p);
-        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedColumnEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
@@ -784,10 +784,10 @@ pReducedRowEchelonForm_modular_int32_t (const int32_t p, const size_t M, const s
 {
     if (positive) {
         Modular<int32_t> F(p);
-        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     } else {
         ModularBalanced<int32_t> F(p);
-        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
+        return pReducedRowEchelonForm(F,M,N,A,lda,P,Qt,0,transform,(enum FFPACK::FFPACK_LU_TAG)LuTag);
     }
 }
 
