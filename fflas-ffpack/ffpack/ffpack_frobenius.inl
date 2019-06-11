@@ -318,7 +318,7 @@ namespace FFPACK { namespace Protected {
 	Ac = FFLAS::fflas_new(F, N, ldac);
 
 	FFLAS::fassign(F, N, Ma, A, lda, Ac, ldac);
-	FFLAS::fassign(F, N, Ma, Ac, lda, K, ldk);
+	FFLAS::fassign(F, N, Ma, Ac, ldac, K, ldk);
 
         size_t Ncurr=N;
 
