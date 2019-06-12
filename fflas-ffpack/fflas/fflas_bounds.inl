@@ -115,17 +115,9 @@ namespace FFLAS {
     inline Givaro::Integer
     InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
         Givaro::Integer max = 0;
-        size_t log=0;
-        for (size_t i=0; i<M; ++i)
-            for (size_t j=0; j<N; ++j){
-                const Givaro::Integer & x(A[i*lda+j]);
-                if ((x.bitsize() >= log) && (abs(x) > max)){
-                    max = abs(x);
-                    // 					max = x;
-                    log = x.bitsize();
-                }
-            }
-        return max;
+        const size_t mn(M*N);
+        for(size_t i=0; i<mn; ++i) if (absCompare(A[i],max)>0) max = A[i];
+        return abs(max);
     }
 
     namespace Protected {
