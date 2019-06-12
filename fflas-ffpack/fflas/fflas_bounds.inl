@@ -37,6 +37,10 @@
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 
+#ifdef PROFILE_FGEMM_MP
+#include "fflas-ffpack/utils/timer.h"
+#endif
+
 namespace FFLAS { namespace Protected {
 
     template <class Field>
@@ -116,6 +120,11 @@ namespace FFLAS {
     InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
         Givaro::Integer max = 0;
         size_t log=0;
+#ifdef PROFILE_FGEMM_MP
+        Timer chrono;
+        chrono.start();
+#endif
+
         for (size_t i=0; i<M; ++i)
             for (size_t j=0; j<N; ++j){
                 const Givaro::Integer & x(A[i*lda+j]);
@@ -124,7 +133,13 @@ namespace FFLAS {
                     // 					max = x;
                     log = x.bitsize();
                 }
+
             }
+
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"Thread("<<omp_get_thread_num()<<") InfNorm: compute bound on the output: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+#endif
         return max;
     }
 

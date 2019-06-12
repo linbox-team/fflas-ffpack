@@ -209,7 +209,7 @@ namespace FFPACK {
             // std::cout<<"t2="<<t2<<std::endl;
             // std::cout<<"t3="<<t3<<std::endl;
         }
-
+//@TODO: Find out which init is called and add detailed timing for that
         // Arns must be an array of m*n*_size
         // abs(||A||) <= maxA
         template<typename T>

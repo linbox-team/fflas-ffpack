@@ -60,7 +60,7 @@ template <class Field, class RandIter, class Matrix, class Vector>
 void fill_value(Field& F, RandIter& Rand, 
 		Matrix& A, Vector& X, Vector& Y,
 		size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK){
-  // TODO: replace by a 1D pfrand
+
   SYNCH_GROUP(
 	      FORBLOCK1D(iter, m, SPLITTER(NBK, CuttingStrategy::Row, StrategyParameter::Threads),
 			 TASK(MODE(CONSTREFERENCE(F,Rand,A)),
@@ -147,13 +147,8 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
       FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
       if (i) {chrono.stop(); time+=chrono.realtime();}
     }
-/*
-    if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
-      pass = false;
-      break;
-    }
-*/
   }
+  if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)) pass = false;
   return pass;
 }
 
@@ -238,7 +233,7 @@ int main(int argc, char** argv) {
   Argument as[] = {
     { 'q', "-q Q", "Set the field characteristic (-1 for random).",                 TYPE_INTEGER , &q },
     { 'b', "-b B", "Set the bitsize of input.",                                     TYPE_INT , &b },
-    { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row,Grain>.",
+    { 'p', "-p P", "0 for sequential, 1 for <RNSModulus,Grain>, 2 for <RNSModulus,Thread>, 3 for Compose<<RNSModulus, grain>, <Recursive, TwoDAdaptive>>.",
                                                                                     TYPE_INT , &p },
     { 'm', "-m M", "Set the dimension m of the matrix.",                            TYPE_INT , &m },
     { 'k', "-k K", "Set the dimension k of the matrix.",                            TYPE_INT , &k },

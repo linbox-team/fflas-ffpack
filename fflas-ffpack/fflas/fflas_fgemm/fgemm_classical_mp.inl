@@ -304,6 +304,7 @@ namespace FFLAS {
                         }); // TASK
         ); // FLORBLOCK1D
 
+
 #ifdef PROFILE_FGEMM_MP
         t.stop();
 
@@ -330,7 +331,7 @@ namespace FFLAS {
     {
       //std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
 #ifdef PROFILE_FGEMM_MP
-        Timer chrono;
+        Timer chrono;double T=0.0;
         chrono.start();
 #endif
 
@@ -340,10 +341,18 @@ namespace FFLAS {
         }
 
         if (k==0) return C;
+//@TODO: Even more detailed timing for all subroutines from HERE:
         // compute bit size of feasible prime for FFLAS
         size_t _k=k,lk=0;
         while ( _k ) {_k>>=1; ++lk;}
         size_t prime_bitsize= (53-lk)>>1;
+
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"-------------------------------"<<std::endl;
+        std::cout<<"FGEMM_MP: compute bit size of feasible prime for FFLAS "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl; T+=(chrono.realtime()*1000);
+        chrono.start();
+#endif
 
         // compute bound on the output
         Givaro::Integer  mA,mB,mC;
@@ -359,11 +368,18 @@ namespace FFLAS {
 
         mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
 
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"-------------------------------"<<std::endl;
+        std::cout<<"FGEMM_MP: compute bound on the output "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl; T+=(chrono.realtime()*1000);
+        chrono.start();
+#endif
+
         // A or B is zero, no need to modify C
         if (mC == 0) return C;
 
         // construct an RNS structure and its associated Domain
-        FFPACK::rns_double RNS(mC, prime_bitsize);
+        FFPACK::rns_double RNS(mC, prime_bitsize);//@TODO: Here it takes time
 
         typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
         RnsDomain Zrns(RNS);
@@ -383,8 +399,17 @@ namespace FFLAS {
 #ifdef PROFILE_FGEMM_MP
         chrono.stop();
         std::cout<<"-------------------------------"<<std::endl;
+        std::cout<<"FGEMM_MP: allocate data for RNS representation: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl; T+=(chrono.realtime()*1000);
+        chrono.start();
+#endif
+
+
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"-------------------------------"<<std::endl;
         std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
-        std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+//        std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        std::cout<<"FGEMM_MP:     init: "<<uint64_t(T)<<"ms"<<std::endl;
         chrono.start();
 #endif
 
@@ -406,6 +431,13 @@ namespace FFLAS {
         typename RnsDomain::Element alphap, betap;
         Zrns.init(alphap, alpha);
         Zrns.init(betap, F.zero);
+
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"-------------------------------"<<std::endl;
+        std::cout<<"FGEMM_MP: compute alpha and beta in RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
 
         // call  fgemm
         fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
