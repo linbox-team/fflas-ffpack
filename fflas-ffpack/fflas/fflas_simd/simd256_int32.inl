@@ -37,6 +37,9 @@
 #include "fflas-ffpack/fflas/fflas_simd/simd256_int64.inl"
 #endif
 
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+
 /*
  * Simd256 specialized for int32_t
  */
@@ -71,6 +74,8 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
      *  alignement required by scalar_t pointer to be loaded in a vect_t
      */
     static const constexpr size_t alignment = 32;
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt
@@ -548,6 +553,9 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
      * define the scalar type corresponding to the specialization
      */
     using scalar_t = uint32_t;
+
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
     /*
      * Simd128 for scalar_t, to deal half_t

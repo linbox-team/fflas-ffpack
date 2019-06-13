@@ -41,6 +41,9 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/debug.h"
 
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+
 #if defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
 #define INLINE __attribute__((always_inline)) inline
 #else
@@ -317,6 +320,14 @@ struct NoSimd {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 1;
+
+    /*
+     *  alignement for scalar_t pointer to be loaded in a vect_t
+     * [ available to have the same interface as SimdXXX classes ]
+     */
+    static const constexpr size_t alignment = static_cast<size_t>(Alignment::Normal);
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
     /* Name of the NoSimd struct */
     static inline const std::string type_string () { return "NoSimd"; }
