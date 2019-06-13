@@ -30,6 +30,7 @@
 
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
+#include <type_traits>
 
 /*
  * Simd256 specialized for float
@@ -57,6 +58,10 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
     static const constexpr size_t alignment = 32;
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt

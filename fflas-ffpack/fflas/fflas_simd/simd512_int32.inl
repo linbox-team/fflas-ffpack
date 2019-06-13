@@ -35,6 +35,7 @@
 
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
+#include <type_traits>
 
 /*
  * Simd256 specialized for int32_t
@@ -72,6 +73,10 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
     static const constexpr size_t alignment = 64;
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt
@@ -548,6 +553,10 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Simd128 for scalar_t, to deal half_t

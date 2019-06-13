@@ -43,6 +43,7 @@
 
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
+#include <type_traits>
 
 #if defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
 #define INLINE __attribute__((always_inline)) inline
@@ -328,6 +329,10 @@ struct NoSimd {
     static const constexpr size_t alignment = static_cast<size_t>(Alignment::Normal);
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, T>;
 
     /* Name of the NoSimd struct */
     static inline const std::string type_string () { return "NoSimd"; }
