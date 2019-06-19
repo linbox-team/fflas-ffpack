@@ -177,10 +177,9 @@ namespace FFPACK {
     std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element>&
     CharPoly (const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
               std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> & charp,
-              const size_t N,
-              FFLAS_ELT* A, const size_t lda,
+              const size_t N, FFLAS_ELT* A, const size_t lda,
               FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
-              const FFPACK_CHARPOLY_TAG CharpTag);
+              const FFPACK_CHARPOLY_TAG CharpTag, const size_t degree);
 
     // template INST_OR_DECL
     // std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> &
@@ -195,14 +194,14 @@ namespace FFPACK {
     CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
              Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
              const size_t N, FFLAS_ELT* A, const size_t lda,
-             FFLAS_FIELD<FFLAS_ELT>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag);
+             FFLAS_FIELD<FFLAS_ELT>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag, const size_t degree);
 
     template INST_OR_DECL
     Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element&
     CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
              Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
              const size_t N, FFLAS_ELT* A, const size_t lda,
-             const FFPACK_CHARPOLY_TAG CharpTag);
+             const FFPACK_CHARPOLY_TAG CharpTag, const size_t degree);
 
     template INST_OR_DECL
     std::vector<FFLAS_ELT>& MinPoly( const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP, const size_t N,

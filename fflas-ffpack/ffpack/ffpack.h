@@ -743,9 +743,9 @@ namespace FFPACK { /* echelon */
     template <class Field>
     size_t
     pColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-                       typename Field::Element_ptr A, const size_t lda,
-                       size_t* P, size_t* Qt, bool transform=false,
-                       const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+                        typename Field::Element_ptr A, const size_t lda,
+                        size_t* P, size_t* Qt, bool transform=false,
+                        size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t
@@ -786,9 +786,9 @@ namespace FFPACK { /* echelon */
     template <class Field>
     size_t
     pRowEchelonForm (const Field& F, const size_t M, const size_t N,
-                    typename Field::Element_ptr A, const size_t lda,
-                    size_t* P, size_t* Qt, const bool transform=false,
-                    const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+                     typename Field::Element_ptr A, const size_t lda,
+                     size_t* P, size_t* Qt, const bool transform=false,
+                     size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t
@@ -827,9 +827,9 @@ namespace FFPACK { /* echelon */
     template <class Field>
     size_t
     pReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-                              typename Field::Element_ptr A, const size_t lda,
-                              size_t* P, size_t* Qt, const bool transform = false,
-                              const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+                               typename Field::Element_ptr A, const size_t lda,
+                               size_t* P, size_t* Qt, const bool transform = false,
+                               size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t
@@ -870,7 +870,7 @@ namespace FFPACK { /* echelon */
     pReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* P, size_t* Qt, const bool transform = false,
-                           const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+                           size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t
@@ -1230,8 +1230,8 @@ namespace FFPACK { /* Solutions */
 
     template <class Field>
     size_t
-    pRank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda);
+    pRank (const Field& F, const size_t M, const size_t N,
+           typename Field::Element_ptr A, const size_t lda, size_t numthreads = 0);
 
     template <class Field, class PSHelper>
     size_t
@@ -1285,8 +1285,8 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     typename Field::Element&
     pDet (const Field& F, typename Field::Element& det, const size_t N,
-         typename Field::Element_ptr A, const size_t lda,
-         size_t * P = NULL, size_t * Q = NULL);
+          typename Field::Element_ptr A, const size_t lda,
+          size_t numthreads = 0, size_t * P = NULL, size_t * Q = NULL);
 
     template <class Field, class PSHelper>
     typename Field::Element&
@@ -1326,10 +1326,10 @@ namespace FFPACK { /* Solutions */
 
     template <class Field>
     typename Field::Element_ptr
-    pSolve( const Field& F, const size_t M,
-           typename Field::Element_ptr A, const size_t lda,
-           typename Field::Element_ptr x, const int incx,
-           typename Field::ConstElement_ptr b, const int incb );
+    pSolve (const Field& F, const size_t M,
+            typename Field::Element_ptr A, const size_t lda,
+            typename Field::Element_ptr x, const int incx,
+            typename Field::ConstElement_ptr b, const int incb, size_t numthreads = 0);
 
     //! Solve L X = B or X L = B in place.
     //! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
@@ -1425,7 +1425,7 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t pRowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
-                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+                           size_t* &rkprofile, size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
@@ -1453,8 +1453,9 @@ namespace FFPACK { /* Solutions */
 
     template <class Field>
     size_t pColumnRankProfile (const Field& F, const size_t M, const size_t N,
-                              typename Field::Element_ptr A, const size_t lda,
-                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+                               typename Field::Element_ptr A, const size_t lda,
+                               size_t* &rkprofile, size_t numthreads = 0,
+                               const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
 
     template <class Field, class PSHelper>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,

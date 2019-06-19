@@ -189,7 +189,7 @@ public:
                   typename Field::ConstElement_ptr A, const size_t lda,
                   typename Field::Element_ptr B, const size_t ldb)
     {
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trmm))
@@ -209,7 +209,7 @@ public:
                   const typename Field::Element beta,
                   typename Field::Element_ptr C, const size_t ldc)
     {
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 

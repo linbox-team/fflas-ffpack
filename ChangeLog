@@ -1,9 +1,15 @@
-2019-02-19 v2.4.0
+2019-06-07 v2.4.1
+	Minor updates:
+	* fix setnumthreads in pDet
+	* add README.md in distribution
+	* support for Hygon Dhyana
+2019-05-10 v2.4.0
 	New features:
 	* fsytrf: a symmetric triangular factorization, revealign the RPM
 	* fsyrk, fsyr2k, ftrssyr2k, ftrstr: subroutines for symmetric operations
 	* support for AVX512 vectorization
-	* parallelization of fgemm-rns, fsytrf
+	* parallelization of fgemm-rns, fsytrf, echelon forms, det, rank, etc
+	* API for parallel routines outside of par-block (for e.g. SageMath)
 	Improvements:
 	* more examples
 	* more benchmarks: fgesv
@@ -12,6 +18,8 @@
 	* update to the Givaro's revamped modular fields
 	* improved igemm
 	* improved test coverage for SIMD
+	* improved charpoly
+	* improved freduce and consequently speed up most routines
 
 2017-12-21 v2.3.2
 	Improvements:

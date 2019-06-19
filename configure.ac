@@ -24,7 +24,7 @@
 AC_PREREQ([2.67])
 
 
-AC_INIT([FFLAS-FFPACK], [2.4.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.4.3],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
 
@@ -158,7 +158,7 @@ AC_PROG_LIBTOOL
 AC_PROG_EGREP
 AC_PROG_SED
 # newer libtool...
-LT_PREREQ([2.4.2])
+LT_PREREQ([2.4.3])
 LT_INIT
 
 

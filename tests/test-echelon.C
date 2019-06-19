@@ -82,7 +82,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         if(!par)
             R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         else
-            R = FFPACK::pColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+            R = FFPACK::pColumnEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
         if (R != r) {pass = false; break;}
 
         FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,U,n, LuTag);
@@ -158,7 +158,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         if(!par)
             R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         else
-            R = FFPACK::pRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+            R = FFPACK::pRowEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
 
         if (R != r) {pass = false; break;}
 
@@ -233,7 +233,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         if(!par)
             R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         else
-            R = FFPACK::pReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+            R = FFPACK::pReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
 
         if (R != r) {pass = false; break;}
 
@@ -307,7 +307,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         if(!par)
             R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
         else
-            R = FFPACK::pReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+            R = FFPACK::pReducedRowEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
 
 
         if (R != r) {pass = false; break;}
@@ -437,9 +437,9 @@ int main(int argc, char** argv){
 
     Givaro::Integer q = -1;
     size_t b = 0;
-    size_t m = 284;
-    size_t n = 154;
-    size_t r = 54;
+    size_t m = 124;
+    size_t n = 64;
+    size_t r = 34;
     size_t iters = 3 ;
     bool loop = false;
     uint64_t seed =  getSeed();

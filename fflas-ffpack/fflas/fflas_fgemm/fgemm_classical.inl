@@ -249,7 +249,7 @@ namespace FFLAS {
         FFLASFFPACK_check(lda);
         FFLASFFPACK_check(ldb);
         FFLASFFPACK_check(ldc);
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
@@ -272,7 +272,7 @@ namespace FFLAS {
         FFLASFFPACK_check(ldb);
         FFLASFFPACK_check(ldc);
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,

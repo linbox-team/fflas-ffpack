@@ -152,7 +152,7 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t m=1000;
+    size_t m=600;
 
     size_t iters=4;
     bool loop=false;

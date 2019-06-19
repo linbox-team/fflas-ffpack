@@ -230,7 +230,7 @@ int tmain(){
 }
 
 int main(int argc, char** argv){
-  
+
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
     openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif

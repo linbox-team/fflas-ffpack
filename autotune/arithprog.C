@@ -90,7 +90,7 @@ int main (int argc, char** argv) {
         //warm up computation
         std::list<Polynomial> charp_list;
         try{
-            Protected::CharpolyArithProgKrylovPrecond (PolDom, charp_list, dim, A, lda, g, n);
+            FFPACK::CharPoly (PolDom, charp_list, dim, A, lda, g, FFPACK::FfpackArithProgKrylovPrecond, n);
         }
         catch (CharpolyFailed){}
         FFLAS::fassign (F, dim, dim, B, lda, A, lda);
@@ -98,7 +98,7 @@ int main (int argc, char** argv) {
         for (size_t i=0;i<iter;i++){
             chrono.start();
             try{
-                Protected::CharpolyArithProgKrylovPrecond (PolDom, charp_list, dim, A, lda, g, n);
+                FFPACK::CharPoly (PolDom, charp_list, dim, A, lda, g, FFPACK::FfpackArithProgKrylovPrecond, n);
             }
             catch (CharpolyFailed){	i--;}
             chrono.stop();

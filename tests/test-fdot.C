@@ -185,7 +185,7 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     int n=2578;
-    size_t iters=5;
+    size_t iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
     Argument as[] = {

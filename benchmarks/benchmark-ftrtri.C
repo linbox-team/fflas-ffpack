@@ -28,10 +28,18 @@
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
 using namespace std;
 
 int main(int argc, char** argv) {
+
+ 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 
     size_t iter = 3;
     int    q    = 131071;

@@ -82,8 +82,8 @@ If your research depends on the FFLAS-FFPACK library, please consider citing the
 @manual{fflas-ffpack,
 title = {{FFLAS-FFPACK}: {F}inite {F}ield {L}inear {A}lgebra {S}ubroutines / {P}ackage},
 author = {The FFLAS-FFPACK group},
-edition = {v2.2.1},
-year = {2016},
+edition = {v2.4.1},
+year = {2019},
 note = {\url{http://github.com/linbox-team/fflas-ffpack}}
 }
 ```

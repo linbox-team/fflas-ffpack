@@ -19,6 +19,10 @@
  */
 
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #include "fflas-ffpack/fflas/fflas.h"
 
 #include <iostream>
@@ -109,6 +113,11 @@ bench_do_it (const Field ZZ, const size_t m, const size_t n, const size_t k,
 int
 main(int argc, char *argv[])
 {
+ 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+
     size_t pbits = 20;
     size_t r = 8;
     size_t m = 1000;

@@ -18,6 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
+
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include "fflas-ffpack/config-blas.h"
@@ -204,6 +209,10 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 
 
 int main(int argc, char** argv) {
+
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 
     size_t iter = 3 ;
     int q = 131071 ;

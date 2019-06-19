@@ -138,7 +138,7 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=257;
+    size_t n=157;
     size_t iters=3;
     bool loop=false;
     uint64_t seed = getSeed();

@@ -76,12 +76,12 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             if(!par)
                 FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
             else
-                FFPACK::pRowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+                FFPACK::pRowRankProfile (*F, m, n, A, lda, RP1, 0, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
             if(!par)
                 FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
             else
-                FFPACK::pRowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+                FFPACK::pRowRankProfile (*F, m, n, A, lda, RP2, 0, FFPACK::FfpackTileRecursive);
             for (size_t i=0; i<r; i++)
                 ok = ok && (RP1[i] == RP2[i]);
             fflas_delete(RP1);
@@ -91,12 +91,12 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             if(!par)
                 FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
             else
-                FFPACK::pColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+                FFPACK::pColumnRankProfile (*F, m, n, A, lda, RP1, 0, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
             if(!par)
                 FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
             else
-                FFPACK::pColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+                FFPACK::pColumnRankProfile (*F, m, n, A, lda, RP2, 0, FFPACK::FfpackTileRecursive);
 
             for (size_t i=0; i<r; i++)
                 ok = ok && (RP1[i] == RP2[i]);
@@ -119,12 +119,12 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
                 if(!par)
                     rr = FFPACK::ColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
                 else
-                    rr = FFPACK::pColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+                    rr = FFPACK::pColumnRankProfile (*F, mm, nn, A, lda, RP1, 0, FFPACK::FfpackSlabRecursive);
                 fassign (*F, m, n, B, lda, A, lda);
                 if(!par)
                     FFPACK::RowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
                 else
-                    FFPACK::pRowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
+                    FFPACK::pRowRankProfile (*F, mm, nn, A, lda, RP2, 0, FFPACK::FfpackSlabRecursive);
                 size_t* RRP = fflas_new<size_t>(r);
                 size_t* CRP = fflas_new<size_t>(r);
 
@@ -154,23 +154,23 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             if(!par)
                 cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
             else
-                cs = FFPACK::pColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+                cs = FFPACK::pColumnRankProfile (*F, m, n, A, lda, CRPLUD, 0, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
             if(!par)
                 ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
             else
-                ct = FFPACK::pColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+                ct = FFPACK::pColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, 0, FFPACK::FfpackTileRecursive);
             fassign (*F, m, n, B, lda, A, lda);
             size_t rs, rt;
             if(!par)
                 rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
             else
-                rs = FFPACK::pRowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+                rs = FFPACK::pRowRankProfile (*F, m, n, A, lda, RRPLUD, 0, FFPACK::FfpackSlabRecursive);
             fassign (*F, m, n, B, lda, A, lda);
             if(!par)
                 rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
             else
-                rt = FFPACK::pRowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+                rt = FFPACK::pRowRankProfile (*F, m, n, A, lda, RRPPLUQ, 0, FFPACK::FfpackTileRecursive);
             std::sort(CRP,CRP+r);
             std::sort(RRP,RRP+r);
             ok = ok && (cs==ct)&&(cs==rs)&&(cs==rt)&&(cs==r);
@@ -205,23 +205,23 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
             if(!par)
                 cs= FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
             else
-                cs = FFPACK::pColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+                cs = FFPACK::pColumnRankProfile (*F, n, n, A, lda, CRPLUD, 0, FFPACK::FfpackSlabRecursive);
             fassign (*F, n, n, B, lda, A, lda);
             if(!par)
                 ct = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
             else
-                ct = FFPACK::pColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+                ct = FFPACK::pColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, 0, FFPACK::FfpackTileRecursive);
             size_t rs, rt;
             fassign (*F, n, n, B, lda, A, lda);
             if(!par)
                 rs = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
             else
-                rs = FFPACK::pRowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+                rs = FFPACK::pRowRankProfile (*F, n, n, A, lda, RRPLUD, 0, FFPACK::FfpackSlabRecursive);
             fassign (*F, n, n, B, lda, A, lda);
             if(!par)
                 rt = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
             else
-                rt = FFPACK::pRowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+                rt = FFPACK::pRowRankProfile (*F, n, n, A, lda, RRPPLUQ, 0, FFPACK::FfpackTileRecursive);
             std::sort(CRP,CRP+r);
             std::sort(RRP,RRP+r);
             ok = ok && (cs==ct) && (cs==rs) && (cs==rt) && (cs==r);

@@ -292,7 +292,7 @@ namespace FFLAS {
            Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
            Givaro::DoubleDomain::Element_ptr y, const size_t incy )
     {
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_dcopy( (int)N, x, (int)incy, y, (int)incy);
@@ -306,7 +306,7 @@ namespace FFLAS {
            Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
            Givaro::FloatDomain::Element_ptr y, const size_t incy )
     {
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_scopy( (int)N, x, (int)incy, y, (int)incy);
@@ -320,7 +320,7 @@ namespace FFLAS {
              Givaro::DoubleDomain::Element_ptr y, const size_t incy )
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_dscal( (int)N, a, y, (int)incy);
@@ -333,7 +333,7 @@ namespace FFLAS {
              Givaro::FloatDomain::Element_ptr y, const size_t incy )
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_sscal( (int)N, a, y, (int)incy);
