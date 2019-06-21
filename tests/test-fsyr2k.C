@@ -119,7 +119,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
         //typedef typename Field::Element Element ;
         // choose Field
         Field* F= FFPACK::chooseField<Field>(q,b,seed);
-        typename Field::RandIter G(*F,0,seed++);
+        typename Field::RandIter G(*F,seed++);
         if (F==nullptr)
             return true;
 

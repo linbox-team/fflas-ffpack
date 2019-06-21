@@ -94,7 +94,7 @@ bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m
 template<class Field>
 bool test_fscal(const Field & F,  size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
-	typename Field::RandIter G(F,0,seed);
+	typename Field::RandIter G(F,seed);
 	bool pass = true ;
 	typename Field::Element  alpha;
 	F.init(alpha);
@@ -165,7 +165,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 template<class Field>
 bool test_fscalin(const Field & F,  size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
-	typename Field::RandIter G(F,0,seed);
+	typename Field::RandIter G(F,seed);
 	bool pass = true ;
 	typename Field::Element  alpha;
 	F.init(alpha);

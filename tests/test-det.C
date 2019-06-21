@@ -118,9 +118,9 @@ int main(int argc, char** argv)
     bool pass = true ;
     typedef Givaro::ModularBalanced<double> Field;
     Field F(p);
-    Field::RandIter G(F,0,seed);
+    Field::RandIter G(F,seed);
     Givaro::ZRing<Givaro::Integer> ZZ;
-    Givaro::ZRing<Givaro::Integer>::RandIter GZZ(ZZ,0,seed);
+    Givaro::ZRing<Givaro::Integer>::RandIter GZZ(ZZ,seed);
 
     pass = pass && test_det(F,n,iters,G);
         // pass = pass && test_det(ZZ,n,iters,GZZ); @fixme: need a specific random matrix generator over ZZ

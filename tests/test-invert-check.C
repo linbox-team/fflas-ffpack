@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
     Field F(q);
 
-    Field::RandIter Rand(F,0,seed);
+    Field::RandIter Rand(F,seed);
     Field::NonZeroRandIter NZRand(Rand);
     srandom(seed);
 

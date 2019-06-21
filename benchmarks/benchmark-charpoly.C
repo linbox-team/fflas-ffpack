@@ -38,7 +38,7 @@ using namespace std;
 using namespace FFPACK;
 
 template<class Field>
-void run_with_field(int q, size_t bits, size_t n, size_t d, size_t iter, std::string file, int variant){
+void run_with_field(int q, size_t bits, size_t n, size_t d, size_t iter, std::string file, int variant, uint64_t seed){
     Field F(q);
     typedef typename Field::Element Element;
     FFPACK::FFPACK_CHARPOLY_TAG CT;
@@ -63,7 +63,8 @@ void run_with_field(int q, size_t bits, size_t n, size_t d, size_t iter, std::st
         }
         else{
             A = FFLAS::fflas_new (F, n, n);
-            typename Field::RandIter G (F, bits);
+            typename Field::Residu_t samplesize(1); samplesize <<= bits;
+            typename Field::RandIter G (F, seed, samplesize);
             FFPACK::RandomMatrix (F, n, n, A, n, G);
         }
         typename Givaro::Poly1Dom<Field>::Element cpol(n+1);
@@ -96,6 +97,7 @@ int main(int argc, char** argv) {
     size_t    n    = 1000;
     size_t    d    = __FFLASFFPACK_ARITHPROG_THRESHOLD;
     std::string file = "";
+    uint64_t seed = getSeed();
     int variant = 0;
 
     Argument as[] = {
@@ -106,7 +108,7 @@ int main(int argc, char** argv) {
         { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
         { 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
-
+        { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
         END_OF_ARGUMENTS
     };
 
@@ -114,9 +116,9 @@ int main(int argc, char** argv) {
 
     if (q > 0){
         bits = Givaro::Integer(q).bitsize();
-        run_with_field<Givaro::ModularBalanced<double> >(q, bits, n , d, iter, file, variant);
+        run_with_field<Givaro::ModularBalanced<double> >(q, bits, n , d, iter, file, variant,seed);
     } else
-        run_with_field<Givaro::ZRing<Givaro::Integer> > (q, bits, n , d, iter, file, variant);
+        run_with_field<Givaro::ZRing<Givaro::Integer> > (q, bits, n , d, iter, file, variant,seed);
 
     FFLAS::writeCommandString(std::cout, as) << std::endl;
     return 0;
