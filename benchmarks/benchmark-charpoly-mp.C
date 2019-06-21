@@ -39,12 +39,15 @@ int main(int argc, char** argv) {
     std::string file = "";
     static int variant =0;
     size_t b = 150;
+    uint64_t seed = getSeed();
+
     Argument as[] = {
         { 'b', "-b B", "Set the bitsize of the random characteristic.",  TYPE_INT , &b },
         { 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
         { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
         { 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
+        { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
 
         END_OF_ARGUMENTS
     };
@@ -79,7 +82,8 @@ int main(int argc, char** argv) {
         }
         else{
             A = FFLAS::fflas_new<Element>(n*n);
-            Field::RandIter G(F,size);
+            typename Field::Residu_t samplesize(1); samplesize <<= size;
+            Field::RandIter G(F,seed,samplesize);
             for (size_t j=0; j< (size_t)n*n; ++j)
                 G.random(*(A+j));
         }

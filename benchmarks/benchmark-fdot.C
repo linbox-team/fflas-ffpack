@@ -41,9 +41,10 @@ using namespace FFLAS;
 using namespace FFPACK;
 
 template<class Field>
-typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_t BS, const size_t p, const size_t threads){
+typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_t BS, const size_t p, const size_t threads, uint64_t seed){
     Field F(q);
-    typename Field::RandIter G(F, BS);
+    typename Field::Residu_t samplesize(1); samplesize <<= BS;
+    typename Field::RandIter G(F, seed, samplesize);
 
     typename Field::Element_ptr A, B;
     typename Field::Element d; F.init(d);
@@ -113,6 +114,7 @@ int main(int argc, char** argv) {
     size_t p	=0;
     size_t maxallowed_threads; PAR_BLOCK { maxallowed_threads=NUM_THREADS; }
     size_t threads=maxallowed_threads;
+    uint64_t seed = getSeed();
 
     Argument as[] = {
         { 'n', "-n N", "Set the dimension of the matrix C.",TYPE_INT , &N },
@@ -121,6 +123,7 @@ int main(int argc, char** argv) {
         { 'b', "-b B", "Set the bitsize of the random elements.",         TYPE_INT , &BS},
         { 'p', "-p P", "0 for sequential, 1 for parallel.",	TYPE_INT , &p },
         { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &threads },
+        { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
         END_OF_ARGUMENTS
     };
 
@@ -128,10 +131,10 @@ int main(int argc, char** argv) {
 
     if (q > 0){
         BS = Givaro::Integer(q).bitsize();
-        double d = run_with_field<Givaro::ModularBalanced<double> >(q, iter, N, BS, p, threads);
+        double d = run_with_field<Givaro::ModularBalanced<double> >(q, iter, N, BS, p, threads, seed);
         std::cout << " d: " << d;
     } else {
-        auto d = run_with_field<Givaro::ZRing<Givaro::Integer> > (q, iter, N, BS, p, threads);
+        auto d = run_with_field<Givaro::ZRing<Givaro::Integer> > (q, iter, N, BS, p, threads, seed);
         std::cout << " size: " << logtwo(d>0?d:-d);
     }
 
