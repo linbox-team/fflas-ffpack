@@ -29,6 +29,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -63,7 +64,7 @@ void run_with_field(int q, size_t bits, size_t n, size_t d, size_t iter, std::st
         }
         else{
             A = FFLAS::fflas_new (F, n, n);
-            typename Field::Residu_t samplesize(1); samplesize <<= bits;
+            Givaro::Integer samplesize(1); samplesize <<= bits;
             typename Field::RandIter G (F, seed, samplesize);
             FFPACK::RandomMatrix (F, n, n, A, n, G);
         }
@@ -97,7 +98,7 @@ int main(int argc, char** argv) {
     size_t    n    = 1000;
     size_t    d    = __FFLASFFPACK_ARITHPROG_THRESHOLD;
     std::string file = "";
-    uint64_t seed = getSeed();
+    uint64_t seed = FFLAS::getSeed();
     int variant = 0;
 
     Argument as[] = {

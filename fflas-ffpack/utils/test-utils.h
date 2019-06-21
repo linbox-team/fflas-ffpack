@@ -39,15 +39,14 @@
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
 #include <givaro/givranditer.h>
+#include <givaro/givtimer.h>
 
 #include <random>
 #include <functional>
 
 namespace FFLAS {
     uint64_t getSeed(){
-        struct timeval tp;
-        gettimeofday(&tp, 0) ;
-        return static_cast<uint64_t> (tp.tv_usec + tp.tv_sec*1000000);
+        return Givaro::BaseTimer::seed();
     }
 }
 namespace FFPACK {
