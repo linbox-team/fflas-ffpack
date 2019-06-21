@@ -52,7 +52,7 @@ namespace FFPACK {
 
         class RandIter : public rnsRandIter<RNS> {
         public:
-            RandIter(const RNSInteger<RNS> &F, size_t size=0, uint64_t seed=0) : rnsRandIter<RNS>(*F._rns,size,seed) {}
+            RandIter(const RNSInteger<RNS> &F, uint64_t seed=0, size_t bitSize=0) : rnsRandIter<RNS>(*F._rns,seed,bitSize) {}
         };
 
 
