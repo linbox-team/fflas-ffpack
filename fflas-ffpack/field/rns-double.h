@@ -424,10 +424,10 @@ namespace FFPACK {
         const RNS& _domain;
 
     public:
-        rnsRandIter(const RNS& R, uint64_t seed=0, size_t bitSize=0)
+        rnsRandIter(const RNS& R, uint64_t seed=0)
         : _domain(R) {
             for(const auto& F : R._field_rns)
-                _RNS_rand.emplace_back(F,seed,bitSize);
+                _RNS_rand.emplace_back(F,seed);
         }
 
         /** RNS ring Element random assignement.
