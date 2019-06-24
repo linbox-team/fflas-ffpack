@@ -120,11 +120,6 @@ namespace FFLAS {
     InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
         Givaro::Integer max = 0;
 
-#ifdef PROFILE_FGEMM_MP
-        Timer chrono;
-        chrono.start();
-#endif
-
 #if 1  //Sequential //////////////////////////////////////////////////
         for (size_t i=0; i<M; ++i)
             for (size_t j=0; j<N; ++j) {
@@ -157,11 +152,6 @@ namespace FFLAS {
         if (Givaro::absCompare(vmax[i],max)>0){ max = vmax[i];}
     }
 #endif ///////////////////////////////////////////////////////////////
-
-#ifdef PROFILE_FGEMM_MP
-        chrono.stop();
-        std::cout<<"Thread("<<omp_get_thread_num()<<") InfNorm: compute bound on the output: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
-#endif
 
         return abs(max);
 

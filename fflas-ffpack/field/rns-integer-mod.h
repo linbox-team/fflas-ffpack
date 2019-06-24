@@ -881,7 +881,7 @@ namespace FFLAS {
     template<typename RNS>
     void finit_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
                    const Givaro::Integer *B, const size_t ldb, typename RNS::Element_ptr A)
-    {std::cout<<"Thread("<<omp_get_thread_num()<<") >>>>>>> integer_mod: finit_rns"<<std::endl;
+    {
         F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
     }
     template<typename RNS>

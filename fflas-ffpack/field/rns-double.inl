@@ -103,10 +103,12 @@ namespace FFPACK {
 
 
 #ifdef PROFILE_FGEMM_MP
+if(n>1){
         chrono.stop();
-        std::cout<<"-------------------------------"<<std::endl;
-        std::cout<<"rns_double::init  FOR1D loop: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        std::cout<<"--------------------------------------------"<<std::endl
+        <<"rns_double::init  FOR1D loop: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
         chrono.start();
+}
 #endif
 
         tkr.stop();
@@ -134,10 +136,12 @@ namespace FFPACK {
         }
 
 #ifdef PROFILE_FGEMM_MP
+if(n>1){
         chrono.stop();
-        std::cout<<"-------------------------------"<<std::endl;
-        std::cout<<"rns_double::init  Arns = _crt_in x A_beta^T or Arns =  A_beta x _crt_in^T : "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        std::cout<<"--------------------------------------------"<<std::endl
+        <<"rns_double::init  Arns = _crt_in x A_beta^T or Arns =  A_beta x _crt_in^T : "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
         chrono.start();
+}
 #endif
 
         Givaro::Timer tred; tred.start();
@@ -147,6 +151,8 @@ namespace FFPACK {
         //if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
 
         FFLAS::fflas_delete( A_beta);
+
+#if 1  //Sequential //////////////////////////////////////////////////
 
 #ifdef CHECK_RNS
         bool ok=true;
@@ -165,12 +171,51 @@ namespace FFPACK {
                 }
         std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
-        }
-#ifdef PROFILE_FGEMM_MP
-        chrono.stop();
-        std::cout<<"-------------------------------"<<std::endl;
-        std::cout<<"rns_double::init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+
+#else  //Parallel /////////////////////////////////////////////////////
+
+#ifdef CHECK_RNS
+        bool ok=true;
+        auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
+        SYNCH_GROUP({
+
+              FORBLOCK1D(i, m, sp,
+                          TASK(MODE(CONSTREFERENCE(A,_basis,Arns) ),
+                                {
+
+
+            for(size_t j=0;j<n;j++)
+                for(size_t k=0;k<_size;k++){
+                    ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
+                    if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+                        != (int64_t) Arns[i*n+j+k*rda])
+                    {
+                        std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+                        <<" != "
+                        <<(int64_t) Arns[i*n+j+k*rda]
+                        <<std::endl;
+                    }
+                }
+        std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+
+
+                                })
+                          );
+        });
 #endif
+#endif ///////////////////////////////////////////////////////////////
+
+#ifdef PROFILE_FGEMM_MP
+if(n>1){
+        chrono.stop();
+        std::cout<<"--------------------------------------------"<<std::endl
+        <<"rns_double::init  RNS freduce : "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+}
+#endif
+
+        }
+
     }
 
     // Arns must be an array of m*n*_size
