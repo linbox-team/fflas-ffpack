@@ -75,7 +75,7 @@ namespace FFPACK {
             const RNSIntegerMod<RNS> & _F;
             uint64_t _seed;
         public:
-            RandIter(const RNSIntegerMod<RNS> &F, size_t size=0, uint64_t seed=0) :rnsRandIter<RNS>(*F._rns,size,seed), _F(F), _seed(seed) {}
+            RandIter(const RNSIntegerMod<RNS> &F, uint64_t seed=0) :rnsRandIter<RNS>(*F._rns,seed), _F(F), _seed(seed) {}
 
             typename RNS::Element& random(typename RNS::Element& elt) const {
                 integer::seeding(_seed);
