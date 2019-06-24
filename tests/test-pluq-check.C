@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     typedef Givaro::Modular<double> Field;
     Field F(q);
 
-    Field::RandIter Rand(F,0,seed);
+    Field::RandIter Rand(F,seed);
 
     size_t pass = 0;	// number of tests that have successfully passed
 

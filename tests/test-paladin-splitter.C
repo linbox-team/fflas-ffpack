@@ -76,7 +76,7 @@ bool tmain(int argc, char** argv, std::string printStrat)
     size_t m = n; // matrices are square in this test
 
     Field F(q);
-    Field::RandIter G(F,0,seed);
+    Field::RandIter G(F,seed);
 
     // Allocate matrices
     typename Field::Element_ptr A = fflas_new (F, m, n);

@@ -164,7 +164,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
     while (ok && nbiter)
     {
         Field* F = chooseField<Field>(q, b, seed); // F, characteristic q of b bits
-        typename Field::RandIter G(*F, 0, seed++); //random generator over F
+        typename Field::RandIter G(*F, seed++); //random generator over F
 
         if(F == nullptr)
             return true; //if F is null, nothing to test, just pass

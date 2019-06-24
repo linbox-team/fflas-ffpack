@@ -235,7 +235,7 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t see
         std::cout<<oss.str();
         std::cout<<"... ";
 
-        typename Field::RandIter R(*F,0,seed++);
+        typename Field::RandIter R(*F,seed++);
         typename Field::NonZeroRandIter NZR(R);
 
         //size_t k = 0 ;

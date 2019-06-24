@@ -61,7 +61,7 @@ struct compatible_data_type<Givaro::ZRing<double>>{ static constexpr bool value 
 
 
 template <class Field, class RandIter, class Matrix, class Vector>
-void fill_value(Field& F, RandIter& Rand, 
+void fill_value(Field& F, RandIter& Rand,
 		Matrix& A, Vector& X, Vector& Y,
 		size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK){
   // TODO: replace by a 1D pfrand
@@ -80,12 +80,14 @@ void fill_value(Field& F, RandIter& Rand,
 }
 
 template <class Field, class Matrix, class Vector>
-void genData(Field& F, 
+void genData(Field& F,
 	     Matrix& A, Vector& X, Vector& Y,
 	     size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
 	     int bitsize, uint64_t seed){
-  typename Field::RandIter Rand(F,bitsize,seed);
-  fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
+    typename Field::Residu_t samplesize(1);
+    samplesize <<= bitsize;
+    typename Field::RandIter Rand(F,seed,samplesize);
+    fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
 }
 
 template <class Field, class Matrix, class Vector>
@@ -195,7 +197,7 @@ void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, int bitsi
 
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(X);
-    FFLAS::fflas_delete(Y);    
+    FFLAS::fflas_delete(Y);
 
 }
 
@@ -223,7 +225,7 @@ void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
 }
 
 int main(int argc, char** argv) {
- 
+
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
     openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
@@ -252,8 +254,8 @@ int main(int argc, char** argv) {
     { 't', "-t T", "number of virtual threads to drive the partition.",             TYPE_INT , &t },
     { 'N', "-n N", "number of numa blocks per dimension for the numa placement",    TYPE_INT , &NBK },
     { 'i', "-i R", "Set number of repetitions.",                                    TYPE_INT , &iters },
-    { 's', "-s S", "Sets seed.",                            				        TYPE_INT , &seed },
-    { 'g', "-g G", "Sets GrainSize.",                            			        TYPE_INT , &GrainSize },
+    { 's', "-s S", "Sets seed.",				        TYPE_INT , &seed },
+    { 'g', "-g G", "Sets GrainSize.",			        TYPE_INT , &GrainSize },
     END_OF_ARGUMENTS
   };
 

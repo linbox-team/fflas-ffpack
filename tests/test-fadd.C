@@ -48,7 +48,7 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-	typename Field::RandIter G(F, 0, seed);
+	typename Field::RandIter G(F, seed);
 	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
@@ -102,7 +102,7 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing, uin
 {
 	typedef typename Field::Element T ;
 
-	typename Field::RandIter G(F, 0, seed);
+	typename Field::RandIter G(F, seed);
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * C = FFLAS::fflas_new<T>(m*n);
@@ -157,7 +157,7 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 {
 	typedef typename Field::Element T ;
 
-	typename Field::RandIter G(F, 0, seed);
+	typename Field::RandIter G(F, seed);
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * B = FFLAS::fflas_new<T>(m*n);
@@ -214,7 +214,7 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing, uin
 {
 	typedef typename Field::Element T ;
 
-	typename Field::RandIter G(F, 0, seed);
+	typename Field::RandIter G(F, seed);
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * C = FFLAS::fflas_new<T>(m*n);
