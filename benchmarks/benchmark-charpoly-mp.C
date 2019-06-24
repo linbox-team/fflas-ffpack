@@ -26,6 +26,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
@@ -39,7 +40,7 @@ int main(int argc, char** argv) {
     std::string file = "";
     static int variant =0;
     size_t b = 150;
-    uint64_t seed = getSeed();
+    uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
         { 'b', "-b B", "Set the bitsize of the random characteristic.",  TYPE_INT , &b },
