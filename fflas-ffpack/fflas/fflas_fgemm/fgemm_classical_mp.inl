@@ -210,6 +210,7 @@ namespace FFLAS {
 #endif
         size_t rns_size = F.size();
         typedef MMHelper<typename RNS::ModField, MMHelperAlgo::Auto, typename ModeTraits<typename RNS::ModField>::value, ParSeqTrait> SubHelper;
+
         SYNCH_GROUP({
               FORBLOCK1D(iter, rns_size, H.parseq.first_component(),
 		            TASK(MODE(CONSTREFERENCE(F,H)),
