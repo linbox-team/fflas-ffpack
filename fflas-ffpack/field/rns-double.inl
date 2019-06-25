@@ -175,7 +175,7 @@ if(n>1){
 #else  //Parallel /////////////////////////////////////////////////////
 
 #ifdef CHECK_RNS
-        bool ok=true;
+        std::vector<bool> vok(m,true);
         auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
         SYNCH_GROUP({
 
@@ -185,10 +185,13 @@ if(n>1){
 
         for (auto i=iter.begin(); i!=iter.end(); ++i)
             for(size_t j=0;j<n;j++)
+            //TODO: Allocate a vector to store possible boolean value of ok the outside the parallel region, one more loop over k to get the final boolean result, the vector of bool is of size m 
                 for(size_t k=0;k<_size;k++){
-                    ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
-                    if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
-                        != (int64_t) Arns[i*n+j+k*rda])
+                    vok[i]&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);//This bool value should be put into a vector
+                    //TODO: The following conditional could be put ouside the parallel region
+                    /*if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+                        != (int64_t) Arns[i*n+j+k*rda])*/
+                    if(!vok[i])
                     {
                         std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
                         <<" != "
@@ -196,12 +199,19 @@ if(n>1){
                         <<std::endl;
                     }
                 }
-        std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+        //std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 
 
                                 })
                           );
         });
+        for(size_t i=0;i<m;i++){
+            if(!vok[i]){
+                ok = vok[i];
+                std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+                break;
+            }
+        }
 #endif
 #endif ///////////////////////////////////////////////////////////////
 
