@@ -152,8 +152,6 @@ if(n>1){
 
         FFLAS::fflas_delete( A_beta);
 
-#if 0  //Sequential //////////////////////////////////////////////////
-
 #ifdef CHECK_RNS
         bool ok=true;
         for (size_t i=0;i<m;i++)
@@ -171,49 +169,6 @@ if(n>1){
                 }
         std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
-
-#else  //Parallel /////////////////////////////////////////////////////
-
-#ifdef CHECK_RNS
-        std::vector<bool> vok(m,true);
-        auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
-        SYNCH_GROUP({
-
-              FORBLOCK1D(iter, m, sp,
-                          TASK(MODE(CONSTREFERENCE(A,_basis,Arns) ),
-                                {
-
-        for (auto i=iter.begin(); i!=iter.end(); ++i)
-            for(size_t j=0;j<n;j++)
-            //TODO: Allocate a vector to store possible boolean value of ok the outside the parallel region, one more loop over k to get the final boolean result, the vector of bool is of size m 
-                for(size_t k=0;k<_size;k++){
-                    vok[i]&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);//This bool value should be put into a vector
-                    //TODO: The following conditional could be put ouside the parallel region
-                    /*if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
-                        != (int64_t) Arns[i*n+j+k*rda])*/
-                    if(!vok[i])
-                    {
-                        std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
-                        <<" != "
-                        <<(int64_t) Arns[i*n+j+k*rda]
-                        <<std::endl;
-                    }
-                }
-        //std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
-
-
-                                })
-                          );
-        });
-        for(size_t i=0;i<m;i++){
-            if(!vok[i]){
-                ok = vok[i];
-                std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
-                break;
-            }
-        }
-#endif
-#endif ///////////////////////////////////////////////////////////////
 
 #ifdef PROFILE_FGEMM_MP
 if(n>1){
@@ -610,10 +565,22 @@ if(n>1){
             // #else
             // 			auto sp=SPLITTER(1);
             // #endif
-            PARFOR1D(i,_size,SPLITTER(NUM_THREADS),
+#if 0
+            PARFOR1D(i,_size,SPLITTER(NUM_THREADS),{std::cout<<"Thread("<<omp_get_thread_num()<<") >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
                      //for(size_t i=0;i<_size;i++)
                      FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
-                    );
+                    });
+#else
+            SYNCH_GROUP(
+                FORBLOCK1D(iter,_size,SPLITTER(NUM_THREADS),
+                    TASK(MODE(CONSTREFERENCE(Arns)),
+                    {
+                         for(auto i=iter.begin(); i!=iter.end(); ++i)
+                         FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
+                    })
+                )
+            );
+#endif
         }
 
     }
