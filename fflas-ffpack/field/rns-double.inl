@@ -152,7 +152,7 @@ if(n>1){
 
         FFLAS::fflas_delete( A_beta);
 
-#if 1  //Sequential //////////////////////////////////////////////////
+#if 0  //Sequential //////////////////////////////////////////////////
 
 #ifdef CHECK_RNS
         bool ok=true;
@@ -179,11 +179,11 @@ if(n>1){
         auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
         SYNCH_GROUP({
 
-              FORBLOCK1D(i, m, sp,
+              FORBLOCK1D(iter, m, sp,
                           TASK(MODE(CONSTREFERENCE(A,_basis,Arns) ),
                                 {
 
-
+        for (auto i=iter.begin(); i!=iter.end(); ++i)
             for(size_t j=0;j<n;j++)
                 for(size_t k=0;k<_size;k++){
                     ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);

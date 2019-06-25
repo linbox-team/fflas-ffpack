@@ -120,7 +120,7 @@ namespace FFLAS {
     InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
         Givaro::Integer max = 0;
 
-#if 1  //Sequential //////////////////////////////////////////////////
+#if 0  //Sequential //////////////////////////////////////////////////
         for (size_t i=0; i<M; ++i)
             for (size_t j=0; j<N; ++j) {
                 const Givaro::Integer & x(A[i*lda+j]);
@@ -131,7 +131,6 @@ namespace FFLAS {
         std::vector<Givaro::Integer> vmax(M,0);
         auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
         SYNCH_GROUP({
-
               FORBLOCK1D(iter, M, sp,
                           TASK(MODE(CONSTREFERENCE(A,max,vmax) ),
                                 {
@@ -145,7 +144,6 @@ namespace FFLAS {
                                 }
                                 })
                           );
-
         });
     max=vmax[0];
     for (size_t i=0; i<M; ++i){ 
