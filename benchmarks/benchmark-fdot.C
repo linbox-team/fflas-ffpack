@@ -30,6 +30,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/paladin/parallel.h"
 #include "fflas-ffpack/paladin/fflas_plevel1.h"
@@ -43,7 +44,7 @@ using namespace FFPACK;
 template<class Field>
 typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_t BS, const size_t p, const size_t threads, uint64_t seed){
     Field F(q);
-    typename Field::Residu_t samplesize(1); samplesize <<= BS;
+    Givaro::Integer samplesize(1); samplesize <<= BS;
     typename Field::RandIter G(F, seed, samplesize);
 
     typename Field::Element_ptr A, B;
@@ -114,7 +115,7 @@ int main(int argc, char** argv) {
     size_t p	=0;
     size_t maxallowed_threads; PAR_BLOCK { maxallowed_threads=NUM_THREADS; }
     size_t threads=maxallowed_threads;
-    uint64_t seed = getSeed();
+    uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
         { 'n', "-n N", "Set the dimension of the matrix C.",TYPE_INT , &N },
