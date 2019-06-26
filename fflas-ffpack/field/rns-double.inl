@@ -566,7 +566,7 @@ if(n>1){
             // 			auto sp=SPLITTER(1);
             // #endif
 #if 0
-            PARFOR1D(i,_size,SPLITTER(NUM_THREADS),{std::cout<<"Thread("<<omp_get_thread_num()<<") >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
+            PARFOR1D(i,_size,SPLITTER(NUM_THREADS),{
                      //for(size_t i=0;i<_size;i++)
                      FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
                     });
