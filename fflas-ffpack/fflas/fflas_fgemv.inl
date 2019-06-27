@@ -539,50 +539,6 @@ namespace FFLAS{
         return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
 
-/*
-    template<class Field>
-    typename Field::Element_ptr
-    pfgemv(const Field& F,
-           const FFLAS_TRANSPOSE ta,
-           const size_t m,
-           const size_t n,
-           const typename Field::Element alpha,
-           const typename Field::ConstElement_ptr A, const size_t lda,
-           const typename Field::ConstElement_ptr X, const size_t incX,
-           const typename Field::Element beta,
-           typename Field::Element_ptr Y, const size_t incY){
-            ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-                                       FFLAS::StrategyParameter::Threads> parH;
-            PAR_BLOCK{
-                parH.set_numthreads(NUM_THREADS);
-                MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value,
-                        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,
-                                               FFLAS::StrategyParameter::Threads> > pH (F,m,n,1,parH);
-                fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
-            }
-            return Y;
-    }
-
-    template<class Field, class Cut, class Param>
-    typename Field::Element_ptr
-    fgemv(const Field& F,
-           const FFLAS_TRANSPOSE ta,
-           const size_t m,
-           const size_t n,
-           const typename Field::Element alpha,
-           const typename Field::ConstElement_ptr A, const size_t lda,
-           const typename Field::ConstElement_ptr X, const size_t incX,
-           const typename Field::Element beta,
-           typename Field::Element_ptr Y, const size_t incY,
-           FFLAS::ParSeqHelper::Compose<FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, Param>,
-           FFLAS::ParSeqHelper::Parallel<Cut, Param> >& cpsH){
-           MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > pH(F,-1,cpsH);
-std::cout<<omp_get_thread_num()<<" >>>>>>>>>>>>>>>>>>>>>> "<<std::endl;
-        fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
-std::cout<<omp_get_thread_num()<<" <<<<<<<<<<<<<<<<<<<<<< "<<std::endl;
-        return Y;
-    }
-*/
 }
 
 #endif //  __FFLASFFPACK_fgemv_INL

@@ -38,10 +38,7 @@ namespace FFPACK {
     // abs(||A||) < 2^(16k)
     inline void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
     {
-#ifdef PROFILE_FGEMM_MP
-        FFLAS::Timer chrono;
-        chrono.start();
-#endif
+
         if (k>_ldm){
             FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_double [init] -> rns basis is too small to handle integers with 2^(16*k) values ");
             std::cerr<<"with k="<<k<<" _ldm="<<_ldm<<std::endl;
@@ -102,15 +99,6 @@ namespace FFPACK {
         )
 
 
-#ifdef PROFILE_FGEMM_MP
-if(n>1){
-        chrono.stop();
-        std::cout<<"--------------------------------------------"<<std::endl
-        <<"rns_double::init  FOR1D loop: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
-        chrono.start();
-}
-#endif
-
         tkr.stop();
         //if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
         if (RNS_MAJOR==false) {
@@ -135,14 +123,6 @@ if(n>1){
 #endif
         }
 
-#ifdef PROFILE_FGEMM_MP
-if(n>1){
-        chrono.stop();
-        std::cout<<"--------------------------------------------"<<std::endl
-        <<"rns_double::init  Arns = _crt_in x A_beta^T or Arns =  A_beta x _crt_in^T : "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
-        chrono.start();
-}
-#endif
 
         Givaro::Timer tred; tred.start();
 
@@ -170,14 +150,6 @@ if(n>1){
         std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 
-#ifdef PROFILE_FGEMM_MP
-if(n>1){
-        chrono.stop();
-        std::cout<<"--------------------------------------------"<<std::endl
-        <<"rns_double::init  RNS freduce : "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
-        chrono.start();
-}
-#endif
 
         }
 

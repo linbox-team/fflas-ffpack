@@ -309,9 +309,8 @@ namespace FFLAS {
 
 #ifdef PROFILE_FGEMM_MP
         t.stop();
-
         std::cerr<<"=========================================="<<std::endl
-        <<"Pointwise fgemm : "<<t.realtime()<<" ("<<rns_size<<") moduli "<<std::endl
+        <<"Pointwise fgemm : "<<t.realtime()<<" ("<<F.size()<<") moduli "<<std::endl
         <<"=========================================="<<std::endl;
 #endif
         return Cd;
@@ -385,7 +384,6 @@ namespace FFLAS {
 
 #ifdef PROFILE_FGEMM_MP
         t.stop();
-
         std::cerr<<"=========================================="<<std::endl
         <<"Pointwise fgemm : "<<t.realtime()<<" ("<<rns_size<<") moduli "<<std::endl
         <<"=========================================="<<std::endl;
@@ -419,7 +417,7 @@ namespace FFLAS {
         }
 
         if (k==0) return C;
-//@TODO: Even more detailed timing for all subroutines from HERE:
+
         // compute bit size of feasible prime for FFLAS
         size_t _k=k,lk=0;
         while ( _k ) {_k>>=1; ++lk;}
@@ -439,16 +437,12 @@ namespace FFLAS {
 
         mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
 
-#ifdef PROFILE_FGEMM_MP
-        chrono.stop();
-        std::cout<<"FGEMM_MP: InfNorm compute bound on the output "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
-#endif
 
         // A or B is zero, no need to modify C
         if (mC == 0) return C;
 
         // construct an RNS structure and its associated Domain
-        FFPACK::rns_double RNS(mC, prime_bitsize);//@TODO: Here it takes time
+        FFPACK::rns_double RNS(mC, prime_bitsize);
 
         typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
         RnsDomain Zrns(RNS);
@@ -465,9 +459,24 @@ namespace FFLAS {
         Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
         Cp = FFLAS::fflas_new(Zrns,m,n);
 
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"-------------------------------"<<std::endl;
+        std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
+        std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
+
+
         // convert the input matrices to RNS representation
         finit_rns(Zrns,Arowd,Acold,(logA/16)+((logA%16)?1:0),A,lda,Ap);
         finit_rns(Zrns,Browd,Bcold,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
+
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"FGEMM_MP:   to RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
 
         // perform the fgemm in RNS
         // Classic as no Winograd over ZZ available for the moment
@@ -481,12 +490,25 @@ namespace FFLAS {
         // call  fgemm
         fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
 
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
+
+
         // convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) )
         fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);
 
         FFLAS::fflas_delete(Ap);
         FFLAS::fflas_delete(Bp);
         FFLAS::fflas_delete(Cp);
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        std::cout<<"-------------------------------"<<std::endl;
+#endif
+
 
         return C;
     }
@@ -657,6 +679,10 @@ namespace FFLAS {
     {
         //std::cerr<<"Entering fgemm<Modular<ruint<K1,K2> > ParSeq with alpha="<<alpha<<" and beta="<<beta<<std::endl;
         //std::cerr << alpha << "*"<< *A <<" * "<< *B <<" + "<<beta<<" * "<<*C<<std::endl;
+#ifdef PROFILE_FGEMM_MP
+        Timer chrono;
+        chrono.start();
+#endif
 
         if (alpha == 0){
             fscalin(F,m,n,beta,C,ldc);
@@ -698,11 +724,23 @@ namespace FFLAS {
         Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
         Cp = FFLAS::fflas_new(Zrns,m,n);
 
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"-------------------------------"<<std::endl;
+        std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
+        std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
 
         // convert the input matrices to RNS representation
         RNS.init(Arowd,Acold,Ap._ptr,Ap._stride, A,lda,(logA/16)+((logA%16)?1:0));
         RNS.init(Browd,Bcold,Bp._ptr,Bp._stride, B,ldb,(logB/16)+((logB%16)?1:0));
 
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"FGEMM_MP:   to RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
 
         // perform the fgemm in RNS
         // Classic as no Winograd over ZZ available for the moment
@@ -716,7 +754,11 @@ namespace FFLAS {
         // call  fgemm
         fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
 
-
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        chrono.start();
+#endif
 
         // convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) ) modulo mA
         //fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);
@@ -726,7 +768,11 @@ namespace FFLAS {
         FFLAS::fflas_delete(Ap);
         FFLAS::fflas_delete(Bp);
         FFLAS::fflas_delete(Cp);
-
+#ifdef PROFILE_FGEMM_MP
+        chrono.stop();
+        std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+        std::cout<<"-------------------------------"<<std::endl;
+#endif
 
         return C;
     }
