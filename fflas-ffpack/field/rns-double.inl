@@ -565,22 +565,12 @@ if(n>1){
             // #else
             // 			auto sp=SPLITTER(1);
             // #endif
-#if 0
-            PARFOR1D(i,_size,SPLITTER(NUM_THREADS),{
-                     //for(size_t i=0;i<_size;i++)
+
+            auto sp=SPLITTER(NUM_THREADS);
+            FOR1D(i,_size,sp,{
                      FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
-                    });
-#else
-            SYNCH_GROUP(
-                FORBLOCK1D(iter,_size,SPLITTER(NUM_THREADS),
-                    TASK(MODE(CONSTREFERENCE(Arns)),
-                    {
-                         for(auto i=iter.begin(); i!=iter.end(); ++i)
-                         FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
-                    })
-                )
-            );
-#endif
+            });
+
         }
 
     }

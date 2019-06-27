@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
-#define PROFILE_FGEMM_MP
+//#define PROFILE_FGEMM_MP
 //#include "goto-def.h"
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -57,7 +57,7 @@ struct compatible_data_type<Givaro::ZRing<double>>{ static constexpr bool value 
 
 
 template <class Field, class RandIter, class Matrix, class Vector>
-void fill_value(Field& F, RandIter& Rand, 
+void fill_value(Field& F, RandIter& Rand,
 		Matrix& A, Vector& X, Vector& Y,
 		size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK){
 
@@ -76,7 +76,7 @@ void fill_value(Field& F, RandIter& Rand,
 }
 
 template <class Field, class Matrix, class Vector>
-void genData(Field& F, 
+void genData(Field& F,
 	     Matrix& A, Vector& X, Vector& Y,
 	     size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
 	     int bitsize, uint64_t seed){
@@ -134,7 +134,7 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
             ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain>, ParSeqHelper::Parallel<rec, StrategyParameter::TwoDAdaptive>> H(GrainSize,t);
 
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
-          	break;
+            break;
           }
           default:{
 	        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
@@ -187,7 +187,7 @@ void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, int bitsi
 
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(X);
-    FFLAS::fflas_delete(Y);    
+    FFLAS::fflas_delete(Y);
 
 }
 

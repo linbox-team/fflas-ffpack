@@ -144,7 +144,7 @@ namespace FFLAS {
 
     // specialization of the fgemv function for the field Givaro::Modular<RecInt::ruint<K>>
     // Calling fgemm, TODO: really specialize fgemv
-    //@FastFix: This is only the sequential implementation and any call to parallel fgemv for the field Givaro::Modular<RecInt::ruint<K>> will refer to the implementation in the pfgemv.inl file
+    //@QuickFix: This is only the sequential implementation and any call to parallel fgemv for the field Givaro::Modular<RecInt::ruint<K>> will refer to the implementation in the pfgemv.inl file
     template <size_t K1, size_t K2>
     inline RecInt::ruint<K1>*
     fgemv (const Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >& F,

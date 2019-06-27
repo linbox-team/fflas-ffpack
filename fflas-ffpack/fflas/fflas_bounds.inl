@@ -118,41 +118,20 @@ namespace FFLAS {
 
     inline Givaro::Integer
     InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
-        Givaro::Integer max = 0;
-
-#if 0  //Sequential //////////////////////////////////////////////////
-        for (size_t i=0; i<M; ++i)
-            for (size_t j=0; j<N; ++j) {
-                const Givaro::Integer & x(A[i*lda+j]);
-                if (Givaro::absCompare(x,max)>0) max = x;
-            }
-#else  //Parallel /////////////////////////////////////////////////////
-
-        std::vector<Givaro::Integer> vmax(M,0);
-        auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
-        SYNCH_GROUP({
-              FORBLOCK1D(iter, M, sp,
-                          TASK(MODE(CONSTREFERENCE(A,max,vmax) ),
-                                {
-                                for(auto i=iter.begin(); i!=iter.end(); ++i)
-                                {
-                                    for (size_t j=0; j<N; ++j) {
-                                        const Givaro::Integer & x(A[i*lda+j]);
-                                        if (Givaro::absCompare(x,vmax[i])>0){ vmax[i] = x;}
-                                    }
-
-                                }
-                                })
-                          );
-        });
+    Givaro::Integer max = 0;
+    std::vector<Givaro::Integer> vmax(M,0);
+    auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
+    FOR1D(i, M, sp, {
+        for (size_t j=0; j<N; ++j) {
+            const Givaro::Integer & x(A[i*lda+j]);
+            if (Givaro::absCompare(x,vmax[i])>0){ vmax[i] = x;}
+        }
+    });
     max=vmax[0];
     for (size_t i=0; i<M; ++i){ 
         if (Givaro::absCompare(vmax[i],max)>0){ max = vmax[i];}
     }
-#endif ///////////////////////////////////////////////////////////////
-
         return abs(max);
-
     }
 
     namespace Protected {
