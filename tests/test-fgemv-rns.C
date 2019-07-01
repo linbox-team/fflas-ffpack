@@ -177,7 +177,8 @@ bool launch_MV(const Field & F,
         Element_ptr Y2 =  fflas_new (F, Ydim, incY);
         fassign (F, Ydim, Y, incY, Y2, incY);
 
-
+        fassign (F, Ydim, Y2, incY, D, 1);
+        fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
                 ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Grain >  WH(1);
@@ -200,11 +201,14 @@ bool launch_MV(const Field & F,
             break;
         }
 
+
+        fassign (F, Ydim, Y2, incY, D, 1);
+        fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
-                ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Threads >  WH;
 
                 PAR_BLOCK{
+                    ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Threads >  WH(NUM_THREADS);
                     fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
@@ -222,11 +226,13 @@ bool launch_MV(const Field & F,
             break;
         }
 
+        fassign (F, Ydim, Y2, incY, D, 1);
+        fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
-                ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, StrategyParameter::Grain>, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::TwoDAdaptive>>  WH;
 
                 PAR_BLOCK{
+                    ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, StrategyParameter::Grain>, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::TwoDAdaptive>>  WH(1,NUM_THREADS);
                     fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
