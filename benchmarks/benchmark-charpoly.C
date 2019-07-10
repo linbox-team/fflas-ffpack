@@ -39,7 +39,7 @@ using namespace std;
 using namespace FFPACK;
 
 template<class Field>
-void run_with_field(int q, size_t bits, size_t n, size_t d, size_t iter, std::string file, int variant, uint64_t seed){
+void run_with_field(int q, uint64_t bits, size_t n, size_t d, size_t iter, std::string file, int variant, uint64_t seed){
     Field F(q);
     typedef typename Field::Element Element;
     FFPACK::FFPACK_CHARPOLY_TAG CT;
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 
     size_t iter = 1;
     int    q    = 131071;
-    size_t bits = 10;
+    uint64_t bits = 10;
     size_t    n    = 1000;
     size_t    d    = __FFLASFFPACK_ARITHPROG_THRESHOLD;
     std::string file = "";
