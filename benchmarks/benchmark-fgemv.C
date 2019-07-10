@@ -83,7 +83,7 @@ template <class Field, class Matrix, class Vector>
 void genData(Field& F,
 	     Matrix& A, Vector& X, Vector& Y,
 	     size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
-	     int bitsize, uint64_t seed){
+	     uint64_t bitsize, uint64_t seed){
     Givaro::Integer samplesize(1); samplesize <<= bitsize;
     typename Field::RandIter Rand(F,seed,samplesize);
     fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
@@ -175,7 +175,7 @@ void benchmark_disp(Field& F, bool pass, double& time, size_t iters, int p,  siz
 
 
 template <class Field, class arg>
-void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, int bitsize, uint64_t seed, size_t iters,
+void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, uint64_t bitsize, uint64_t seed, size_t iters,
 			int t, arg& as, size_t GrainSize){
   double time=0.0;
   size_t lda,incX,incY;
@@ -201,7 +201,7 @@ void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, int bitsi
 }
 
 template <class Field,  class arg >
-void benchmark_with_field(int p,  size_t m, size_t k, int NBK, int bitsize, uint64_t seed, size_t iters,
+void benchmark_with_field(int p,  size_t m, size_t k, int NBK, uint64_t bitsize, uint64_t seed, size_t iters,
 			  int t, arg& as, size_t GrainSize){
   Field F;
   //static assert to raise compile time error for Non ZRing without providing a characteristic
@@ -217,7 +217,7 @@ void benchmark_with_field(int p,  size_t m, size_t k, int NBK, int bitsize, uint
 
 template <class Field, class arg>
 void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
-			  int NBK, int bitsize, uint64_t seed, size_t iters, int t,
+			  int NBK, uint64_t bitsize, uint64_t seed, size_t iters, int t,
 			  arg& as, size_t GrainSize){
     Field  F(q);
     benchmark_in_Field(F, p,  m, k, NBK, bitsize, seed, iters, t, as, GrainSize);
@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
   int t;
   PAR_BLOCK { t = NUM_THREADS; }
   int NBK = -1;
-  int b=0;
+  uint64_t b=0;
   size_t GrainSize = 64;
 
   Argument as[] = {

@@ -42,7 +42,7 @@ using namespace FFLAS;
 using namespace FFPACK;
 
 template<class Field>
-typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_t BS, const size_t p, const size_t threads, uint64_t seed){
+typename Field::Element run_with_field(int q, size_t iter, size_t N, const uint64_t BS, const size_t p, const size_t threads, uint64_t seed){
     Field F(q);
     Givaro::Integer samplesize(1); samplesize <<= BS;
     typename Field::RandIter G(F, seed, samplesize);
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 
     size_t iter = 20; // to get nonzero time
     size_t N    = 5000;
-    size_t BS   = 5000;
+    uint64_t BS   = 5000;
     int q		= 131071101;
     size_t p	=0;
     size_t maxallowed_threads; PAR_BLOCK { maxallowed_threads=NUM_THREADS; }
