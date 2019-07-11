@@ -39,41 +39,50 @@ namespace FFLAS {
                     const typename Field::Element beta,
                     typename Field::Element_ptr C, const size_t ldc){
         
-//Version sans accumulation dans C: C = AA^T
 
-            // S1 = A11 - A21
+            // S1 = A11 - A21 in C12
 
-            // S2 = A21 + A22 x Y^T
+            // A22' = A22 Y in T1
 
-            // S3 = A11 - S2
+            // S2 = A21 + A22' in T2
 
-            // S4 = S3 x Y + A12
+            // P4 = S1 x S2^T in  T3
+        fgemm (beta=0);
+
 
             // P1 = A11 x A11^T in C12
         fsyrk_strassen(beta=0);
 
-            // C11 = P1 + beta.C11
-        fadd();
+            // C11 = P1 + beta.C11 in C11
+        faxpyin();
         
-            // U3 = P2 + C11 = A12 x A12^T + C11
-        fsyrk_strassen();
+            // U3 = P2 + P1 = A12 x A12^T + P1 in C11
+        fsyrk_strassen(beta=1);
+
+            // S3 = A11 - S2 in T2
+        fsubin();
         
             // U1 = P1 - P5 = -S3 x S3^T + P1 in C12
-        
-            // P4 = S1 x S2^T in  tmp
+        fsyrk_strassen(beta=1);
 
-            // U2 = U1 - P4 in C21 
-        fadd();
+            // U2 = U1 - P4 in C12
+        fsubin();
 
-            // U5 = U2 - P4^T in C22 (add)
-        fadd();
+            // U5 = U2 - P4^T + C22 in C22 (add)
+        fsubin();
+        faddin();
 
-            // P3 = A22 x S4^T
+            // S4 = S3  + A12 x Y in T2
+            // A12xY on the fly
 
+            // - P3 = - A22 Y x S4^T + C21 in C21
+        fgemm(beta);
 
-            // U4 = U2 + P3 in C21
+            // U4 = U2 - P3  in C21
+        faddin ();
 
 ////////////////////////////
+            // version without accumulation (WIP)
             // S1 = A11 - A21
 
             // S2 = A21 + A22 x Y^T
@@ -86,7 +95,7 @@ namespace FFLAS {
 
             // P2 = A12 x A12^T
 
-            // P3 = A22 x S4^T
+            // P3 = A22 Y x S4^T
 
             // P4 = S1 x S2^T
 
@@ -98,7 +107,7 @@ namespace FFLAS {
 
             // U3 = P1 + P2 in C11
 
-            // U4 = U2 + P3 in C21
+            // U4 = U2 - P3 in C21
 
             // U5 = U2 - P4^T in C22
         
