@@ -28,6 +28,54 @@
 
 namespace FFLAS {
     template<class Field>
+    inline void
+    computeS1S2 (const Field& F,
+                 const size_t N,
+                 const size_t K,
+                 const typename Field::Element x,
+                 const typename Field::Element y,
+                 typename Field::ConstElement_ptr A, const size_t lda,
+                 typename Field::Element_ptr C, const size_t ldc){
+            // S1 = (A11-A21) x Y^T in C21
+            // S2 = A22 - A21 x Y^T in C12
+            // where Y = [ x.I  y.I]
+            //           [ -y.I x.I]
+        size_t N2 = N>>1;
+        S1S2quadrant(F, N, K, x, A, lda, C, ldc);
+        S1S2quadrant(F, N, K, -y, A+N2, lda, C+N2, ldc);
+        S1S2quadrant(F, N, K, y, A+N2*lda, lda, C+N2*ldc, ldc);
+        S1S2quadrant(F, N, K, x, A+N2*lda+N2, lda, C+N2*ldc+N2, ldc);
+    }
+
+    template<class Field>
+    inline void
+    S1S2quadrant (const Field& F,
+                  const size_t N,
+                  const size_t K,
+                  const typename Field::Element x,
+                  typename Field::ConstElement_ptr A, const size_t lda,
+                  typename Field::Element_ptr C, const size_t ldc){
+
+        typename Field::Element_ptr A11=A;
+        typename Field::Element_ptr A21=A+N*lda;
+        typename Field::Element_ptr A22=A22+K;
+
+        typename Field::Element_ptr C21=C+N*ldc;
+        typename Field::Element_ptr C12=C+K;
+
+        size_t N2 = N>>1;
+        size_t K2 = K>>1;
+        for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda){
+                // @todo: vectorize this inner loop
+            for (size_t j=0; j<K2; j++){
+                F.sub(t,A11[j],A21[j]);
+                F.mul(C21[j],t,x);
+                F.maxpy(C12[j], A21[j], x, A22[j]);
+            }
+        }
+    }
+
+    template<class Field>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,
                     const FFLAS_UPLO UpLo,
@@ -39,8 +87,6 @@ namespace FFLAS {
                     const typename Field::Element beta,
                     typename Field::Element_ptr C, const size_t ldc){
         
-
-
             // written for NoTrans, Lower
 
         size_t N2 = N>>1;
@@ -64,7 +110,7 @@ namespace FFLAS {
 
                 // S1 = (A11-A21) x Y^T in C21
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, N2, K2, y1, y2, A11, lda, A21, lda, A22,lda, C21, ldc, C12, ldc);
+            computeS1S2 (F, N2, K2, y1, y2, A,lda, C, ldc);
 
                 // - P4^T = - S2 x S1^T in  C22
             fgemm (F, trans, OppTrans, N2, N2, K2, alpha, C12, ldc, C21, ldc, F.zero, C22, ldc);
@@ -122,16 +168,13 @@ namespace FFLAS {
                 // - P4^T = - S2 x S1^T in C22
             fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, C12, ldc, T, ldt, F.zero, C22, ldc);
 
-                // C12 = - P4 (copy and transpose)
-            for (size_t i=0; i<N2; ++i)
-                fassign (F, N2, C22+i*lda, 1, C12 + i, ldc);
 
                 // S3 = S1 + A22 in T1
             faddin (F, N2, K2, A22, lda, T, ldt);
 
-                // !!!!!!!!!!! Pb here: P4 is not symmetric and the rec call will ruin the upper part
-                // U1' = P5 - P4 = S3 x S3^T -P4 in C12
-            fsyrk_strassen (F, uplo, trans, N2, K2, alpha, T, ldt, F.one, C12, ldc);
+                // P5 = S3 x S3^T -P4 in C12
+            fsyrk_strassen (F, uplo, trans, N2, K2, alpha, T, ldt, F.zero, C12, ldc);
+
 
                 // S4 = S3 - A12 in T1
             fsubin (F, N2, K2, A12, lda, T, ldt);
@@ -142,10 +185,24 @@ namespace FFLAS {
                 // P1 = A11 x A11^T in T1
             fsyrk_strassen (F, uplo, trans, N2, K2, alpha, A11, lda, F.zero, T, ldt);
 
-                // U2 = U1' + P1  in C12 // !!! Attention à la partir non symmétrique
-            faddin (F, N2, N2, T, ldt, C12, ldc);
+                // P2 = A12 x A12^T + beta C11 in C11
+            fsyrk_strassen (F, upla, trans, N2, K2, alpha, A12, lda, beta, C11, ldc);
+
+                // U3 = P1 + P2 in C11
+            faddin (F, uplo, N2, N2, T, ldt, C11, ldc);
 
             fflas_delete (T);
+
+                // U1 = P5 + P1  in C12 // Still symmetric
+            faddin (F, uplo, N2, N2, T, ldt, C12, ldc);
+
+                // Make U1 explicit (copy the N/2 missing part)
+            for (size_t i=0; i<N2; ++i)
+                fassign (F, i, C12 + i*ldc, 1, C12 + i, ldc);
+
+                // U2 = U1 - P4 in C12
+            for (size_t i=0; i<N2; i++)
+                faddin (F, N2, C22 + i*ldc, 1, C12 + i, ldc);
 
                 // U4 = U2 - P3 in C21
             faddin (F, N2, N2, C12, ldc, C21, ldc);
@@ -155,13 +212,8 @@ namespace FFLAS {
             for (size_t i=1; i<N2; i++){ // TODO factorize out in a triple add
                 faxpyin (F, i, beta, C11 + (N-i)*(ldc+1), 1, C22+i*ldc, 1);
             }
-
-                // P2 = A12 x A12^T + C11 in C11
-            fsyrk_strassen (F, upla, trans, N2, K2, alpha, A12, lda, beta, C11, ldc);
-
-                // U3 = P1 + P2 in C11
-            faddin (F, uplo, N2, N2, T, ldt, C11, ldc);
         }
+    }
 //============================
             // version with accumulation and 3 temps
             // S1 = A11 - A21 in C12
