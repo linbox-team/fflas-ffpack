@@ -152,7 +152,7 @@ namespace FFLAS {
                 // U3 = P1 + P2 in C11
             faddin (F, uplo, N2, N2, C12, ldc, C11, ldc);
 
-            ] else { // with accumulation, schedule with 1 temp
+        } else { // with accumulation, schedule with 1 temp
 
             typename Field::Element_ptr T = fflas_new (F, N2, std::max(N2,K2));
             size_t ldt = std::max(N2,K2);
@@ -172,9 +172,8 @@ namespace FFLAS {
                 // S3 = S1 + A22 in T1
             faddin (F, N2, K2, A22, lda, T, ldt);
 
-                // P5 = S3 x S3^T -P4 in C12
+                // P5 = S3 x S3^T in C12
             fsyrk_strassen (F, uplo, trans, N2, K2, alpha, T, ldt, F.zero, C12, ldc);
-
 
                 // S4 = S3 - A12 in T1
             fsubin (F, N2, K2, A12, lda, T, ldt);
