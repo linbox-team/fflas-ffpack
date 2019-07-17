@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     size_t    n    = 100;
     std::string file = "";
     static int variant =0;
-    size_t b = 150;
+    uint64_t b = 150;
     uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
@@ -74,8 +74,8 @@ int main(int argc, char** argv) {
     double time=0.0;
 
     Element *A;
-    size_t bs=1;
-    size_t size=b;
+    uint64_t bs=1;
+    uint64_t size=b;
     for (size_t i=0;i<iter;++i){
 
         if (!file.empty()){

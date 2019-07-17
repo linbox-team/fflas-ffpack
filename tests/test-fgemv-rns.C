@@ -383,7 +383,7 @@ int main(int argc, char** argv)
     uint64_t seed = getSeed();
     size_t iters = 3 ;
     Givaro::Integer q = -1 ;
-    uint64_t b = 0 ;
+    uint64_t b = 100 ;
     int m = -50 ;
     int k = -50 ;
     int nbw = -1 ;
