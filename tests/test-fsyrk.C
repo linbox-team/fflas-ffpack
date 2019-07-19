@@ -75,7 +75,11 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
     double time=0.0;
     t.clear(); t.start();
 
-    fsyrk (F, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+        // TODO: find y1, y2 using Brillhart alg in Givaro
+    typename Field::Element y1, y2;
+    F.init(y1, y2);
+
+    fsyrk_strassen (F, uplo, trans, n, k, y1, y2, alpha, A, lda, beta, C, ldc, 3);
 
     t.stop();
     time+=t.usertime();

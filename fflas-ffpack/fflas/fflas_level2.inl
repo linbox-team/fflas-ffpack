@@ -456,6 +456,15 @@ namespace FFLAS {
             typename Field::ConstElement_ptr B, const size_t ldb,
             typename Field::Element_ptr C, const size_t ldc);
 
+    //! fadding for symmetric matrices
+    template <class Field>
+    void
+    faddin (const Field& F,
+            const FFLAS_UPLO uplo,
+            const size_t N,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            typename Field::Element_ptr C, const size_t ldc);
+
 
     /**  @brief finite prime Field GEneral Matrix Vector multiplication.
      *

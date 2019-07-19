@@ -266,6 +266,21 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc);
 
     template<class Field>
+    inline typename Field::Element_ptr
+    fsyrk_strassen (const Field& F,
+                    const FFLAS_UPLO UpLo,
+                    const FFLAS_TRANSPOSE trans,
+                    const size_t N,
+                    const size_t K,
+                    const typename Field::Element y1,
+                    const typename Field::Element y2,
+                    const typename Field::Element alpha,
+                    typename Field::ConstElement_ptr A, const size_t lda,
+                    const typename Field::Element beta,
+                    typename Field::Element_ptr C, const size_t ldc,
+                    size_t reclevel /*todo: use helper instead*/);
+
+    template<class Field>
     typename Field::Element_ptr
     fsyr2k (const Field& F,
             const FFLAS_UPLO UpLo,
