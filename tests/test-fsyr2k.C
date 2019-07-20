@@ -105,6 +105,7 @@ bool check_fsyr2k (const Field &F, size_t n, size_t k,
     }
 
     FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
     return ok;

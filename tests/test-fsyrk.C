@@ -176,6 +176,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
     }
     if (!ok){
         std::cerr<<"Scaling failed"<<std::endl;
+        FFLAS::fflas_delete(A, B, C, C2, D);
         return ok;
     }
 
@@ -200,6 +201,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
         cout << "FAILED ("<<time<<")"<<endl;
 
     FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
     FFLAS::fflas_delete(D);
@@ -300,7 +302,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
         std::cerr<<"Scaling failed"<<std::endl;
         std::cerr<<"alpha = "<<alpha<<" beta="<<beta<<std::endl;
         std::cerr<<"tb = "<<tb<<std::endl;
-
+        FFLAS::fflas_delete(A, B, C, C2, D);
         return ok;
     }
 
@@ -329,6 +331,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
     //cerr<<"FAILED ("<<time<<")"<<endl;
 
     FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
     FFLAS::fflas_delete(D);
