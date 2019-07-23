@@ -28,34 +28,59 @@
 
 namespace FFLAS {
 
-    template<class Field>
-    inline void
-    S1S2quadrant (const Field& F,
-                  const size_t N,
-                  const size_t K,
-                  const typename Field::Element x,
-                  typename Field::ConstElement_ptr A, const size_t lda,
-                  typename Field::Element_ptr S, const size_t lds,
-                  typename Field::Element_ptr T, const size_t ldt){
+    // template<class Field>
+    // inline void
+    // S1S2quadrant (const Field& F,
+    //               const size_t N,
+    //               const size_t K,
+    //               const typename Field::Element x,
+    //               typename Field::ConstElement_ptr A, const size_t lda,
+    //               typename Field::Element_ptr S, const size_t lds,
+    //               typename Field::Element_ptr T, const size_t ldt){
 
-        typename Field::ConstElement_ptr A11=A;
-        typename Field::ConstElement_ptr A21=A+N*lda;
-        typename Field::ConstElement_ptr A22=A21+K;
+    //     typename Field::ConstElement_ptr A11=A;
+    //     typename Field::ConstElement_ptr A21=A+N*lda;
+    //     typename Field::ConstElement_ptr A22=A21+K;
 
-        size_t N2 = N>>1;
-        size_t K2 = K>>1;
-        for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, S+=lds, T+=ldt){
-                // @todo: vectorize this inner loop
-            for (size_t j=0; j<K2; j++){
-                typename Field::Element t;
-                F.init(t);
-                F.sub(t,A11[j],A21[j]);
-                F.mul(S[j],t,x);
-                F.maxpy(T[j], A21[j], x, A22[j]);
-            }
-        }
-    }
+    //     size_t N2 = N>>1;
+    //     size_t K2 = K>>1;
+    //     for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, S+=lds, T+=ldt){
+    //             // @todo: vectorize this inner loop
+    //         for (size_t j=0; j<K2; j++){
+    //             typename Field::Element t;
+    //             F.init(t);
+    //             F.sub(t,A11[j],A21[j]);
+    //             F.mul(S[j],t,x);
+    //             F.maxpy(T[j], A21[j], x, A22[j]);
+    //         }
+    //     }
+    // }
 
+    // template<class Field>
+    // inline void
+    // computeS1S2 (const Field& F,
+    //              const size_t N,
+    //              const size_t K,
+    //              const typename Field::Element x,
+    //              const typename Field::Element y,
+    //              typename Field::ConstElement_ptr A, const size_t lda,
+    //              typename Field::Element_ptr S, const size_t lds,
+    //              typename Field::Element_ptr T, const size_t ldt){
+    //         // S1 = (A11-A21) x Y^T in S
+    //         // S2 = A22 - A21 x Y^T in T
+    //         // where Y = [ x.I  y.I]
+    //         //           [ -y.I x.I]
+    //     size_t N2 = N>>1;
+    //     typename Field::Element negy;
+    //     F.init(negy);
+    //     F.neg(negy, y);
+    //     S1S2quadrant (F, N, K, x, A, lda, S, lds, T, ldt);
+    //     S1S2quadrant (F, N, K, negy, A+N2, lda, S+N2, lds, T+N2, ldt);
+    //     S1S2quadrant (F, N, K, y, A+N2*lda, lda, S+N2*lds, lds, T+N2*ldt, ldt);
+    //     S1S2quadrant (F, N, K, x, A+N2*lda+N2, lda, S+N2*lds+N2, lds, T+N2*ldt+N2, ldt);
+    // }
+    //     ///////////
+    
     template<class Field>
     inline void
     computeS1S2 (const Field& F,
@@ -71,12 +96,44 @@ namespace FFLAS {
             // where Y = [ x.I  y.I]
             //           [ -y.I x.I]
         size_t N2 = N>>1;
-        S1S2quadrant (F, N, K, x, A, lda, S, lds, T, ldt);
-        S1S2quadrant (F, N, K, -y, A+N2, lda, S+N2, lds, T+N2, ldt);
-        S1S2quadrant (F, N, K, y, A+N2*lda, lda, S+N2*lds, lds, T+N2*ldt, ldt);
-        S1S2quadrant (F, N, K, x, A+N2*lda+N2, lda, S+N2*lds+N2, lds, T+N2*ldt+N2, ldt);
-    }
+        size_t K2 = K>>1;
+        size_t K4 = K2>>1;
 
+        typename Field::ConstElement_ptr A11 = A;
+        typename Field::ConstElement_ptr A21 = A + N2*lda;
+        typename Field::ConstElement_ptr A22 = A21 + K2;
+        typename Field::ConstElement_ptr A11r = A11 + K4;
+        typename Field::ConstElement_ptr A21r = A21 + K4;
+        typename Field::ConstElement_ptr A22r = A22 + K4;
+        typename Field::Element_ptr Sr = S + K4;
+        typename Field::Element_ptr Tr = T + K4;
+        typename Field::Element negy;
+        F.init(negy);
+        F.neg(negy, y);
+
+        for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, A11r+=lda, A21r+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
+                // @todo: vectorize this inner loop
+            for (size_t j=0; j<K4; j++){
+                typename Field::Element t, tr;
+                F.init(t);
+                F.init(tr);
+                F.sub(t,A11[j],A21[j]);
+                F.sub(tr,A11r[j],A21r[j]);
+                F.mul(S[j],t,x);
+                F.mul(Sr[j],t,negy);
+                F.axpyin(S[j],tr,y);
+                F.axpyin(Sr[j],tr,x);
+
+                F.maxpy(T[j], A21[j], x, A22[j]);
+                F.maxpy(Tr[j], A21[j], negy, A22r[j]);
+
+                F.maxpyin(T[j], A21r[j], y);
+                F.maxpyin(Tr[j], A21r[j], x);
+            }
+        }
+
+    }
+    
     template<class Field>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,
@@ -94,9 +151,14 @@ namespace FFLAS {
                     ) {
         
             // written for NoTrans, Lower
-        if (reclevel == 0)
-            return fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc);
+        if (reclevel == 0){
+            WriteMatrix(std::cerr<<"Base Case:"<<std::endl<<" A = "<<std::endl, F, N, K, A, lda);
 
+            fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc);
+            WriteMatrix(std::cerr<<" C <- "<<std::endl, F, N, N, C, ldc);
+            return C;
+
+        }
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         typename Field::ConstElement_ptr A11 = A;
@@ -119,6 +181,9 @@ namespace FFLAS {
                 // S1 = (A11-A21) x Y^T in C21
                 // S2 = A22 - A21 x Y^T in C12
             computeS1S2 (F, N2, K2, y1, y2, A,lda, C21, ldc, C12, ldc);
+
+            WriteMatrix(std::cerr<<"S1 = "<<std::endl, F, N2, K2, C21, ldc);
+            WriteMatrix(std::cerr<<"S2 = "<<std::endl, F, N2, K2, C12, ldc);
 
                 // - P4^T = - S2 x S1^T in  C22
             fgemm (F, trans, OppTrans, N2, N2, K2, alpha, C12, ldc, C21, ldc, F.zero, C22, ldc);
