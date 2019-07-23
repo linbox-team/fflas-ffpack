@@ -90,11 +90,11 @@ namespace FFPACK {
                 if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
                     return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
                 do{
+                    typename Field::Element_ptr B = nullptr;
                     cont=false;
                     try {
                             // Preconditionning by a random block Krylov matrix.
                             // Some invariant factors may be discovered in the process and are stored in charp.
-                        typename Field::Element_ptr B;
                         size_t ldb, Nb;
                         Protected::RandomKrylovPrecond (R, charp, N, A, lda, Nb, B, ldb, G, degree);
                             // Calling the main algorithm on the preconditionned part
@@ -102,6 +102,8 @@ namespace FFPACK {
                         FFLAS::fflas_delete(B);
                     }
                     catch (CharpolyFailed){
+                        if (B != nullptr)
+                            FFLAS::fflas_delete(B);
                         charp.clear();
                         if (++attempts < 2)
                             cont = true;

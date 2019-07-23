@@ -278,8 +278,7 @@ namespace FFPACK { namespace Protected {
             std::cerr<<"  left-over                : "<<timrest.usertime()<<std::endl;
 #endif
 
-        FFLAS::fflas_delete( Pk);
-        FFLAS::fflas_delete( Qk);
+        FFLAS::fflas_delete (K, K3, Pk, Qk);
         for (size_t i=0; i<Mk; ++i)
             dA[i] = dK[i];
         bk_idx = 0;
@@ -290,7 +289,7 @@ namespace FFPACK { namespace Protected {
 
         for (size_t j=0; j<Ma; ++j)
             FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, B+j, ldb);
-        FFLAS::fflas_delete (K4);
+        FFLAS::fflas_delete (dA, dK, K4);
 
     }
 
@@ -338,6 +337,7 @@ namespace FFPACK { namespace Protected {
             // Main loop of the arithmetic progession
         while ((nb_full_blocks >= 1) && (Mk > 1)) {
             size_t block_idx, it_idx, rp_val;
+            FFLAS::fflas_delete (K);
             K = FFLAS::fflas_new (F, Ncurr, Ma);
             K3 = FFLAS::fflas_new (F, Ncurr, Ma);
             ldk = Ma;
@@ -507,9 +507,6 @@ namespace FFPACK { namespace Protected {
 
             deg++;
             FFLAS::fflas_delete (K3, rp);
-            if ((nb_full_blocks > 0) && (Mk > 1))
-                FFLAS::fflas_delete(K);
-
         }
 
         // Recovery of the first invariant factor
