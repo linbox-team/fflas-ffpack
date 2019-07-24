@@ -85,9 +85,9 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
     F.init (y2, b);
 
     std::cerr<<"Launching fsyrk_strassen with a = "<<a<<" b = "<<b<<" A = "<<std::endl;
-    WriteMatrix(std::cerr, F, n, k, A, lda);
+//    WriteMatrix(std::cerr, F, n, k, A, lda);
     
-    fsyrk_strassen (F, uplo, trans, n, k, y1, y2, alpha, A, lda, beta, C, ldc, 1);
+    fsyrk_strassen (F, uplo, trans, n, k, y1, y2, alpha, A, lda, beta, C, ldc, 2);
 
     t.stop();
     time+=t.usertime();

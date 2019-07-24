@@ -110,7 +110,6 @@ namespace FFLAS {
         typename Field::Element negy;
         F.init(negy);
         F.neg(negy, y);
-
         for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, A11r+=lda, A21r+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
                 // @todo: vectorize this inner loop
             for (size_t j=0; j<K4; j++){
@@ -152,12 +151,8 @@ namespace FFLAS {
         
             // written for NoTrans, Lower
         if (reclevel == 0){
-            WriteMatrix(std::cerr<<"Base Case:"<<std::endl<<" A = "<<std::endl, F, N, K, A, lda);
-
             fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc);
-            WriteMatrix(std::cerr<<" C <- "<<std::endl, F, N, N, C, ldc);
             return C;
-
         }
         size_t N2 = N>>1;
         size_t K2 = K>>1;
@@ -180,13 +175,10 @@ namespace FFLAS {
 
                 // S1 = (A11-A21) x Y^T in C21
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, N2, K2, y1, y2, A,lda, C21, ldc, C12, ldc);
-
-            WriteMatrix(std::cerr<<"S1 = "<<std::endl, F, N2, K2, C21, ldc);
-            WriteMatrix(std::cerr<<"S2 = "<<std::endl, F, N2, K2, C12, ldc);
+            computeS1S2 (F, N, K, y1, y2, A,lda, C21, ldc, C12, ldc);
 
                 // - P4^T = - S2 x S1^T in  C22
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, C12, ldc, C21, ldc, F.zero, C22, ldc);
+            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, C12, ldc, C21, ldc, F.zero, C22, ldc);
 
                 // S3 = S1 + A22 in C21
             faddin (F, N2, K2, A22, lda, C21, ldc);
@@ -211,7 +203,8 @@ namespace FFLAS {
                 fassign(F, i, C12+i*ldc, 1, C12+i, ldc);
 
                 // U2 = U1 - P4 in C12
-            fsubin (F,  N2, N2, C22, ldc, C12, ldc);
+            for (size_t i=0; i<N2; ++i)
+                faddin (F,  N2, C22+i*ldc, 1, C12+i, ldc);
 
                 // U4 = U2 - P3 in C21
             faddin (F, N2, N2, C12, ldc, C21, ldc);
