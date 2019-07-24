@@ -49,8 +49,8 @@ namespace FFPACK {
         size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordanTile);
         nullity = (int)(M - R);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, (int)R, A, lda, P);
-        delete [] P;
-        delete [] Q;
+        FFLAS::fflas_delete(P);
+        FFLAS::fflas_delete(Q);
 
         checker.check(A,nullity);
         return A;
