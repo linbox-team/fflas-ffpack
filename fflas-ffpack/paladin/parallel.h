@@ -206,15 +206,6 @@ WAIT;
 
 // for strategy 1D
 // WARNING: the inner code Args should not contain any coma outside parenthesis (e.g. declaration lists, and template param list)
-/*
-#define FOR1D(i, m, Helper, Args...)                             \
-FORBLOCK1D(_internal_iterator, m, Helper,                           \
-           TASK( , \
-                 {for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
-                 { Args; } });)                                         \
-                 WAIT;
-
-*/
 #define cat(a, ...) cat_(a, __VA_ARGS__)
 #define cat_(a, ...) a##__VA_ARGS__
 
