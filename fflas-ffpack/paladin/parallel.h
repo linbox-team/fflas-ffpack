@@ -27,7 +27,6 @@
 #ifndef __FFLASFFPACK_fflas_parallel_H
 #define __FFLASFFPACK_fflas_parallel_H
 
-#include <stdarg.h>
 
 #include "fflas-ffpack/config.h"
 
