@@ -84,10 +84,10 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
     F.init (y1, a);
     F.init (y2, b);
 
-    std::cerr<<"Launching fsyrk_strassen with a = "<<a<<" b = "<<b<<" A = "<<std::endl;
-    WriteMatrix(std::cerr, F, n, k, A, lda);
-    WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
-      WriteMatrix(std::cerr, F, n, k, C, ldc);
+    // std::cerr<<"Launching fsyrk_strassen with a = "<<a<<" b = "<<b<<" A = "<<std::endl;
+    // WriteMatrix(std::cerr, F, n, k, A, lda);
+    // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
+    //   WriteMatrix(std::cerr, F, n, k, C, ldc);
   
     fsyrk_strassen (F, uplo, trans, n, k, y1, y2, alpha, A, lda, beta, C, ldc, 1);
 

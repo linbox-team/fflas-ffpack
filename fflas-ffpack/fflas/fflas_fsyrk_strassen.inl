@@ -229,8 +229,6 @@ namespace FFLAS {
                 // S1 = (A11-A21) x Y^T in T1
                 // S2 = A22 - A21 x Y^T in C12
             computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, C12, ldc);
-            WriteMatrix(std::cerr<<"S1 = "<<std::endl, F, N2, K2, T, ldt);
-            WriteMatrix(std::cerr<<"S2 = "<<std::endl, F, N2, K2, C12, ldc);
 
                 // Up(C11) = Low(C22) (saving C22)
             for (size_t i=0; i<N2-1; ++i)
@@ -241,73 +239,55 @@ namespace FFLAS {
             for (size_t i=0; i<N2; ++i)
                 F.assign (DC22[i], C22[i*(ldc+1)]);
 
-            WriteMatrix(std::cerr<<"Up(C11) = Low(C22) = "<<std::endl, F, N2, N2, C11, ldc);
-
                 // - P4^T = - S2 x S1^T in C22
             fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, C12, ldc, T, ldt, F.zero, C22, ldc);
 
-            WriteMatrix(std::cerr<<"-P4 = "<<std::endl, F, N2, N2, C22, ldc);
-
                 // S3 = S1 + A22 in T
             faddin (F, N2, K2, A22, lda, T, ldt);
-            WriteMatrix(std::cerr<<"S3 = "<<std::endl, F, N2, K2, T, ldt);
 
                 // P5 = S3 x S3^T in C12
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, T, ldt, F.zero, C12, ldc, reclevel-1);
-            WriteMatrix(std::cerr<<"P5 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // S4 = S3 - A12 in T1
             fsubin (F, N2, K2, A12, lda, T, ldt);
-            WriteMatrix(std::cerr<<"S4 = "<<std::endl, F, N2, K2, T, ldt);
 
                 // - P3 = - A22 x S4^T + beta C21 in C21
             fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, A22, lda, T, ldt, beta, C21, ldc);
-            WriteMatrix(std::cerr<<"-P3 = "<<std::endl, F, N2, N2, C21, ldc);
 
                 // P1 = A11 x A11^T in T1
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, reclevel-1);
-            WriteMatrix(std::cerr<<"P1 = "<<std::endl, F, N2, N2, T, ldt);
 
                 // P2 = A12 x A12^T + beta C11 in C11
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, beta, C11, ldc, reclevel-1);
-            WriteMatrix(std::cerr<<"P2 = "<<std::endl, F, N2, N2, C11, ldc);
                 // U3 = P1 + P2 in C11
             faddin (F, uplo, N2, T, ldt, C11, ldc);
-            WriteMatrix(std::cerr<<"U3 = "<<std::endl, F, N2, N2, C11, ldc);
 
                 // U1 = P5 + P1  in C12 // Still symmetric
             faddin (F, uplo, N2, T, ldt, C12, ldc);
-            WriteMatrix(std::cerr<<"U1 = "<<std::endl, F, N2, N2, C12, ldc);
 
             fflas_delete (T);
 
                 // Make U1 explicit (copy the N/2 missing part)
             for (size_t i=0; i<N2; ++i)
                 fassign (F, i, C12 + i*ldc, 1, C12 + i, ldc);
-            WriteMatrix(std::cerr<<"U1 explicit = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // U2 = U1 - P4 in C12
             for (size_t i=0; i<N2; i++)
                 faddin (F, N2, C22 + i*ldc, 1, C12 + i, ldc);
-            WriteMatrix(std::cerr<<"U2 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // U4 = U2 - P3 in C21
             faddin (F, N2, N2, C12, ldc, C21, ldc);
-            WriteMatrix(std::cerr<<"U4 = "<<std::endl, F, N2, N2, C21, ldc);
 
                 // U5 = U2 - P4^T + beta Up(C11)^T in C22 (only the lower triang part)
             faddin (F, uplo, N2, C12, ldc, C22, ldc);
-            WriteMatrix(std::cerr<<"U5 sans acc = "<<std::endl, F, N2, N2, C22, ldc);
             for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
                 faxpy (F, N2-i-1, beta, C11 + 1+i*(ldc+1), 1, C22 + (N2-i-1)*ldc, 1);
                 F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
             }
             F.axpyin (C22[(N2-1)*(ldc+1)], beta, DC22[N2-1]);
-            WriteMatrix(std::cerr<<"U5 = "<<std::endl, F, N2, N2, C22, ldc);
 
             fflas_delete(DC22);
         }
-        WriteMatrix(std::cerr<<"C = "<<std::endl, F, N, N, C, ldc);
         return C;
     }
 //============================
