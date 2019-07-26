@@ -35,7 +35,7 @@
 #else
 #include "omp.h"
 #endif
-
+#include <stdarg.h>
 
 #ifdef __FFLASFFPACK_SEQUENTIAL
 #undef __FFLASFFPACK_USE_OPENMP
