@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
-
+#define CUDA_BLAS
 //#include "goto-def.h"
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
