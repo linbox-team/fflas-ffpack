@@ -57,11 +57,21 @@
 #endif /*  CBLAS_INT */
 
 #ifdef CUDA_BLAS
-
+/*
 #define sgemv_ cublas_sgemv
 #define sgemm_ cublas_sgemm
 #define strsm_ cublas_strsm
 #define strmm_ cublas_strmm
+*/
+/*
+#define sgemv_ cublasSgemv
+#define sgemm_ cublasSgemm
+#define strsm_ cublasStrsm
+#define strmm_ cublasStrmm
+#define dgemv_ cublasDgemv
+#define dgemm_ cublasDgemm
+#define dtrsm_ cublasDtrsm
+#define dtrmm_ cublasDtrmm*/
 
 #endif // CUDA_BLAS
 
