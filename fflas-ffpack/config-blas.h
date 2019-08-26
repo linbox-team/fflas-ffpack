@@ -44,10 +44,6 @@
 #include <mkl.h>
 #endif
 
-#ifdef HAVE_CUDA
-#define __FFLASFFPACK_HAVE_CUDA
-#endif
-
 #ifdef __FFLASFFPACK_HAVE_CUDA
 #define __FFLASFFPACK_HAVE_CUBLAS
 #include <cuda.h>
