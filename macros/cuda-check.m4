@@ -93,7 +93,6 @@ do
 				[
 					AC_MSG_RESULT(found)
 
-					CUDA_LIBS="${CUDA_PATH} ${CUDA_LIBS}"
 					AC_SUBST(CUDA_LIBS)
 					AC_SUBST(CUDA_CFLAGS)
 					AC_DEFINE(HAVE_CUDA,1,[Define if CUDA blas is installed])
