@@ -18,9 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
-#define CUDA_BLAS
-#include <cuda_runtime_api.h>
-#include <cuda.h>
+
 //#include "goto-def.h"
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -38,8 +36,6 @@ typedef FFLAS::OMPTimer TTimer;
 #else
 typedef FFLAS::Timer TTimer;
 #endif
-
-#include <cublas_v2.h>
 
 #ifndef __SGEMM__
 typedef double Floats;
@@ -168,7 +164,7 @@ int main(int argc, char** argv) {
     // Create cublas instance
     cublasHandle_t handle;
     cublasCreate(&handle);
- 
+
     // Set input matrices on device
     cublasSetMatrix(n, n, sizeof(Element), A, n, d_A, n);
     cublasSetMatrix(n, n, sizeof(Element), B, n, d_B, n);
@@ -187,7 +183,7 @@ CUBLAS_GEMM (handle,  CUBLAS_OP_N, CUBLAS_OP_N, n,n,n, &F.one,  d_A, n, d_B, n, 
         #endif
 
             std::cout << "C = A * B: " << fmod(C[0], q)  << " expected " << fmod(A[0] * B[0], q)  << std::endl;
-        
+
         chrono.stop();
         time+=chrono.usertime();
 
