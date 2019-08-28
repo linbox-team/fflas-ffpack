@@ -353,10 +353,6 @@ namespace FFLAS {
 
         blocksize_t initialize() {
             ibeg = 0; iend = firstBlockSize;
-            //             std::cout << "FS1D 0   : " << 0 << std::endl;
-            //             std::cout << "FS1D ibeg: " << ibeg << std::endl;
-            //             std::cout << "FS1D iend: " << iend << std::endl;
-
             return current = 0;
         }
         bool isTerminated() const { return current == numBlock; }
@@ -371,12 +367,6 @@ namespace FFLAS {
         blocksize_t operator++() {
             ibeg = iend;
             iend += (++current<changeBS?firstBlockSize:lastBlockSize);
-
-            //             std::cout << "FS1D i   : " << current << std::endl;
-            //             std::cout << "FS1D ibeg: " << ibeg << std::endl;
-            //             std::cout << "FS1D iend: " << iend << std::endl;
-
-
             return current;
         }
 

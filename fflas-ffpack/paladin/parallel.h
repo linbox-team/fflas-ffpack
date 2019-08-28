@@ -204,26 +204,29 @@ WAIT;
 
 // for strategy 1D
 // WARNING: the inner code Args should not contain any coma outside parenthesis (e.g. declaration lists, and template param list)
-#define cat(a, ...) cat_(a, __VA_ARGS__)
-#define cat_(a, ...) a##__VA_ARGS__
-
 #define FOR1D_1(i, m, Helper, Args ...)                             \
 FORBLOCK1D(_internal_iterator, m, Helper,                           \
+           const auto internal_iter_begin(_internal_iterator.begin());      \
+           const auto internal_iter_end(_internal_iterator.end());      \
            TASK( , \
-                 {for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
+                 {for(auto i=internal_iter_begin; i!=internal_iter_end; ++i) \
                  { Args; } });)                                         \
                  WAIT;
 
 
 #define FOR1D_2(i, m, Helper, mod, Args ...)                             \
 FORBLOCK1D(_internal_iterator, m, Helper,                           \
+           const auto internal_iter_begin(_internal_iterator.begin());      \
+           const auto internal_iter_end(_internal_iterator.end());      \
            TASK( mod, \
-                 {for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
+                 {for(auto i=internal_iter_begin; i!=internal_iter_end; ++i) \
                  { Args; } });)                                         \
                  WAIT;
 
 
-#define FOR1D(i, m, Helper, ...) cat(FOR1D_, NUMARGS(__VA_ARGS__))(i, m, Helper, __VA_ARGS__)
+#define CONCATVAARGS(a, ...) CONCATVAARGS_(a, __VA_ARGS__)
+#define CONCATVAARGS_(a, ...) a##__VA_ARGS__
+#define FOR1D(i, m, Helper, ...) CONCATVAARGS(FOR1D_, NUMARGS(__VA_ARGS__))(i, m, Helper, __VA_ARGS__)
 
 /*
 #define PARFORBLOCK1D(iter, m, Helper, Args...)                         \
