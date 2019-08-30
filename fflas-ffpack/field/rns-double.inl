@@ -29,13 +29,16 @@
 #define __FFLASFFPACK_field_rns_double_INL
 
 #include "fflas-ffpack/fflas/fflas_freduce.h"
-
+#ifdef PROFILE_FGEMM_MP
+#include "fflas-ffpack/utils/timer.h"
+#endif
 namespace FFPACK {
 
     // Arns must be an array of m*n*_size
     // abs(||A||) < 2^(16k)
     inline void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
     {
+
         if (k>_ldm){
             FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_double [init] -> rns basis is too small to handle integers with 2^(16*k) values ");
             std::cerr<<"with k="<<k<<" _ldm="<<_ldm<<std::endl;
@@ -45,7 +48,7 @@ namespace FFPACK {
         double *A_beta = FFLAS::fflas_new<double >(mn*k);
         const integer* Aiter=A;
         // split A into A_beta according to a Kronecker transform in base 2^16
-        //		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
+        auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
 
         Givaro::Timer tkr; tkr.start();
         // #ifndef __FFLASFFPACK_SEQUENTIAL
@@ -57,9 +60,10 @@ namespace FFPACK {
         //       TASK(MODE(READ(Aiter[0]) READWRITE(A_beta[0])),
         //for(size_t i=0;i<m;i++)
         //PAR_BLOCK{
-        //			FOR1D(i,m,sp,
-        PARFOR1D(i,m,SPLITTER(NUM_THREADS),
 
+        FOR1D(i,m,sp,
+
+//	    PARFOR1D(i,m,SPLITTER(NUM_THREADS),
                  for(size_t j=0;j<n;j++){
                  size_t idx=j+i*n;
                  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
@@ -92,7 +96,8 @@ namespace FFPACK {
 
                  // 	   );
                  }
-        );
+        )
+
 
         tkr.stop();
         //if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
@@ -117,6 +122,8 @@ namespace FFPACK {
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
 #endif
         }
+
+
         Givaro::Timer tred; tred.start();
 
         reduce(mn,Arns,rda,RNS_MAJOR);
@@ -142,7 +149,10 @@ namespace FFPACK {
                 }
         std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
+
+
         }
+
     }
 
     // Arns must be an array of m*n*_size
@@ -527,10 +537,12 @@ namespace FFPACK {
             // #else
             // 			auto sp=SPLITTER(1);
             // #endif
-            PARFOR1D(i,_size,SPLITTER(NUM_THREADS),
-                     //for(size_t i=0;i<_size;i++)
+
+            auto sp=SPLITTER(NUM_THREADS);
+            FOR1D(i,_size,sp,{
                      FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
-                    );
+            });
+
         }
 
     }

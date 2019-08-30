@@ -192,7 +192,7 @@ namespace FFLAS {
     }
 
     // fgemm for RnsInteger: handle the moduli in parallel
-    template<typename RNS, typename ParSeqTrait>
+  template<typename RNS, class param, typename ParSeqTrait>
     inline  typename FFPACK::RNSInteger<RNS>::Element_ptr
     fgemm (const FFPACK::RNSInteger<RNS> &F,
            const FFLAS_TRANSPOSE ta,
@@ -203,28 +203,35 @@ namespace FFLAS {
            typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
            const typename FFPACK::RNSInteger<RNS>::Element beta,
            typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
-           MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Threads>, ParSeqTrait> > & H)
+           MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Compose<ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, param>, ParSeqTrait> > & H)
     {
 #ifdef PROFILE_FGEMM_MP
         Givaro::Timer t;t.start();
 #endif
         size_t rns_size = F.size();
-        typedef MMHelper<typename RNS::ModField, MMHelperAlgo::Winograd, typename ModeTraits<typename RNS::ModField>::value, ParSeqTrait> SubHelper;
-        FORBLOCK1D(iter, rns_size, H.parseq.first_component(),
-                   TASK(MODE(CONSTREFERENCE(F,H)),
-                        {
-                        for(auto i=iter.begin(); i!=iter.end(); ++i)
-                        {
-                        SubHelper Hsub (F.rns()._field_rns[i], H.recLevel, H.parseq.second_component());
-                        FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
-                                     m, n, k, alpha._ptr[i*alpha._stride],
-                                     Ad._ptr+i*Ad._stride, lda,
-                                     Bd._ptr+i*Bd._stride, ldb,
-                                     beta._ptr[i*beta._stride],
-                                     Cd._ptr+i*Cd._stride, ldc, Hsub);
-                        }
-                        })
-                  );
+        typedef MMHelper<typename RNS::ModField, MMHelperAlgo::Auto, typename ModeTraits<typename RNS::ModField>::value, ParSeqTrait> SubHelper;
+
+        SYNCH_GROUP({
+              FORBLOCK1D(iter, rns_size, H.parseq.first_component(),
+		            TASK(MODE(CONSTREFERENCE(F,H)),
+                                {
+                                for(auto i=iter.begin(); i!=iter.end(); ++i)
+                                {
+                                SubHelper Hsub (F.rns()._field_rns[i], H.recLevel, H.parseq.second_component());
+                                FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
+                                             m, n, k, alpha._ptr[i*alpha._stride],
+                                             Ad._ptr+i*Ad._stride, lda,
+                                             Bd._ptr+i*Bd._stride, ldb,
+                                             beta._ptr[i*beta._stride],
+                                             Cd._ptr+i*Cd._stride, ldc
+                                             , Hsub
+                                             );
+                                }
+                                })
+                          );
+
+        });
+
 #ifdef PROFILE_FGEMM_MP
         t.stop();
         std::cerr<<"=========================================="<<std::endl
@@ -233,6 +240,7 @@ namespace FFLAS {
 #endif
         return Cd;
     }
+
 
     // fgemm for RnsInteger default parallel version
     template<typename RNS, typename Cut, typename Param>
@@ -298,9 +306,84 @@ namespace FFLAS {
                         }); // TASK
         ); // FLORBLOCK1D
 
+
 #ifdef PROFILE_FGEMM_MP
         t.stop();
+        std::cerr<<"=========================================="<<std::endl
+        <<"Pointwise fgemm : "<<t.realtime()<<" ("<<F.size()<<") moduli "<<std::endl
+        <<"=========================================="<<std::endl;
+#endif
+        return Cd;
+    }
 
+
+    // Specialization of fgemm for RnsInteger parallel version for CuttingStrategy::RNSModulus
+    template<typename RNS, typename Cut, typename Param>
+    inline  typename FFPACK::RNSInteger<RNS>::Element_ptr
+    fgemm (const FFPACK::RNSInteger<RNS> &F,
+           const FFLAS_TRANSPOSE ta,
+           const FFLAS_TRANSPOSE tb,
+           const size_t m, const size_t n,const size_t k,
+           const typename FFPACK::RNSInteger<RNS>::Element alpha,
+           typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Ad, const size_t lda,
+           typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
+           const typename FFPACK::RNSInteger<RNS>::Element beta,
+           typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
+           MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<CuttingStrategy::RNSModulus,Param> > & H)
+    {
+        // compute each fgemm componentwise
+        size_t rns_size = F.size();
+        size_t nt = H.parseq.numthreads();
+        size_t loop_nt = std::min (rns_size, nt);
+        size_t iter_nt = nt / loop_nt;
+        size_t leftover_nt = nt % loop_nt;
+        ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Threads> Hloop (loop_nt);
+#ifdef PROFILE_FGEMM_MP
+        Givaro::Timer t;t.start();
+#endif
+        typedef MMHelper<typename RNS::ModField,
+                MMHelperAlgo::Winograd,
+                typename ModeTraits<typename RNS::ModField>::value,
+                ParSeqHelper::Parallel<Cut,Param> > SubPar;
+
+        typedef MMHelper<typename RNS::ModField,
+                MMHelperAlgo::Winograd,
+                typename ModeTraits<typename RNS::ModField>::value,
+                ParSeqHelper::Sequential> SubSeq;
+
+        FORBLOCK1D(iter, rns_size, Hloop,
+                   TASK(MODE(CONSTREFERENCE(F,H)),
+                        {
+                        for(auto i=iter.begin(); i!=iter.end(); ++i)
+                        {
+                        size_t fgemm_nt = iter_nt;
+                        if (i < leftover_nt)
+                        fgemm_nt++;
+                        if (fgemm_nt>1) // Running a parallel fgemm
+                        {
+                        SubPar H2(F.rns()._field_rns[i], H.recLevel, ParSeqHelper::Parallel<Cut,Param>(fgemm_nt));
+                        fgemm(F.rns()._field_rns[i], ta, tb, m, n, k,
+                              alpha._ptr[i*alpha._stride], Ad._ptr+i*Ad._stride,
+                              lda, Bd._ptr+i*Bd._stride, ldb,
+                              beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride,
+                              ldc, H2);
+                        }
+                        else // Running a sequential fgemm
+                        {
+                        SubSeq H2(F.rns()._field_rns[i], H.recLevel, ParSeqHelper::Sequential());
+                        fgemm(F.rns()._field_rns[i], ta, tb, m, n, k,
+                              alpha._ptr[i*alpha._stride], Ad._ptr+i*Ad._stride,
+                              lda, Bd._ptr+i*Bd._stride, ldb,
+                              beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride,
+                              ldc, H2);
+                        }
+                        }
+                        }); // TASK
+        ); // FLORBLOCK1D
+
+
+#ifdef PROFILE_FGEMM_MP
+        t.stop();
         std::cerr<<"=========================================="<<std::endl
         <<"Pointwise fgemm : "<<t.realtime()<<" ("<<rns_size<<") moduli "<<std::endl
         <<"=========================================="<<std::endl;
@@ -322,17 +405,19 @@ namespace FFLAS {
            Givaro::Integer* C, const size_t ldc,
            MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
     {
-        //std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
+      //std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
 #ifdef PROFILE_FGEMM_MP
         Timer chrono;
         chrono.start();
 #endif
-        if (alpha == 0){
+
+	if (alpha == 0){
             fscalin(F,m,n,beta,C,ldc);
             return C;
         }
 
         if (k==0) return C;
+
         // compute bit size of feasible prime for FFLAS
         size_t _k=k,lk=0;
         while ( _k ) {_k>>=1; ++lk;}
@@ -351,6 +436,7 @@ namespace FFLAS {
         logB = H.normB.bitsize();
 
         mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
+
 
         // A or B is zero, no need to modify C
         if (mC == 0) return C;
@@ -380,6 +466,7 @@ namespace FFLAS {
         std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
         chrono.start();
 #endif
+
 
         // convert the input matrices to RNS representation
         finit_rns(Zrns,Arowd,Acold,(logA/16)+((logA%16)?1:0),A,lda,Ap);
@@ -421,6 +508,7 @@ namespace FFLAS {
         std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
         std::cout<<"-------------------------------"<<std::endl;
 #endif
+
 
         return C;
     }
@@ -595,6 +683,7 @@ namespace FFLAS {
         Timer chrono;
         chrono.start();
 #endif
+
         if (alpha == 0){
             fscalin(F,m,n,beta,C,ldc);
             return C;
@@ -670,7 +759,6 @@ namespace FFLAS {
         std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
         chrono.start();
 #endif
-
 
         // convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) ) modulo mA
         //fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);

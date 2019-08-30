@@ -33,7 +33,7 @@
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and defined(__x86_64__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
-
+//!Function converting to float field for the provided field
 namespace FFLAS{ namespace Protected {
     template <typename FloatElement, class Field>
     inline typename Field::Element_ptr
@@ -82,7 +82,7 @@ namespace FFLAS{ namespace Protected {
     }
 }// Protected
 }// FFLAS
-
+//!Convert to either float or double according to field's cardinality
 namespace FFLAS {
     template<class Field>
     inline  typename Field::Element_ptr
@@ -114,7 +114,7 @@ namespace FFLAS {
     // Computes  Y <- alpha.op(A).X + beta.Y
     // A is M*N,
     //---------------------------------------------------------------------
-
+    //! Performs Matrix Vector Multiplication with delayed mod reductions. Ensures result is reduced.
     template<class Field>
     inline typename Field::Element_ptr
     fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
@@ -126,7 +126,6 @@ namespace FFLAS {
            typename Field::Element_ptr Y, const size_t incY,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> & H)
     {
-
         if (!M) {return Y;}
         size_t Ydim = (ta == FflasNoTrans)?M:N;
         size_t Xdim = (ta == FflasNoTrans)?N:M;
@@ -404,6 +403,8 @@ namespace FFLAS{
 #endif
         return Y;
     }
+
+    //specialization for ZRing<double>
     inline Givaro::DoubleDomain::Element_ptr
     fgemv (const Givaro::DoubleDomain& F, const FFLAS_TRANSPOSE ta,
            const size_t M, const size_t N,
@@ -442,6 +443,7 @@ namespace FFLAS{
         return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);
     }
 
+    ////specialization for ZRing<float>
     inline Givaro::FloatDomain::Element_ptr
     fgemv (const Givaro::FloatDomain& F, const FFLAS_TRANSPOSE ta,
            const size_t M, const size_t N,
@@ -463,6 +465,45 @@ namespace FFLAS{
         return Y;
     }
 
+    //specialization for Givaro::ZRing<Givaro::Integer> with ParSeqHelper::Compose
+    template<class... ComposeArgs>
+    Givaro::Integer*
+    fgemv(const Givaro::ZRing<Givaro::Integer>& F,
+           const FFLAS_TRANSPOSE ta,
+           const size_t m,
+           const size_t n,
+           const Givaro::Integer alpha,
+           const Givaro::Integer* A, const size_t lda,
+           const Givaro::Integer* X, const size_t incX,
+           const Givaro::Integer beta,
+           Givaro::Integer* Y, const size_t incY,
+           ParSeqHelper::Compose<ComposeArgs...>& parH){
+        MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Auto, FFLAS::ModeTraits<Givaro::ZRing<Givaro::Integer>>::value, ParSeqHelper::Compose<ComposeArgs...>> pH (F,m,n,1,parH);
+        fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        return Y;
+    }
+
+    //specialization for Givaro::Modular<Givaro::Integer> with ParSeqHelper::Compose
+    template<class... ComposeArgs>
+    Givaro::Integer*
+    fgemv(const Givaro::Modular<Givaro::Integer>& F,
+           const FFLAS_TRANSPOSE ta,
+           const size_t m,
+           const size_t n,
+           const Givaro::Integer alpha,
+           const Givaro::Integer* A, const size_t lda,
+           const Givaro::Integer* X, const size_t incX,
+           const Givaro::Integer beta,
+           Givaro::Integer* Y, const size_t incY,
+           ParSeqHelper::Compose<ComposeArgs...>& parH){
+        MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Auto, FFLAS::ModeTraits<Givaro::Modular<Givaro::Integer>>::value, ParSeqHelper::Compose<ComposeArgs...>> pH (F,m,n,1,parH);
+        fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        return Y;
+    }
+
+
+
+    //Common interface for fgemv with ParSeqHelper::Parallel input parameter in which the corresponding parallel implementation will be called for the given field (ref. pfgemv.inl)
     template<class Field, class Cut, class Param>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -475,10 +516,13 @@ namespace FFLAS{
            const typename Field::Element beta,
            typename Field::Element_ptr Y, const size_t incY,
            ParSeqHelper::Parallel<Cut,Param>& parH){
-        MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > pH (F,m,n,1,parH);
-        return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        MMHelper<Field, MMHelperAlgo::Classic, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > pH (F,m,n,1,parH);
+        fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
+        return Y;
     }
 
+
+    //Common interface for fgemv with ParSeqHelper::Sequential input parameter in which the corresponding sequential implementation will be called for the given field type either for common field implementated as above or multiprcesion field ref. fflas_fgemv_mp.inl
     template<class Field>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -491,11 +535,13 @@ namespace FFLAS{
            const typename Field::Element beta,
            typename Field::Element_ptr Y, const size_t incY,
            ParSeqHelper::Sequential& seqH ){
-        MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> pH(F,m,n,1,seqH);
+        MMHelper<Field, MMHelperAlgo::Auto, ModeCategories::DefaultTag> pH(F,m,n,1,seqH);
         return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
+
 }
 
 #endif //  __FFLASFFPACK_fgemv_INL
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

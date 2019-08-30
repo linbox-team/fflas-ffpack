@@ -67,6 +67,7 @@ BASIC_TESTS =               \
 		test-fgesv             \
 		test-simd \
 		test-fgemv \
+		test-fgemv-rns \
 		test-nullspace \
 		regression-check
 
@@ -162,6 +163,7 @@ regression_check_SOURCES = regression-check.C
 test_solve_SOURCES = test-solve.C
 test_simd_SOURCES = test-simd.C
 test_fgemv_SOURCES = test-fgemv.C
+test_fgemv_rns_SOURCES = test-fgemv-rns.C
 #test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
 
 

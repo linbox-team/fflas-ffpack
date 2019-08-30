@@ -37,6 +37,10 @@
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 
+#ifdef PROFILE_FGEMM_MP
+#include "fflas-ffpack/utils/timer.h"
+#endif
+
 namespace FFLAS { namespace Protected {
 
     template <class Field>
@@ -115,11 +119,27 @@ namespace FFLAS {
     inline Givaro::Integer
     InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
         Givaro::Integer max = 0;
-        for (size_t i=0; i<M; ++i)
-            for (size_t j=0; j<N; ++j) {
-                const Givaro::Integer & x(A[i*lda+j]);
-                if (Givaro::absCompare(x,max)>0) max = x;
-            }
+        std::vector<Givaro::Integer> vmax(M,0);
+        auto sp=SPLITTER(NUM_THREADS,FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads);
+        SYNCH_GROUP({
+              FORBLOCK1D(iter, M, sp,
+                          TASK(MODE(CONSTREFERENCE(A,max,vmax) ),
+                                {
+                                for(auto i=iter.begin(); i!=iter.end(); ++i)
+                                {
+                                    for (size_t j=0; j<N; ++j) {
+                                        const Givaro::Integer & x(A[i*lda+j]);
+                                        if (Givaro::absCompare(x,vmax[i])>0){ vmax[i] = x;}
+                                    }
+
+                                }
+                                })
+                          );
+        });
+        max=vmax[0];
+        for (size_t i=0; i<M; ++i){
+            if (Givaro::absCompare(vmax[i],max)>0){ max = vmax[i];}
+        }
         return abs(max);
     }
 

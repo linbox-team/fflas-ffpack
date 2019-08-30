@@ -177,10 +177,11 @@ bool launch_MV(const Field & F,
         Element_ptr Y2 =  fflas_new (F, Ydim, incY);
         fassign (F, Ydim, Y, incY, Y2, incY);
 
-
+        fassign (F, Ydim, Y2, incY, D, 1);
+        fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
-                MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> >  WH;
+                ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Grain >  WH(1);
 
                 PAR_BLOCK{
                     fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
@@ -201,14 +202,13 @@ bool launch_MV(const Field & F,
         }
 
 
-
         fassign (F, Ydim, Y2, incY, D, 1);
         fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
-                MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Threads> >  WH;
 
                 PAR_BLOCK{
+                    ParSeqHelper::Parallel<CuttingStrategy::RNSModulus, StrategyParameter::Threads >  WH(NUM_THREADS);
                     fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
@@ -218,6 +218,7 @@ bool launch_MV(const Field & F,
         }
 
         ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
+
 
 
         if (!ok){
@@ -225,16 +226,13 @@ bool launch_MV(const Field & F,
             break;
         }
 
-
-
-
         fassign (F, Ydim, Y2, incY, D, 1);
         fassign (F, Ydim, Y2, incY, Y, incY);
         if (par){
             {
-                ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  WH(4);
 
                 PAR_BLOCK{
+                    ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, StrategyParameter::Grain>, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::TwoDAdaptive>>  WH(1,NUM_THREADS);
                     fgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
                 }
             }
@@ -245,11 +243,13 @@ bool launch_MV(const Field & F,
 
         ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
 
-        fflas_delete (A, X, Y, Y2, D);
-        if (!ok){
 
+
+        if (!ok){
+            fflas_delete (A, X, Y, Y2, D);
             break;
         }
+
 
     }
     return ok ;
@@ -383,7 +383,7 @@ int main(int argc, char** argv)
     uint64_t seed = getSeed();
     size_t iters = 3 ;
     Givaro::Integer q = -1 ;
-    uint64_t b = 0 ;
+    uint64_t b = 100 ;
     int m = -50 ;
     int k = -50 ;
     int nbw = -1 ;
@@ -407,17 +407,6 @@ int main(int argc, char** argv)
     bool ok = true;
     srand(seed);
     do{
-        ok = ok && run_with_field<Modular<double> >(q,b,m,k,iters,p, seed);
-        ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,k,iters,p, seed);
-        ok = ok && run_with_field<Modular<float> >(q,b,m,k,iters,p, seed);
-        ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,k,iters,p, seed);
-        ok = ok && run_with_field<Modular<int32_t> >(q,b,m,k,iters,p, seed);
-        ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,k,iters,p, seed);
-        ok = ok && run_with_field<Modular<int64_t> >(q,b,m,k,iters, p, seed);
-        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,k,iters, p, seed);
-        ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,k,iters, p, seed);
-        ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,k,iters, p, seed);
-        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,k,iters,p, seed);
         ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,k,iters,p, seed);
     } while (loop && ok);
 

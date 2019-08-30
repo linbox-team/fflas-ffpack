@@ -25,7 +25,7 @@
 namespace FFLAS
 {
 
-
+    // specialization of the fgemv function for the MMHelper with CuttingStrategy::Recursive but templated for all possible field type so that the corresponding templated sequential implementation will be invoked in the parallel code region
     template<class Field, class AlgoT, class FieldTrait>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -38,7 +38,6 @@ namespace FFLAS
            const typename Field::Element beta,
            typename Field::Element_ptr Y, const size_t incY,
            MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > & H){
-
         if (H.parseq.numthreads()==1 || m <= 1){
             fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);
 
@@ -75,7 +74,7 @@ namespace FFLAS
         return Y;
     }
 
-
+    // specialization of the fgemv function for the MMHelper with CuttingStrategy::Row but templated for all possible field type so that the corresponding templated sequential implementation will be invoked in the parallel code region
     template<class Field, class AlgoT, class FieldTrait, class Cut>
     typename Field::Element_ptr
     fgemv(const Field& F,
@@ -105,7 +104,6 @@ namespace FFLAS
                    );
         return Y;
     }
-
 
 } // FFLAS
 

@@ -17,12 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
-
+//#define PROFILE_FGEMM_MP
 //#include "goto-def.h"
-
-// declare that the call to openblas_set_numthread will be made here, hence don't do it
-// everywhere in the call stack
-#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -64,7 +60,7 @@ template <class Field, class RandIter, class Matrix, class Vector>
 void fill_value(Field& F, RandIter& Rand,
 		Matrix& A, Vector& X, Vector& Y,
 		size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK){
-  // TODO: replace by a 1D pfrand
+
   SYNCH_GROUP(
 	      FORBLOCK1D(iter, m, SPLITTER(NBK, CuttingStrategy::Row, StrategyParameter::Threads),
 			 TASK(MODE(CONSTREFERENCE(F,Rand,A)),
@@ -83,10 +79,9 @@ template <class Field, class Matrix, class Vector>
 void genData(Field& F,
 	     Matrix& A, Vector& X, Vector& Y,
 	     size_t m, size_t k, size_t incX, size_t incY, size_t lda, int NBK,
-	     uint64_t bitsize, uint64_t seed){
-    Givaro::Integer samplesize(1); samplesize <<= bitsize;
-    typename Field::RandIter Rand(F,seed,samplesize);
-    fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
+	     int bitsize, uint64_t seed){
+  typename Field::RandIter Rand(F,seed,bitsize); //Field::RandIter's parameters order has been changed between seed and bitsize
+  fill_value(F, Rand, A, X, Y, m, k, incX, incY, lda, NBK);
 }
 
 template <class Field, class Matrix, class Vector>
@@ -117,7 +112,7 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
 
     if (p){
 
-      typedef CuttingStrategy::Row row;
+      //typedef CuttingStrategy::Row row;
       typedef CuttingStrategy::Recursive rec;
       typedef StrategyParameter::Threads threads;
       typedef StrategyParameter::Grain grain;
@@ -125,39 +120,35 @@ bool benchmark_with_timer(Field& F, int p, Matrix& A, Vector& X, Vector& Y, size
       if (i) { chrono.start(); }
 
       switch (p){
-      case 1:{
-	ParSeqHelper::Parallel<rec, threads>  H(t);
-	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
-	break;}
-      case 2:{
-	ParSeqHelper::Parallel<row, threads>  H(t);
-	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
-	break;
-      }
-      case 3:{
-	ParSeqHelper::Parallel<row, grain>  H(GrainSize);
-	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
-	break;
-      }
-      default:{
-	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
-	break;
-      }
-      }
+          case 1:{
+	        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain> H(GrainSize);
+	        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	        break;
+          }
+          case 2:{
+	        ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, threads> H(t);
+	        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+	        break;
+          }
+          case 3:{
+            ParSeqHelper::Compose<ParSeqHelper::Parallel<FFLAS::CuttingStrategy::RNSModulus, grain>, ParSeqHelper::Parallel<rec, StrategyParameter::TwoDAdaptive>> H(GrainSize,t);
 
+            FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
+            break;
+          }
+          default:{
+	        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
+	        break;
+          }
+      }
       if (i) {chrono.stop(); time+=chrono.realtime();}
     }else{
       if (i) chrono.start();
       FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, lda, F.one, A, lda, X, incX, F.zero, Y,  incY);
       if (i) {chrono.stop(); time+=chrono.realtime();}
     }
-/*
-    if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)){
-      pass = false;
-      break;
-    }
-*/
   }
+  if(!check_result(F, m, lda,  A,  X, incX,  Y, incY)) pass = false;
   return pass;
 }
 
@@ -175,7 +166,7 @@ void benchmark_disp(Field& F, bool pass, double& time, size_t iters, int p,  siz
 
 
 template <class Field, class arg>
-void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, uint64_t bitsize, uint64_t seed, size_t iters,
+void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, int bitsize, uint64_t seed, size_t iters,
 			int t, arg& as, size_t GrainSize){
   double time=0.0;
   size_t lda,incX,incY;
@@ -201,7 +192,7 @@ void benchmark_in_Field(Field& F, int p,  size_t m, size_t k, int NBK, uint64_t 
 }
 
 template <class Field,  class arg >
-void benchmark_with_field(int p,  size_t m, size_t k, int NBK, uint64_t bitsize, uint64_t seed, size_t iters,
+void benchmark_with_field(int p,  size_t m, size_t k, int NBK, int bitsize, uint64_t seed, size_t iters,
 			  int t, arg& as, size_t GrainSize){
   Field F;
   //static assert to raise compile time error for Non ZRing without providing a characteristic
@@ -217,7 +208,7 @@ void benchmark_with_field(int p,  size_t m, size_t k, int NBK, uint64_t bitsize,
 
 template <class Field, class arg>
 void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
-			  int NBK, uint64_t bitsize, uint64_t seed, size_t iters, int t,
+			  int NBK, int bitsize, uint64_t seed, size_t iters, int t,
 			  arg& as, size_t GrainSize){
     Field  F(q);
     benchmark_in_Field(F, p,  m, k, NBK, bitsize, seed, iters, t, as, GrainSize);
@@ -225,11 +216,7 @@ void benchmark_with_field(const Givaro::Integer& q, int p,  size_t m, size_t k,
 
 int main(int argc, char** argv) {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
-    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
-#endif
-
-    int p=0;
+  int p=0;
 
   size_t iters = 3;
   Givaro::Integer q = 131071;
@@ -240,45 +227,33 @@ int main(int argc, char** argv) {
   int t;
   PAR_BLOCK { t = NUM_THREADS; }
   int NBK = -1;
-  uint64_t b=100;
+  int b=100;
   size_t GrainSize = 64;
 
   Argument as[] = {
     { 'q', "-q Q", "Set the field characteristic (-1 for random).",                 TYPE_INTEGER , &q },
     { 'b', "-b B", "Set the bitsize of input.",                                     TYPE_INT , &b },
-    { 'p', "-p P", "0 for sequential, 1 for <Recursive,Thread>, 2 for <Row,Thread>, 3 for <Row,Grain>.",
+    { 'p', "-p P", "0 for sequential, 1 for <RNSModulus,Grain>, 2 for <RNSModulus,Thread>, 3 for Compose<<RNSModulus, grain>, <Recursive, TwoDAdaptive>>.",
                                                                                     TYPE_INT , &p },
     { 'm', "-m M", "Set the dimension m of the matrix.",                            TYPE_INT , &m },
     { 'k', "-k K", "Set the dimension k of the matrix.",                            TYPE_INT , &k },
     { 't', "-t T", "number of virtual threads to drive the partition.",             TYPE_INT , &t },
     { 'N', "-n N", "number of numa blocks per dimension for the numa placement",    TYPE_INT , &NBK },
     { 'i', "-i R", "Set number of repetitions.",                                    TYPE_INT , &iters },
-    { 's', "-s S", "Sets seed.",				        TYPE_INT , &seed },
-    { 'g', "-g G", "Sets GrainSize.",			        TYPE_INT , &GrainSize },
+    { 's', "-s S", "Sets seed.",                            				        TYPE_INT , &seed },
+    { 'g', "-g G", "Sets GrainSize.",                            			        TYPE_INT , &GrainSize },
     END_OF_ARGUMENTS
   };
 
   parseArguments(argc,argv,as);
 
   if (NBK==-1) NBK = t;
-  if(q==0){
-    PAR_BLOCK {
-      //benchmark_with_field<Givaro::ZRing<int32_t>>( p,  m, k, NBK, b, seed, iters, t, as);
-      benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-    }
-  }else{
-    PAR_BLOCK {
-      //benchmark_with_field<Givaro::Modular<float>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-      //benchmark_with_field<Givaro::Modular<double>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-      //benchmark_with_field<Givaro::Modular<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
 
-      //benchmark_with_field<Givaro::Modular<Givaro::Integer>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-
-      //benchmark_with_field<Givaro::ModularBalanced<float>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-      benchmark_with_field<Givaro::ModularBalanced<double>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-      //benchmark_with_field<Givaro::ModularBalanced<int32_t>>(q, p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
-    }
+  PAR_BLOCK {
+    //benchmark_with_field<Givaro::Modular<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
+    benchmark_with_field<Givaro::ZRing<Givaro::Integer>>( p,  m, k, NBK, b, seed, iters, t, as, GrainSize);
   }
+
 
   return 0;
 }

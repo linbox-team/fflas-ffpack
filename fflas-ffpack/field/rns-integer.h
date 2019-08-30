@@ -110,9 +110,9 @@ namespace FFPACK {
             return x;
         }
         Element& init(Element& x, const Givaro::Integer& y) const{
-            init(x);
-            size_t k =(y.bitsize())/16+((y.bitsize())%16?1:0);
-            _rns->init(1,1,x._ptr,x._stride, &y,1,k);
+	        init(x);
+	        size_t k =(y.bitsize())/16+((y.bitsize())%16?1:0);
+	        _rns->init(1,1,x._ptr,x._stride, &y,1,k);
             return x;
         }
         Element& reduce (Element& x, const Element& y) const {return assign (x,y);}
