@@ -208,17 +208,17 @@ WAIT;
 FORBLOCK1D(_internal_iterator, m, Helper,                           \
            const auto internal_iter_begin(_internal_iterator.begin());      \
            const auto internal_iter_end(_internal_iterator.end());      \
-           TASK( , \
+           TASK(firstprivate(internal_iter_begin, internal_iter_end), \
                  {for(auto i=internal_iter_begin; i!=internal_iter_end; ++i) \
                  { Args; } });)                                         \
                  WAIT;
 
 
-#define FOR1D_2(i, m, Helper, mod, Args ...)                             \
+#define FOR1D_2(i, m, Helper, mode, Args ...)                             \
 FORBLOCK1D(_internal_iterator, m, Helper,                           \
            const auto internal_iter_begin(_internal_iterator.begin());      \
            const auto internal_iter_end(_internal_iterator.end());      \
-           TASK( mod, \
+           TASK(firstprivate(internal_iter_begin, internal_iter_end) mode, \
                  {for(auto i=internal_iter_begin; i!=internal_iter_end; ++i) \
                  { Args; } });)                                         \
                  WAIT;
