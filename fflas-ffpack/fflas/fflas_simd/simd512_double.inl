@@ -31,6 +31,10 @@
 #error "You need AVX512 instructions to perform 512bits operations on double"
 #endif
 
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+#include <type_traits>
+
 /*
  * Simd512 specialized for double
  */
@@ -54,6 +58,12 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
      *	alignement required by scalar_t pointer to be loaded in a vect_t
      */
     static const constexpr size_t alignment = 64;
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt
