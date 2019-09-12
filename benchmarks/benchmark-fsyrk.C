@@ -42,9 +42,10 @@ int main(int argc, char** argv) {
 #endif
 
     size_t iter = 3;
-    int    q    = 131071;
+    size_t    q    = 131071;
     size_t    n    = 1000;
     size_t    k    = 1000;
+    size_t algo    = 0;
     size_t threshold = 64;
     bool up =true;
     std::string file = "";
@@ -55,6 +56,7 @@ int main(int argc, char** argv) {
         { 'k', "-k K", "Set the other dimension of the matrix A.",               TYPE_INT , &k },
         { 'u', "-u yes/no", "Updates an upper/lower triangular matrix.",  TYPE_BOOL , &up },
         { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+        { 'a', "-a A", "Set algorithmic variant.",                     TYPE_INT , &algo },    
         { 't', "-t T", "Set the threshold to the base case.",                     TYPE_INT , &threshold },
         END_OF_ARGUMENTS
     };
@@ -81,11 +83,22 @@ int main(int argc, char** argv) {
         RandomTriangularMatrix (F, n,n,uplo, FflasNonUnit, true, C, ldc, G);
         Field::Element_ptr D = FFLAS::fflas_new(F,k,1);
         Givaro::GeneralRingNonZeroRandIter<Field,Field::RandIter> nzG (G);
+        std::vector<bool> twoBlocks(k);
         for (size_t i=0; i<k; i++)
             nzG.random(D[i]);
         chrono.clear();
         if (i) chrono.start();
-        fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
+        switch (algo){
+            case 0: // fsyrk with no diagonal scaling
+                fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, F.one, C, ldc);
+                break;
+            case 1: // fsyrk with diagonal scaling
+                fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
+                break;
+            case 2: // fsyrk with diagonal scaling and 2x2 diagonal blocks
+                fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, twoBlocks, F.one, C, ldc, threshold);
+                break;
+        }
         if (i) chrono.stop();
 
         time+=chrono.usertime();

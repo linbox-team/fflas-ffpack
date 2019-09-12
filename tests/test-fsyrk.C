@@ -424,10 +424,10 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
-        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
+            //ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
+            //ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
+        // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
+        // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
     } while (loop && ok);
 
     if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;
