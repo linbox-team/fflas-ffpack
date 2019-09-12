@@ -330,11 +330,13 @@ namespace FFLAS {
             fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, beta, C22, ldc);
 
             if (UpLo == FflasUpper) {
+                    // CP : calling explicitely with H to shortcut Winograd's algorithm in fgemm,
+                    // since it does not compile with Field=ZRing<int64_t>
                 // C12 <- alpha A1 * A2^T + beta C12
-                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc);
+                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc, H);
             } else {
                 // C21 <- alpha A2 * A1^T + beta C21
-                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, A, lda, beta, C21, ldc);
+                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, A, lda, beta, C21, ldc, H);
             }
             return C;
         }
