@@ -90,13 +90,13 @@ int main(int argc, char** argv) {
         if (i) chrono.start();
         switch (algo){
             case 0: // fsyrk with no diagonal scaling
-                fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, F.one, C, ldc);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, F.one, C, ldc);
                 break;
             case 1: // fsyrk with diagonal scaling
-                fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
                 break;
             case 2: // fsyrk with diagonal scaling and 2x2 diagonal blocks
-                fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, twoBlocks, F.one, C, ldc, threshold);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, twoBlocks, F.one, C, ldc, threshold);
                 break;
         }
         if (i) chrono.stop();
@@ -109,9 +109,8 @@ int main(int argc, char** argv) {
 
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
-#define CUBE(x) ((x)*(x)*(x))
     std::cout << "Time: " << time / double(iter)
-    << " Gfops: " << CUBE(double(n)/1000.)/ time * double(iter);
+              << " Gfops: " << (double(n)/1000.)*(double(n)/1000.)*(double(k)/1000.)/ time * double(iter);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
     return 0;
 }
