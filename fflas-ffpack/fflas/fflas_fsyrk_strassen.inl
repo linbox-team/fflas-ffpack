@@ -110,6 +110,7 @@ namespace FFLAS {
         typename Field::Element negy;
         F.init(negy);
         F.neg(negy, y);
+            // @todo: handle the case where y==0 (-1 is a square in the field
         for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, A11r+=lda, A21r+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
                 // @todo: vectorize this inner loop
             for (size_t j=0; j<K4; j++){
