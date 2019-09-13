@@ -368,8 +368,6 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
         typename Field::Element alpha, beta;
         F->init (alpha, a);
         F->init (beta, c);
-        std::cerr<<"a = "<<a<<" alpha = "<<alpha<<std::endl;
-        std::cerr<<"b = "<<c<<" beta = "<<beta<<std::endl;
         cout<<"Checking with ";F->write(cout)<<endl;
 
         // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
