@@ -5,7 +5,7 @@ matrix:
   include:
     - os: linux
       sudo: required
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: GCC_VERSION=4.9
       addons:
@@ -17,38 +17,44 @@ matrix:
           - gfortran-4.9
           - libgmp-dev
           - libgmpxx4ldbl
-
+          - libtool
+          - autoconf
+          - libopenblas-dev
     - os: linux
       sudo: required
-      dist: trusty
+      dist: xenial
       compiler: gcc
-      env: GCC_VERSION=5
+      env: GCC_VERSION=7
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
-          - g++-5
-          - gfortran-5
+          - g++-7
+          - gfortran-7
           - libgmp-dev
           - libgmpxx4ldbl
-
+          - libtool
+          - autoconf
+          - libopenblas-dev
     - os: linux
       sudo: required
-      dist: trusty
+      dist: xenial
       compiler: gcc
-      env: GCC_VERSION=6
+      env: GCC_VERSION=8
       # BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
-          - g++-6
-          - gfortran-6
+          - g++-8
+          - gfortran-8
           - libgmp-dev
           - libgmpxx4ldbl
-
+          - libtool
+          - autoconf
+          - libopenblas-dev
     # - os: linux
     #   sudo: required
     #   dist: trusty

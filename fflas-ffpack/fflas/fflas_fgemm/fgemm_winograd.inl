@@ -398,7 +398,8 @@ namespace FFLAS{
         if (H.recLevel == 0){
             MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(H);
             fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
-
+                // copyOutBounds (HC, H);  @ todo should replace the following 2 lines.
+                // Not ready yet, because of API of DynamicPeeling
             H.Outmax = HC.Outmax;
             H.Outmin = HC.Outmin;
             return C;

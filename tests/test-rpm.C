@@ -79,6 +79,7 @@ bool checkSymmetricRPM (size_t N, size_t R){
                 ok=false;
                 cerr<<"A["<<i<<", "<<j<<"] = "<<A[i*N+j]<<" != A["<<j<<", "<<i<<"]"<<std::endl;
             }
+    fflas_delete(A);
 
     if (!ok){
         std::cerr<<"RPM FAILED"<<std::endl;

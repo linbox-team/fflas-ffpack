@@ -190,6 +190,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
     }
     if (!ok){
         std::cerr<<"Scaling failed"<<std::endl;
+        FFLAS::fflas_delete(A, B, C, C2, D);
         return ok;
     }
 
@@ -214,6 +215,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
         cout << "FAILED ("<<time<<")"<<endl;
 
     FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
     FFLAS::fflas_delete(D);
@@ -314,7 +316,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
         std::cerr<<"Scaling failed"<<std::endl;
         std::cerr<<"alpha = "<<alpha<<" beta="<<beta<<std::endl;
         std::cerr<<"tb = "<<tb<<std::endl;
-
+        FFLAS::fflas_delete(A, B, C, C2, D);
         return ok;
     }
 
@@ -343,6 +345,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
     //cerr<<"FAILED ("<<time<<")"<<endl;
 
     FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
     FFLAS::fflas_delete(D);
@@ -406,8 +409,8 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    int k=35;
-    int n=109;
+    int k=125;
+    int n=219;
     int a=-1;
     int c=1;
     size_t iters=3;
@@ -439,6 +442,8 @@ int main(int argc, char** argv)
         // ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
+
+        // conversion to RNS basis not available yet for fsyrk
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
     } while (loop && ok);

@@ -42,7 +42,7 @@ For example on a x86_64 architecture:
 - Using OpenBLAS in Debian, Ubuntu, Mint, and all debian based distribution:
  - avoid using the distribution's package, as it is threaded by default. You need to
    compile openblas yourself on these systems,
- - run `./configure --with-blas-libs="-lopenblas"`
+ - run `./configure --with-blas-libs="-L/pathtolocalopenblas/lib -lopenblas" --with-blas-cflags="-I/pathtolocalopenblas/include"`
 - Using ATLAS in Debian, Ubuntu, Mint: 
  - install the package `libatlas-dev`,
  - run `./configure --with-blas-libs="-latlas -lcblas"`
