@@ -26,6 +26,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
+#include <givaro/givintsqrootmod.h>
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -96,7 +97,19 @@ int main(int argc, char** argv) {
                 fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
                 break;
             case 2: // fsyrk with diagonal scaling and 2x2 diagonal blocks
-                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, twoBlocks, F.one, C, ldc, threshold);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, D, 1, twoBlocks, F.zero, C, ldc, threshold);
+                break;
+            case 3: // fsyrk with Strassen and no diagonal scaling
+                Givaro::Integer a,b;
+                Givaro::IntSqrtModDom<> ISM;
+                ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
+                typename Field::Element y1, y2;
+                F.init (y1, a);
+                F.init (y2, b);
+                size_t reclevel = 0;
+                size_t dim = n;
+                while(dim > threshold) {reclevel++; dim>>=1;}
+                fsyrk_strassen (F, uplo, FflasNoTrans, n, k, y1, y2, F.one, A, lda, F.zero, C, ldc, reclevel);
                 break;
         }
         if (i) chrono.stop();
