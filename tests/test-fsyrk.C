@@ -84,7 +84,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
     F.init (y1, a);
     F.init (y2, b);
 
-    std::cerr<<"Launching fsyrk_strassen with a = "<<a<<" b = "<<b<<" A = "<<std::endl;
+    std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" and "<<a<<"^2 + "<<b<<"^2 = -1"<<std::endl;
     // WriteMatrix(std::cerr, F, n, k, A, lda);
     // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
     //   WriteMatrix(std::cerr, F, n, k, C, ldc);
@@ -363,8 +363,10 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
             return true;
 
         typename Field::Element alpha, beta;
-        F->init (alpha, (typename Field::Element)a);
-        F->init (beta, (typename Field::Element)c);
+        F->init (alpha, a);
+        F->init (beta, c);
+        std::cerr<<"a = "<<a<<" alpha = "<<alpha<<std::endl;
+        std::cerr<<"b = "<<c<<" beta = "<<beta<<std::endl;
         cout<<"Checking with ";F->write(cout)<<endl;
 
         // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
