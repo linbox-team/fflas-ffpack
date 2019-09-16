@@ -97,41 +97,63 @@ namespace FFLAS {
             //           [ -y.I x.I]
         size_t N2 = N>>1;
         size_t K2 = K>>1;
-        size_t K4 = K2>>1;
-
         typename Field::ConstElement_ptr A11 = A;
         typename Field::ConstElement_ptr A21 = A + N2*lda;
         typename Field::ConstElement_ptr A22 = A21 + K2;
+        size_t K4 = K2>>1;
         typename Field::ConstElement_ptr A11r = A11 + K4;
         typename Field::ConstElement_ptr A21r = A21 + K4;
-        typename Field::ConstElement_ptr A22r = A22 + K4;
         typename Field::Element_ptr Sr = S + K4;
-        typename Field::Element_ptr Tr = T + K4;
-        typename Field::Element negy;
+
+        typename Field::Element negx, negy;
+        F.init(negx);
+        F.neg(negx, x);
         F.init(negy);
         F.neg(negy, y);
-            // @todo: handle the case where y==0 (-1 is a square in the field
-        for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, A11r+=lda, A21r+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
-                // @todo: vectorize this inner loop
-            for (size_t j=0; j<K4; j++){
-                typename Field::Element t, tr;
-                F.init(t);
-                F.init(tr);
-                F.sub(t,A11[j],A21[j]);
-                F.sub(tr,A11r[j],A21r[j]);
-                F.mul(S[j],t,x);
-                F.mul(Sr[j],t,negy);
-                F.axpyin(S[j],tr,y);
-                F.axpyin(Sr[j],tr,x);
 
-                F.maxpy(T[j], A21[j], x, A22[j]);
-                F.maxpy(Tr[j], A21[j], negy, A22r[j]);
-
-                F.maxpyin(T[j], A21r[j], y);
-                F.maxpyin(Tr[j], A21r[j], x);
-            }
+            // S <- A21 Y^T
+        fscal (F, N2, K2, negx, A21, lda, S, lds);
+        if (!F.isZero(y)){
+            faxpy (F, N2, K4, negy, A21r, lda, S, lds);
+            faxpy (F, N2, K4, y, A21, lda, Sr, lds);
         }
+            // T <- S + A22
+        fadd (F, N2, K2, S, lds, A22, lda, T, ldt);
 
+            // S <- S + A11 Y^T
+        faxpy (F, N2, K2, x, A11, lda, S, lds);
+        if (!F.isZero(y)){
+            faxpy (F, N2, K4, y, A11r, lda, S, lds);
+            faxpy (F, N2, K4, negy, A11, lda, Sr, lds);
+        }
+        // } else { // -1 is not a square in F
+//         size_t K4 = K2>>1;
+//         typename Field::ConstElement_ptr A11r = A11 + K4;
+//             typename Field::ConstElement_ptr A21r = A21 + K4;
+//             typename Field::ConstElement_ptr A22r = A22 + K4;
+//             typename Field::Element_ptr Sr = S + K4;
+//             typename Field::Element_ptr Tr = T + K4;
+//             for (size_t i=0; i<N2; i++, A11+=lda, A21+=lda, A22+=lda, A11r+=lda, A21r+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
+//                     // @todo: vectorize this inner loop
+//                 for (size_t j=0; j<K4; j++){
+//                     typename Field::Element t, tr;
+//                     F.init(t);
+//                     F.init(tr);
+//                     F.sub(t,A11[j],A21[j]);
+//                     F.sub(tr,A11r[j],A21r[j]);
+//                     F.mul(S[j],t,x);
+//                     F.mul(Sr[j],t,negy);
+//                     F.axpyin(S[j],tr,y);
+//                     F.axpyin(Sr[j],tr,x);
+
+//                     F.maxpy(T[j], A21[j], x, A22[j]);
+//                     F.maxpy(Tr[j], A21[j], negy, A22r[j]);
+
+//                     F.maxpyin(T[j], A21r[j], y);
+//                     F.maxpyin(Tr[j], A21r[j], x);
+//                 }
+//             }
+//         }
     }
     
     template<class Field>
