@@ -182,12 +182,13 @@ namespace FFLAS {
         typename Field::ConstElement_ptr A11 = A;
         typename Field::ConstElement_ptr A12 = A + K2;
         typename Field::ConstElement_ptr A21 = A + N2*lda;
-        typename Field::ConstElement_ptr A22 = A21 + N2;
+        typename Field::ConstElement_ptr A22 = A21 + K2;
         typename Field::Element_ptr C11 = C;
         typename Field::Element_ptr C12 = C + N2;
         typename Field::Element_ptr C21 = C + N2*ldc;
         typename Field::Element_ptr C22 = C21 + N2;
-
+        typename Field::Element_ptr S1, S2, S4;
+        size_t lds;
         FFLAS_TRANSPOSE OppTrans = (trans == FflasNoTrans)? FflasTrans : FflasNoTrans;
 
         typename Field::Element negalpha;
@@ -196,24 +197,39 @@ namespace FFLAS {
 
         if (F.isZero(beta)){ // no accumulation, schedule without extra temp
 
+            if (K>N){ // Not possible to store S2 in C12 nor S1 in C21
+                S1 = fflas_new(F, N2, K2);
+                S2 = fflas_new(F, N2, K2);
+                S4 = S1;
+                lds = K2;
+            } else{
+                S1 = C21;
+                S2 = C12;
+                S4 = C11;
+                lds = ldc;
+            }
                 // S1 = (A11-A21) x Y^T in C21
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, N, K, y1, y2, A,lda, C21, ldc, C12, ldc);
+            computeS1S2 (F, N, K, y1, y2, A,lda, S1, lds, S2, lds);
 
                 // - P4^T = - S2 x S1^T in  C22
-            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, C12, ldc, C21, ldc, F.zero, C22, ldc);
+            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, S2, lds, S1, lds, F.zero, C22, ldc);
 
-                // S3 = S1 + A22 in C21
-            faddin (F, N2, K2, A22, lda, C21, ldc);
+            if (K>N){ fflas_delete(S2); }
+
+                // S3 = S1 + A22 in S1
+            faddin (F, N2, K2, A22, lda, S1, lds);
 
                 // P5 = S3 x S3^T in C12
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, C21, ldc, F.zero, C12, ldc, reclevel-1);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, reclevel-1);
 
-                // S4 = S3 - A12 in C11
-            fsub (F, N2, K2, C21, ldc, A12, lda, C11, ldc);
+                // S4 = S3 - A12 in S4
+            fsub (F, N2, K2, S1, lds, A12, lda, S4, lds);
 
                 // - P3 = - A22 x S4^T in C21
-            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, A22, lda, C11, ldc, F.zero, C21, ldc);
+            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, A22, lda, S4, lds, F.zero, C21, ldc);
+
+            if (K>N){ fflas_delete(S1); }
 
                 // P1 = A11 x A11^T in C11
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, reclevel-1);
@@ -249,9 +265,16 @@ namespace FFLAS {
             typename Field::Element_ptr T = fflas_new (F, N2, std::max(N2,K2));
             size_t ldt = std::max(N2,K2);
 
+            if (K>N){ // Not possible to store S2 in C12
+                S2 = fflas_new(F, N2, K2);
+                lds = K2;
+            } else{
+                S2 = C12;
+                lds = ldc;
+            }
                 // S1 = (A11-A21) x Y^T in T1
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, C12, ldc);
+            computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, S2, lds);
 
                 // Up(C11) = Low(C22) (saving C22)
             for (size_t i=0; i<N2-1; ++i)
@@ -263,7 +286,9 @@ namespace FFLAS {
                 F.assign (DC22[i], C22[i*(ldc+1)]);
 
                 // - P4^T = - S2 x S1^T in C22
-            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, C12, ldc, T, ldt, F.zero, C22, ldc);
+            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, S2, lds, T, ldt, F.zero, C22, ldc);
+
+            if (K>N){ fflas_delete(S2); }
 
                 // S3 = S1 + A22 in T
             faddin (F, N2, K2, A22, lda, T, ldt);
