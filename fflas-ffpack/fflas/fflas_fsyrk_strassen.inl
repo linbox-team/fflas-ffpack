@@ -26,6 +26,8 @@
 #ifndef __FFLASFFPACK_fflas_fsyrk_strassen_INL
 #define __FFLASFFPACK_fflas_fsyrk_strassen_INL
 
+#include <givaro/givintsqrootmod.h>
+
 namespace FFLAS {
 
     // template<class Field>
@@ -155,7 +157,50 @@ namespace FFLAS {
 //             }
 //         }
     }
-    
+    template<class Field, class Mode>
+    inline typename Field::Element_ptr
+    fsyrk (const Field& F,
+           const FFLAS_UPLO UpLo,
+           const FFLAS_TRANSPOSE trans,
+           const size_t N,
+           const size_t K,
+           const typename Field::Element alpha,
+           typename Field::ConstElement_ptr A, const size_t lda,
+           const typename Field::Element beta,
+           typename Field::Element_ptr C, const size_t ldc,
+           MMHelper<Field, MMHelperAlgo::Winograd, Mode, ParSeqHelper::Sequential> & H){
+
+        size_t q = 1 << (H.recLevel+1); // 
+        size_t Ns = (N/q)*q;
+        size_t Ks = (K/q)*q;
+        
+            // find a, b such that a^2 + b^2 = -1 mod p
+        Givaro::Integer a,b;
+        Givaro::IntSqrtModDom<> ISM;
+        Givaro::ZRing<Givaro::Integer> Z;
+        Z.init(a);
+        Z.init(b);
+        ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
+        typename Field::Element y1, y2;
+        F.init (y1, a);
+        F.init (y2, b);
+        
+            // C11 = A11 x A11^T
+        fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha, A, lda, beta, C, ldc, H.recLevel);
+
+            // C11 += A12 x A12 ^T
+        fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A+Ks, lda, F.one, C, ldc);
+
+            // C22 = [A21 A22] x [A21 A22]^T
+        fsyrk (F, UpLo, trans, N-Ns, K, alpha, A+Ns*lda, lda, beta, C+Ns*(ldc+1), ldc);
+
+            // C21 = A21 x A11^T
+        fgemm (F, trans, (trans == FflasNoTrans)? FflasTrans : FflasNoTrans, N-Ns, Ns, K,
+               alpha, A+Ns*lda, lda, A, lda, beta, C+Ns*ldc, ldc);
+        return C;
+    }
+
+        // Assumes that 2^reclevel divides N and K
     template<class Field>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,

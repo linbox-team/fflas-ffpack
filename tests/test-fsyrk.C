@@ -37,7 +37,6 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
 #include <givaro/modular.h>
-#include <givaro/givintsqrootmod.h>
 
 
 using namespace std;
@@ -46,7 +45,7 @@ using Givaro::Modular;
 using Givaro::ModularBalanced;
 
 template<typename Field, class RandIter>
-bool check_fsyrk (const Field &F, size_t n, size_t k,
+bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
                   const typename Field::Element &alpha, const typename Field::Element &beta,
                   FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, RandIter& Rand){
 
@@ -76,20 +75,23 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
     double time=0.0;
     t.clear(); t.start();
 
-        // find a, b such that a^2 + b^2 = -1 mod p
-    Givaro::Integer a,b;
-    Givaro::IntSqrtModDom<> ISM;
-    ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
-    typename Field::Element y1, y2;
-    F.init (y1, a);
-    F.init (y2, b);
+    //     // find a, b such that a^2 + b^2 = -1 mod p
+    // Givaro::Integer a,b;
+    // Givaro::IntSqrtModDom<> ISM;
+    // ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
+    // typename Field::Element y1, y2;
+    // F.init (y1, a);
+    // F.init (y2, b);
 
-    std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" and "<<a<<"^2 + "<<b<<"^2 = -1"<<std::endl;
+//    std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" and "<<a<<"^2 + "<<b<<"^2 = -1"<<std::endl;
     // WriteMatrix(std::cerr, F, n, k, A, lda);
     // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
     //   WriteMatrix(std::cerr, F, n, k, C, ldc);
-  
-    fsyrk_strassen (F, uplo, trans, n, k, y1, y2, alpha, A, lda, beta, C, ldc, 1);
+    if (w == size_t(-1))
+            //w= (rand() % 5);
+        w=1;
+    MMHelper<Field, MMHelperAlgo::Winograd> H(F,w);
+    fsyrk (F, uplo, trans, n, k, alpha, A, lda, beta, C, ldc, H);
 
     t.stop();
     time+=t.usertime();
@@ -353,7 +355,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int c, size_t iters, uint64_t seed){
+bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, int a, int c, size_t iters, uint64_t seed){
     bool ok = true ;
     int nbit=(int)iters;
 
@@ -372,7 +374,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
 
         // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
         // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
         // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
         // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
         // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
@@ -409,6 +411,7 @@ int main(int argc, char** argv)
     size_t b=0;
     int k=125;
     int n=219;
+    int w=-1;
     int a=-1;
     int c=1;
     size_t iters=3;
@@ -418,8 +421,9 @@ int main(int argc, char** argv)
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
-        { 'k', "-k K", "Set the  dimension",      TYPE_INT , &k },
-        { 'n', "-n N", "Set the column dimension.", TYPE_INT , &n },
+        { 'k', "-k K", "Set the dimension k",      TYPE_INT , &k },
+        { 'n', "-n N", "Set the dimension n.", TYPE_INT , &n },
+        { 'w', "-w W", "Set the number of recursive levels for Strassen.", TYPE_INT , &w },
         { 'a', "-a A", "Set the scaling alpha",                         TYPE_INT , &a },
         { 'c', "-c C", "Set the scaling beta",                         TYPE_INT , &c },
         { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
@@ -432,7 +436,7 @@ int main(int argc, char** argv)
     srand(seed);
     bool ok = true;
     do{
-        ok = ok && run_with_field<Modular<double> >(q,b,n,k,a,c,iters,seed);
+        ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
         // ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<float> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,a,c,iters,seed);
