@@ -200,7 +200,7 @@ namespace FFLAS {
         return C;
     }
 
-        // Assumes that 2^reclevel divides N and K
+        // Assumes that 2^(reclevel+1) divides N and K
     template<class Field>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,
