@@ -93,8 +93,8 @@ namespace FFLAS {
                  typename Field::ConstElement_ptr A, const size_t lda,
                  typename Field::Element_ptr S, const size_t lds,
                  typename Field::Element_ptr T, const size_t ldt){
-            // S1 = (A11-A21) x Y^T in S
-            // S2 =  A21 x Y^T - A22 in T
+            // S1 = (A21-A11) x Y^T in S
+            // S2 =  A22 - A21 x Y^T  in T
             // where Y = [ x.I  y.I]
             //           [ -y.I x.I]
         size_t N2 = N>>1;
@@ -106,7 +106,6 @@ namespace FFLAS {
         typename Field::ConstElement_ptr A11r = A11 + K4;
         typename Field::ConstElement_ptr A21r = A21 + K4;
         typename Field::Element_ptr Sr = S + K4;
-        typename Field::Element_ptr Tr = T + K4;
 
         typename Field::Element negx, negy;
         F.init(negx);
@@ -114,40 +113,41 @@ namespace FFLAS {
         F.init(negy);
         F.neg(negy, y);
 
-            // T <-  A21 Y^T
-        fscal (F, N2, K2, x, A21, lda, T, ldt);
-        if (!F.isZero(y)){
-            faxpy (F, N2, K4, y, A21r, lda, T, ldt);
-            faxpy (F, N2, K4, negy, A21, lda, Tr, ldt);
-        }
-            // S <- T + A11 Y^T
-            // introduce a faxpy with 4 operands
-              //  S <- A11 Y^T
-        fscal (F, N2, K2, x, A11, lda, S, lds);
-        if (!F.isZero(y)){
-            faxpy (F, N2, K4, y, A11r, lda, S, lds);
-            faxpy (F, N2, K4, negy, A11, lda, Sr, lds);
-        }
-            // S <- S - T
-        fsubin (F, N2, K2, T, ldt, S, lds);
+        //     // T <-  A21 Y^T
+        // fscal (F, N2, K2, x, A21, lda, T, ldt);
+        // if (!F.isZero(y)){
+        //     faxpy (F, N2, K4, y, A21r, lda, T, ldt);
+        //     faxpy (F, N2, K4, negy, A21, lda, Tr, ldt);
+        // }
+        //     // S <- T + A11 Y^T
+        //     // introduce a faxpy with 4 operands
+        //       //  S <- A11 Y^T
+        // fscal (F, N2, K2, x, A11, lda, S, lds);
+        // if (!F.isZero(y)){
+        //     faxpy (F, N2, K4, y, A11r, lda, S, lds);
+        //     faxpy (F, N2, K4, negy, A11, lda, Sr, lds);
+        // }
+        //     // S <- S - T
+        // fsubin (F, N2, K2, T, ldt, S, lds);
 
-            // T <- T - A22
-        fsubin (F, N2, K2, A22, lda, T, ldt);
-      // // S <- - A21 Y^T
-      //   fscal (F, N2, K2, negx, A21, lda, S, lds);
-      //   if (!F.isZero(y)){
-      //       faxpy (F, N2, K4, negy, A21r, lda, S, lds);
-      //       faxpy (F, N2, K4, y, A21, lda, Sr, lds);
-      //   }
-      //       // T <- S + A22
-      //   fadd (F, N2, K2, S, lds, A22, lda, T, ldt);
+        //     // T <- T - A22
+        // fsubin (F, N2, K2, A22, lda, T, ldt);
 
-      //       // S <- S + A11 Y^T
-      //   faxpy (F, N2, K2, x, A11, lda, S, lds);
-      //   if (!F.isZero(y)){
-      //       faxpy (F, N2, K4, y, A11r, lda, S, lds);
-      //       faxpy (F, N2, K4, negy, A11, lda, Sr, lds);
-      //   }
+            // S <- A21 Y^T
+        fscal (F, N2, K2, x, A21, lda, S, lds);
+        if (!F.isZero(y)){
+            faxpy (F, N2, K4, y, A21r, lda, S, lds);
+            faxpy (F, N2, K4, negy, A21, lda, Sr, lds);
+        }
+            // T <- A22 -S
+        fsub (F, N2, K2, A22, lda, S, lds, T, ldt);
+
+            // S <- S - A11 Y^T
+        faxpy (F, N2, K2, negx, A11, lda, S, lds);
+        if (!F.isZero(y)){
+            faxpy (F, N2, K4, negy, A11r, lda, S, lds);
+            faxpy (F, N2, K4, y, A11, lda, Sr, lds);
+        }
 
 
         
@@ -224,7 +224,7 @@ namespace FFLAS {
     }
 
         // Assumes that 2^(reclevel+1) divides N and K
-    template<class Field>
+    template<class Field, class FieldTrait>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,
                     const FFLAS_UPLO uplo,
@@ -237,14 +237,22 @@ namespace FFLAS {
                     typename Field::ConstElement_ptr A, const size_t lda,
                     const typename Field::Element beta,
                     typename Field::Element_ptr C, const size_t ldc,
-                    size_t reclevel /*todo: use helper instead*/
+                    MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
                     ) {
         
             // written for NoTrans, Lower
-        if (reclevel == 0){
+        if (WH.reclevel == 0){
             fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc);
             return C;
         }
+
+        typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
+        typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
+        typedef typename  MMH_t::DelayedField::ConstElement_ptr DFCEptr;
+        typedef typename  MMH_t::DelayedField::Element DFElt;
+
+        const typename MMH_t::DelayedField & DF = WH.delayedField;
+
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         typename Field::ConstElement_ptr A11 = A;
@@ -276,31 +284,35 @@ namespace FFLAS {
                 S4 = C11;
                 lds = ldc;
             }
-                // S1 = (A11-A21) x Y^T in C21
-                // S2 =  A21 x Y^T - A22 in C12
+                // S1 = (A21-A11) x Y^T in C21
+                // S2 =  A22 - A21 x Y^T  in C12
             computeS1S2 (F, N, K, y1, y2, A,lda, S1, lds, S2, lds);
 
                 //  P4^T =  S2 x S1^T in  C22
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc);
+            MMH_t H4 (F, -1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
 
             if (K>N){ fflas_delete(S2); }
 
-                // S3 = S1 + A22 in S1
-            faddin (F, N2, K2, A22, lda, S1, lds);
+                // S3 = S1 - A22 in S1
+            fsubin (DF, N2, K2, A22, lda, S1, lds);
 
                 // P5 = S3 x S3^T in C12
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, reclevel-1);
+            MMH_t H5 (F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, 2*WH.Bmin, 2*WH.Bmax, 0,0);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
 
-                // S4 = S3 - A12 in S4
-            fsub (F, N2, K2, S1, lds, A12, lda, S4, lds);
+                // S4 = S3 + A12 in S4
+            fadd (DF, N2, K2, S1, lds, A12, lda, S4, lds);
 
-                // - P3 = - A22 x S4^T in C21
-            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, A22, lda, S4, lds, F.zero, C21, ldc);
+                // P3 = A22 x S4^T in C21
+            MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0,0);
+            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, S4, lds, F.zero, C21, ldc, H3);
 
             if (K>N){ fflas_delete(S1); }
 
                 // P1 = A11 x A11^T in C11
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, reclevel-1);
+            MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
 
                 // U1 = P1 + P5 in C12
             faddin (F, uplo, N2, C11, ldc, C12, ldc); // TODO triangular addin (to be implemented)
@@ -313,14 +325,15 @@ namespace FFLAS {
             for (size_t i=0; i<N2; ++i)
                 faddin (F,  N2, C22+i*ldc, 1, C12+i, ldc);
 
-                // U4 = U2 - P3 in C21
+                // U4 = U2 + P3 in C21
             faddin (F, N2, N2, C12, ldc, C21, ldc);
 
                 // U5 = U2 + P4^T in C22
             faddin (F, uplo, N2, C12, ldc, C22, ldc);
 
                 // P2 = A12 x A12^T in C12
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, F.zero , C12, ldc, reclevel-1);
+            MMH_t H2 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, F.zero , C12, ldc, H2);
 
                 // U3 = P1 + P2 in C11
             faddin (F, uplo, N2, C12, ldc, C11, ldc);
@@ -340,8 +353,8 @@ namespace FFLAS {
                 S2 = C12;
                 lds = ldc;
             }
-                // S1 = (A11-A21) x Y^T in T1
-                // S2 = A21 x Y^T - A22 in C12
+                // S1 = (A21-A11) x Y^T in T1
+                // S2 = A22 - A21 x Y^T in C12
             computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, S2, lds);
 
                 // Up(C11) = Low(C22) (saving C22)
@@ -358,20 +371,23 @@ namespace FFLAS {
 
             if (K>N){ fflas_delete(S2); }
 
-                // S3 = S1 + A22 in T
-            faddin (F, N2, K2, A22, lda, T, ldt);
+                // S3 = S1 - A22 in T
+            fsubin (F, N2, K2, A22, lda, T, ldt);
 
                 // P5 = S3 x S3^T in C12
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, T, ldt, F.zero, C12, ldc, reclevel-1);
+            MMH_t H5 (F, WH.recLevel-1, WH.Amin-WH.Amax, WH.Amax-WH.Amin, WH.Bmin-WH.Bmax, WH.Bmax-WH.Bmin, 0,0);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, T, ldt, F.zero, C12, ldc, H5);
 
-                // S4 = S3 - A12 in T1
-            fsubin (F, N2, K2, A12, lda, T, ldt);
+                // S4 = S3 + A12 in T1
+            faddin (F, N2, K2, A12, lda, T, ldt);
 
-                // - P3 = - A22 x S4^T + beta C21 in C21
-            fgemm (F, trans, OppTrans, N2, N2, K2, negalpha, A22, lda, T, ldt, beta, C21, ldc);
+                //  P3 = A22 x S4^T + beta C21 in C21
+            MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, WH.Cmin, WH.Cmax);
+            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, T, ldt, beta, C21, ldc, H3);
 
                 // P1 = A11 x A11^T in T1
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, reclevel-1);
+            MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, WH.recLevel-1);
 
                 // U1 = P5 + P1  in C12 // Still symmetric
             faddin (F, uplo, N2, T, ldt, C12, ldc);
@@ -384,7 +400,7 @@ namespace FFLAS {
             for (size_t i=0; i<N2; i++)
                 faddin (F, N2, C22 + i*ldc, 1, C12 + i, ldc);
 
-                // U4 = U2 - P3 in C21
+                // U4 = U2 + P3 in C21
             faddin (F, N2, N2, C12, ldc, C21, ldc);
 
                 // U5 = U2 + P4^T + beta Up(C11)^T in C22 (only the lower triang part)
