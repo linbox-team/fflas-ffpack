@@ -338,7 +338,7 @@ namespace FFLAS {
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"A11 = "<<std::endl, F, N2, K2, A11, lda);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S1 = "<<std::endl, F, N2, K2, C21, ldc);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S2 = "<<std::endl, F, N2, K2, C12, ldc);
-            std::cerr<<"x = "<<y1<< " y = "<<y2<<std::endl;
+            //std::cerr<<"x = "<<y1<< " y = "<<y2<<std::endl;
                 //  P4^T =  S2 x S1^T in  C22
             MMH_t H4 (F, -1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
             fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
