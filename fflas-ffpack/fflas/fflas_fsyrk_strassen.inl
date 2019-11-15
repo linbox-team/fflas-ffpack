@@ -83,7 +83,7 @@ namespace FFLAS {
     // }
     //     ///////////
     
-    template<class Field>
+    template<class Field, class FieldTrait>
     inline void
     computeS1S2 (const Field& F,
                  const size_t N,
@@ -92,11 +92,16 @@ namespace FFLAS {
                  const typename Field::Element y,
                  typename Field::ConstElement_ptr A, const size_t lda,
                  typename Field::Element_ptr S, const size_t lds,
-                 typename Field::Element_ptr T, const size_t ldt){
+                 typename Field::Element_ptr T, const size_t ldt,
+                 MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> WH)  {
             // S1 = (A21-A11) x Y^T in S
             // S2 =  A22 - A21 x Y^T  in T
             // where Y = [ x.I  y.I]
             //           [ -y.I x.I]
+        typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
+            //typedef typename  MMH_t::DelayedField::Element DFElt;
+        const typename MMH_t::DelayedField & DF = WH.delayedField;
+
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         typename Field::ConstElement_ptr A11 = A;
@@ -134,22 +139,23 @@ namespace FFLAS {
         // fsubin (F, N2, K2, A22, lda, T, ldt);
 
             // S <- A21 Y^T
-        fscal (F, N2, K2, x, A21, lda, S, lds);
+        fscal (DF, N2, K2, x, A21, lda, S, lds);
         if (!F.isZero(y)){
-            faxpy (F, N2, K4, y, A21r, lda, S, lds);
-            faxpy (F, N2, K4, negy, A21, lda, Sr, lds);
+            faxpy (DF, N2, K4, y, A21r, lda, S, lds);
+            faxpy (DF, N2, K4, negy, A21, lda, Sr, lds);
         }
             // T <- A22 -S
-        fsub (F, N2, K2, A22, lda, S, lds, T, ldt);
+        fsub (DF, N2, K2, A22, lda, S, lds, T, ldt);
 
             // S <- S - A11 Y^T
-        faxpy (F, N2, K2, negx, A11, lda, S, lds);
+        faxpy (DF, N2, K2, negx, A11, lda, S, lds);
         if (!F.isZero(y)){
-            faxpy (F, N2, K4, negy, A11r, lda, S, lds);
-            faxpy (F, N2, K4, y, A11, lda, Sr, lds);
+            faxpy (DF, N2, K4, negy, A11r, lda, S, lds);
+            faxpy (DF, N2, K4, y, A11, lda, Sr, lds);
         }
 
-
+        freduce (F,N2,K4,S, lds);
+        freduce (F,N2,K4,T, ldt);
         
         // } else { // -1 is not a square in F
 //         size_t K4 = K2>>1;
@@ -286,7 +292,7 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y^T in C21
                 // S2 =  A22 - A21 x Y^T  in C12
-            computeS1S2 (F, N, K, y1, y2, A,lda, S1, lds, S2, lds);
+            computeS1S2 (F, N, K, y1, y2, A,lda, S1, lds, S2, lds, WH);
 
                 //  P4^T =  S2 x S1^T in  C22
             MMH_t H4 (F, -1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
@@ -362,8 +368,6 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C11, ldc);
-            std::cerr<<"WH = "<<WH<<std::endl;
-            std::cerr<<"W2 = "<<H2<<std::endl;
         } else { // with accumulation, schedule with 1 temp
 
             typename Field::Element negbeta;
@@ -381,7 +385,7 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y^T in T1
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, S2, lds);
+            computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, S2, lds, WH);
 
                 // Up(C11) = Low(C22) (saving C22)
             for (size_t i=0; i<N2-1; ++i)
