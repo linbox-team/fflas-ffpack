@@ -83,10 +83,12 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     // F.init (y1, a);
     // F.init (y2, b);
 
-//    std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" and "<<a<<"^2 + "<<b<<"^2 = -1"<<std::endl;
-    // WriteMatrix(std::cerr, F, n, k, A, lda);
+    std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" w = "<<w
+            //<<" and "<<a<<"^2 + "<<b<<"^2 = -1"
+             <<std::endl;
+    // WriteMatrix (std::cerr, F, n, k, A, lda);
     // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
-    //   WriteMatrix(std::cerr, F, n, k, C, ldc);
+//    WriteMatrix (std::cerr, F, n, k, C, ldc);
     if (w == size_t(-1))
             //w= (rand() % 5);
         w=1;
@@ -95,6 +97,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
 
     t.stop();
     time+=t.usertime();
+    // WriteMatrix (std::cerr, F, n, n, C, ldc);
 
     fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, A, lda, beta, C2, ldc);
 

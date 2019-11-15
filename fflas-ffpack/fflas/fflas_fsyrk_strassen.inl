@@ -94,8 +94,8 @@ namespace FFLAS {
                  typename Field::Element_ptr S, const size_t lds,
                  typename Field::Element_ptr T, const size_t ldt,
                  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> WH)  {
-            // S1 = (A21-A11) x Y^T in S
-            // S2 =  A22 - A21 x Y^T  in T
+            // S1 = (A21-A11) x Y in S
+            // S2 =  A22 - A21 x Y  in T
             // where Y = [ x.I  y.I]
             //           [ -y.I x.I]
         typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
@@ -141,8 +141,8 @@ namespace FFLAS {
             // S <- A21 Y^T
         fscal (DF, N2, K2, x, A21, lda, S, lds);
         if (!F.isZero(y)){
-            faxpy (DF, N2, K4, y, A21r, lda, S, lds);
-            faxpy (DF, N2, K4, negy, A21, lda, Sr, lds);
+            faxpy (DF, N2, K4, negy, A21r, lda, S, lds);
+            faxpy (DF, N2, K4, y, A21, lda, Sr, lds);
         }
             // T <- A22 -S
         fsub (DF, N2, K2, A22, lda, S, lds, T, ldt);
@@ -150,12 +150,12 @@ namespace FFLAS {
             // S <- S - A11 Y^T
         faxpy (DF, N2, K2, negx, A11, lda, S, lds);
         if (!F.isZero(y)){
-            faxpy (DF, N2, K4, negy, A11r, lda, S, lds);
-            faxpy (DF, N2, K4, y, A11, lda, Sr, lds);
+            faxpy (DF, N2, K4, y, A11r, lda, S, lds);
+            faxpy (DF, N2, K4, negy, A11, lda, Sr, lds);
         }
 
-        freduce (F,N2,K4,S, lds);
-        freduce (F,N2,K4,T, ldt);
+        freduce (F,N2,K2,S, lds);
+        freduce (F,N2,K2,T, ldt);
         
         // } else { // -1 is not a square in F
 //         size_t K4 = K2>>1;
@@ -186,6 +186,47 @@ namespace FFLAS {
 //             }
 //         }
     }
+
+    template<class Field>
+    inline typename Field::Element_ptr
+    fsyrk (const Field& F,
+           const FFLAS_UPLO UpLo,
+           const FFLAS_TRANSPOSE trans,
+           const size_t N,
+           const size_t K,
+           const typename Field::Element alpha,
+           typename Field::ConstElement_ptr A, const size_t lda,
+           const typename Field::Element beta,
+           typename Field::Element_ptr C, const size_t ldc,
+           MMHelper<Field, MMHelperAlgo::Winograd,  ModeCategories::DelayedTag, ParSeqHelper::Sequential> & H){
+        if (!N) return C;
+        if (!K || F.isZero(alpha)){
+            fscalin (F, N, N, beta, C, ldc); // TODO UpLo
+            return C;
+        }
+            // TODO convert from XXX to float/double or double to float as in fgemm
+            //...
+        typename Field::Element alpha_,beta_;
+        if ( !F.isOne(alpha) && !F.isMOne(alpha)){
+            F.assign (alpha_, F.one);
+            F.div (beta_, beta, alpha);
+        } else {
+            F.assign (alpha_,alpha);
+            F.assign (beta_,beta);
+        }
+        MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
+        // std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
+        // std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
+
+        fsyrk(F, UpLo, trans, N, K, alpha_, A, lda, beta_, C, ldc, HD);
+
+        Protected::ScalAndReduce (F, N, N, alpha, C, ldc, HD);
+
+        H.initOut();
+        
+        return C;
+    }
+
     template<class Field, class Mode>
     inline typename Field::Element_ptr
     fsyrk (const Field& F,
@@ -197,7 +238,7 @@ namespace FFLAS {
            typename Field::ConstElement_ptr A, const size_t lda,
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc,
-           MMHelper<Field, MMHelperAlgo::Winograd, Mode, ParSeqHelper::Sequential> & H){
+           MMHelper<Field, MMHelperAlgo::Winograd, Mode> & H){
 
         size_t q = 1 << (H.recLevel+1); // 
         size_t Ns = (N/q)*q;
@@ -290,35 +331,46 @@ namespace FFLAS {
                 S4 = C11;
                 lds = ldc;
             }
-                // S1 = (A21-A11) x Y^T in C21
-                // S2 =  A22 - A21 x Y^T  in C12
+                // S1 = (A21-A11) x Y in S1 (C21)
+                // S2 =  A22 - A21 x Y  in S2 (C12)
             computeS1S2 (F, N, K, y1, y2, A,lda, S1, lds, S2, lds, WH);
-
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"A21 = "<<std::endl, F, N2, K2, A21, lda);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"A11 = "<<std::endl, F, N2, K2, A11, lda);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S1 = "<<std::endl, F, N2, K2, C21, ldc);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S2 = "<<std::endl, F, N2, K2, C12, ldc);
+            std::cerr<<"x = "<<y1<< " y = "<<y2<<std::endl;
                 //  P4^T =  S2 x S1^T in  C22
             MMH_t H4 (F, -1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
             fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
+            // std::cerr<<"alpha = "<<alpha<<std::endl;
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P4^T = "<<std::endl, F, N2, N2, C22, ldc);
 
             if (K>N){ fflas_delete(S2); }
 
                 // S3 = S1 - A22 in S1
             fsubin (DF, N2, K2, A22, lda, S1, lds);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S3 = "<<std::endl, F, N2, K2, S1, lds);
 
                 // P5 = S3 x S3^T in C12
             MMH_t H5 (F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, 2*WH.Bmin, 2*WH.Bmax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P5 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // S4 = S3 + A12 in S4
             fadd (DF, N2, K2, S1, lds, A12, lda, S4, lds);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S4 = "<<std::endl, F, N2, K2, S4, lds);
 
                 // P3 = A22 x S4^T in C21
             MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0,0);
             fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, S4, lds, F.zero, C21, ldc, H3);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P3 = "<<std::endl, F, N2, N2, C21, ldc);
 
             if (K>N){ fflas_delete(S1); }
 
                 // P1 = A11 x A11^T in C11
             MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P1 = "<<std::endl, F, N2, N2, C11, ldc);
 
                 // U1 = P1 + P5 in C12
             DFElt U1Min, U1Max;
@@ -327,10 +379,12 @@ namespace FFLAS {
                 freduce(F,N2,N2,C11,ldc);
             }
             faddin (DF, uplo, N2, C11, ldc, C12, ldc); // TODO triangular addin (to be implemented)
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U1 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // make U1 explicit: Up(U1)=Low(U1)^T
             for (size_t i=0; i<N2; i++)
                 fassign(F, i, C12+i*ldc, 1, C12+i, ldc);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U1 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // U2 = U1 + P4 in C12
             DFElt U2Min, U2Max;
@@ -338,8 +392,11 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
                 freduce(F,N2,N2,C22,ldc);
             }
-            for (size_t i=0; i<N2; ++i)
+            for (size_t i=0; i<N2; ++i){
                 faddin (DF,  N2, C22+i*ldc, 1, C12+i, ldc);
+                // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"WIP U2 = "<<std::endl, F, N2, N2, C12, ldc);
+            }
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U2 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // U4 = U2 + P3 in C21
             DFElt U4Min, U4Max;
@@ -348,6 +405,7 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
             }
             faddin (DF, N2, N2, C12, ldc, C21, ldc);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U4 = "<<std::endl, F, N2, N2, C21, ldc);
 
                 // U5 = U2 + P4^T in C22
             DFElt U5Min, U5Max;
@@ -356,10 +414,12 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C22, ldc);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U5 = "<<std::endl, F, N2, N2, C22, ldc);
 
                 // P2 = A12 x A12^T in C12
             MMH_t H2 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, F.zero , C12, ldc, H2);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P2 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // U3 = P1 + P2 in C11
             DFElt U3Min, U3Max;
@@ -368,6 +428,11 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C11, ldc);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U3 = "<<std::endl, F, N2, N2, C11, ldc);
+                // Updating WH with Outmin, Outmax of the result
+            WH.Outmin = min3 (U3Min, U4Min, U5Min);
+            WH.Outmax = max3 (U3Max, U4Max, U5Max);
+
         } else { // with accumulation, schedule with 1 temp
 
             typename Field::Element negbeta;
