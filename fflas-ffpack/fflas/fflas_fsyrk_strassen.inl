@@ -209,7 +209,7 @@ namespace FFLAS {
         F.init (y2, b);
         
             // C11 = A11 x A11^T
-        fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha, A, lda, beta, C, ldc, H.recLevel);
+        fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha, A, lda, beta, C, ldc, H);
 
             // C11 += A12 x A12 ^T
         fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A+Ks, lda, F.one, C, ldc);
@@ -241,14 +241,14 @@ namespace FFLAS {
                     ) {
         
             // written for NoTrans, Lower
-        if (WH.reclevel == 0){
+        if (WH.recLevel == 0){
             fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc);
             return C;
         }
 
         typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
-        typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
-        typedef typename  MMH_t::DelayedField::ConstElement_ptr DFCEptr;
+            //       typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
+            //       typedef typename  MMH_t::DelayedField::ConstElement_ptr DFCEptr;
         typedef typename  MMH_t::DelayedField::Element DFElt;
 
         const typename MMH_t::DelayedField & DF = WH.delayedField;
@@ -315,29 +315,55 @@ namespace FFLAS {
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
 
                 // U1 = P1 + P5 in C12
-            faddin (F, uplo, N2, C11, ldc, C12, ldc); // TODO triangular addin (to be implemented)
+            DFElt U1Min, U1Max;
+            if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H5.Outmin, H5.Outmax, WH)){
+                freduce(F,N2,N2,C12,ldc);
+                freduce(F,N2,N2,C11,ldc);
+            }
+            faddin (DF, uplo, N2, C11, ldc, C12, ldc); // TODO triangular addin (to be implemented)
 
                 // make U1 explicit: Up(U1)=Low(U1)^T
             for (size_t i=0; i<N2; i++)
                 fassign(F, i, C12+i*ldc, 1, C12+i, ldc);
 
                 // U2 = U1 + P4 in C12
+            DFElt U2Min, U2Max;
+            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
+                freduce(F,N2,N2,C12,ldc);
+                freduce(F,N2,N2,C22,ldc);
+            }
             for (size_t i=0; i<N2; ++i)
-                faddin (F,  N2, C22+i*ldc, 1, C12+i, ldc);
+                faddin (DF,  N2, C22+i*ldc, 1, C12+i, ldc);
 
                 // U4 = U2 + P3 in C21
-            faddin (F, N2, N2, C12, ldc, C21, ldc);
+            DFElt U4Min, U4Max;
+            if (Protected::NeedPreAddReduction (U4Min, U4Max, U2Min, U2Max, H3.Outmin, H3.Outmax, WH)){
+                freduce(F,N2,N2,C21,ldc);
+                freduce(F,N2,N2,C12,ldc);
+            }
+            faddin (DF, N2, N2, C12, ldc, C21, ldc);
 
                 // U5 = U2 + P4^T in C22
-            faddin (F, uplo, N2, C12, ldc, C22, ldc);
+            DFElt U5Min, U5Max;
+            if (Protected::NeedPreAddReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
+                freduce(F,N2,N2,C22,ldc);
+                freduce(F,N2,N2,C12,ldc);
+            }
+            faddin (DF, uplo, N2, C12, ldc, C22, ldc);
 
                 // P2 = A12 x A12^T in C12
             MMH_t H2 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, F.zero , C12, ldc, H2);
 
                 // U3 = P1 + P2 in C11
-            faddin (F, uplo, N2, C12, ldc, C11, ldc);
-
+            DFElt U3Min, U3Max;
+            if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
+                freduce(F,N2,N2,C11,ldc);
+                freduce(F,N2,N2,C12,ldc);
+            }
+            faddin (DF, uplo, N2, C12, ldc, C11, ldc);
+            std::cerr<<"WH = "<<WH<<std::endl;
+            std::cerr<<"W2 = "<<H2<<std::endl;
         } else { // with accumulation, schedule with 1 temp
 
             typename Field::Element negbeta;
@@ -367,19 +393,20 @@ namespace FFLAS {
                 F.assign (DC22[i], C22[i*(ldc+1)]);
 
                 // P4^T = S2 x S1^T in C22
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, T, ldt, F.zero, C22, ldc);
+            MMH_t H4 (F,WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, T, ldt, F.zero, C22, ldc, H4);
 
             if (K>N){ fflas_delete(S2); }
 
                 // S3 = S1 - A22 in T
-            fsubin (F, N2, K2, A22, lda, T, ldt);
+            fsubin (DF, N2, K2, A22, lda, T, ldt);
 
                 // P5 = S3 x S3^T in C12
             MMH_t H5 (F, WH.recLevel-1, WH.Amin-WH.Amax, WH.Amax-WH.Amin, WH.Bmin-WH.Bmax, WH.Bmax-WH.Bmin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, T, ldt, F.zero, C12, ldc, H5);
 
                 // S4 = S3 + A12 in T1
-            faddin (F, N2, K2, A12, lda, T, ldt);
+            faddin (DF, N2, K2, A12, lda, T, ldt);
 
                 //  P3 = A22 x S4^T + beta C21 in C21
             MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, WH.Cmin, WH.Cmax);
@@ -387,24 +414,47 @@ namespace FFLAS {
 
                 // P1 = A11 x A11^T in T1
             MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, WH.recLevel-1);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, H1);
 
                 // U1 = P5 + P1  in C12 // Still symmetric
-            faddin (F, uplo, N2, T, ldt, C12, ldc);
+            DFElt U1Min, U1Max;
+            if (Protected::NeedPreAddReduction (U1Min, U1Max, H5.Outmin, H5.Outmax, H1.Outmin, H1.Outmax, WH)){
+                freduce(F,N2,N2,C12,ldc);
+                freduce(F,N2,N2,T,ldt);
+            }
+            faddin (DF, uplo, N2, T, ldt, C12, ldc);
 
                 // Make U1 explicit (copy the N/2 missing part)
             for (size_t i=0; i<N2; ++i)
-                fassign (F, i, C12 + i*ldc, 1, C12 + i, ldc);
+                fassign (DF, i, C12 + i*ldc, 1, C12 + i, ldc);
 
                 // U2 = U1 + P4 in C12
+            DFElt U2Min, U2Max;
+            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
+                freduce(F,N2,N2,C12,ldc);
+                freduce(F,N2,N2,C22,ldc);
+            }
             for (size_t i=0; i<N2; i++)
-                faddin (F, N2, C22 + i*ldc, 1, C12 + i, ldc);
+                faddin (DF, N2, C22 + i*ldc, 1, C12 + i, ldc);
 
                 // U4 = U2 + P3 in C21
-            faddin (F, N2, N2, C12, ldc, C21, ldc);
+            DFElt U4Min, U4Max;
+            if (Protected::NeedPreAddReduction (U4Min, U4Max, U2Min, U2Max, H3.Outmin, H3.Outmax, WH)){
+                freduce(F,N2,N2,C21,ldc);
+                freduce(F,N2,N2,C12,ldc);
+            }
+            faddin (DF, N2, N2, C12, ldc, C21, ldc);
 
-                // U5 = U2 + P4^T + beta Up(C11)^T in C22 (only the lower triang part)
-            faddin (F, uplo, N2, C12, ldc, C22, ldc);
+                // U5 = U2 + P4^T  in C22 (only the lower triang part)
+            DFElt U5Min, U5Max;
+            if (Protected::NeedPreAddReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
+                freduce(F,N2,N2,C22,ldc);
+                freduce(F,N2,N2,C12,ldc);
+            }
+            faddin (DF, uplo, N2, C12, ldc, C22, ldc);
+
+                // U5' = U5 +  beta Up(C11)^T in C22
+                // TODO use delayed field and a needPreAXPYReduction
             for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
                 faxpy (F, N2-i-1, beta, C11 + 1+i*(ldc+1), 1, C22 + (N2-i-1)*ldc, 1);
                 F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
@@ -414,10 +464,16 @@ namespace FFLAS {
             fflas_delete(DC22);
 
                 // P2 = A12 x A12^T + beta C11 in C11
-            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, beta, C11, ldc, reclevel-1);
+            MMH_t H2 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, WH.Cmin, WH.Cmax);
+            fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, beta, C11, ldc, H2);
                 // U3 = P1 + P2 in C11
-            faddin (F, uplo, N2, T, ldt, C11, ldc);
-
+            DFElt U3Min, U3Max;
+            if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
+                freduce(F,N2,N2,C11,ldc);
+                freduce(F,N2,N2,T,ldt);
+            }
+            faddin (DF, uplo, N2, T, ldt, C11, ldc);
+            
             fflas_delete (T);
         }
         return C;

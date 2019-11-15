@@ -109,7 +109,8 @@ int main(int argc, char** argv) {
                 size_t reclevel = 0;
                 size_t dim = n;
                 while(dim > threshold) {reclevel++; dim>>=1;}
-                fsyrk_strassen (F, uplo, FflasNoTrans, n, k, y1, y2, F.one, A, lda, F.zero, C, ldc, reclevel);
+                MMHelper<Field, MMHelperAlgo::Winograd> H(F,reclevel);
+                fsyrk_strassen (F, uplo, FflasNoTrans, n, k, y1, y2, F.one, A, lda, F.zero, C, ldc, H);
                 break;
         }
         if (i) chrono.stop();
