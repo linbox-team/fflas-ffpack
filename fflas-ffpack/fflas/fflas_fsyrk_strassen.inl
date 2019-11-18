@@ -139,24 +139,25 @@ namespace FFLAS {
         // fsubin (F, N2, K2, A22, lda, T, ldt);
 
             // S <- A21 Y^T
-        fscal (DF, N2, K2, x, A21, lda, S, lds);
-        if (!F.isZero(y)){
-            faxpy (DF, N2, K4, negy, A21r, lda, S, lds);
-            faxpy (DF, N2, K4, y, A21, lda, Sr, lds);
+        for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, S+=lds, Sr+=lds, T+=ldt){
+            fscal (DF, K2, x, A21, 1, S, 1);
+            if (!F.isZero(y)){
+                faxpy (DF, K4, negy, A21r, 1, S, 1);
+                faxpy (DF, K4, y, A21, 1, Sr, 1);
+            }
+                // T <- A22 -S
+            fsub (DF, K2, A22, 1, S, 1, T, 1);
+            
+                // S <- S - A11 Y^T
+            faxpy (DF, K2, negx, A11, 1, S, 1);
+            if (!F.isZero(y)){
+                faxpy (DF, K4, y, A11r, 1, S, 1);
+                faxpy (DF, K4, negy, A11, 1, Sr, 1);
+            }
+            
+            freduce (F,K2,S, 1);
+            freduce (F,K2,T, 1);
         }
-            // T <- A22 -S
-        fsub (DF, N2, K2, A22, lda, S, lds, T, ldt);
-
-            // S <- S - A11 Y^T
-        faxpy (DF, N2, K2, negx, A11, lda, S, lds);
-        if (!F.isZero(y)){
-            faxpy (DF, N2, K4, y, A11r, lda, S, lds);
-            faxpy (DF, N2, K4, negy, A11, lda, Sr, lds);
-        }
-
-        freduce (F,N2,K2,S, lds);
-        freduce (F,N2,K2,T, ldt);
-        
         // } else { // -1 is not a square in F
 //         size_t K4 = K2>>1;
 //         typename Field::ConstElement_ptr A11r = A11 + K4;
@@ -199,6 +200,7 @@ namespace FFLAS {
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Winograd,  ModeCategories::DelayedTag, ParSeqHelper::Sequential> & H){
+            //std::cerr<<"fsyrk Wino Delayed"<<std::endl;
         if (!N) return C;
         if (!K || F.isZero(alpha)){
             fscalin (F, N, N, beta, C, ldc); // TODO UpLo
@@ -240,6 +242,7 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Winograd, Mode> & H){
 
+            //std::cerr<<"Wino Mode, n quelconque"<<std::endl;
         size_t q = 1 << (H.recLevel+1); // 
         size_t Ns = (N/q)*q;
         size_t Ks = (K/q)*q;
@@ -286,10 +289,11 @@ namespace FFLAS {
                     typename Field::Element_ptr C, const size_t ldc,
                     MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
                     ) {
-        
+            //std::cerr<<"fsyrk_strassen"<<std::endl;
             // written for NoTrans, Lower
         if (WH.recLevel == 0){
-            fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc);
+            MMHelper<Field, MMHelperAlgo::Classic, FieldTrait>  CH(WH);
+            fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc,CH);
             return C;
         }
 

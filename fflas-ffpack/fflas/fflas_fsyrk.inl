@@ -40,6 +40,7 @@ namespace FFLAS{namespace Protected{
                    typename Field::Element_ptr C, const size_t ldc,
                    MMHelper<Field, MMHelperAlgo::Classic, FieldMode> & H)
     {
+            //std::cerr<<"fsyrk_convert"<<std::endl;
         typedef typename NewField::Element FloatElement;
         NewField G((FloatElement) F.characteristic());
         FloatElement tmp,alphaf, betaf;
@@ -88,6 +89,7 @@ namespace FFLAS {
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc)
     {
+            //std::cerr<<"fsyrk nothing"<<std::endl;
         if (!N) return C;
         if (!K || F.isZero (alpha)){
             fscalin(F, N, N, beta, C, ldc);
@@ -111,6 +113,7 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            const ParSeqHelper::Sequential seq )
     {
+            //std::cerr<<"fsyrk PSH::Seq"<<std::endl;
         MMHelper<Field, MMHelperAlgo::Classic, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, N, K, N, seq);
         return fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, HW);
     }
@@ -128,6 +131,7 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>, ParSeqHelper::Sequential> & H)
      {
+             //std::cerr<<"fsyrk Classic ConvertTo"<<std::endl;
          if (!std::is_same<Field,Givaro::Modular<float> >::value){
             if (F.cardinality() == 2)
                 return Protected::fsyrk_convert<Givaro::Modular<float>,Field>(F,UpLo,trans,N,K,alpha,A,lda,beta,C,ldc,H);
@@ -158,6 +162,7 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> & H)
     {
+            //std::cerr<<"fsyrk Classic Delayed"<<std::endl;
         
         typename Field::Element alpha_,beta_;
         if ( !F.isOne(alpha) && !F.isMOne(alpha)){
@@ -192,6 +197,7 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & H)
     {
+            //std::cerr<<"fsyrk Classic Lazy"<<std::endl;
         // Input matrices are unreduced: need to figure out the best option between:
         // - reducing them
         // - making possibly more blocks (smaller kmax)
@@ -306,6 +312,8 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H) {
 
+            //std::cerr<<"fsyrk Classic Default Field"<<std::endl;
+
         //@TODO: write an optimized iterative basecase
         if (N==1){ // Base case
             F.mulin (*C, beta);
@@ -355,6 +363,8 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H) {
 
+            //std::cerr<<"fsyrk Classic DefaultBounded"<<std::endl;
+
         MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(H);
         fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, Hd);
         H.setOutBounds (K,alpha,beta);
@@ -372,6 +382,7 @@ namespace FFLAS {
            const Givaro::FloatDomain::Element beta,
            Givaro::FloatDomain::Element_ptr C, const size_t ldc,
            MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> &H) {
+            //std::cerr<<"fsyrk Classic Default FloatDomain"<<std::endl;
         cblas_ssyrk (CblasRowMajor, (CBLAS_UPLO) UpLo, (CBLAS_TRANSPOSE) trans, N, K, alpha, A, lda, beta, C, ldc);
         return C;
     }
@@ -387,6 +398,7 @@ namespace FFLAS {
            const Givaro::DoubleDomain::Element beta,
            Givaro::DoubleDomain::Element_ptr C, const size_t ldc,
            MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> &H) {
+            //std::cerr<<"fsyrk Classic Default DoubleDomain"<<std::endl;
         cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) UpLo, (CBLAS_TRANSPOSE) trans, N, K, alpha, A, lda, beta, C, ldc);
         return C;
     }

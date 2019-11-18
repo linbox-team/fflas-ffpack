@@ -100,18 +100,24 @@ int main(int argc, char** argv) {
                 fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, D, 1, twoBlocks, F.zero, C, ldc, threshold);
                 break;
             case 3: // fsyrk with Strassen and no diagonal scaling
-                Givaro::Integer a,b;
-                Givaro::IntSqrtModDom<> ISM;
-                ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
-                typename Field::Element y1, y2;
-                F.init (y1, a);
-                F.init (y2, b);
+                // Givaro::Integer a,b;
+                // Givaro::IntSqrtModDom<> ISM;
+                // ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
+                // typename Field::Element y1, y2;
+                // F.init (y1, a);
+                // F.init (y2, b);
+            {
                 size_t reclevel = 0;
                 size_t dim = n;
                 while(dim > threshold) {reclevel++; dim>>=1;}
                 MMHelper<Field, MMHelperAlgo::Winograd> H(F,reclevel);
-                fsyrk_strassen (F, uplo, FflasNoTrans, n, k, y1, y2, F.one, A, lda, F.zero, C, ldc, H);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
                 break;
+            }
+            case 4: // cblas_dsyrk
+                cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) uplo, (CBLAS_TRANSPOSE) FflasNoTrans, n, k, 1.0, A, lda, 0.0, C, ldc);
+                break;
+
         }
         if (i) chrono.stop();
 
