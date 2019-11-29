@@ -139,7 +139,7 @@ namespace FFLAS {
         // fsubin (F, N2, K2, A22, lda, T, ldt);
 
             // S <- A21 Y^T
-        for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, S+=lds, Sr+=lds, T+=ldt){
+        for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
             fscal (DF, K2, x, A21, 1, S, 1);
             if (!F.isZero(y)){
                 faxpy (DF, K4, negy, A21r, 1, S, 1);
@@ -289,7 +289,9 @@ namespace FFLAS {
                     typename Field::Element_ptr C, const size_t ldc,
                     MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
                     ) {
-            //std::cerr<<"fsyrk_strassen"<<std::endl;
+        // std::cerr<<"Entree fsyrk_strassen"
+        //          <<" WH = "<<WH
+        //          <<std::endl;
             // written for NoTrans, Lower
         if (WH.recLevel == 0){
             MMHelper<Field, MMHelperAlgo::Classic, FieldTrait>  CH(WH);
