@@ -63,7 +63,7 @@ namespace FFLAS{namespace Protected{
 
         if (!F.isZero(beta)){
             fconvert(F, N, N, Cf, N, C, ldc); // @todo: take advantage of the symmetry
-            freduce (G, N, N, Cf, N);
+            freduce (G, UpLo, N, N, Cf, N);
         }
         MMHelper<NewField, MMHelperAlgo::Classic> HG(G,H.recLevel, ParSeqHelper::Sequential());
         fsyrk (G, UpLo, trans, N, K, alphaf, Af, ka, betaf, Cf, N, HG);
@@ -149,6 +149,31 @@ namespace FFLAS {
 
      }
 
+
+    namespace Protected {
+        template <class Field, class AlgoT, class ParSeqTrait>
+        inline void ScalAndReduce (const Field& F, const FFLAS_UPLO UpLo,
+                                   const size_t M, const size_t N,
+                                   const typename Field::Element alpha,
+                                   typename Field::Element_ptr A, const size_t lda,
+                                   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
+        {
+            if (!F.isOne(alpha) && !F.isMOne(alpha)){
+                typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al;
+                F.convert(al, alpha);
+                if (al<0) al = -al;
+                if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
+                    freduce (F, UpLo, M, N, A, lda);
+                    fscalin (F, M, N, alpha, A, lda);
+                } else {
+                    fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
+                    freduce (F, UpLo, M, N, A, lda);
+                }
+            } else
+                freduce (F, UpLo, M, N, A, lda);
+        }
+    }
+
     template<class Field>
     inline typename Field::Element_ptr
     fsyrk (const Field& F,
@@ -176,7 +201,7 @@ namespace FFLAS {
 
         fsyrk (F, UpLo, trans, N, K, alpha_, A, lda, beta_, C, ldc, HD);
 
-        Protected::ScalAndReduce (F, N, N, alpha, C, ldc, HD);
+        Protected::ScalAndReduce (F, UpLo, N, N, alpha, C, ldc, HD);
 
         H.initOut();
 
@@ -231,7 +256,7 @@ namespace FFLAS {
             }
             if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
                 H.initC();
-                freduce (F, N, N, C, ldc);
+                freduce (F, UpLo, N, N, C, ldc);
             }
             kmax = H.MaxDelayedDim (betadf);
         }
@@ -264,7 +289,7 @@ namespace FFLAS {
                betadf, (DFElt_ptr)C, ldc, Hfp);
 
         for (size_t i = 0; i < nblock; ++i) {
-            freduce (F, N, N, C, ldc);
+            freduce (F, UpLo, N, N, C, ldc);
             Hfp.initC();
             fsyrk (H.delayedField, UpLo, trans, N, k2, alphadf,
                    (DFCElt_ptr)A +i*shiftA, lda,
@@ -278,7 +303,7 @@ namespace FFLAS {
             // getting -Outmin returns a int, not the same base type.
             if (std::max(static_cast<const decltype(Hfp.Outmin)&>(-Hfp.Outmin), Hfp.Outmax)
                 >Hfp.MaxStorableValue/al){
-                freduce (F, N, N, C, ldc);
+                freduce (F, UpLo, N, N, C, ldc);
                 Hfp.initOut();
             }
 
