@@ -117,7 +117,10 @@ int main(int argc, char** argv) {
             case 4: // cblas_dsyrk
                 cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) uplo, (CBLAS_TRANSPOSE) FflasNoTrans, n, k, 1.0, A, lda, 0.0, C, ldc);
                 break;
-
+            case 5: // fsyrk with the classic Divide and conquer algorithm
+                MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> H(F,0);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
+                break;
         }
         if (i) chrono.stop();
 

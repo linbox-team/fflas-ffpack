@@ -338,7 +338,6 @@ namespace FFLAS {
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H) {
 
             //std::cerr<<"fsyrk Classic Default Field"<<std::endl;
-
         //@TODO: write an optimized iterative basecase
         if (N==1){ // Base case
             F.mulin (*C, beta);
@@ -358,18 +357,18 @@ namespace FFLAS {
             typename Field::Element_ptr C21 = C + N1*ldc;
             typename Field::Element_ptr C22 = C12 + N1*ldc;
             // C11 <- alpha A1 x A1^T + beta C11
-            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, beta, C, ldc);
+            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, beta, C, ldc, H);
             // C22 <- alpha A2 x A2^T + beta C22
-            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, beta, C22, ldc);
+            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, beta, C22, ldc, H);
 
             if (UpLo == FflasUpper) {
                     // CP : calling explicitely with H to shortcut Winograd's algorithm in fgemm,
                     // since it does not compile with Field=ZRing<int64_t>
                 // C12 <- alpha A1 * A2^T + beta C12
-                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc, H);
+                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc);
             } else {
                 // C21 <- alpha A2 * A1^T + beta C21
-                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, A, lda, beta, C21, ldc, H);
+                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, A, lda, beta, C21, ldc);
             }
             return C;
         }
@@ -456,7 +455,6 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            const ParSeqHelper::Sequential seq,
            const size_t threshold){
-
         size_t incRow,incCol;
         FFLAS_TRANSPOSE oppTrans;
         if (trans==FflasNoTrans) {incRow=lda;incCol=1;oppTrans=FflasTrans;}
