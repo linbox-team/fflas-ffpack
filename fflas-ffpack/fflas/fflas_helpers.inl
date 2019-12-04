@@ -76,6 +76,7 @@ namespace FFLAS {
     namespace MMHelperAlgo{
         struct Auto{};
         struct Classic{};
+        struct DivideAndConquer{};
         struct Winograd{};
         struct WinogradPar{};
         struct Bini{};

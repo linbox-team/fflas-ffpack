@@ -100,6 +100,7 @@ namespace FFLAS {
         
     }
 
+
     template<class Field>
     inline typename Field::Element_ptr
     fsyrk (const Field& F,
@@ -261,11 +262,11 @@ namespace FFLAS {
             kmax = H.MaxDelayedDim (betadf);
         }
 
-        if (!kmax){
-            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
-            H.initOut();
-            return fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, HG);
-        }
+        // if (!kmax){
+        //     MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
+        //     H.initOut();
+        //     return fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, HG);
+        // }
 
         size_t k2 = std::min(K,kmax);
         size_t nblock = K / kmax;
@@ -324,7 +325,7 @@ namespace FFLAS {
         return C;
     }
 
-    template<class Field>
+    template<class Field, typename Mode>
     inline typename Field::Element_ptr
     fsyrk (const Field& F,
            const FFLAS_UPLO UpLo,
@@ -335,15 +336,17 @@ namespace FFLAS {
            typename Field::ConstElement_ptr A, const size_t lda,
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc,
-           MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H) {
+           MMHelper<Field, MMHelperAlgo::DivideAndConquer, Mode> & H) {
 
-            //std::cerr<<"fsyrk Classic Default Field"<<std::endl;
         //@TODO: write an optimized iterative basecase
-        if (N==1){ // Base case
-            F.mulin (*C, beta);
-            size_t incA = (trans==FFLAS::FflasNoTrans)?1:lda;
-            F.axpyin (*C, alpha, fdot (F, K, A, incA, A, incA));
-            return C;
+        // if (N==1){ // Base case
+        //     F.mulin (*C, beta);
+        //     size_t incA = (trans==FFLAS::FflasNoTrans)?1:lda;
+        //     F.axpyin (*C, alpha, fdot (F, K, A, incA, A, incA));
+        //     return C;
+        if (H.recLevel == 0){
+            MMHelper<Field, MMHelperAlgo::Classic> CH (H);
+            return fsyrk(F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, CH);
         } else {
             size_t N1 = N>>1;
             size_t N2 = N - N1;
@@ -357,9 +360,10 @@ namespace FFLAS {
             typename Field::Element_ptr C21 = C + N1*ldc;
             typename Field::Element_ptr C22 = C12 + N1*ldc;
             // C11 <- alpha A1 x A1^T + beta C11
-            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, beta, C, ldc, H);
+            MMHelper<Field, MMHelperAlgo::DivideAndConquer, Mode> CH (F, H.recLevel - 1);
+            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, beta, C, ldc, CH);
             // C22 <- alpha A2 x A2^T + beta C22
-            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, beta, C22, ldc, H);
+            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, beta, C22, ldc, CH);
 
             if (UpLo == FflasUpper) {
                     // CP : calling explicitely with H to shortcut Winograd's algorithm in fgemm,
@@ -394,7 +398,6 @@ namespace FFLAS {
         H.setOutBounds (K,alpha,beta);
         return C;
     }
-    template<>
     inline Givaro::FloatDomain::Element_ptr
     fsyrk (const Givaro::FloatDomain& F,
            const FFLAS_UPLO UpLo,
@@ -410,7 +413,7 @@ namespace FFLAS {
         cblas_ssyrk (CblasRowMajor, (CBLAS_UPLO) UpLo, (CBLAS_TRANSPOSE) trans, N, K, alpha, A, lda, beta, C, ldc);
         return C;
     }
-    template<>
+
     inline Givaro::DoubleDomain::Element_ptr
     fsyrk (const Givaro::DoubleDomain& F,
            const FFLAS_UPLO UpLo,
@@ -426,7 +429,7 @@ namespace FFLAS {
         cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) UpLo, (CBLAS_TRANSPOSE) trans, N, K, alpha, A, lda, beta, C, ldc);
         return C;
     }
-    
+
     template<class Field>
     inline typename Field::Element_ptr
     fsyrk (const Field& F,

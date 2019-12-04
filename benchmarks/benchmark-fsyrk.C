@@ -118,7 +118,10 @@ int main(int argc, char** argv) {
                 cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) uplo, (CBLAS_TRANSPOSE) FflasNoTrans, n, k, 1.0, A, lda, 0.0, C, ldc);
                 break;
             case 5: // fsyrk with the classic Divide and conquer algorithm
-                MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> H(F,0);
+                size_t reclevel = 0;
+                size_t dim = n;
+                while(dim > threshold) {reclevel++; dim>>=1;}
+                MMHelper<Field, MMHelperAlgo::DivideAndConquer> H(F,reclevel);
                 fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
                 break;
         }
