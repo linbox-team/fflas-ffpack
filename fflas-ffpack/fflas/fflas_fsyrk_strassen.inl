@@ -364,7 +364,11 @@ namespace FFLAS {
             //std::cerr<<"x = "<<y1<< " y = "<<y2<<std::endl;
                 //  P4^T =  S2 x S1^T in  C22
             MMH_t H4 (F, -1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
+            if (uplo == FflasLower)
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
+            else
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S1, lds, S2, lds, F.zero, C22, ldc, H4);
+                
             // std::cerr<<"alpha = "<<alpha<<std::endl;
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P4^T = "<<std::endl, F, N2, N2, C22, ldc);
 
@@ -385,8 +389,12 @@ namespace FFLAS {
 
                 // P3 = A22 x S4^T in C21
             MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0,0);
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, S4, lds, F.zero, C21, ldc, H3);
-            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P3 = "<<std::endl, F, N2, N2, C21, ldc);
+            if (uplo == FflasLower)
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, S4, lds, F.zero, C21, ldc, H3);
+            else
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S4, lds, A22, lda, F.zero, C21, ldc, H3);
+
+// WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P3 = "<<std::endl, F, N2, N2, C21, ldc);
 
             if (K>N){ fflas_delete(S1); }
 
@@ -407,8 +415,12 @@ namespace FFLAS {
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U1 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // make U1 explicit: Up(U1)=Low(U1)^T
-            for (size_t i=0; i<N2; i++)
-                fassign(F, i, C12+i*ldc, 1, C12+i, ldc);
+            if (uplo == FflasLower)
+                for (size_t i=0; i<N2; i++)
+                    fassign(F, i, C12+i*ldc, 1, C12+i, ldc);
+            else
+                for (size_t i=0; i<N2; i++)
+                    fassign(F, i, C12+i, ldc, C12+i*ldc, 1);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U1 = "<<std::endl, F, N2, N2, C12, ldc);
 
                 // U2 = U1 + P4 in C12
