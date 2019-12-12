@@ -257,19 +257,29 @@ namespace FFLAS {
         typename Field::Element y1, y2;
         F.init (y1, a);
         F.init (y2, b);
-        
+
+        typename Field::ConstElement_ptr A12, A21;
+        if (trans==FflasNoTrans){
+            A12 = A + Ks; A21 = A + Ns*lda;
+        } else {
+            A12 = A + Ks*lda; A21 = A + Ns;
+        }
             // C11 = A11 x A11^T
         fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha, A, lda, beta, C, ldc, H);
 
             // C11 += A12 x A12 ^T
-        fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A+Ks, lda, F.one, C, ldc);
+        fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A12, lda, F.one, C, ldc);
 
             // C22 = [A21 A22] x [A21 A22]^T
-        fsyrk (F, UpLo, trans, N-Ns, K, alpha, A+Ns*lda, lda, beta, C+Ns*(ldc+1), ldc);
+        fsyrk (F, UpLo, trans, N-Ns, K, alpha, A21, lda, beta, C+Ns*(ldc+1), ldc);
 
             // C21 = A21 x A11^T
-        fgemm (F, trans, (trans == FflasNoTrans)? FflasTrans : FflasNoTrans, N-Ns, Ns, K,
-               alpha, A+Ns*lda, lda, A, lda, beta, C+Ns*ldc, ldc);
+        if (UpLo == FflasLower)
+            fgemm (F, trans, (trans == FflasNoTrans)? FflasTrans : FflasNoTrans, N-Ns, Ns, K,
+                   alpha, A21, lda, A, lda, beta, C+Ns*ldc, ldc);
+        else
+            fgemm (F, trans, (trans == FflasNoTrans)? FflasTrans : FflasNoTrans, Ns, N-Ns, K,
+                   alpha, A, lda, A21, lda, beta, C+Ns, ldc);
         return C;
     }
 
@@ -310,14 +320,19 @@ namespace FFLAS {
 
         size_t N2 = N>>1;
         size_t K2 = K>>1;
-        typename Field::ConstElement_ptr A11 = A;
-        typename Field::ConstElement_ptr A12 = A + K2;
-        typename Field::ConstElement_ptr A21 = A + N2*lda;
-        typename Field::ConstElement_ptr A22 = A21 + K2;
-        typename Field::Element_ptr C11 = C;
-        typename Field::Element_ptr C12 = C + N2;
-        typename Field::Element_ptr C21 = C + N2*ldc;
-        typename Field::Element_ptr C22 = C21 + N2;
+        typename Field::ConstElement_ptr A11 = A, A12, A21, A22;
+
+        if (trans == FflasNoTrans){
+            A12 = A + K2; A21 = A + N2*lda; A22 = A21 + K2;
+        } else {
+            A12 = A + K2*lda; A21 = A + N2; A22 = A12 + N2;
+        }
+        typename Field::Element_ptr C11 = C, C12, C21, C22;
+        if (uplo == FflasLower){
+            C12 = C11 + N2; C21  = C11 + N2*ldc; C22 = C21 + N2;
+        } else {
+            C12 = C11 + N2*ldc; C21  = C11 + N2; C22 = C12 + N2;
+        }
         typename Field::Element_ptr S1, S2, S4;
         size_t lds;
         FFLAS_TRANSPOSE OppTrans = (trans == FflasNoTrans)? FflasTrans : FflasNoTrans;

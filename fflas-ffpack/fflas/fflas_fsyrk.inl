@@ -255,7 +255,7 @@ namespace FFLAS {
                 H.initA();
                 freduce_constoverride (F, (trans==FflasNoTrans)?N:K, (trans==FflasNoTrans)?K:N, A, lda);
             }
-            if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
+            if (!F.isZero(beta) && (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax)){
                 H.initC();
                 freduce (F, UpLo, N, N, C, ldc);
             }
