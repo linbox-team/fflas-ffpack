@@ -384,32 +384,32 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         F->init (beta, c);
         cout<<"Checking with ";F->write(cout)<<endl;
 
-        // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
         ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+            //ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
 
         // // checking with k > n (=k+n)
-        // ok = ok && check_fsyrk(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
         nbit--;
         delete F;
     }
