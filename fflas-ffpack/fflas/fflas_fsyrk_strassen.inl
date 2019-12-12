@@ -296,6 +296,8 @@ namespace FFLAS {
         if (WH.recLevel == 0){
             MMHelper<Field, MMHelperAlgo::Classic, FieldTrait>  CH(WH);
             fsyrk (F, uplo, trans, N, K, alpha, A, lda, beta, C, ldc,CH);
+            WH.Outmin = CH.Outmin;
+            WH.Outmax = CH.Outmax;
             return C;
         }
 
@@ -375,6 +377,7 @@ namespace FFLAS {
 
                 // P1 = A11 x A11^T in C11
             MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"A11 = "<<std::endl, F, N2, K2, A11, lda);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P1 = "<<std::endl, F, N2, N2, C11, ldc);
 
@@ -384,6 +387,7 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
                 freduce(F,N2,N2,C11,ldc);
             }
+           // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"after reduce P1 = "<<std::endl, F, N2, N2, C11, ldc);
             faddin (DF, uplo, N2, C11, ldc, C12, ldc); // TODO triangular addin (to be implemented)
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U1 = "<<std::endl, F, N2, N2, C12, ldc);
 
@@ -434,7 +438,7 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C11, ldc);
-            // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U3 = "<<std::endl, F, N2, N2, C11, ldc);
+           // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U3 = "<<std::endl, F, N2, N2, C11, ldc);
                 // Updating WH with Outmin, Outmax of the result
             WH.Outmin = min3 (U3Min, U4Min, U5Min);
             WH.Outmax = max3 (U3Max, U4Max, U5Max);
