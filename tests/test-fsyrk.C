@@ -78,7 +78,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     //     // find a, b such that a^2 + b^2 = -1 mod p
     // Givaro::Integer a,b;
     // Givaro::IntSqrtModDom<> ISM;
-    // ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
+    // ISM.sumofsquaresmodprime (a, b, -1, F.characteristic())h;
     // typename Field::Element y1, y2;
     // F.init (y1, a);
     // F.init (y2, b);
@@ -102,10 +102,20 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, A, lda, beta, C2, ldc);
 
     bool ok = true;
+    std::cerr<<std::endl<<std::endl;
     if (uplo == FflasUpper){
-        for (size_t i=0; i<n; i++)
-            for (size_t j=i; j<n; j++)
+        for (size_t i=0; i<n; i++){
+            for (size_t j=0;j<i;j++)
+                std::cerr<<" ";
+            for (size_t j=i; j<n; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
+                // if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                //     std::cerr<<".";
+                // else
+                //     std::cerr<<"X";
+            }
+                //         std::cerr<<std::endl;
+        }
     } else {
         for (size_t i=0; i<n; i++){
             for (size_t j=0; j<=i; j++){
@@ -448,10 +458,10 @@ int main(int argc, char** argv)
     srand(seed);
     bool ok = true;
     do{
-        ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,w,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);

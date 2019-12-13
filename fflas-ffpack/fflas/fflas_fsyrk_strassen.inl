@@ -391,9 +391,13 @@ namespace FFLAS {
             MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0,0);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, S4, lds, F.zero, C21, ldc, H3);
-            else
+            else{
+                H3.Amin = 2*WH.Bmin-WH.Bmax; 
+                H3.Amax = 2*WH.Bmax-WH.Bmin; 
+                H3.Bmin = WH.Amin;
+                H3.Bmax = WH.Amax;
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S4, lds, A22, lda, F.zero, C21, ldc, H3);
-
+            }
 // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P3 = "<<std::endl, F, N2, N2, C21, ldc);
 
             if (K>N){ fflas_delete(S1); }
@@ -490,8 +494,12 @@ namespace FFLAS {
             computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, S2, lds, WH);
 
                 // Up(C11) = Low(C22) (saving C22)
-            for (size_t i=0; i<N2-1; ++i)
-                fassign (F, N2-i-1, C22 + (N2-i-1)*ldc, 1, C11 + 1 + i*(ldc+1), 1);
+            if (uplo == FflasLower)
+                for (size_t i=0; i<N2-1; ++i)
+                    fassign (F, N2-i-1, C22 + (N2-i-1)*ldc, 1, C11 + 1 + i*(ldc+1), 1);
+            else 
+                for (size_t i=0; i<N2-1; ++i)
+                    fassign (F, N2-i-1, C22 + 1 + i*(ldc+1), 1,  C11 + (N2-i-1)*ldc, 1);
 
                 // temp for storing the diagonal of C22
             typename Field::Element_ptr DC22 = fflas_new(F,N2);
@@ -500,7 +508,10 @@ namespace FFLAS {
 
                 // P4^T = S2 x S1^T in C22
             MMH_t H4 (F,WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, T, ldt, F.zero, C22, ldc, H4);
+            if (uplo == FflasLower)
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, T, ldt, F.zero, C22, ldc, H4);
+            else
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, T, ldt, S2, lds, F.zero, C22, ldc, H4);
 
             if (K>N){ fflas_delete(S2); }
 
@@ -516,8 +527,15 @@ namespace FFLAS {
 
                 //  P3 = A22 x S4^T + beta C21 in C21
             MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, WH.Cmin, WH.Cmax);
-            fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, T, ldt, beta, C21, ldc, H3);
-
+            if (uplo == FflasLower)
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, T, ldt, beta, C21, ldc, H3);
+            else{
+                H3.Amin = 2*WH.Bmin-WH.Bmax; 
+                H3.Amax = 2*WH.Bmax-WH.Bmin; 
+                H3.Bmin = WH.Amin;
+                H3.Bmax = WH.Amax;
+                fgemm (F, trans, OppTrans, N2, N2, K2, alpha, T, ldt, A22, lda, beta, C21, ldc, H3);
+            }
                 // P1 = A11 x A11^T in T1
             MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, H1);
@@ -531,8 +549,12 @@ namespace FFLAS {
             faddin (DF, uplo, N2, T, ldt, C12, ldc);
 
                 // Make U1 explicit (copy the N/2 missing part)
-            for (size_t i=0; i<N2; ++i)
-                fassign (DF, i, C12 + i*ldc, 1, C12 + i, ldc);
+            if (uplo == FflasLower)
+                for (size_t i=0; i<N2; ++i)
+                    fassign (DF, i, C12 + i*ldc, 1, C12 + i, ldc);
+            else
+                for (size_t i=0; i<N2; ++i)
+                    fassign (DF, i, C12 + i, ldc, C12 + i*ldc, 1);                
 
                 // U2 = U1 + P4 in C12
             DFElt U2Min, U2Max;
@@ -561,10 +583,17 @@ namespace FFLAS {
 
                 // U5' = U5 +  beta Up(C11)^T in C22
                 // TODO use delayed field and a needPreAXPYReduction
-            for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
-                faxpy (F, N2-i-1, beta, C11 + 1+i*(ldc+1), 1, C22 + (N2-i-1)*ldc, 1);
-                F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
-            }
+            if (uplo == FflasLower)
+                for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
+                    faxpy (F, N2-i-1, beta, C11 + 1+i*(ldc+1), 1, C22 + (N2-i-1)*ldc, 1);
+                    F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
+                }
+            else
+                for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
+                    faxpy (F, N2-i-1, beta, C11 + (N2-i-1)*ldc, 1, C22 + 1 + i*(ldc+1), 1);
+                    F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
+                }
+
             F.axpyin (C22[(N2-1)*(ldc+1)], beta, DC22[N2-1]);
 
             fflas_delete(DC22);

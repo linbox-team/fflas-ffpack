@@ -118,8 +118,59 @@ namespace FFLAS {
         MMHelper<Field, MMHelperAlgo::Classic, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, N, K, N, seq);
         return fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, HW);
     }
-    
-     template<class Field>
+    template<class Field>
+    inline typename Field::Element_ptr
+    fsyrk (const Field& F,
+           const FFLAS_UPLO UpLo,
+           const FFLAS_TRANSPOSE trans,
+           const size_t N,
+           const size_t K,
+           const typename Field::Element alpha,
+           typename Field::ConstElement_ptr A, const size_t lda,
+           const typename Field::Element beta,
+           typename Field::Element_ptr C, const size_t ldc,
+           MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H){
+            // The default implementation
+        if (UpLo == FflasUpper){
+            if (trans == FflasNoTrans){
+                for (size_t i=0; i<N; i++)
+                    for (size_t j=i; j<N; j++){
+                        F.mulin (C[i*ldc+j],beta);
+                        F.axpyin (C[i*ldc+j],
+                                  alpha,
+                                  fdot(F, K, A+i*lda, 1, A+j, lda));
+                    }
+            } else { // Trans
+                for (size_t i=0; i<N; i++)
+                    for (size_t j=i; j<N; j++){
+                        F.mulin (C[i*ldc+j],beta);
+                        F.axpyin (C[i*ldc+j],
+                                  alpha,
+                                  fdot(F, K, A+i, lda, A+j*lda, 1));
+                    }
+            }
+        } else { // Lower
+            if (trans == FflasNoTrans){
+                for (size_t i=0; i<N; i++)
+                    for (size_t j=0; j<=i; j++){
+                        F.mulin (C[i*ldc+j],beta);
+                        F.axpyin (C[i*ldc+j],
+                                  alpha,
+                                  fdot(F, K, A+i*lda, 1, A+j, lda));
+                    }
+            } else { // Trans
+                for (size_t i=0; i<N; i++)
+                    for (size_t j=0; j<=i; j++){
+                        F.mulin (C[i*ldc+j],beta);
+                        F.axpyin (C[i*ldc+j],
+                                  alpha,
+                                  fdot(F, K, A+i, lda, A+j*lda, 1));
+                    }
+            }
+        }
+        return C;
+    }        
+        template<class Field>
     inline typename Field::Element_ptr
     fsyrk (const Field& F,
            const FFLAS_UPLO UpLo,
@@ -262,11 +313,11 @@ namespace FFLAS {
             kmax = H.MaxDelayedDim (betadf);
         }
 
-        // if (!kmax){
-        //     MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
-        //     H.initOut();
-        //     return fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, HG);
-        // }
+        if (!kmax){
+            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
+            H.initOut();
+            return fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, HG);
+        }
 
         size_t k2 = std::min(K,kmax);
         size_t nblock = K / kmax;
@@ -345,7 +396,7 @@ namespace FFLAS {
         //     F.axpyin (*C, alpha, fdot (F, K, A, incA, A, incA));
         //     return C;
         if (H.recLevel == 0){
-            MMHelper<Field, MMHelperAlgo::Classic> CH (H);
+            MMHelper<Field, MMHelperAlgo::Classic,Mode> CH (H);
             return fsyrk(F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, CH);
         } else {
             size_t N1 = N>>1;
