@@ -102,11 +102,11 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, A, lda, beta, C2, ldc);
 
     bool ok = true;
-    std::cerr<<std::endl<<std::endl;
+        //std::cerr<<std::endl<<std::endl;
     if (uplo == FflasUpper){
         for (size_t i=0; i<n; i++){
             for (size_t j=0;j<i;j++)
-                std::cerr<<" ";
+                // std::cerr<<" ";
             for (size_t j=i; j<n; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
                 // if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
@@ -114,7 +114,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
                 // else
                 //     std::cerr<<"X";
             }
-                //         std::cerr<<std::endl;
+            // std::cerr<<std::endl;
         }
     } else {
         for (size_t i=0; i<n; i++){
@@ -125,7 +125,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
                 // else
                 //     std::cerr<<"X";
             }
-                //std::cerr<<std::endl;
+            // std::cerr<<std::endl;
         }
     }
     if (ok)

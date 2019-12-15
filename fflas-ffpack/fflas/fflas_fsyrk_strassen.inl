@@ -268,7 +268,11 @@ namespace FFLAS {
         fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha, A, lda, beta, C, ldc, H);
 
             // C11 += A12 x A12 ^T
-        fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A12, lda, F.one, C, ldc);
+        MMHelper<Field, MMHelperAlgo::Classic, Mode>  H2 (H);
+        H2.Cmin = H.Outmin;
+        H2.Cmax = H.Outmax;
+
+        fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A12, lda, F.one, C, ldc, H2);
 
             // C22 = [A21 A22] x [A21 A22]^T
         fsyrk (F, UpLo, trans, N-Ns, K, alpha, A21, lda, beta, C+Ns*(ldc+1), ldc);
@@ -580,6 +584,7 @@ namespace FFLAS {
                 freduce(F,N2,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C22, ldc);
+            freduce(F,N2,N2,C22,ldc);
 
                 // U5' = U5 +  beta Up(C11)^T in C22
                 // TODO use delayed field and a needPreAXPYReduction

@@ -187,9 +187,7 @@ namespace FFLAS {
             * std::max(static_cast<const DFElt&>(-Bmin), Bmax);
             if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
 
-
             DFElt kmax = diff/AB;
-            std::cerr<<"diff = "<<diff<<" AB = "<<AB<<"kmax = "<<kmax<<std::endl;
             return FFLAS::Protected::min_types<DFElt>(kmax);
             // if (kmax > std::numeric_limits<size_t>::max())
             // 	return std::numeric_limits<size_t>::max();
