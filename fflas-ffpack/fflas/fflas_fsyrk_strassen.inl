@@ -86,6 +86,7 @@ namespace FFLAS {
     template<class Field, class FieldTrait>
     inline void
     computeS1S2 (const Field& F,
+                 const FFLAS_TRANSPOSE trans,
                  const size_t N,
                  const size_t K,
                  const typename Field::Element x,
@@ -104,20 +105,49 @@ namespace FFLAS {
 
         size_t N2 = N>>1;
         size_t K2 = K>>1;
-        typename Field::ConstElement_ptr A11 = A;
-        typename Field::ConstElement_ptr A21 = A + N2*lda;
-        typename Field::ConstElement_ptr A22 = A21 + K2;
         size_t K4 = K2>>1;
-        typename Field::ConstElement_ptr A11r = A11 + K4;
-        typename Field::ConstElement_ptr A21r = A21 + K4;
-        typename Field::Element_ptr Sr = S + K4;
-
-        typename Field::Element negx, negy;
+        size_t incrowA, incrowS, incrowT, inccolA, inccolS, inccolT;
+        typename Field::ConstElement_ptr A11 = A, A21, A22, A11r, A21r;
+        typename Field::Element_ptr Sr;
+        if (trans==FflasNoTrans){
+            A21 = A + N2*lda;
+            A22 = A21 + K2;
+            A11r = A11 + K4;
+            A21r = A21 + K4;
+            Sr = S + K4;
+            incrowA = lda;
+            inccolA = 1;
+            incrowS = lds;
+            inccolS = 1;
+            incrowT = ldt;
+            inccolT = 1;
+        } else { // Trans
+            A21 = A + N2;
+            A22 = A21 + K2*lda;
+            A11r = A11 + K4*lda;
+            A21r = A21 + K4*lda;
+            Sr = S + K4*lds;
+            incrowA = 1;
+            inccolA = lda;
+            incrowS = 1;
+            inccolS = lds;
+            incrowT = 1;
+            inccolT = ldt;
+        }
+        typename Field::Element negx, negy, y1, y2;
         F.init(negx);
+        F.init(y1);
+        F.init(y2);
         F.neg(negx, x);
         F.init(negy);
         F.neg(negy, y);
-
+        if (trans==FflasNoTrans){
+            F.assign(y1, y);
+            F.assign(y2, negy);
+        } else {
+            F.assign(y2, y);
+            F.assign(y1, negy);
+        }
         //     // T <-  A21 Y^T
         // fscal (F, N2, K2, x, A21, lda, T, ldt);
         // if (!F.isZero(y)){
@@ -138,25 +168,26 @@ namespace FFLAS {
         //     // T <- T - A22
         // fsubin (F, N2, K2, A22, lda, T, ldt);
 
+            // TODO: write a distinct loop for the trans==FflasTrans case for better cache efficiency
             // S <- A21 Y^T
-        for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
-            fscal (DF, K2, x, A21, 1, S, 1);
+        for (size_t i=0; i<N2; ++i, A11+=incrowA, A11r+=incrowA, A21+=incrowA, A21r+=incrowA, A22+=incrowA, S+=incrowS, Sr+=incrowS, T+=incrowT){
+            fscal (DF, K2, x, A21, inccolA, S, inccolS);
             if (!F.isZero(y)){
-                faxpy (DF, K4, negy, A21r, 1, S, 1);
-                faxpy (DF, K4, y, A21, 1, Sr, 1);
+                faxpy (DF, K4, y2, A21r, inccolA, S, inccolS);
+                faxpy (DF, K4, y1, A21, inccolA, Sr, inccolS);
             }
                 // T <- A22 -S
-            fsub (DF, K2, A22, 1, S, 1, T, 1);
+            fsub (DF, K2, A22, inccolA, S, inccolS, T, inccolT);
             
                 // S <- S - A11 Y^T
-            faxpy (DF, K2, negx, A11, 1, S, 1);
+            faxpy (DF, K2, negx, A11, inccolA, S, inccolS);
             if (!F.isZero(y)){
-                faxpy (DF, K4, y, A11r, 1, S, 1);
-                faxpy (DF, K4, negy, A11, 1, Sr, 1);
+                faxpy (DF, K4, y1, A11r, inccolA, S, inccolS);
+                faxpy (DF, K4, y2, A11, inccolA, Sr, inccolS);
             }
             
-            freduce (F,K2,S, 1);
-            freduce (F,K2,T, 1);
+            freduce (F,K2,S, inccolS);
+            freduce (F,K2,T, inccolS);
         }
         // } else { // -1 is not a square in F
 //         size_t K4 = K2>>1;
@@ -360,7 +391,7 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y in S1 (C21)
                 // S2 =  A22 - A21 x Y  in S2 (C12)
-            computeS1S2 (F, N, K, y1, y2, A,lda, S1, lds, S2, lds, WH);
+            computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, WH);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"A21 = "<<std::endl, F, N2, K2, A21, lda);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"A11 = "<<std::endl, F, N2, K2, A11, lda);
             // WriteMatrix (std::cerr<<"---------------"<<std::endl<<"S1 = "<<std::endl, F, N2, K2, C21, ldc);
@@ -495,7 +526,7 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y^T in T1
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, N, K, y1, y2, A, lda, T, ldt, S2, lds, WH);
+            computeS1S2 (F, trans, N, K, y1, y2, A, lda, T, ldt, S2, lds, WH);
 
                 // Up(C11) = Low(C22) (saving C22)
             if (uplo == FflasLower)
