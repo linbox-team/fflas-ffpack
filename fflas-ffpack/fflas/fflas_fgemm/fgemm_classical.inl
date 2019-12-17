@@ -41,6 +41,7 @@
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 
+#include "fflas-ffpack/utils/fflas_io.h"
 namespace FFLAS {
 
     // F is a field supporting delayed reductions
@@ -249,12 +250,41 @@ namespace FFLAS {
         FFLASFFPACK_check(lda);
         FFLASFFPACK_check(ldb);
         FFLASFFPACK_check(ldc);
-#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
-        openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
-#endif
-        cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
-                     (int)m, (int)n, (int)k, (Givaro::DoubleDomain::Element) alpha,
-                     Ad, (int)lda, Bd, (int)ldb, (Givaro::DoubleDomain::Element) beta, Cd, (int)ldc);
+
+        #if defined(__FFLASFFPACK_HAVE_CUBLAS)
+            // Allocate device storage for A,B,C
+            using Element = Givaro::DoubleDomain::Element;
+            Element *d_A, *d_B, *d_C;
+            cudaMalloc((void**)&d_A, m*k*sizeof(Element));
+            cudaMalloc((void**)&d_B, k*n*sizeof(Element));
+            cudaMalloc((void**)&d_C, m*n*sizeof(Element));
+
+            // Create cublas instance
+            cublasHandle_t handle;
+            cublasCreate(&handle);
+
+            // Set input matrices on device
+            cublasSetMatrix(k, m, sizeof(Element), Ad, lda, d_A, k); // @note Device's leading dimensions are for column major matrices.
+            cublasSetMatrix(n, k, sizeof(Element), Bd, ldb, d_B, n);
+            cublasSetMatrix(n, m, sizeof(Element), Cd, ldc, d_C, n);
+            
+            // @note As cublas works in column-major, we inverse the transpose here.
+            auto d_ta = (ta == FFLAS_TRANSPOSE::FflasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+            auto d_tb = (tb == FFLAS_TRANSPOSE::FflasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+
+            cublasDgemm(handle, d_tb, d_ta, n,m,k, &alpha,  d_B, n, d_A, k, &beta, d_C, n);
+
+            // Retrieve result matrix from device
+            cublasGetMatrix(n, m, sizeof(Element), d_C, n, Cd, ldc);
+        #else
+            #if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
+                openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+            #endif
+
+            cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
+                        (int)m, (int)n, (int)k, (Givaro::DoubleDomain::Element) alpha,
+                        Ad, (int)lda, Bd, (int)ldb, (Givaro::DoubleDomain::Element) beta, Cd, (int)ldc);
+        #endif
     }
 
     inline void fgemm (const Givaro::FloatDomain& F,
@@ -272,12 +302,41 @@ namespace FFLAS {
         FFLASFFPACK_check(ldb);
         FFLASFFPACK_check(ldc);
 
-#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
-        openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
-#endif
-        cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
-                     (int)m, (int)n, (int)k, (Givaro::FloatDomain::Element) alpha,
-                     Ad, (int)lda, Bd, (int)ldb, (Givaro::FloatDomain::Element) beta,Cd, (int)ldc);
+        #if defined(__FFLASFFPACK_HAVE_CUBLAS)
+            // Allocate device storage for A,B,C
+            using Element = Givaro::FloatDomain::Element;
+            Element *d_A, *d_B, *d_C;
+            cudaMalloc((void**)&d_A, m*k*sizeof(Element));
+            cudaMalloc((void**)&d_B, k*n*sizeof(Element));
+            cudaMalloc((void**)&d_C, m*n*sizeof(Element));
+
+            // Create cublas instance
+            cublasHandle_t handle;
+            cublasCreate(&handle);
+
+            // Set input matrices on device
+            cublasSetMatrix(k, m, sizeof(Element), Ad, lda, d_A, k); // @note Device's leading dimensions are for column major matrices.
+            cublasSetMatrix(n, k, sizeof(Element), Bd, ldb, d_B, n);
+            cublasSetMatrix(n, m, sizeof(Element), Cd, ldc, d_C, n);
+            
+            // @note As cublas works in column-major, we inverse the transpose here.
+            auto d_ta = (ta == FFLAS_TRANSPOSE::FflasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+            auto d_tb = (tb == FFLAS_TRANSPOSE::FflasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+
+            cublasSgemm(handle, d_tb, d_ta, n,m,k, &alpha,  d_B, n, d_A, k, &beta, d_C, n);
+
+            // Retrieve result matrix from device
+            cublasGetMatrix(n, m, sizeof(Element), d_C, n, Cd, ldc);
+        #else
+            #if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
+                    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+            #endif
+                    cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
+                                 (int)m, (int)n, (int)k, (Givaro::FloatDomain::Element) alpha,
+                                 Ad, (int)lda, Bd, (int)ldb, (Givaro::FloatDomain::Element) beta,Cd, (int)ldc);
+        #endif
+
+
     }
 
     inline void fgemm (const Givaro::ZRing<int64_t>& F,

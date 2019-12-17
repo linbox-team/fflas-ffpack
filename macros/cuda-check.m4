@@ -63,54 +63,53 @@ do
 		if test -r "$CUDA_HOME/include/cuda.h" ; then
 			CUDA_CFLAGS="-I${CUDA_HOME}/include"
 			CUDA_PATH="-L${CUDA_HOME}/lib64"
-			CUDA_LIBS="-L${CUDA_HOME}/lib64 -lcusparse"
+			CUDA_LIBS="-L${CUDA_HOME}/lib64 -lcusparse -lcublas -lcudart"
 		else
 			echo "($CUDA_HOME) seems an invalid CUDA prefix"
 			echo "Searching CUDA in PATH"
 			CUDA_CFLAGS=""
-			CUDA_LIBS="-lcusparse"
+			CUDA_LIBS="-lcusparse -lcublas -lcudart"
 		fi
 	else
 		CUDA_CFLAGS=""
-		CUDA_LIBS="-lcusparse"
+		CUDA_LIBS="-lcusparse -lcublas -lcudart"
 	fi
 
 	CXXFLAGS="${CXXFLAGS} ${CUDA_CFLAGS}"
 	LIBS="${LIBS} ${CUDA_LIBS}"
 	CODE_CUDA=`cat macros/CodeChunk/cuda.C`
 
+	dnl This checks if cuda is installed, which ensures that cublas is available.
+
 	AC_TRY_LINK(
 		[
-		#include <cuda.h>
+			#include <cuda.h>
 		],
-		[ CUresult a;],
+		[ CUresult a; ],
 		[
-		dnl  # See if we are running CUDA 4.0 with --enable-cxx
-		AC_TRY_RUN(
-			[ ${CODE_CUDA} ],
-			[
-			AC_MSG_RESULT(found)
-			AC_DEFINE(HAVE_CUDA,1,[Define if CUDA is installed])
+			dnl  # See if we are running CUDA 4.0 with --enable-cxx
+			AC_TRY_RUN(
+				[ ${CODE_CUDA} ],
+				[
+					AC_MSG_RESULT(found)
 
-			dnl  CUDA_VERSION="" dnl I could find it but why is it here ?
-			CUDA_LIBS="${CUDA_PATH} -lcusparse"
-			dnl  AC_SUBST(CUDA_VERSION)
-			AC_SUBST(CUDA_LIBS)
-			AC_SUBST(CUDA_CFLAGS)
-			break;
-			],[
-			AC_MSG_RESULT(no : cuda is too old or not found)
-			dnl  AC_SUBST(CUDA_VERSION)
-			],[ dnl This should never happen
-			AC_MSG_RESULT(no)
-			])
+					AC_SUBST(CUDA_LIBS)
+					AC_SUBST(CUDA_CFLAGS)
+					AC_DEFINE(HAVE_CUDA,1,[Define if CUDA blas is installed])
+					break;
+				],[
+					AC_MSG_RESULT(no : cuda is too old or not found)
+				],[
+					AC_MSG_RESULT(no)
+				]
+			)
 		],[
 			AC_MSG_RESULT(unknown)
 			echo "WARNING: You appear to be cross compiling, so there is no way to determine"
 			echo "whether your CUDA version is new enough. I am assuming it is."
 			AC_SUBST(CUDA_CFLAGS)
 			AC_SUBST(CUDA_LIBS)
-			AC_DEFINE(HAVE_CUDA,1,[Define if CUDA is installed])
+			AC_DEFINE(HAVE_CUDA,1,[Define if CUDA blas is installed])
 		])
 	unset CUDA_CFLAGS
 	unset CUDA_LIBS

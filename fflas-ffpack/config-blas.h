@@ -42,9 +42,14 @@
 
 #ifdef __FFLASFFPACK_HAVE_MKL
 #include <mkl.h>
-
 #endif
 
+#ifdef __FFLASFFPACK_HAVE_CUDA
+#define __FFLASFFPACK_HAVE_CUBLAS
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#endif
 
 #ifndef CBLAS_INT
 #ifdef blasint /*  openblas */
@@ -55,16 +60,6 @@
 #define CBLAS_INT int
 #endif /* blasint */
 #endif /*  CBLAS_INT */
-
-#ifdef CUDA_BLAS
-
-#define sgemv_ cublas_sgemv
-#define sgemm_ cublas_sgemm
-#define strsm_ cublas_strsm
-#define strmm_ cublas_strmm
-
-#endif // CUDA_BLAS
-
 
 #ifndef __FFLASFFPACK_HAVE_MKL
 

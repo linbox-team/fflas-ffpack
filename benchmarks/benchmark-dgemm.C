@@ -40,9 +40,11 @@ typedef FFLAS::Timer TTimer;
 #ifndef __SGEMM__
 typedef double Floats;
 #define CBLAS_GEMM cblas_dgemm
+#define CUBLAS_GEMM cublasDgemm
 #else
 typedef float Floats;
 #define CBLAS_GEMM cblas_sgemm
+#define CUBLAS_GEMM cublasDgemm
 #endif
 
 
@@ -68,7 +70,7 @@ int main(int argc, char** argv) {
     FFLAS::parseArguments(argc,argv,as);
 
 
-    typedef Givaro::ModularBalanced<Floats> Field;
+    typedef Givaro::Modular<Floats> Field;
     typedef Field::Element Element;
 
     Field F(q);
@@ -77,7 +79,7 @@ int main(int argc, char** argv) {
     double time=0.0;// time2=0.0;
 
     Element * A, * B, * C;
-
+/*
     if (iter>1) {
         if (!file1.empty()){
             FFLAS::ReadMatrix (file1.c_str(),F,n,n,A);
@@ -105,14 +107,19 @@ int main(int argc, char** argv) {
 
         C = FFLAS::fflas_new<Element>(n*n);
 
+        #if defined(CUDA_BLAS)
+        CUBLAS_GEMM ('n', 'n', n,n,n, F.one,
+                    A, n, B, n, F.zero, C,n); // @fixme CUBLAS ALWAYS COLUMN MAJOR
+        #else
         CBLAS_GEMM (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
                     A, n, B, n, F.zero, C,n);
+        #endif
 
         FFLAS::fflas_delete( A);
         FFLAS::fflas_delete( B);
         FFLAS::fflas_delete( C);
     }
-
+*/
     for (size_t it=0;it<iter;++it){
 
         if (!file1.empty()){
@@ -125,6 +132,7 @@ int main(int argc, char** argv) {
             for (size_t i=0; i<n; ++i)
                 for (size_t j=0; j<n; ++j)
                     G.random(*(A+i*n+j));
+            std::cout << "A: " << A[0] << std::endl;
         }
 
         if (!file2.empty()){
@@ -137,14 +145,45 @@ int main(int argc, char** argv) {
             for (size_t i=0; i<n; ++i)
                 for (size_t j=0; j<n; ++j)
                     G.random(*(B+i*n+j));
+            std::cout << "B: " << B[0] << std::endl;
         }
 
         C = FFLAS::fflas_new<Element>(n*n);
 
         chrono.clear();
         chrono.start();
+
+        #if defined(CUDA_BLAS)
+
+    // Allocate device storage for A,B,C
+    Element *d_A, *d_B, *d_C;
+    cudaMalloc((void**)&d_A, n*n*sizeof(Element));
+    cudaMalloc((void**)&d_B, n*n*sizeof(Element));
+    cudaMalloc((void**)&d_C, n*n*sizeof(Element));
+
+    // Create cublas instance
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+
+    // Set input matrices on device
+    cublasSetMatrix(n, n, sizeof(Element), A, n, d_A, n);
+    cublasSetMatrix(n, n, sizeof(Element), B, n, d_B, n);
+    cublasSetMatrix(n, n, sizeof(Element), C, n, d_C, n);
+
+
+//        CUBLAS_GEMM ( 'n', 'n', n,n,n, F.one, A, n, B, n, F.zero, C,n);
+CUBLAS_GEMM (handle,  CUBLAS_OP_N, CUBLAS_OP_N, n,n,n, &F.one,  d_A, n, d_B, n, &F.zero, d_C,n);
+
+    // Retrieve result matrix from device
+    cublasGetMatrix(n, n, sizeof(Element), d_C, n, C, n);
+
+        #else
         CBLAS_GEMM (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
                     A, n, B, n, F.zero, C,n);
+        #endif
+
+            std::cout << "C = A * B: " << fmod(C[0], q)  << " expected " << fmod(A[0] * B[0], q)  << std::endl;
+
         chrono.stop();
         time+=chrono.usertime();
 
