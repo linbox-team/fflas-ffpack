@@ -103,7 +103,6 @@ namespace FFLAS { namespace vectorised { namespace unswitch {
         }
     }
 
-
     template<class Field>
     inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX, HelperMod<Field> &H)
@@ -113,6 +112,19 @@ namespace FFLAS { namespace vectorised { namespace unswitch {
         for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
         {
             T[i]=reduce(alpha*(*Xi),H);
+        }
+    }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n,
+          const size_t & incX, const size_t & incY, HelperMod<Field> &H)
+    {
+        typename Field::ConstElement_ptr Xi = U;
+        typename Field::Element_ptr Yi = T;
+        for (; Xi < U+n*incX ; Xi+=incX,Yi+=incY)
+        {
+            *Yi = reduce(alpha*(*Xi),H);
         }
     }
 
@@ -140,6 +152,16 @@ namespace FFLAS { namespace vectorised {
 
         unswitch::scalp(F,T,alpha,U,n,incX,H);
     }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX, const size_t & incY)
+    {
+        HelperMod<Field> H(F);
+
+        unswitch::scalp(F,T,alpha,U,n,incX,incY,H);
+    }
+
 
 } // vectorised
 } // FFLAS
@@ -187,11 +209,10 @@ namespace FFLAS { namespace details {
         if(incX == 1 && incY==1) {
             vectorised::scalp(F,Y,a,X,N);
         }
-        else {
-            typename Field::ConstElement_ptr Xi = X ;
-            typename Field::Element_ptr Yi = Y ;
-            for (; Xi < X+N*incX; Xi+=incX,Yi+=incY )
-                F.mul(*Yi, *Xi , a);
+        else
+        {
+            // no copy for now
+            vectorised::scalp(F,Y,a,X,N,incX,incY);
         }
     }
 

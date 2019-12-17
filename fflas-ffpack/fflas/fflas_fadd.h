@@ -39,7 +39,7 @@ namespace FFLAS {
     struct support_simd_add<float> : public std::true_type {} ;
     template<>
     struct support_simd_add<double> : public std::true_type {} ;
-#ifdef SIMD_INT
+#ifdef SIMD_INT // why? PK - 2019/12
     template<>
     struct support_simd_add<int32_t> : public std::true_type {} ;
     template<>
