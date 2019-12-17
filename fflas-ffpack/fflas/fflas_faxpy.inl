@@ -32,7 +32,6 @@
 
 namespace FFLAS { namespace vectorised { namespace unswitch {
 
-    // TODO axpy not p (also do this for fscal)?
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
     // TODO check if returning in register is better??
