@@ -106,33 +106,24 @@ namespace FFLAS {
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         size_t K4 = K2>>1;
-        size_t incrowA, incrowS, incrowT, inccolA, inccolS, inccolT;
-        typename Field::ConstElement_ptr A11 = A, A21, A22, A11r, A21r;
-        typename Field::Element_ptr Sr;
+        typename Field::ConstElement_ptr A11 = A, A21, A22, A11r, A21r, A22r;
+        typename Field::Element_ptr Sr, Tr;
         if (trans==FflasNoTrans){
             A21 = A + N2*lda;
             A22 = A21 + K2;
+            A22r = A22 + K4;
             A11r = A11 + K4;
             A21r = A21 + K4;
             Sr = S + K4;
-            incrowA = lda;
-            inccolA = 1;
-            incrowS = lds;
-            inccolS = 1;
-            incrowT = ldt;
-            inccolT = 1;
+            Tr = T+K4;
         } else { // Trans
             A21 = A + N2;
             A22 = A21 + K2*lda;
+            A22r = A22 + K4*lda;
             A11r = A11 + K4*lda;
             A21r = A21 + K4*lda;
             Sr = S + K4*lds;
-            incrowA = 1;
-            inccolA = lda;
-            incrowS = 1;
-            inccolS = lds;
-            incrowT = 1;
-            inccolT = ldt;
+            Tr = T + K4*ldt;
         }
         typename Field::Element negx, negy, y1, y2;
         F.init(negx);
@@ -140,14 +131,7 @@ namespace FFLAS {
         F.init(y2);
         F.neg(negx, x);
         F.init(negy);
-        F.neg(negy, y);
-        if (trans==FflasNoTrans){
-            F.assign(y1, y);
-            F.assign(y2, negy);
-        } else {
-            F.assign(y2, y);
-            F.assign(y1, negy);
-        }
+        F.neg(negy, y); 
         //     // T <-  A21 Y^T
         // fscal (F, N2, K2, x, A21, lda, T, ldt);
         // if (!F.isZero(y)){
@@ -168,26 +152,60 @@ namespace FFLAS {
         //     // T <- T - A22
         // fsubin (F, N2, K2, A22, lda, T, ldt);
 
-            // TODO: write a distinct loop for the trans==FflasTrans case for better cache efficiency
-            // S <- A21 Y^T
-        for (size_t i=0; i<N2; ++i, A11+=incrowA, A11r+=incrowA, A21+=incrowA, A21r+=incrowA, A22+=incrowA, S+=incrowS, Sr+=incrowS, T+=incrowT){
-            fscal (DF, K2, x, A21, inccolA, S, inccolS);
-            if (!F.isZero(y)){
-                faxpy (DF, K4, y2, A21r, inccolA, S, inccolS);
-                faxpy (DF, K4, y1, A21, inccolA, Sr, inccolS);
+        if (trans==FflasNoTrans){
+            F.assign(y1, y);
+            F.assign(y2, negy);
+                // TODO: write a distinct loop for the trans==FflasTrans case for better cache efficiency
+                // S <- A21 Y
+            for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
+                fscal (DF, K2, x, A21, 1, S, 1);
+                if (!F.isZero(y)){
+                    faxpy (DF, K4, negy, A21r, 1, S, 1);
+                    faxpy (DF, K4, y, A21, 1, Sr, 1);
+                }
+                    // T <- A22 -S
+                fsub (DF, K2, A22, 1, S, 1, T, 1);
+                
+                    // S <- S - Y A11 
+                faxpy (DF, K2, negx, A11, 1, S, 1);
+                if (!F.isZero(y)){
+                    faxpy (DF, K4, y, A11r, 1, S, 1);
+                    faxpy (DF, K4, negy, A11, 1, Sr, 1);
+                }
+                
+                freduce (F,K2,S, 1);
+                freduce (F,K2,T, 1);
             }
-                // T <- A22 -S
-            fsub (DF, K2, A22, inccolA, S, inccolS, T, inccolT);
+        } else { // FflasTrans
+            F.assign(y2, y);
+            F.assign(y1, negy);
             
-                // S <- S - A11 Y^T
-            faxpy (DF, K2, negx, A11, inccolA, S, inccolS);
-            if (!F.isZero(y)){
-                faxpy (DF, K4, y1, A11r, inccolA, S, inccolS);
-                faxpy (DF, K4, y2, A11, inccolA, Sr, inccolS);
+            for (size_t i=0; i<K4; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
+                // S <- Y A21
+                fscal (DF, N2, x, A21, 1, S, 1);
+                fscal (DF, N2, x, A21r, 1, Sr, 1);
+                if (!F.isZero(y)){
+                    faxpy (DF, N2, negy, A21r, 1, S, 1);
+                    faxpy (DF, N2, y1, A21, 1, Sr, 1);
+                }
+                    // T <- A22 -S
+                fsub (DF, N2, A22, 1, S, 1, T, 1);
+                fsub (DF, N2, A22r, 1, S, 1, Tr, 1);
+                
+                    // S <- S - A11 Y^T
+                faxpy (DF, N2, negx, A11, 1, S, 1);
+                faxpy (DF, N2, negx, A11r, 1, Sr, 1);
+                if (!F.isZero(y)){
+                    faxpy (DF, K4, y1, A11r, 1, S, 1);
+                    faxpy (DF, K4, y2, A11, 1, Sr, 1);
+                }
+                
+                freduce (F,N2,S, 1);
+                freduce (F,N2,Sr, 1);
+                freduce (F,N2,T, 1);
+                freduce (F,N2,Tr, 1);
             }
             
-            freduce (F,K2,S, inccolS);
-            freduce (F,K2,T, inccolS);
         }
         // } else { // -1 is not a square in F
 //         size_t K4 = K2>>1;
