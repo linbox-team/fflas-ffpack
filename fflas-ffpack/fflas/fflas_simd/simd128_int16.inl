@@ -33,6 +33,10 @@
 #error "You need SSE instructions to perform 128 bits operations on int16"
 #endif
 
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+#include <type_traits>
+
 /*
  * Simd128 specialized for int16_t
  */
@@ -57,6 +61,12 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
      *  alignement required by scalar_t pointer to be loaded in a vect_t
      */
     static const constexpr size_t alignment = 16;
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt
@@ -424,6 +434,13 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
      * define the scalar type corresponding to the specialization
      */
     using scalar_t = uint16_t;
+
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Converter from vect_t to a tab.

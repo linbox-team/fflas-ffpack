@@ -40,7 +40,6 @@ namespace FFLAS{namespace Protected{
                    typename Field::Element_ptr C, const size_t ldc,
                    MMHelper<Field, MMHelperAlgo::Classic, FieldMode> & H)
     {
-            //std::cerr<<"fsyrk_convert"<<std::endl;
         typedef typename NewField::Element FloatElement;
         NewField G((FloatElement) F.characteristic());
         FloatElement tmp,alphaf, betaf;
@@ -69,7 +68,6 @@ namespace FFLAS{namespace Protected{
         fsyrk (G, UpLo, trans, N, K, alphaf, Af, ka, betaf, Cf, N, HG);
 
         finit (F, N, N, Cf, N, C, ldc); // @todo: take advantage of the symmetry
-
         fflas_delete (Af);
         fflas_delete (Cf);
         return C;
@@ -89,7 +87,6 @@ namespace FFLAS {
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc)
     {
-            //std::cerr<<"fsyrk nothing"<<std::endl;
         if (!N) return C;
         if (!K || F.isZero (alpha)){
             fscalin(F, N, N, beta, C, ldc);
@@ -99,7 +96,6 @@ namespace FFLAS {
         return C;
         
     }
-
 
     template<class Field>
     inline typename Field::Element_ptr
@@ -431,10 +427,10 @@ namespace FFLAS {
                     // CP : calling explicitely with H to shortcut Winograd's algorithm in fgemm,
                     // since it does not compile with Field=ZRing<int64_t>
                 // C12 <- alpha A1 * A2^T + beta C12
-                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc);
+                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc, H);
             } else {
                 // C21 <- alpha A2 * A1^T + beta C21
-                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, A, lda, beta, C21, ldc);
+                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, A, lda, beta, C21, ldc, H);
             }
             return C;
         }
@@ -454,12 +450,12 @@ namespace FFLAS {
            MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H) {
 
             //std::cerr<<"fsyrk Classic DefaultBounded"<<std::endl;
-
         MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(H);
         fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, Hd);
         H.setOutBounds (K,alpha,beta);
         return C;
     }
+
     inline Givaro::FloatDomain::Element_ptr
     fsyrk (const Givaro::FloatDomain& F,
            const FFLAS_UPLO UpLo,

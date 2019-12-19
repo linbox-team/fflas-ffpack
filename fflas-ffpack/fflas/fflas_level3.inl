@@ -510,6 +510,7 @@ namespace FFLAS {
             ParSeqHelper::Parallel<CuttingStrategy::Block,StrategyParameter::Threads> par(nt);
             fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,par);
         }
+        return C;
     }
 
     template<class Field>

@@ -20,7 +20,7 @@ FFLAS-FFPACK is distributed unded the terms of the GNU LGPL v2.1 or later (see L
 ## REQUIREMENTS:
 - a C++ compiler supporting C++11 standard. This means g++ v4.7 or greater, clang++ v3.4 or greater, icpc v16 or greater (earlier versions of clang and icpc might also work but have not been tested)
 - A BLAS library conforming to either the C or Fortran BLAS standard: OpenBLAS (recommended), or ATLAS. Make sure to use a single threaded version of the BLAS library.
-- [Givaro](https://github.com/linbox-team/givaro) version at least 4.0.1, providing the implementations of the coefficient fields/rings. 
+- [Givaro](https://github.com/linbox-team/givaro) version at least 4.1.1, providing the implementations of the coefficient fields/rings.
 
 ## INSTALLATION
 
@@ -36,14 +36,14 @@ Note that `givaro` is automatically detected by pkg-config, so you no longer nee
 You may need to set the `PKG_CONFIG_PATH` environment variable to `<givaro-prefix>/lib/pkgconfig` if you have installed it in a non standard directory.
 
 For example on a x86_64 architecture:
-- Using OpenBLAS in Fedora: 
+- Using OpenBLAS in Fedora:
  - install the package `openblas-devel.x86_64`,
  - run `./configure --with-blas-libs="-lopenblas"`
 - Using OpenBLAS in Debian, Ubuntu, Mint, and all debian based distribution:
  - avoid using the distribution's package, as it is threaded by default. You need to
    compile openblas yourself on these systems,
  - run `./configure --with-blas-libs="-L/pathtolocalopenblas/lib -lopenblas" --with-blas-cflags="-I/pathtolocalopenblas/include"`
-- Using ATLAS in Debian, Ubuntu, Mint: 
+- Using ATLAS in Debian, Ubuntu, Mint:
  - install the package `libatlas-dev`,
  - run `./configure --with-blas-libs="-latlas -lcblas"`
 - Using ATLAS in Fedora:
