@@ -58,7 +58,7 @@ namespace FFPACK {
     template<typename Field>
     Field* chooseField(Givaro::Integer q, uint64_t b, uint64_t seed){
 
-        Givaro::Integer maxV = Field::maxFFLASCardinality();
+        Givaro::Integer maxV = static_cast<Givaro::Integer>(Field::maxFFLASCardinality());
         if (maxV>0 && (q> maxV || b> maxV.bitsize()))
             return nullptr;
 
