@@ -86,9 +86,9 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
         //  std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" w = "<<w
             //<<" and "<<a<<"^2 + "<<b<<"^2 = -1"
         //   <<std::endl;
-    // WriteMatrix (std::cerr, F, n, k, A, lda);
-    // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
-    // WriteMatrix (std::cerr, F, n, k, C, ldc);
+    WriteMatrix (std::cerr, F, n, k, A, lda);
+    WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
+     WriteMatrix (std::cerr, F, n, k, C, ldc);
     if (w == size_t(-1))
             //w= (rand() % 5);
         w=1;
@@ -106,26 +106,26 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     if (uplo == FflasUpper){
         for (size_t i=0; i<n; i++){
             for (size_t j=0;j<i;j++)
-                // std::cerr<<" ";
+                    // std::cerr<<" ";
             for (size_t j=i; j<n; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
-                // if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
-                //     std::cerr<<".";
-                // else
-                //     std::cerr<<"X";
+                if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                    std::cerr<<".";
+                else
+                    std::cerr<<"X";
             }
-            // std::cerr<<std::endl;
+            std::cerr<<std::endl;
         }
     } else {
         for (size_t i=0; i<n; i++){
             for (size_t j=0; j<=i; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
-                // if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
-                //     std::cerr<<".";
-                // else
-                //     std::cerr<<"X";
+                if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                    std::cerr<<".";
+                else
+                    std::cerr<<"X";
             }
-            // std::cerr<<std::endl;
+            std::cerr<<std::endl;
         }
     }
     if (ok)
@@ -394,7 +394,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         F->init (beta, c);
         cout<<"Checking with ";F->write(cout)<<endl;
 
-        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+//        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
         // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
         ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
             //ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
