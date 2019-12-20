@@ -320,8 +320,9 @@ namespace FFLAS {
         MMHelper<Field, MMHelperAlgo::Classic, Mode>  H2 (H);
         H2.Cmin = H.Outmin;
         H2.Cmax = H.Outmax;
-
+            //WriteMatrix (std::cerr<<"---------------"<<std::endl<<"C11_strassen = "<<std::endl, F, Ns, Ns, C, ldc);
         fsyrk (F, UpLo, trans, Ns, K-Ks, alpha, A12, lda, F.one, C, ldc, H2);
+            //WriteMatrix (std::cerr<<"---------------"<<std::endl<<"C11++_strassen = "<<std::endl, F, Ns, Ns, C, ldc);
 
             // C22 = [A21 A22] x [A21 A22]^T
         fsyrk (F, UpLo, trans, N-Ns, K, alpha, A21, lda, beta, C+Ns*(ldc+1), ldc);
@@ -526,7 +527,6 @@ namespace FFLAS {
                 // Updating WH with Outmin, Outmax of the result
             WH.Outmin = min3 (U3Min, U4Min, U5Min);
             WH.Outmax = max3 (U3Max, U4Max, U5Max);
-
         } else { // with accumulation, schedule with 1 temp
 
             typename Field::Element negbeta;
@@ -592,13 +592,14 @@ namespace FFLAS {
                 // P1 = A11 x A11^T in T1
             MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, H1);
+                //WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P1 = "<<std::endl, F, N2, N2, T, ldt);
 
                 // U1 = P5 + P1  in C12 // Still symmetric
             DFElt U1Min, U1Max;
             if (Protected::NeedPreAddReduction (U1Min, U1Max, H5.Outmin, H5.Outmax, H1.Outmin, H1.Outmax, WH)){
                 freduce(F,N2,N2,C12,ldc);
                 freduce(F,N2,N2,T,ldt);
-            }
+           }
             faddin (DF, uplo, N2, T, ldt, C12, ldc);
 
                 // Make U1 explicit (copy the N/2 missing part)
@@ -637,6 +638,7 @@ namespace FFLAS {
 
                 // U5' = U5 +  beta Up(C11)^T in C22
                 // TODO use delayed field and a needPreAXPYReduction
+                // Suspicious BUG: if C22 is not reduced, possible overflow???
             if (uplo == FflasLower)
                 for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
                     faxpy (F, N2-i-1, beta, C11 + 1+i*(ldc+1), 1, C22 + (N2-i-1)*ldc, 1);
@@ -655,6 +657,8 @@ namespace FFLAS {
                 // P2 = A12 x A12^T + beta C11 in C11
             MMH_t H2 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, WH.Cmin, WH.Cmax);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A12, lda, beta, C11, ldc, H2);
+                //WriteMatrix (std::cerr<<"---------------"<<std::endl<<"P2 = "<<std::endl, F, N2, N2, C11, ldc);
+
                 // U3 = P1 + P2 in C11
             DFElt U3Min, U3Max;
             if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
@@ -662,10 +666,13 @@ namespace FFLAS {
                 freduce(F,N2,N2,T,ldt);
             }
             faddin (DF, uplo, N2, T, ldt, C11, ldc);
-            
+                //WriteMatrix (std::cerr<<"---------------"<<std::endl<<"U3 = "<<std::endl, F, N2, N2, C11, ldc);
+
             fflas_delete (T);
+            WH.Outmin = min3 (U3Min, U4Min, U5Min);
+            WH.Outmax = max3 (U3Max, U4Max, U5Max);
         }
-        return C;
+         return C;
     }
 //============================
             // version with accumulation and 3 temps

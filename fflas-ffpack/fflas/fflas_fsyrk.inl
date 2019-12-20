@@ -332,7 +332,6 @@ namespace FFLAS {
             remblock = kmax;
             --nblock;
         }
-
         size_t shiftA;
         if (trans == FflasTrans) shiftA = k2*lda;
         else shiftA = k2;
@@ -453,7 +452,7 @@ namespace FFLAS {
         MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(H);
         fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, Hd);
         H.setOutBounds (K,alpha,beta);
-        return C;
+       return C;
     }
 
     inline Givaro::FloatDomain::Element_ptr
@@ -467,8 +466,8 @@ namespace FFLAS {
            const Givaro::FloatDomain::Element beta,
            Givaro::FloatDomain::Element_ptr C, const size_t ldc,
            MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> &H) {
-            // std::cerr<<"fsyrk Classic Default FloatDomain"<<std::endl;
-        cblas_ssyrk (CblasRowMajor, (CBLAS_UPLO) UpLo, (CBLAS_TRANSPOSE) trans, N, K, alpha, A, lda, beta, C, ldc);
+            //std::cerr<<"fsyrk Classic Default FloatDomain"<<std::endl;
+         cblas_ssyrk (CblasRowMajor, (CBLAS_UPLO) UpLo, (CBLAS_TRANSPOSE) trans, N, K, alpha, A, lda, beta, C, ldc);
         return C;
     }
 

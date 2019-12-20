@@ -82,13 +82,13 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     // typename Field::Element y1, y2;
     // F.init (y1, a);
     // F.init (y2, b);
-
-        //  std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" w = "<<w
+    //std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" w = "<<w
             //<<" and "<<a<<"^2 + "<<b<<"^2 = -1"
-        //   <<std::endl;
-    WriteMatrix (std::cerr, F, n, k, A, lda);
-    WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
-     WriteMatrix (std::cerr, F, n, k, C, ldc);
+        //<<std::endl;
+    // WriteMatrix (std::cerr, F, n, k, A, lda);
+    // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
+    // WriteMatrix (std::cerr, F, n, n, C, ldc);
+    // WriteMatrix(std::cerr, F, n, n, C, ldc,FflasSageMath );
     if (w == size_t(-1))
             //w= (rand() % 5);
         w=1;
@@ -97,7 +97,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
 
     t.stop();
     time+=t.usertime();
-    // WriteMatrix (std::cerr<<"Result C = "<<std::endl, F, n, n, C, ldc);
+        //WriteMatrix (std::cerr<<"Result C = "<<std::endl, F, n, n, C, ldc);
 
     fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, A, lda, beta, C2, ldc);
 
@@ -106,26 +106,26 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     if (uplo == FflasUpper){
         for (size_t i=0; i<n; i++){
             for (size_t j=0;j<i;j++)
-                    // std::cerr<<" ";
+                    //std::cerr<<" ";
             for (size_t j=i; j<n; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
-                if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
-                    std::cerr<<".";
-                else
-                    std::cerr<<"X";
+                    //if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                        //std::cerr<<".";
+                    //else
+                        //std::cerr<<"X";
             }
-            std::cerr<<std::endl;
+                //std::cerr<<std::endl;
         }
     } else {
         for (size_t i=0; i<n; i++){
             for (size_t j=0; j<=i; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
-                if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
-                    std::cerr<<".";
-                else
-                    std::cerr<<"X";
+                    //if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                        //std::cerr<<".";
+                    //else
+                        //std::cerr<<"X";
             }
-            std::cerr<<std::endl;
+                //std::cerr<<std::endl;
         }
     }
     if (ok)
@@ -394,7 +394,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         F->init (beta, c);
         cout<<"Checking with ";F->write(cout)<<endl;
 
-//        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
         // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
         ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
             //ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
@@ -458,10 +458,10 @@ int main(int argc, char** argv)
     srand(seed);
     bool ok = true;
     do{
-        // ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
-        // ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,w,a,c,iters,seed);
-        // ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
