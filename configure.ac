@@ -93,11 +93,11 @@ FPMATH_FLAGS
 # With GCC 4.x, the default ABI version is 2. With this version, __m128 and
 # __m256 are the same types and therefore we cannot have overloads for both
 # types without linking error. It is fixed in ABI version 4.
-# FIXME: Why do we set ABI version to 6 ? Why is it not done for GCC 4.9.x ?
-AS_IF([test "x$CCNAM" = "xgcc48"],[REQUIRED_FLAGS+=" -fabi-version=6"])
+# FIXME: Why do we set ABI version to 6
+AS_CASE([$CCNAM], [gcc48*|gcc49*], [REQUIRED_FLAGS+=" -fabi-version=6"])
 
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
-AS_IF([test  "x$CCNAM" = "xgcc492" ],[REQUIRED_FLAGS+=" -fpermissive"])
+AS_CASE([$CCNAM], [gcc492], [REQUIRED_FLAGS+=" -fpermissive"])
 
 AS_ECHO([---------------------------------------])
 # Machine characteristics

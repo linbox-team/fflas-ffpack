@@ -115,11 +115,11 @@ AC_DEFUN([AC_COMPILER_NAME], [
             [ CCNAM=clang38 ])
         ])
 
-    dnl GCC >= 4.9.3 ?
+    dnl GCC >= 5 ?
     AS_IF([ test -z "${CCNAM}"], [
         AC_TRY_RUN( [
             #ifdef __GNUC__
-                int main() { return !(__GNUC__ >= 5 || (__GNUC__ == 4  && (__GNUC_MINOR__ > 9 || (__GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ >= 3)))) ; }
+                int main() { return !(__GNUC__ >= 5) ; }
             #else
                 not gcc neither.
             #endif],
@@ -130,18 +130,29 @@ AC_DEFUN([AC_COMPILER_NAME], [
     AS_IF([ test -z "${CCNAM}"], [
         AC_TRY_RUN( [
             #ifdef __GNUC__
-                int main() { return !(__GNUC__ == 4  && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ == 2 ) ; }
+                int main() { return !(__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ == 2 ) ; }
             #else
                not gcc neither.
             #endif],
             [ CCNAM=gcc492 ])
         ])
 
-    dnl GCC >= 4.8 and < 4.9.2 ?
+    dnl GCC == 4.9.* ?
     AS_IF([ test -z "${CCNAM}"], [
         AC_TRY_RUN( [
             #ifdef __GNUC__
-                int main() { return !(__GNUC__ == 4  && (__GNUC_MINOR__ == 8 || (__GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ < 2))) ; }
+                int main() { return !(__GNUC__ == 4 && __GNUC_MINOR__ == 9) ; }
+            #else
+               not gcc neither.
+            #endif],
+            [ CCNAM=gcc49 ])
+        ])
+
+    dnl GCC == 4.8.* ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __GNUC__
+                int main() { return !(__GNUC__ == 4 && __GNUC_MINOR__ == 8) ; }
             #else
                not gcc neither.
             #endif],
