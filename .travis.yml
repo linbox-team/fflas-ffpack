@@ -14,15 +14,17 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-4.9
+          - binutils
           - gfortran-4.9
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
           - autoconf
           - libopenblas-dev
+
     - os: linux
       sudo: required
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: GCC_VERSION=7
       addons:
@@ -31,30 +33,33 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-7
+          - binutils
           - gfortran-7
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
           - autoconf
           - libopenblas-dev
+
     - os: linux
       sudo: required
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: GCC_VERSION=8
-      # BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
           - g++-8
+          - binutils
           - gfortran-8
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
           - autoconf
           - libopenblas-dev
+
     # - os: linux
     #   sudo: required
     #   dist: trusty
@@ -94,7 +99,7 @@ before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
   - git clone --depth=1 https://github.com/xianyi/OpenBLAS.git  && cd OpenBLAS && make && sudo make PREFIX="/usr/local" install && cd ..
   - export LD_LIBRARY_PATH=/usr/local/lib
-  - ./autogen.sh #$BLAS_LIBS
+  - ./autogen.sh
 
 script:
   - make
