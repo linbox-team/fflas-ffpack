@@ -189,8 +189,9 @@ namespace FFLAS {
                     faxpy (DF, N2, y, A21, 1, Sr, 1);
                 }
                     // T <- A22 -S
+
                 fsub (DF, N2, A22, 1, S, 1, T, 1);
-                fsub (DF, N2, A22r, 1, S, 1, Tr, 1);
+                fsub (DF, N2, A22r, 1, Sr, 1, Tr, 1);
                 
                     // S <- S - A11 Y^T
                 faxpy (DF, N2, negx, A11, 1, S, 1);
@@ -267,7 +268,7 @@ namespace FFLAS {
         }
         MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
         // std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
-        // std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
+        //std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
 
         fsyrk(F, UpLo, trans, N, K, alpha_, A, lda, beta_, C, ldc, HD);
 
