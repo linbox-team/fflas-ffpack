@@ -403,7 +403,8 @@ namespace FFLAS {
                 S1 = fflas_new(F, N2, K2);
                 S2 = fflas_new(F, N2, K2);
                 S4 = S1;
-                lds = K2;
+                if (trans==FflasNoTrans) lds = K2;
+                else  lds = N2;
             } else{
                 S1 = C21;
                 S2 = C12;
@@ -535,11 +536,12 @@ namespace FFLAS {
             F.init (negbeta);
             F.neg (negbeta, beta);
             typename Field::Element_ptr T = fflas_new (F, N2, std::max(N2,K2));
-            size_t ldt = std::max(N2,K2);
+            size_t ldt = (trans == FflasNoTrans)?std::max(N2,K2) : N2;
 
             if (K>N){ // Not possible to store S2 in C12
                 S2 = fflas_new(F, N2, K2);
-                lds = K2;
+                if (trans == FflasNoTrans) lds = K2;
+                else lds = N2;
             } else{
                 S2 = C12;
                 lds = ldc;

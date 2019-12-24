@@ -398,28 +398,28 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
         ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
         ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
-            //ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
 
-        // // checking with k > n (=k+n)
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
+            // checking with k > n (=k+n)
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
         nbit--;
         delete F;
     }
@@ -462,10 +462,10 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
-        // ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,a,c,iters,seed);
-        // ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
-        // ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
-        // ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
+            //ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,w,a,c,iters,seed);
+            //ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,w,a,c,iters,seed);
 
         // conversion to RNS basis not available yet for fsyrk
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
