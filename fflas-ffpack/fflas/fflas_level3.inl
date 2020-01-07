@@ -265,7 +265,7 @@ namespace FFLAS {
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc);
 
-    template<class Field, FieldTrait>
+    template<class Field, typename  FieldTrait>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,
                     const FFLAS_UPLO UpLo,

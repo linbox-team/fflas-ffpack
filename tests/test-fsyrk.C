@@ -75,23 +75,13 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     double time=0.0;
     t.clear(); t.start();
 
-    //     // find a, b such that a^2 + b^2 = -1 mod p
-    // Givaro::Integer a,b;
-    // Givaro::IntSqrtModDom<> ISM;
-    // ISM.sumofsquaresmodprime (a, b, -1, F.characteristic())h;
-    // typename Field::Element y1, y2;
-    // F.init (y1, a);
-    // F.init (y2, b);
-    //std::cerr<<"Launching fsyrk_strassen with alpha = "<<alpha<<" beta = "<<beta<<" w = "<<w
-        //<<" and "<<a<<"^2 + "<<b<<"^2 = -1"
-        //<<std::endl;
     // WriteMatrix (std::cerr, F, n, k, A, lda);
     // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
     // WriteMatrix (std::cerr, F, n, n, C, ldc);
     // WriteMatrix(std::cerr, F, n, n, C, ldc,FflasSageMath );
     if (w == size_t(-1))
-            //w= (rand() % 5);
-        w=1;
+        w= (rand() % 5);
+        
     MMHelper<Field, MMHelperAlgo::Winograd> H(F,w);
     fsyrk (F, uplo, trans, n, k, alpha, A, lda, beta, C, ldc, H);
 
