@@ -105,8 +105,8 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
         //std::cerr<<std::endl<<std::endl;
     if (uplo == FflasUpper){
         for (size_t i=0; i<n; i++){
-            for (size_t j=0;j<i;j++)
-                    //std::cerr<<" ";
+            //for (size_t j=0;j<i;j++)
+            //        std::cerr<<" ";
             for (size_t j=i; j<n; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
                     //if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
@@ -462,11 +462,8 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
-            //ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,w,a,c,iters,seed);
-            //ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,w,a,c,iters,seed);
-
         // conversion to RNS basis not available yet for fsyrk
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
