@@ -137,8 +137,6 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
         cout << "FAILED ("<<time<<")"<<endl;
     //cerr<<"FAILED ("<<time<<")"<<endl;
 
-    if (!ok){
-    }
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
