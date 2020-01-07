@@ -265,7 +265,7 @@ namespace FFLAS {
            const typename Field::Element beta,
            typename Field::Element_ptr C, const size_t ldc);
 
-    template<class Field>
+    template<class Field, FieldTrait>
     inline typename Field::Element_ptr
     fsyrk_strassen (const Field& F,
                     const FFLAS_UPLO UpLo,
@@ -278,7 +278,7 @@ namespace FFLAS {
                     typename Field::ConstElement_ptr A, const size_t lda,
                     const typename Field::Element beta,
                     typename Field::Element_ptr C, const size_t ldc,
-                    size_t reclevel /*todo: use helper instead*/);
+                    MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H);
 
     template<class Field>
     typename Field::Element_ptr
