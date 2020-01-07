@@ -134,7 +134,7 @@ namespace FFLAS {
                         F.mulin (C[i*ldc+j],beta);
                         F.axpyin (C[i*ldc+j],
                                   alpha,
-                                  fdot(F, K, A+i*lda, 1, A+j, lda));
+                                  fdot(F, K, A+i*lda, 1, A+j*lda, 1));
                     }
             } else { // Trans
                 for (size_t i=0; i<N; i++)
@@ -142,7 +142,7 @@ namespace FFLAS {
                         F.mulin (C[i*ldc+j],beta);
                         F.axpyin (C[i*ldc+j],
                                   alpha,
-                                  fdot(F, K, A+i, lda, A+j*lda, 1));
+                                  fdot(F, K, A+i, lda, A+j, lda));
                     }
             }
         } else { // Lower
@@ -152,7 +152,7 @@ namespace FFLAS {
                         F.mulin (C[i*ldc+j],beta);
                         F.axpyin (C[i*ldc+j],
                                   alpha,
-                                  fdot(F, K, A+i*lda, 1, A+j, lda));
+                                  fdot(F, K, A+i*lda, 1, A+j*lda, 1));
                     }
             } else { // Trans
                 for (size_t i=0; i<N; i++)
@@ -160,7 +160,7 @@ namespace FFLAS {
                         F.mulin (C[i*ldc+j],beta);
                         F.axpyin (C[i*ldc+j],
                                   alpha,
-                                  fdot(F, K, A+i, lda, A+j*lda, 1));
+                                  fdot(F, K, A+i, lda, A+j, lda));
                     }
             }
         }
