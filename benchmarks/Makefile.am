@@ -35,7 +35,7 @@ endif
 
 PERFPUBLISHERFILE=benchmarks-report.xml
 
-FFLA_BENCH =    benchmark-fgemm benchmark-fgemm-rns benchmark-wino benchmark-ftrsm  benchmark-fgesv benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot benchmark-fgemv 
+FFLA_BENCH =    benchmark-fgemm benchmark-fgemm-rns benchmark-wino benchmark-ftrsm  benchmark-fgesv benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-fsyr2k  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot benchmark-fgemv
 
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf benchmark-dsytrf
@@ -50,10 +50,10 @@ benchmark_dsytrf_SOURCES = benchmark-dsytrf.C
 endif
 
 BENCHMARKS =			\
-        $(FFLA_BENCH)   \
-        $(BLAS_BENCH)   \
-        $(USE_LAPACK_BENCH) \
-        $(USE_OMP_BENCH)
+	$(FFLA_BENCH)   \
+	$(BLAS_BENCH)   \
+	$(USE_LAPACK_BENCH) \
+	$(USE_OMP_BENCH)
 
 CLEANFILES = $(BENCHMARKS) $(PERFPUBLISHERFILE)
 
@@ -75,6 +75,7 @@ benchmark_ftrsv_SOURCES = benchmark-ftrsv.C
 benchmark_ftrtri_SOURCES = benchmark-ftrtri.C
 benchmark_inverse_SOURCES = benchmark-inverse.C
 benchmark_fsytrf_SOURCES = benchmark-fsytrf.C
+benchmark_fsyr2k_SOURCES = benchmark-fsyr2k.C
 benchmark_fsyrk_SOURCES = benchmark-fsyrk.C
 benchmark_charpoly_SOURCES = benchmark-charpoly.C
 benchmark_charpoly_mp_SOURCES = benchmark-charpoly-mp.C
