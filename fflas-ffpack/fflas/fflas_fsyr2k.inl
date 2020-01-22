@@ -44,13 +44,12 @@ namespace FFLAS {
         if (!N) return C;
         if (!K) FFLAS::fscalin(F, N,N, beta, C, ldc);
 
-        typename Field::Element two,itwo; F.init(two); F.init(itwo);
+        typename Field::Element itwo; F.init(itwo);
         typename Field::Element_ptr diagC(NULL);
 
         if (F.characteristic() != 2) {
                 // Cii <- Cii/2
-            F.init(two, 2);
-            F.inv(itwo,two);
+            F.init(itwo, 2); F.invin(itwo);
             for(size_t i=0; i<N; ++i)
                 F.mulin(*(C+i*ldc+i), itwo);
         } else {
@@ -64,13 +63,11 @@ namespace FFLAS {
         if (UpLo == FflasUpper) {
                 // Lower part set to zero
             for(size_t i=0; i<N; ++i)
-                for(size_t j=0; j<i; ++j)
-                    F.assign(*(C+i*ldc+j), F.zero);
+                fzero(F, i, C+i*ldc, 1);
         } else {
                 // Upper part set to zero
             for(size_t i=0; i<N; ++i)
-                for(size_t j=i+1; j<N; ++j)
-                    F.assign(*(C+i*ldc+j), F.zero);
+                fzero(F, i, C+i, ldc);
         }
 
         FFLAS_TRANSPOSE oppTrans;
@@ -98,7 +95,7 @@ namespace FFLAS {
         } else {
                 // restore Cii <- beta Cii
             for(size_t i=0; i<N; ++i)
-                F.assign(*(C+i*ldc+i),diagC[i]);
+                F.assign(*(C+i*ldc+i), diagC[i]);
             FFLAS::fflas_delete(diagC);
         }
 
