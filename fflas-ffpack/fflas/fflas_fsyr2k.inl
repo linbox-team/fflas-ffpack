@@ -42,21 +42,18 @@ namespace FFLAS {
             typename Field::Element_ptr C, const size_t ldc){
 
         if (!N) return C;
-        if (!K) FFLAS::fscalin(F, N,N, beta, C, ldc);
+        if (!K) fscalin(F, N,N, beta, C, ldc);
 
-        typename Field::Element itwo; F.init(itwo);
-        typename Field::Element_ptr diagC(NULL);
+        typename Field::Element_ptr diagC(nullptr);
 
         if (F.characteristic() != 2) {
-                // Cii <- Cii/2
-            F.init(itwo, 2); F.invin(itwo);
-            for(size_t i=0; i<N; ++i)
-                F.mulin(*(C+i*ldc+i), itwo);
+                // diagonal Cii <- Cii/2
+            typename Field::Element itwo; F.init(itwo, 2); F.invin(itwo);
+            fscalin(F, N, itwo, C, ldc+1);
         } else {
-                // store diagC <- beta Cii
+                // store diagonal diagC <- beta Cii
             diagC = FFLAS::fflas_new(F,N);
-            for(size_t i=0; i<N; ++i)
-                F.mul(diagC[i],beta,*(C+i*ldc+i));
+            fscal(F, N, beta, diagC, 1, C, ldc+1);
         }
 
             // Set unused triangular part of C to zero
@@ -77,25 +74,27 @@ namespace FFLAS {
             // alpha(A B^T) + beta(C)
         fgemm (F, trans, oppTrans, N, N, K, alpha, A, lda, B, ldb, beta, C, ldc);
 
-            // adds alpha(B A^T) from the unused part
-        if (UpLo == FflasUpper) {
-            for(size_t i=0; i<N; ++i)
-                for(size_t j=0; j<i; ++j)
-                    F.addin(*(C+j*ldc+i), *(C+i*ldc+j));
-        } else {
-            for(size_t i=0; i<N; ++i)
-                for(size_t j=i+1; j<N; ++j)
-                    F.addin(*(C+j*ldc+i), *(C+i*ldc+j));
-        }
-
+                // adds alpha(B A^T) from the unused part
         if (F.characteristic() != 2) {
-                // Cii <- 2*Cii
-            for(size_t i=0; i<N; ++i)
-                F.addin(*(C+i*ldc+i), *(C+i*ldc+i));
+                // diagonal included (so that initial div by 2 is compensated)
+            if (UpLo == FflasUpper) {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, i+1, C+i*ldc, 1, C+i, ldc);
+            } else {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, N-i, C+i*ldc+i, 1, C+i*ldc+i, ldc);
+            }
         } else {
-                // restore Cii <- beta Cii
-            for(size_t i=0; i<N; ++i)
-                F.assign(*(C+i*ldc+i), diagC[i]);
+                // diagonal excluded
+            if (UpLo == FflasUpper) {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, i, C+i*ldc, 1, C+i, ldc);
+            } else {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, N-i-1, C+i*ldc+(i+1), 1, C+(i+1)*ldc+i, ldc);
+            }
+                // restore diagonal Cii <- beta Cii
+            fassign(F, N, diagC, 1, C, ldc+1);
             FFLAS::fflas_delete(diagC);
         }
 
