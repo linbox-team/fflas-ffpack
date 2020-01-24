@@ -202,7 +202,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
     }
     if (!ok){
         std::cerr<<"Scaling failed"<<std::endl;
-        FFLAS::fflas_delete(A, B, C, C2, D);
+        fflas_delete(A, B, C, C2, D);
         return ok;
     }
 
@@ -226,30 +226,30 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
     else
         cout << "FAILED ("<<time<<")"<<endl;
 
-    FFLAS::fflas_delete(A);
-    FFLAS::fflas_delete(B);
-    FFLAS::fflas_delete(C2);
-    FFLAS::fflas_delete(C);
-    FFLAS::fflas_delete(D);
+    fflas_delete(A);
+    fflas_delete(B);
+    fflas_delete(C2);
+    fflas_delete(C);
+    fflas_delete(D);
     return ok;
 }
 template<typename Field, class RandIter>
 bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
                          const typename Field::Element &alpha, const typename Field::Element &beta,
-                         FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, RandIter& Rand){
+                         FFLAS_UPLO uplo, FFLAS_TRANSPOSE trans, RandIter& Rand){
 
     typedef typename Field::Element Element;
     Element * A, *B, *C, *C2, *D;
     size_t ldc = n+(rand()%50);
-    size_t Arows = (trans==FFLAS::FflasNoTrans)?n:k;
-    size_t Acols = (trans==FFLAS::FflasNoTrans)?k:n;
+    size_t Arows = (trans==FflasNoTrans)?n:k;
+    size_t Acols = (trans==FflasNoTrans)?k:n;
     size_t lda = Acols+(rand()%50);
     size_t incD = 1+(rand()%100);
-    A  = FFLAS::fflas_new(F,Arows,lda);
-    B  = FFLAS::fflas_new(F,Arows,lda);
-    C  = FFLAS::fflas_new(F,n,ldc);
-    C2  = FFLAS::fflas_new(F,n,ldc);
-    D  = FFLAS::fflas_new(F,k,incD);
+    A  = fflas_new(F,Arows,lda);
+    B  = fflas_new(F,Arows,lda);
+    C  = fflas_new(F,n,ldc);
+    C2  = fflas_new(F,n,ldc);
+    D  = fflas_new(F,k,incD);
     Givaro::GeneralRingNonZeroRandIter<Field,RandIter> nzRand (Rand);
     std::vector<bool> tb(k,false);
     for (size_t i=0; i<k; i++){
@@ -265,10 +265,10 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
 
     FFPACK::RandomTriangularMatrix (F, n, n, uplo, FflasNonUnit, true, C, ldc, Rand);
     FFPACK::RandomMatrix (F, Arows, Acols, A, lda, Rand);
-    FFLAS::fassign (F, n, n, C, ldc, C2, ldc);
-    FFLAS::fassign (F, Arows, Acols, A, lda, B, lda);
+    fassign (F, n, n, C, ldc, C2, ldc);
+    fassign (F, Arows, Acols, A, lda, B, lda);
 
-    string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((trans == FFLAS::FflasTrans)?"Trans":"NoTrans");
+    string ss=string((uplo == FflasLower)?"Lower_":"Upper_")+string((trans == FflasTrans)?"Trans":"NoTrans");
 
     cout<<std::left<<"Checking FSYRK_BK_DIAG_";
     cout.fill('.');
@@ -276,10 +276,10 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
     cout<<ss;
 
 
-    // FFLAS::WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-    // FFLAS::WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
-    // FFLAS::WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
-    FFLAS::Timer t; t.clear();
+    // WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+    // WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
+    // WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
+    Timer t; t.clear();
     double time=0.0;
     t.clear(); t.start();
 
@@ -289,8 +289,8 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
     time+=t.usertime();
 
     // std::cerr<<"After fsyrk_bk_diag"<<std::endl;
-    // FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-    // FFLAS::WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
+    // WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+    // WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
     bool ok = true;
 
     typename Field::Element tmp;
@@ -328,7 +328,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
         std::cerr<<"Scaling failed"<<std::endl;
         std::cerr<<"alpha = "<<alpha<<" beta="<<beta<<std::endl;
         std::cerr<<"tb = "<<tb<<std::endl;
-        FFLAS::fflas_delete(A, B, C, C2, D);
+        fflas_delete(A, B, C, C2, D);
         return ok;
     }
 
@@ -356,11 +356,91 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
         cout << "FAILED ("<<time<<")"<<endl;
     //cerr<<"FAILED ("<<time<<")"<<endl;
 
-    FFLAS::fflas_delete(A);
-    FFLAS::fflas_delete(B);
-    FFLAS::fflas_delete(C2);
-    FFLAS::fflas_delete(C);
-    FFLAS::fflas_delete(D);
+    fflas_delete(A);
+    fflas_delete(B);
+    fflas_delete(C2);
+    fflas_delete(C);
+    fflas_delete(D);
+    return ok;
+}
+
+template <class Field, class RandIter>
+bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE trans, RandIter& G){
+
+    bool ok = true;
+    typename Field::Element_ptr A, S, T;
+    size_t STrows = 2*((trans==FflasNoTrans)?N:K);
+    size_t STcols = 2*((trans==FflasNoTrans)?K:N);
+    size_t Arows = 4*STrows;
+    size_t Acols = 4*STcols;
+    size_t lda = Acols+(rand()%50);
+    size_t lds = STcols+(rand()%50);
+    size_t ldt = STcols+(rand()%50);
+    A  = fflas_new(F,Arows,lda);
+    S  = fflas_new(F,STrows,lds);
+    T  = fflas_new(F,STrows,ldt);
+
+    FFPACK::RandomMatrix (F, Arows, Acols, A, lda, G);
+
+    MMHelper<Field, MMHelperAlgo::Winograd> WH(F,1);
+    Givaro::Integer a,b;
+    Givaro::IntSqrtModDom<> ISM;
+    Givaro::ZRing<Givaro::Integer> Z;
+    Z.init(a);
+    Z.init(b);
+    ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
+    typename Field::Element y1, y2;
+    F.init (y1, a);
+    F.init (y2, b);
+
+    computeS1S2 (F, trans, 4*N, 4*K, y1, y2, A, lda, S, lds, T, ldt, WH); 
+
+    if (trans==FflasNoTrans){
+        typename Field::Element_ptr V, Y, W;
+        typename Field::Element_ptr A21 = A + 2*N*lda;
+        typename Field::Element_ptr A22 = A21 + 2*K;
+        size_t ldv = STcols;
+        size_t ldw = STcols;
+        size_t ldy = STcols;
+        V  = fflas_new (F, STrows, ldv);
+        Y  = fflas_new (F, STcols, ldy);
+        W  = fflas_new (F, STrows, ldw);
+        for (size_t i=0; i<STcols; ++i){
+            for (size_t j=0; j<STcols; ++j){
+                F.assign(Y[i*ldy+j], F.zero);
+            }
+            F.assign (Y [i*ldy+i], y1);
+            if (i < K)
+                F.assign (Y [i*ldy + K + i], y2);
+            else
+                F.neg (Y [i*ldy + i - K], y2);
+        }
+            // W <- A21 - A11
+        fsub (F, STrows, STcols, A21, lda, A, lda, W, ldw);
+            // S < W x Y
+        fgemm (F, FflasNoTrans, FflasNoTrans, STrows, STcols, STcols, F.one, W, ldw, Y, ldy, F.zero, V, ldv);
+
+        if (!fequal (F, STrows, STcols, S, lds, V, ldv)){
+            std::cerr<< "FAILED: computing S"<<std::endl;
+            ok = false;
+        }
+
+            // W <- -A21 x Y
+        fgemm (F, FflasNoTrans, FflasNoTrans, STrows, STcols, STcols, F.mOne, A21, lda, Y, ldy, F.zero, W, ldw);
+            // V <- A22 + W
+        fadd (F, STrows, STcols, A22, lda, W, ldw, V, ldv);
+
+        if (!fequal (F, STrows, STcols, T, ldt, V, ldv)){
+            std::cerr<< "FAILED: computing T"<<std::endl;
+            ok = false;
+        }
+        
+        fflas_delete(A,S,T,V,W,Y);
+    
+    } else { // Trans
+        
+//        fflas_delete(A,S,T,V,W,Y);
+    }
     return ok;
 }
 
@@ -408,6 +488,9 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
         ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
         ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+
+        ok = ok && check_computeS1S2(*F, n, k, FflasNoTrans, G);
+//        ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
         nbit--;
         delete F;
     }
