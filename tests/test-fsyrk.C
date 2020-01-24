@@ -367,6 +367,13 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
 template <class Field, class RandIter>
 bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE trans, RandIter& G){
 
+    string ss=string((trans == FflasTrans)?"Trans":"NoTrans");
+
+    cout<<std::left<<"Checking ComputeS1S2_";
+    cout.fill('.');
+    cout.width(30);
+    cout<<ss;
+
     bool ok = true;
     typename Field::Element_ptr A, S, T;
     size_t STrows = 2*((trans==FflasNoTrans)?N:K);
@@ -395,52 +402,63 @@ bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE tran
 
     computeS1S2 (F, trans, 4*N, 4*K, y1, y2, A, lda, S, lds, T, ldt, WH); 
 
-    if (trans==FflasNoTrans){
-        typename Field::Element_ptr V, Y, W;
-        typename Field::Element_ptr A21 = A + 2*N*lda;
-        typename Field::Element_ptr A22 = A21 + 2*K;
-        size_t ldv = STcols;
-        size_t ldw = STcols;
-        size_t ldy = STcols;
-        V  = fflas_new (F, STrows, ldv);
-        Y  = fflas_new (F, STcols, ldy);
-        W  = fflas_new (F, STrows, ldw);
-        for (size_t i=0; i<STcols; ++i){
-            for (size_t j=0; j<STcols; ++j){
-                F.assign(Y[i*ldy+j], F.zero);
-            }
-            F.assign (Y [i*ldy+i], y1);
-            if (i < K)
-                F.assign (Y [i*ldy + K + i], y2);
-            else
-                F.neg (Y [i*ldy + i - K], y2);
-        }
-            // W <- A21 - A11
-        fsub (F, STrows, STcols, A21, lda, A, lda, W, ldw);
-            // S < W x Y
-        fgemm (F, FflasNoTrans, FflasNoTrans, STrows, STcols, STcols, F.one, W, ldw, Y, ldy, F.zero, V, ldv);
-
-        if (!fequal (F, STrows, STcols, S, lds, V, ldv)){
-            std::cerr<< "FAILED: computing S"<<std::endl;
-            ok = false;
-        }
-
-            // W <- -A21 x Y
-        fgemm (F, FflasNoTrans, FflasNoTrans, STrows, STcols, STcols, F.mOne, A21, lda, Y, ldy, F.zero, W, ldw);
-            // V <- A22 + W
-        fadd (F, STrows, STcols, A22, lda, W, ldw, V, ldv);
-
-        if (!fequal (F, STrows, STcols, T, ldt, V, ldv)){
-            std::cerr<< "FAILED: computing T"<<std::endl;
-            ok = false;
-        }
-        
-        fflas_delete(A,S,T,V,W,Y);
-    
-    } else { // Trans
-        
-//        fflas_delete(A,S,T,V,W,Y);
+    typename Field::Element_ptr V, Y, W;
+    typename Field::Element_ptr A21, A22;
+    size_t Ydim = 2*K;
+    size_t ldy = Ydim;
+    size_t ldv = STcols;
+    size_t ldw = STcols;
+    if (trans == FflasNoTrans){
+        A21 = A + 2*N*lda;
+        A22 = A21 + 2*K;
+    } else {
+        A21 = A + 2*N;
+        A22 = A21 + 2*K*lda;
     }
+    V  = fflas_new (F, STrows, ldv);
+    Y  = fflas_new (F, Ydim, Ydim);
+    W  = fflas_new (F, STrows, ldw);
+    for (size_t i=0; i<Ydim; ++i){
+        for (size_t j=0; j<Ydim; ++j){
+            F.assign(Y[i*ldy+j], F.zero);
+        }
+        F.assign (Y [i*ldy+i], y1);
+        if (i < K)
+            F.assign (Y [i*ldy + K + i], y2);
+        else
+            F.neg (Y [i*ldy + i - K], y2);
+    }
+        // W <- A21 - A11
+    fsub (F, STrows, STcols, A21, lda, A, lda, W, ldw);
+        // S < W x Y (NoTrans) or Y x W (Trans)
+    if (trans == FflasNoTrans)
+        fgemm (F, FflasNoTrans, FflasNoTrans, STrows, STcols, Ydim, F.one, W, ldw, Y, ldy, F.zero, V, ldv);
+    else
+        fgemm (F, FflasTrans, FflasNoTrans, STrows, STcols, Ydim, F.one, Y, ldy, W, ldw, F.zero, V, ldv);
+    
+    if (!fequal (F, STrows, STcols, S, lds, V, ldv)){
+        std::cerr<< "FAILED: computing S"<<std::endl;
+        ok = false;
+    }
+
+        // W <- -A21 x Y (NoTrans) or Y x (-A21) (Trans)
+    if (trans == FflasNoTrans)
+        fgemm (F, FflasNoTrans, FflasNoTrans, STrows, STcols, Ydim, F.mOne, A21, lda, Y, ldy, F.zero, W, ldw);
+    else
+        fgemm (F, FflasTrans, FflasNoTrans, STrows, STcols, Ydim, F.mOne, Y, ldy, A21, lda, F.zero, W, ldw);
+    
+        // V <- A22 + W
+    fadd (F, STrows, STcols, A22, lda, W, ldw, V, ldv);
+    
+    if (!fequal (F, STrows, STcols, T, ldt, V, ldv)){
+        std::cerr<< "FAILED: computing T"<<std::endl;
+        ok = false;
+    }
+    
+    fflas_delete(A,S,T,V,W,Y);
+    
+    cout << "PASSED"<<endl;
+
     return ok;
 }
 
@@ -490,7 +508,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
 
         ok = ok && check_computeS1S2(*F, n, k, FflasNoTrans, G);
-//        ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
+        ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
         nbit--;
         delete F;
     }
@@ -529,12 +547,12 @@ int main(int argc, char** argv)
     srand(seed);
     bool ok = true;
     do{
-        ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,w,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
-        ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,w,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,w,a,c,iters,seed);
+        // ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,w,a,c,iters,seed);
         // conversion to RNS basis not available yet for fsyrk
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
