@@ -42,8 +42,12 @@ namespace FFLAS {
                  typename Field::Element_ptr S, const size_t lds,
                  typename Field::Element_ptr T, const size_t ldt,
                  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> WH)  {
-            // S1 = (A21-A11) x Y in S
-            // S2 =  A22 - A21 x Y  in T
+            // WH stores and maintain bounds on A11 in Amin,Amax, A21 in Bmin, Bmax and A11, in Cmin,Cmax
+            // Bounds on S and T are stored in Outmin and Outmax
+
+            // Computes (when trans = NoTrans)
+            // S = (A21-A11) x Y in S
+            // T =  A22 - A21 x Y  in T
             // where Y = [ x.I  y.I]
             //           [ -y.I x.I]
         typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
@@ -52,6 +56,7 @@ namespace FFLAS {
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         size_t K4 = K2>>1;
+        size_t Axxrows, Axxcols;
         typename Field::ConstElement_ptr A11 = A, A21, A22, A11r, A21r, A22r;
         typename Field::Element_ptr Sr, Tr;
         if (trans==FflasNoTrans){
@@ -62,6 +67,8 @@ namespace FFLAS {
             A21r = A21 + K4;
             Sr = S + K4;
             Tr = T+K4;
+            Axxrows=N2;
+            Axxcols=K2;
         } else { // Trans
             A21 = A + N2;
             A22 = A21 + K2*lda;
@@ -70,7 +77,10 @@ namespace FFLAS {
             A21r = A21 + K4*lda;
             Sr = S + K4*lds;
             Tr = T + K4*ldt;
+            Axxrows=K2;
+            Axxcols=N2;
         }
+
         typename Field::Element negx, negy, y1, y2;
         F.init(negx);
         F.init(y1);
@@ -79,29 +89,82 @@ namespace FFLAS {
         F.init(negy);
         F.neg(negy, y); 
 
+
+        // Operations:
+        // S1 <- A21 x y1.In
+        // S2 <- S1 + A21 x y2 [ 0    In/2 ]
+        //                     [ In/2  0   ]
+        // T <- A22 - S2
+        // S3 <- S2 - A11 x y1.In
+        // S  <- S3 - A11 x y2. [ 0    In/2 ]
+        //                      [ In/2  0   ]
+
+            // Should we reduce Axx and Sx beforehand?
+        bool reduceA21 = false;
+        if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, y1)){
+            reduceA21 = true;
+        }
+        bool reduceS1 = false;
+        if (Proteced::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bin, WH.Bmax, y2)){
+            reduceA21 = true;
+            reduceS1 = true;
+        }
+        bool reduceS2 = false;
+        bool reduceA11 = false;
+        if (Proteced::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx)){
+            reduceS2 = true;
+            reduceA11 = true;
+        }
+        bool reduceS3 = false;
+        if (Proteced::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy)) {
+            reduceS3 = true;
+        }
+        bool reduceA22 = false;
+        if (Proteced::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max)) {
+            reduceA22 = true;
+                // TODO: shouldn't we also reduce S2?
+        }
+
+        if (reduceA21) freduce (F, Axrows, Axcols, A21, lda);
+        if (reduceA11) freduce (F, Axrows, Axcols, A, lda);
+        if (reduceA22) freduce (F, Axrows, Axcols, A22, lda);
+
         if (trans==FflasNoTrans){
             F.assign(y1, y);
             F.assign(y2, negy);
-                // TODO: write a distinct loop for the trans==FflasTrans case for better cache efficiency
                 // S <- A21 Y
             for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
-                fscal (DF, K2, x, A21, 1, S, 1);
+                if (reduceS1)
+                    fscal (F, K2, x, A21, 1, S, 1);
+                else
+                    fscal (DF, K2, x, A21, 1, S, 1);
                 if (!F.isZero(y)){
-                    faxpy (DF, K4, negy, A21r, 1, S, 1);
-                    faxpy (DF, K4, y, A21, 1, Sr, 1);
+                    if (reduceS2){
+                        faxpy (F, K4, negy, A21r, 1, S, 1);
+                        faxpy (F, K4, y, A21, 1, Sr, 1);
+                    } else {
+                        faxpy (DF, K4, negy, A21r, 1, S, 1);
+                        faxpy (DF, K4, y, A21, 1, Sr, 1);
+                    }
                 }
                     // T <- A22 -S
-                fsub (DF, K2, A22, 1, S, 1, T, 1);
-                
-                    // S <- S - Y A11 
-                faxpy (DF, K2, negx, A11, 1, S, 1);
+                if (reduceA22 && reduceS2){
+                    fsub (F, K2, A22, 1, S, 1, T, 1);
+                } else {
+                    fsub (DF, K2, A22, 1, S, 1, T, 1);
+                    freduce (F,K2,T, 1);
+                }
+                    // S <- S - A11 Y
+                if (reduceS3)
+                    faxpy (F, K2, negx, A11, 1, S, 1);
+                else
+                    faxpy (DF, K2, negx, A11, 1, S, 1);
                 if (!F.isZero(y)){
-                    faxpy (DF, K4, y, A11r, 1, S, 1);
-                    faxpy (DF, K4, negy, A11, 1, Sr, 1);
+                    faxpy (F, K4, y, A11r, 1, S, 1);
+                    faxpy (F, K4, negy, A11, 1, Sr, 1);
                 }
                 
-                freduce (F,K2,S, 1);
-                freduce (F,K2,T, 1);
+                    //freduce (F,K2,S, 1);
             }
         } else { // FflasTrans
             F.assign(y1, y);
@@ -120,7 +183,7 @@ namespace FFLAS {
                 fsub (DF, N2, A22, 1, S, 1, T, 1);
                 fsub (DF, N2, A22r, 1, Sr, 1, Tr, 1);
                 
-                    // S <- S - A11 Y^T
+                    // S <- S - Y A11
                 faxpy (DF, N2, negx, A11, 1, S, 1);
                 faxpy (DF, N2, negx, A11r, 1, Sr, 1);
                 if (!F.isZero(y)){
