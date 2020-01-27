@@ -28,6 +28,106 @@
 
 #include <givaro/givintsqrootmod.h>
 
+namespace FFLAS{ namespace Protected{
+    template <class Field, class Element, class AlgoT, class ParSeqTrait>
+    inline bool NeedPreScalReduction (Element& Outmin, Element& Outmax,
+                                      Element& Op1min, Element& Op1max,
+                                      Element& x,
+                                      MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
+    {
+        if (x<0){
+            if ( std::max(-Op1min, Op1max) > WH.MaxStorableValue / (-x)){
+                Outmin = x * WH.FieldMax;
+                Outmax = x * WH.FieldMin;
+                Op1min = WH.FieldMin;
+                Op1max = WH.FieldMax;
+                return true;
+            }else{
+                Outmin = x * Op1max;
+                Outmax = x * Op1min;
+                return false;
+            }
+        } else {
+            if ( std::max(-Op1min, Op1max) > WH.MaxStorableValue / x){
+                Outmin = x * WH.FieldMin;
+                Outmax = x * WH.FieldMax;
+                Op1min = WH.FieldMin;
+                Op1max = WH.FieldMax;
+                return true;
+            }else{
+                Outmin = x * Op1min;
+                Outmax = x * Op1max;
+                return false;
+            }
+        }
+    }
+
+    template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
+    inline bool NeedPreScalReduction (Element& Outmin, Element& Outmax,
+                                      Element& Op1min, Element& Op1max,
+                                      Element& x,
+                                      MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
+    {
+        Outmin = WH.FieldMin;
+        Outmax = WH.FieldMax;
+        return false;
+    }
+        
+    template <class Field, class Element, class AlgoT, class ParSeqTrait>
+    inline bool NeedPreAxpyReduction (Element& Outmin, Element& Outmax,
+                                      Element& Op1min, Element& Op1max,
+                                      Element& Op2min, Element& Op2max,
+                                      Element& x,
+                                      MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
+    // Out <- Op1 + x.Op2
+    // x is assumed to be reduced
+    {
+        if (x<0){
+            if (Op2min > (WH.MaxStorableValue - Op1max) / x ||
+                Op2max < (-WH.MaxStorableValue + Op1min) / x ){
+                Outmin = (x+1) * WH.FieldMin ;
+                Outmax = (x+1) * WH.FieldMax;
+                Op1min = WH.FieldMin;
+                Op1max = WH.FieldMax;
+                Op2min = WH.FieldMin;
+                Op2max = WH.FieldMax;
+                return true;
+            }else{
+                Outmin = Op1min + x * Op2max;
+                Outmax = Op1max + x * Op2min;
+                return false;
+            }
+        } else {
+            if (Op2max > (WH.MaxStorableValue - Op1max) / x ||
+                Op2min < (-WH.MaxStorableValue + Op1min) / x ){
+                Outmin = (x+1) * WH.FieldMin ;
+                Outmax = (x+1) * WH.FieldMax;
+                Op1min = WH.FieldMin;
+                Op1max = WH.FieldMax;
+                Op2min = WH.FieldMin;
+                Op2max = WH.FieldMax;
+                return true;
+            }else{
+                Outmin = Op1min + x * Op2min;
+                Outmax = Op1max + x * Op2max;
+                return false;
+            }
+        }
+    }
+
+    template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
+    inline bool NeedPreAxpyReduction (Element& Outmin, Element& Outmax,
+                                      Element& Op1min, Element& Op1max,
+                                      Element& Op2min, Element& Op2max,
+                                      Element& x,
+                                      MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
+    {
+        Outmin = WH.FieldMin;
+        Outmax = WH.FieldMax;
+        return false;
+    }
+    }
+}
 namespace FFLAS {
 
     template<class Field, class FieldTrait>
@@ -52,6 +152,7 @@ namespace FFLAS {
             //           [ -y.I x.I]
         typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
         const typename MMH_t::DelayedField & DF = WH.delayedField;
+        typedef typename  MMH_t::DelayedField::Element DFElt;
 
         size_t N2 = N>>1;
         size_t K2 = K>>1;
@@ -99,35 +200,36 @@ namespace FFLAS {
         // S  <- S3 - A11 x y2. [ 0    In/2 ]
         //                      [ In/2  0   ]
 
+        DFElt S1min, S1max, S2min, S2max, S3min, S3max, Smin, Smax, Tmin, Tmax;
             // Should we reduce Axx and Sx beforehand?
         bool reduceA21 = false;
-        if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, y1)){
+        if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, y1, WH)){
             reduceA21 = true;
         }
         bool reduceS1 = false;
-        if (Proteced::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bin, WH.Bmax, y2)){
+        if (Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y2, WH)){
             reduceA21 = true;
             reduceS1 = true;
         }
         bool reduceS2 = false;
         bool reduceA11 = false;
-        if (Proteced::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx)){
+        if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
             reduceS2 = true;
             reduceA11 = true;
         }
         bool reduceS3 = false;
-        if (Proteced::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy)) {
+        if (Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH)) {
             reduceS3 = true;
         }
         bool reduceA22 = false;
-        if (Proteced::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max)) {
+        if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
                 // TODO: shouldn't we also reduce S2?
         }
 
-        if (reduceA21) freduce (F, Axrows, Axcols, A21, lda);
-        if (reduceA11) freduce (F, Axrows, Axcols, A, lda);
-        if (reduceA22) freduce (F, Axrows, Axcols, A22, lda);
+        if (reduceA21) freduce (F, Axxrows, Axxcols, A21, lda);
+        if (reduceA11) freduce (F, Axxrows, Axxcols, A, lda);
+        if (reduceA22) freduce (F, Axxrows, Axxcols, A22, lda);
 
         if (trans==FflasNoTrans){
             F.assign(y1, y);
