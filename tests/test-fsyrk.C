@@ -378,8 +378,8 @@ bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE tran
     typename Field::Element_ptr A, S, T;
     size_t STrows = 2*((trans==FflasNoTrans)?N:K);
     size_t STcols = 2*((trans==FflasNoTrans)?K:N);
-    size_t Arows = 4*STrows;
-    size_t Acols = 4*STcols;
+    size_t Arows = 2*STrows;
+    size_t Acols = 2*STcols;
     size_t lda = Acols+(rand()%50);
     size_t lds = STcols+(rand()%50);
     size_t ldt = STcols+(rand()%50);
@@ -389,19 +389,31 @@ bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE tran
 
     FFPACK::RandomMatrix (F, Arows, Acols, A, lda, G);
 
-    MMHelper<Field, MMHelperAlgo::Winograd> WH(F,1);
+    MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag> WH(F,1);
     Givaro::Integer a,b;
     Givaro::IntSqrtModDom<> ISM;
     Givaro::ZRing<Givaro::Integer> Z;
     Z.init(a);
     Z.init(b);
     ISM.sumofsquaresmodprime (a, b, -1, F.characteristic());
-    typename Field::Element y1, y2;
+    typename Field::Element y1, y2,negy2;
     F.init (y1, a);
     F.init (y2, b);
-
+    
+    F.neg(negy2,y2);
+    WriteMatrix(std::cerr<<"A = "<<std::endl, F, Arows, Acols, A, lda);
+    WriteMatrix(std::cerr<<"A = ", F, Arows, Acols, A, lda, FflasSageMath);
+    std::cerr<<"A11=A[:2,:2]; A21=A[2:,:2]; A12=A[:2,2:]; A22=A[2:,2:]; Y=Matrix(GF("
+             <<F.cardinality()<<"),"<<STrows<<","<<STcols<<",["<<y1<<","<<y2<<","<<negy2<<","<<y1<<"])"<<std::endl
+             <<"S = (A21-A11)*Y; T = A22 - A21*Y"<<std::endl;
+    std::cerr<<"y1, y2 = "<<y1<<" "<<y2<<std::endl;
+    
     computeS1S2 (F, trans, 4*N, 4*K, y1, y2, A, lda, S, lds, T, ldt, WH); 
 
+    WriteMatrix(std::cerr<<"S = "<<std::endl, F, STrows, STcols, S, lds);
+    WriteMatrix(std::cerr<<"T = "<<std::endl, F, STrows, STcols, T, ldt);
+
+    
     typename Field::Element_ptr V, Y, W;
     typename Field::Element_ptr A21, A22;
     size_t Ydim = 2*K;
@@ -457,7 +469,7 @@ bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE tran
     
     fflas_delete(A,S,T,V,W,Y);
     
-    cout << "PASSED"<<endl;
+    if (ok) cout << "PASSED"<<endl;
 
     return ok;
 }
@@ -480,35 +492,35 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         F->init (beta, c);
         cout<<"Checking with ";F->write(cout)<<endl;
 
-        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
 
-            // checking with k > n (=k+n)
-        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+        //     // checking with k > n (=k+n)
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
 
         ok = ok && check_computeS1S2(*F, n, k, FflasNoTrans, G);
-        ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
+        // ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
         nbit--;
         delete F;
     }
@@ -556,9 +568,10 @@ int main(int argc, char** argv)
         // conversion to RNS basis not available yet for fsyrk
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
+        seed++;
     } while (loop && ok);
 
-    if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;
+    if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
 
     return !ok ;
 }

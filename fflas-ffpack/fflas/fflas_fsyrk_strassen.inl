@@ -32,7 +32,7 @@ namespace FFLAS{ namespace Protected{
     template <class Field, class Element, class AlgoT, class ParSeqTrait>
     inline bool NeedPreScalReduction (Element& Outmin, Element& Outmax,
                                       Element& Op1min, Element& Op1max,
-                                      Element& x,
+                                      const Element& x,
                                       MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
     {
         if (x<0){
@@ -57,6 +57,7 @@ namespace FFLAS{ namespace Protected{
             }else{
                 Outmin = x * Op1min;
                 Outmax = x * Op1max;
+                std::cerr<<"ICI: Outmax = "<<Outmax<<" x = "<<x<<" Op1max = "<<Op1max<<std::endl;
                 return false;
             }
         }
@@ -65,7 +66,7 @@ namespace FFLAS{ namespace Protected{
     template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
     inline bool NeedPreScalReduction (Element& Outmin, Element& Outmax,
                                       Element& Op1min, Element& Op1max,
-                                      Element& x,
+                                      const Element& x,
                                       MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
     {
         Outmin = WH.FieldMin;
@@ -77,7 +78,7 @@ namespace FFLAS{ namespace Protected{
     inline bool NeedPreAxpyReduction (Element& Outmin, Element& Outmax,
                                       Element& Op1min, Element& Op1max,
                                       Element& Op2min, Element& Op2max,
-                                      Element& x,
+                                      const Element& x,
                                       MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
     // Out <- Op1 + x.Op2
     // x is assumed to be reduced
@@ -98,10 +99,12 @@ namespace FFLAS{ namespace Protected{
                 return false;
             }
         } else {
+            std::cerr<<"NeedPreAxpyRed : "<<std::endl;
             if (Op2max > (WH.MaxStorableValue - Op1max) / x ||
                 Op2min < (-WH.MaxStorableValue + Op1min) / x ){
                 Outmin = (x+1) * WH.FieldMin ;
                 Outmax = (x+1) * WH.FieldMax;
+                std::cerr<<"Outmax = "<<Outmax<<std::endl;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
                 Op2min = WH.FieldMin;
@@ -110,6 +113,7 @@ namespace FFLAS{ namespace Protected{
             }else{
                 Outmin = Op1min + x * Op2min;
                 Outmax = Op1max + x * Op2max;
+                std::cerr<<"Outmax unreduced = "<<Outmax<<std::endl;
                 return false;
             }
         }
@@ -119,7 +123,7 @@ namespace FFLAS{ namespace Protected{
     inline bool NeedPreAxpyReduction (Element& Outmin, Element& Outmax,
                                       Element& Op1min, Element& Op1max,
                                       Element& Op2min, Element& Op2max,
-                                      Element& x,
+                                      const Element& x,
                                       MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
     {
         Outmin = WH.FieldMin;
@@ -138,7 +142,7 @@ namespace FFLAS {
                  const size_t K,
                  const typename Field::Element x,
                  const typename Field::Element y,
-                 typename Field::ConstElement_ptr A, const size_t lda,
+                 typename Field::Element_ptr A, const size_t lda,
                  typename Field::Element_ptr S, const size_t lds,
                  typename Field::Element_ptr T, const size_t ldt,
                  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> WH)  {
@@ -158,7 +162,7 @@ namespace FFLAS {
         size_t K2 = K>>1;
         size_t K4 = K2>>1;
         size_t Axxrows, Axxcols;
-        typename Field::ConstElement_ptr A11 = A, A21, A22, A11r, A21r, A22r;
+        typename Field::Element_ptr A11 = A, A21, A22, A11r, A21r, A22r;
         typename Field::Element_ptr Sr, Tr;
         if (trans==FflasNoTrans){
             A21 = A + N2*lda;
@@ -203,24 +207,31 @@ namespace FFLAS {
         DFElt S1min, S1max, S2min, S2max, S3min, S3max, Smin, Smax, Tmin, Tmax;
             // Should we reduce Axx and Sx beforehand?
         bool reduceA21 = false;
-        if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, y1, WH)){
+        std::cerr<<"Bmin = "<<WH.Bmin <<" Bmax = "<<WH.Bmax<<std::endl;
+        if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, x, WH)){
             reduceA21 = true;
         }
+        std::cerr<<"reduceA21 = "<<reduceA21<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
         bool reduceS1 = false;
-        if (Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y2, WH)){
+        if (Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y, WH)){
             reduceA21 = true;
             reduceS1 = true;
         }
+        std::cerr<<"reduceS1 = "<<reduceS1<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
         bool reduceS2 = false;
         bool reduceA11 = false;
         if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
             reduceS2 = true;
             reduceA11 = true;
         }
+        std::cerr<<"reduceS2 = "<<reduceS2<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
         bool reduceS3 = false;
+        std::cerr<<"S3min = "<<S3min<<" S3max = "<<S3max<<" WH.Amin = "<<WH.Amin<<" WH.Amax = "<<WH.Amax
+                 <<" negy = "<<negy<<std::endl;
         if (Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH)) {
             reduceS3 = true;
         }
+        std::cerr<<"reduceS3 = "<<reduceS3<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
         bool reduceA22 = false;
         if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
@@ -241,13 +252,10 @@ namespace FFLAS {
                 else
                     fscal (DF, K2, x, A21, 1, S, 1);
                 if (!F.isZero(y)){
-                    if (reduceS2){
-                        faxpy (F, K4, negy, A21r, 1, S, 1);
-                        faxpy (F, K4, y, A21, 1, Sr, 1);
-                    } else {
-                        faxpy (DF, K4, negy, A21r, 1, S, 1);
-                        faxpy (DF, K4, y, A21, 1, Sr, 1);
-                    }
+                    faxpy (DF, K4, negy, A21r, 1, S, 1);
+                    faxpy (DF, K4, y, A21, 1, Sr, 1);
+                    if (reduceS2)
+                        freduce (F, K2, A21, 1);
                 }
                     // T <- A22 -S
                 if (reduceA22 && reduceS2){
@@ -257,15 +265,20 @@ namespace FFLAS {
                     freduce (F,K2,T, 1);
                 }
                     // S <- S - A11 Y
-                if (reduceS3)
-                    faxpy (F, K2, negx, A11, 1, S, 1);
-                else
-                    faxpy (DF, K2, negx, A11, 1, S, 1);
+                WriteMatrix(std::cerr<<"S2 = "<<std::endl, F, 1, K2, S, K2);
+                std::cerr<<" S2 ("<<*S<<") + negx ("<<negx<<") * A11("<<*A11<<") = ";
+                faxpy (DF, K2, negx, A11, 1, S, 1);
+                WriteMatrix(std::cerr<<"S3 = "<<std::endl, F, 1, K2, S, K2);
+                if (reduceS3 || F.isZero(y))
+                    freduce (F, K2, S, 1);
+                WriteMatrix(std::cerr<<"S3 mod p = "<<std::endl, F, 1, K2, S, K2);
                 if (!F.isZero(y)){
-                    faxpy (F, K4, y, A11r, 1, S, 1);
-                    faxpy (F, K4, negy, A11, 1, Sr, 1);
+                    std::cerr<<" S3 ("<<*S<<") + y ("<<y<<") * A11r("<<*A11r<<") = ";
+                    faxpy (DF, K4, y, A11r, 1, S, 1);
+                    std::cerr<<*S<<std::endl;
+                    faxpy (DF, K4, negy, A11, 1, Sr, 1);
+                    freduce (F, K2, S, 1);
                 }
-                
                     //freduce (F,K2,S, 1);
             }
         } else { // FflasTrans
@@ -375,7 +388,8 @@ namespace FFLAS {
             A12 = A + Ks*lda; A21 = A + Ns;
         }
             // C11 = A11 x A11^T
-        fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha, A, lda, beta, C, ldc, H);
+        fsyrk_strassen (F, UpLo, trans, Ns, Ks, y1, y2, alpha,
+                        FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, beta, C, ldc, H);
 
             // C11 += A12 x A12 ^T
         MMHelper<Field, MMHelperAlgo::Classic, Mode>  H2 (H);
@@ -407,7 +421,7 @@ namespace FFLAS {
                     const typename Field::Element y1,
                     const typename Field::Element y2,
                     const typename Field::Element alpha,
-                    typename Field::ConstElement_ptr A, const size_t lda,
+                    typename Field::Element_ptr A, const size_t lda,
                     const typename Field::Element beta,
                     typename Field::Element_ptr C, const size_t ldc,
                     MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
@@ -429,7 +443,7 @@ namespace FFLAS {
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         size_t Arows, Acols;
-        typename Field::ConstElement_ptr A11 = A, A12, A21, A22;
+        typename Field::Element_ptr A11 = A, A12, A21, A22;
 
         if (trans == FflasNoTrans){
             A12 = A + K2; A21 = A + N2*lda; A22 = A21 + K2; Arows = N2; Acols = K2;
@@ -466,10 +480,11 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y in S1 (C21)
                 // S2 =  A22 - A21 x Y  in S2 (C12)
+            WH.Bmin = WH.Amin; WH.Bmax = WH.Amax; WH.Cmin = WH.Amin; WH.Cmax = WH.Amax;
             computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, WH);
 
                 //  P4^T =  S2 x S1^T in  C22
-            MMH_t H4 (F, -1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            MMH_t H4 (F, -1, WH.Outmin, WH.Outmax, WH.Outmin, WH.Outmax, 0,0);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
             else
@@ -481,6 +496,7 @@ namespace FFLAS {
             fsubin (DF, Arows, Acols, A22, lda, S1, lds);
 
                 // P5 = S3 x S3^T in C12
+                // TODO: update the bounds in the helper
             MMH_t H5 (F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, 2*WH.Bmin, 2*WH.Bmax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
 
