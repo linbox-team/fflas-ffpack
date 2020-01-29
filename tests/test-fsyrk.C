@@ -25,6 +25,8 @@
 
 #define ENABLE_ALL_CHECKINGS 1
 
+//#define DEBUG_TRACE
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include <iomanip>
@@ -75,10 +77,12 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
     double time=0.0;
     t.clear(); t.start();
 
-    // WriteMatrix (std::cerr, F, n, k, A, lda);
-    // WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
-    // WriteMatrix (std::cerr, F, n, n, C, ldc);
-    // WriteMatrix(std::cerr, F, n, n, C, ldc,FflasSageMath );
+#ifdef DEBUG_TRACE
+    WriteMatrix (std::cerr, F, n, k, A, lda);
+    WriteMatrix(std::cerr, F, n, k, A, lda,FflasSageMath );
+    WriteMatrix (std::cerr, F, n, n, C, ldc);
+    WriteMatrix(std::cerr, F, n, n, C, ldc,FflasSageMath );
+#endif
     if (w == size_t(-1))
         w= (rand() % 5);
         
@@ -87,39 +91,53 @@ bool check_fsyrk (const Field &F, size_t n, size_t k, size_t w,
 
     t.stop();
     time+=t.usertime();
-        //WriteMatrix (std::cerr<<"Result C = "<<std::endl, F, n, n, C, ldc);
-
+#ifdef DEBUG_TRACE
+    WriteMatrix (std::cerr<<"Result C = "<<std::endl, F, n, n, C, ldc);
+#endif
+    
     fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, A, lda, beta, C2, ldc);
 
     bool ok = true;
-        //std::cerr<<std::endl<<std::endl;
+#ifdef DEBUG_TRACE
+    std::cerr<<std::endl<<std::endl;
+#endif
     if (uplo == FflasUpper){
         for (size_t i=0; i<n; i++){
-            //for (size_t j=0;j<i;j++)
-            //        std::cerr<<" ";
+#ifdef DEBUG_TRACE
+            for (size_t j=0;j<i;j++)
+                std::cerr<<" ";
+#endif
             for (size_t j=i; j<n; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
-                    //if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
-                        //std::cerr<<".";
-                    //else
-                        //std::cerr<<"X";
+#ifdef DEBUG_TRACE
+                if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                    std::cerr<<".";
+                else
+                    std::cerr<<"X";
+#endif
             }
-                //std::cerr<<std::endl;
+#ifdef DEBUG_TRACE
+            std::cerr<<std::endl;
+#endif
         }
     } else {
         for (size_t i=0; i<n; i++){
             for (size_t j=0; j<=i; j++){
                 ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
-                    // if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
-                    //         std::cerr<<".";
-                    // else
-                    //     std::cerr<<"X";
+#ifdef DEBUG_TRACE
+                if (F.areEqual(C2[i*ldc+j], C[i*ldc+j]))
+                    std::cerr<<".";
+                else
+                    std::cerr<<"X";
+#endif
             }
-            // std::cerr<<std::endl;
+#ifdef DEBUG_TRACE
+            std::cerr<<std::endl;
+#endif
         }
     }
     if (ok)
-        //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
+            //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
         cout << "PASSED ("<<time<<")"<<endl;
     //cerr<<"PASSED ("<<time<<")"<<endl;
     else
@@ -165,9 +183,11 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
     cout<<ss;
 
 
-    // FFLAS::WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-    // FFLAS::WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
-    // FFLAS::WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
+#ifdef DEBUG_TRACE
+    FFLAS::WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+    FFLAS::WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
+    FFLAS::WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
+#endif
     FFLAS::Timer t; t.clear();
     double time=0.0;
     t.clear(); t.start();
@@ -177,10 +197,11 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
     t.stop();
     time+=t.usertime();
 
-    // std::cerr<<"After fsyrk_diag"<<std::endl;
-    //  FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-    //  FFLAS::WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
-
+#ifdef DEBUG_TRACE
+    std::cerr<<"After fsyrk_diag"<<std::endl;
+    FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+    FFLAS::WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
+#endif
     bool ok = true;
 
     typename Field::Element tmp;
@@ -276,9 +297,11 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
     cout<<ss;
 
 
-    // WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-    // WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
-    // WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
+#ifdef DEBUG_TRACE
+    WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+    WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
+    WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
+#endif
     Timer t; t.clear();
     double time=0.0;
     t.clear(); t.start();
@@ -288,9 +311,11 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
     t.stop();
     time+=t.usertime();
 
-    // std::cerr<<"After fsyrk_bk_diag"<<std::endl;
-    // WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-    // WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
+#ifdef DEBUG_TRACE
+    std::cerr<<"After fsyrk_bk_diag"<<std::endl;
+    WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+    WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
+#endif
     bool ok = true;
 
     typename Field::Element tmp;
@@ -401,18 +426,21 @@ bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE tran
     F.init (y2, b);
     
     F.neg(negy2,y2);
-    // WriteMatrix(std::cerr<<"A = "<<std::endl, F, Arows, Acols, A, lda);
-    // WriteMatrix(std::cerr<<"A = ", F, Arows, Acols, A, lda, FflasSageMath);
-    // std::cerr<<"A11=A[:2,:2]; A21=A[2:,:2]; A12=A[:2,2:]; A22=A[2:,2:]; Y=Matrix(GF("
-    //          <<F.cardinality()<<"),"<<STrows<<","<<STcols<<",["<<y1<<","<<y2<<","<<negy2<<","<<y1<<"])"<<std::endl
-    //          <<"S = (A21-A11)*Y; T = A22 - A21*Y"<<std::endl;
-    // std::cerr<<"y1, y2 = "<<y1<<" "<<y2<<std::endl;
-    
+#ifdef DEBUG_TRACE
+    WriteMatrix(std::cerr<<"A = "<<std::endl, F, Arows, Acols, A, lda);
+    WriteMatrix(std::cerr<<"A = ", F, Arows, Acols, A, lda, FflasSageMath);
+    std::cerr<<"A11=A[:2,:2]; A21=A[2:,:2]; A12=A[:2,2:]; A22=A[2:,2:]; Y=Matrix(GF("
+             <<F.cardinality()<<"),"<<STrows<<","<<STcols<<",["<<y1<<","<<y2<<","<<negy2
+             <<","<<y1<<"])"<<std::endl
+             <<"S = (A21-A11)*Y; T = A22 - A21*Y"<<std::endl;
+    std::cerr<<"y1, y2 = "<<y1<<" "<<y2<<std::endl;
+#endif
     computeS1S2 (F, trans, 4*N, 4*K, y1, y2, A, lda, S, lds, T, ldt, WH); 
 
-    // WriteMatrix(std::cerr<<"S = "<<std::endl, F, STrows, STcols, S, lds);
-    // WriteMatrix(std::cerr<<"T = "<<std::endl, F, STrows, STcols, T, ldt);
-
+#ifdef DEBUG_TRACE
+    WriteMatrix(std::cerr<<"S = "<<std::endl, F, STrows, STcols, S, lds);
+    WriteMatrix(std::cerr<<"T = "<<std::endl, F, STrows, STcols, T, ldt);
+#endif
     
     typename Field::Element_ptr V, Y, W;
     typename Field::Element_ptr A21, A22;
@@ -492,33 +520,34 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         F->init (beta, c);
         cout<<"Checking with ";F->write(cout)<<endl;
 
-        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k,w,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
 
-        //     // checking with k > n (=k+n)
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
-        // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+            // checking with k > n (=k+n)
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk(*F,n,k+n,w,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+        ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
 
+            // Checking the preadditions with the skew othogonal matrix
         ok = ok && check_computeS1S2(*F, n, k, FflasNoTrans, G);
         ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
         nbit--;
@@ -529,8 +558,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
 
 int main(int argc, char** argv)
 {
-    cerr<<setprecision(17);
-    cout<<setprecision(17);
+    cerr<<setprecision(10);
+    cout<<setprecision(10);
 
     Givaro::Integer q=-1;
     size_t b=0;
