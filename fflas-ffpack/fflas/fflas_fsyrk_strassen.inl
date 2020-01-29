@@ -41,6 +41,7 @@ namespace FFLAS{ namespace Protected{
                 Outmax = x * WH.FieldMin;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
+                // std::cerr<<"NeedPreScal: x<0: Outmin ("<<Outmin<<") = x ("<<x<<") * WH.FieldMax ("<<WH.FieldMax<<")"<<std::endl;
                 return true;
             }else{
                 Outmin = x * Op1max;
@@ -53,6 +54,7 @@ namespace FFLAS{ namespace Protected{
                 Outmax = x * WH.FieldMax;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
+                // std::cerr<<"NeedPreScal: x>0: Outmin ("<<Outmin<<") = x ("<<x<<") * WH.FieldMin ("<<WH.FieldMin<<")"<<std::endl;
                 return true;
             }else{
                 Outmin = x * Op1min;
@@ -83,10 +85,10 @@ namespace FFLAS{ namespace Protected{
     // x is assumed to be reduced
     {
         if (x<0){
-            if (Op2min > (WH.MaxStorableValue - Op1max) / x ||
-                Op2max < (-WH.MaxStorableValue + Op1min) / x ){
-                Outmin = (x+1) * WH.FieldMin ;
-                Outmax = (x+1) * WH.FieldMax;
+            if (Op2min < (WH.MaxStorableValue - Op1max) / x ||
+                Op2max > (-WH.MaxStorableValue - Op1min) / x ){
+                Outmin = WH.FieldMin + x * WH.FieldMax ;
+                Outmax = WH.FieldMax + x * WH.FieldMin;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
                 Op2min = WH.FieldMin;
@@ -99,7 +101,7 @@ namespace FFLAS{ namespace Protected{
             }
         } else {
             if (Op2max > (WH.MaxStorableValue - Op1max) / x ||
-                Op2min < (-WH.MaxStorableValue + Op1min) / x ){
+                Op2min < (-WH.MaxStorableValue - Op1min) / x ){
                 Outmin = (x+1) * WH.FieldMin ;
                 Outmax = (x+1) * WH.FieldMax;
                 Op1min = WH.FieldMin;
@@ -142,7 +144,7 @@ namespace FFLAS {
                  typename Field::Element_ptr S, const size_t lds,
                  typename Field::Element_ptr T, const size_t ldt,
                  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>& WH)  {
-            // WH stores and maintain bounds on A11 in Amin,Amax, A21 in Bmin, Bmax and A11, in Cmin,Cmax
+            // WH stores and maintain bounds on A11 in Amin,Amax, A21 in Bmin, Bmax and A22, in Cmin,Cmax
             // Bounds on S and T are stored in Outmin and Outmax
 
             // Computes (when trans = NoTrans)
@@ -154,6 +156,7 @@ namespace FFLAS {
         const typename MMH_t::DelayedField & DF = WH.delayedField;
         typedef typename  MMH_t::DelayedField::Element DFElt;
 
+//        std::cerr<<"COMPUTES1S2: A21min = "<<WH.Bmin<<" A21max = "<<WH.Bmax<<" A11min = "<<WH.Amin<<" A11max = "<<WH.Amax<<std::endl;
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         size_t K4 = K2>>1;
@@ -204,6 +207,7 @@ namespace FFLAS {
         if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, x, WH)){
             reduceA21 = true;
         }
+        // std::cerr<<"reduceA21 = "<<reduceA21<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
         bool reduceS1 = false;
         if (y){
             bool redS1 = Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y, WH);
@@ -218,18 +222,23 @@ namespace FFLAS {
             S2min = S1min;
             S2max = S1max;
         }
+        // std::cerr<<"reduceS1 = "<<reduceS1<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
         bool reduceS2 = false;
         bool reduceA11 = false;
         if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
             reduceS2 = true;
             reduceA11 = true;
         }
+        // std::cerr<<"reduceS2 = "<<reduceS2<<" S3min = "<<S3min<<" S3max = "<<S3max<<std::endl;
+
+        
         bool reduceS3 = false;
         if (y){
             bool redS3 = Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH);
             bool redS3r = Protected::NeedPreAxpyReduction (Sminr, Smaxr, S3min, S3max, WH.Amin, WH.Amax, y, WH);
             if (redS3 || redS3r) {
                 reduceS3 = true;
+                reduceA11=true;
             }
             if (Smin > Sminr) Smin = Sminr;
             if (Smax < Smaxr) Smax = Smaxr;
@@ -237,6 +246,7 @@ namespace FFLAS {
             Smin = S3min;
             Smax = S3max;
         }
+        // std::cerr<<"reduceS3 = "<<reduceS2<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
         bool reduceA22 = false;
         if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
@@ -256,12 +266,13 @@ namespace FFLAS {
                 else
                     fscal (DF, K2, x, A21, 1, S, 1);
 
+                // WriteMatrix(std::cerr<<"S1 = "<<std::endl,F, 1, K2, S, lds);
                 if (!F.isZero(y)){
                     faxpy (DF, K4, negy, A21r, 1, S, 1);
                     faxpy (DF, K4, y, A21, 1, Sr, 1);
-                    if (reduceS2)
-                        freduce (F, K2, S, 1);
                 }
+                if (reduceS2)
+                    freduce (F, K2, S, 1);
                     // T <- A22 -S
                 if (reduceA22 && reduceS2){
                     fsub (F, K2, A22, 1, S, 1, T, 1);
@@ -270,7 +281,9 @@ namespace FFLAS {
                     freduce (F, K2, T, 1);
                 }
                     // S <- S - A11 Y
+                // WriteMatrix(std::cerr<<"avant S3 negx = "<<negx<<" S3 = "<<std::endl,F, 1, K2, S, lds);
                 faxpy (DF, K2, negx, A11, 1, S, 1);
+                // WriteMatrix(std::cerr<<"S3 = "<<std::endl,F, 1, K2, S, lds);
                 if (reduceS3 || F.isZero(y))
                     freduce (F, K2, S, 1);
                 if (!F.isZero(y)){
@@ -490,8 +503,28 @@ namespace FFLAS {
                 // S1 = (A21-A11) x Y in S1 (C21)
                 // S2 =  A22 - A21 x Y  in S2 (C12)
             MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
-            PH.Bmin = PH.Amin; PH.Bmax = PH.Amax; PH.Cmin = PH.Amin; PH.Cmax = PH.Amax;
+            PH.Bmin = WH.Amin; PH.Bmax = WH.Amax; PH.Cmin = WH.Amin; PH.Cmax = WH.Amax;
+            // std::cerr<<"******************************************" <<std::endl;
+            // WriteMatrix(std::cerr<<"A21 = ",F, N2, K2, A21, lda, FflasSageMath);
+            // WriteMatrix(std::cerr<<"A11 = ",F, N2, K2, A, lda, FflasSageMath);
+            // WriteMatrix(std::cerr<<"A22 = ",F, N2, K2, A22, lda, FflasSageMath);
             computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, PH);
+            // std::cerr<<"Y=Matrix(GF("<<F.cardinality()<<"),"<<K2<<","<<K2<<");"<<std::endl;
+            // std::cerr<<"Y[:"<<K2/2<<",:"<<K2/2<<"]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"Y[:"<<K2/2<<","<<K2/2<<":]="<<y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"Y["<<K2/2<<":,:"<<K2/2<<"]="<<-y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"Y["<<K2/2<<":,"<<K2/2<<":]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"S1 = (A21-A11)*Y; S2 = A22-A21*Y;"<<std::endl;
+            // WriteMatrix(std::cerr<<"S1v = ",F, N2, K2, S1, lds, FflasSageMath);
+            // WriteMatrix(std::cerr<<"S2v = ",F, N2, K2, S2, lds, FflasSageMath);
+            // std::cerr<<"if (S1v != S1):"<<std::endl
+            //          <<"    print S1; print S1v"<<std::endl
+            //          <<"else:"<<std::endl
+            //          <<"    print ('S1 = S1v')"<<std::endl;
+            // std::cerr<<"if (S2v != S2):"<<std::endl
+            //          <<"    print S2;print S2v"<<std::endl
+            //          <<"else:"<<std::endl
+            //          <<"    print ('S2 = S2v')"<<std::endl;
 
                 //  P4^T =  S2 x S1^T in  C22
             MMH_t H4 (F, -1, PH.Outmin, PH.Outmax, PH.Outmin, PH.Outmax, 0,0);
@@ -507,7 +540,7 @@ namespace FFLAS {
 
                 // P5 = S3 x S3^T in C12
                 // TODO: update the bounds in the helper
-            MMH_t H5 (F, WH.recLevel-1, PH.Outmin-WH.Amax, PH.Outmax-WH.Amin,
+            MMH_t H5 (F, WH.recLevel-1, PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin,
                       PH.Outmin-WH.Amax, PH.Outmax-WH.Amin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
 
@@ -515,21 +548,21 @@ namespace FFLAS {
             fadd (DF, Arows, Acols, S1, lds, A12, lda, S4, lds);
 
                 // P3 = A22 x S4^T in C21
-            MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0,0);
+            MMH_t H3 (F, WH.recLevel-1, PH.Cmin, PH.Cmax, PH.Outmin+WH.Bmin-PH.Cmax, PH.Outmax+WH.Bmax-PH.Cmin, 0,0);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, S4, lds, F.zero, C21, ldc, H3);
             else{
-                H3.Amin = 2*WH.Bmin-WH.Bmax; 
-                H3.Amax = 2*WH.Bmax-WH.Bmin; 
-                H3.Bmin = WH.Amin;
-                H3.Bmax = WH.Amax;
+                H3.Amin = PH.Outmin+WH.Amin-PH.Cmax;
+                H3.Amax = PH.Outmax+WH.Amax-PH.Cmin;
+                H3.Bmin = PH.Cmin;
+                H3.Bmax = PH.Cmax;
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S4, lds, A22, lda, F.zero, C21, ldc, H3);
             }
 
             if (K>N){ fflas_delete(S1); }
 
                 // P1 = A11 x A11^T in C11
-            MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            MMH_t H1 (F, WH.recLevel-1, PH.Amin, PH.Amax, PH.Amin, PH.Amax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
 
                 // U1 = P1 + P5 in C12
@@ -606,15 +639,18 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y^T in T1
                 // S2 = A22 - A21 x Y^T in C12
-            computeS1S2 (F, trans, N, K, y1, y2, A, lda, T, ldt, S2, lds, WH);
+            MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
+            PH.Bmin = PH.Amin; PH.Bmax = PH.Amax; PH.Cmin = PH.Amin; PH.Cmax = PH.Amax;
 
+            computeS1S2 (F, trans, N, K, y1, y2, A, lda, T, ldt, S2, lds, PH);
+            
                 // Up(C11) = Low(C22) (saving C22)
             if (uplo == FflasLower)
-                for (size_t i=0; i<N2-1; ++i)
-                    fassign (F, N2-i-1, C22 + (N2-i-1)*ldc, 1, C11 + 1 + i*(ldc+1), 1);
+                for (size_t i=1; i<N2; ++i)
+                    fassign (F, N2-i, C22 + (N2-i)*ldc, 1, C11 + 1 + (i-1)*(ldc+1), 1);
             else 
-                for (size_t i=0; i<N2-1; ++i)
-                    fassign (F, N2-i-1, C22 + 1 + i*(ldc+1), 1,  C11 + (N2-i-1)*ldc, 1);
+                for (size_t i=1; i<N2; ++i)
+                    fassign (F, N2-i, C22 + 1 + (i-1)*(ldc+1), 1,  C11 + (N2-i)*ldc, 1);
 
                 // temp for storing the diagonal of C22
             typename Field::Element_ptr DC22 = fflas_new(F,N2);
@@ -622,7 +658,7 @@ namespace FFLAS {
                 F.assign (DC22[i], C22[i*(ldc+1)]);
 
                 // P4^T = S2 x S1^T in C22
-            MMH_t H4 (F,WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0,0);
+            MMH_t H4 (F,WH.recLevel-1, PH.Outmin, PH.Outmax, PH.Outmin, PH.Outmax, 0,0);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, T, ldt, F.zero, C22, ldc, H4);
             else
@@ -634,21 +670,21 @@ namespace FFLAS {
             fsubin (DF, Arows, Acols, A22, lda, T, ldt);
 
                 // P5 = S3 x S3^T in C12
-            MMH_t H5 (F, WH.recLevel-1, WH.Amin-WH.Amax, WH.Amax-WH.Amin, WH.Bmin-WH.Bmax, WH.Bmax-WH.Bmin, 0,0);
+            MMH_t H5 (F, WH.recLevel-1, PH.Outmin-WH.Amax, PH.Outmax-WH.Amin,PH.Outmin-WH.Bmax, PH.Outmax-WH.Bmin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, T, ldt, F.zero, C12, ldc, H5);
 
                 // S4 = S3 + A12 in T1
             faddin (DF, Arows, Acols, A12, lda, T, ldt);
 
                 //  P3 = A22 x S4^T + beta C21 in C21
-            MMH_t H3 (F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, WH.Cmin, WH.Cmax);
+            MMH_t H3 (F, WH.recLevel-1, PH.Cmin, PH.Cmax, PH.Outmin+WH.Bmin-WH.Bmax, PH.Outmax+WH.Bmax-WH.Bmin, WH.Cmin, WH.Cmax);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, T, ldt, beta, C21, ldc, H3);
             else{
-                H3.Amin = 2*WH.Bmin-WH.Bmax; 
-                H3.Amax = 2*WH.Bmax-WH.Bmin; 
-                H3.Bmin = WH.Amin;
-                H3.Bmax = WH.Amax;
+                H3.Amin = PH.Outmin+WH.Amin-WH.Amax; 
+                H3.Amax = PH.Outmax+WH.Amax-WH.Amin; 
+                H3.Bmin = PH.Cmin;
+                H3.Bmax = PH.Cmax;
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, T, ldt, A22, lda, beta, C21, ldc, H3);
             }
                 // P1 = A11 x A11^T in T1
@@ -701,17 +737,18 @@ namespace FFLAS {
                 // TODO use delayed field and a needPreAXPYReduction
                 // Suspicious BUG: if C22 is not reduced, possible overflow???
             if (uplo == FflasLower)
-                for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
-                    faxpy (F, N2-i-1, beta, C11 + 1+i*(ldc+1), 1, C22 + (N2-i-1)*ldc, 1);
-                    F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
+                for (size_t i=1; i<N2; i++){ // TODO factorize out in a triple add
+                    faxpy (F, N2-i, beta, C11 + 1+(i-1)*(ldc+1), 1, C22 + (N2-i)*ldc, 1);
+                    F.axpyin (C22[(i-1)*(ldc+1)], beta, DC22[i-1]);
                 }
             else
-                for (size_t i=0; i<N2-1; i++){ // TODO factorize out in a triple add
-                    faxpy (F, N2-i-1, beta, C11 + (N2-i-1)*ldc, 1, C22 + 1 + i*(ldc+1), 1);
-                    F.axpyin (C22[i*(ldc+1)], beta, DC22[i]);
+                for (size_t i=1; i<N2; i++){ // TODO factorize out in a triple add
+                    faxpy (F, N2-i, beta, C11 + (N2-i)*ldc, 1, C22 + 1 + (i-1)*(ldc+1), 1);
+                    F.axpyin (C22[(i-1)*(ldc+1)], beta, DC22[i-1]);
                 }
-
             F.axpyin (C22[(N2-1)*(ldc+1)], beta, DC22[N2-1]);
+            U5Min = WH.FieldMin;
+            U5Max = WH.FieldMax;
 
             fflas_delete(DC22);
 

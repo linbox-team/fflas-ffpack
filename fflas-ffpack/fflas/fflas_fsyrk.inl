@@ -278,6 +278,13 @@ namespace FFLAS {
         if (!N) return C;
         if (!K || F.isZero (alpha)){
             fscalin(F, N, N, beta, C, ldc);
+            if (beta> 0){
+                H.Outmin = H.Cmin * beta;
+                H.Outmax = H.Cmax * beta;
+            }else{
+                H.Outmin = H.Cmax * beta;
+                H.Outmax = H.Cmin * beta;
+            }
             return C;
         }
             //std::cerr<<"fsyrk Classic Lazy"<<std::endl;
