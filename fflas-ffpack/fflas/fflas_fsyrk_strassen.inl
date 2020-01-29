@@ -85,9 +85,11 @@ namespace FFLAS{ namespace Protected{
     // x is assumed to be reduced
     {
         if (x<0){
+            // std::cerr<<"x<0"<<std::endl;
             if (Op2min < (WH.MaxStorableValue - Op1max) / x ||
                 Op2max > (-WH.MaxStorableValue - Op1min) / x ){
                 Outmin = WH.FieldMin + x * WH.FieldMax ;
+                // std::cerr<<"Outmin ("<<Outmin<<") =  WH.FieldMin ("<<WH.FieldMin<<") + x ("<<x<<") * WH.FieldMax"<<std::endl;
                 Outmax = WH.FieldMax + x * WH.FieldMin;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
@@ -100,6 +102,7 @@ namespace FFLAS{ namespace Protected{
                 return false;
             }
         } else {
+            // std::cerr<<"x ("<<x<<") >0"<<std::endl;
             if (Op2max > (WH.MaxStorableValue - Op1max) / x ||
                 Op2min < (-WH.MaxStorableValue - Op1min) / x ){
                 Outmin = (x+1) * WH.FieldMin ;
@@ -156,7 +159,7 @@ namespace FFLAS {
         const typename MMH_t::DelayedField & DF = WH.delayedField;
         typedef typename  MMH_t::DelayedField::Element DFElt;
 
-//        std::cerr<<"COMPUTES1S2: A21min = "<<WH.Bmin<<" A21max = "<<WH.Bmax<<" A11min = "<<WH.Amin<<" A11max = "<<WH.Amax<<std::endl;
+        // std::cerr<<"#COMPUTES1S2: A21min = "<<WH.Bmin<<" A21max = "<<WH.Bmax<<" A11min = "<<WH.Amin<<" A11max = "<<WH.Amax<<std::endl;
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         size_t K4 = K2>>1;
@@ -207,7 +210,7 @@ namespace FFLAS {
         if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, x, WH)){
             reduceA21 = true;
         }
-        // std::cerr<<"reduceA21 = "<<reduceA21<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
+        // std::cerr<<"#reduceA21 = "<<reduceA21<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
         bool reduceS1 = false;
         if (y){
             bool redS1 = Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y, WH);
@@ -222,14 +225,14 @@ namespace FFLAS {
             S2min = S1min;
             S2max = S1max;
         }
-        // std::cerr<<"reduceS1 = "<<reduceS1<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
+        // std::cerr<<"#reduceS1 = "<<reduceS1<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
         bool reduceS2 = false;
         bool reduceA11 = false;
         if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
             reduceS2 = true;
             reduceA11 = true;
         }
-        // std::cerr<<"reduceS2 = "<<reduceS2<<" S3min = "<<S3min<<" S3max = "<<S3max<<std::endl;
+        // std::cerr<<"#reduceS2 = "<<reduceS2<<" S3min = "<<S3min<<" S3max = "<<S3max<<std::endl;
 
         
         bool reduceS3 = false;
@@ -246,7 +249,7 @@ namespace FFLAS {
             Smin = S3min;
             Smax = S3max;
         }
-        // std::cerr<<"reduceS3 = "<<reduceS2<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
+        // std::cerr<<"#reduceS3 = "<<reduceS3<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
         bool reduceA22 = false;
         if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
@@ -306,10 +309,10 @@ namespace FFLAS {
                 if (!F.isZero(y)){
                     faxpy (DF, N2, negy, A21r, 1, S, 1);
                     faxpy (DF, N2, y, A21, 1, Sr, 1);
-                    if (reduceS2){
-                        freduce(F, N2, S, 1);
-                        freduce(F, N2, Sr, 1);
-                    }
+                }
+                if (reduceS2){
+                    freduce(F, N2, S, 1);
+                    freduce(F, N2, Sr, 1);
                 }
                     // T <- A22 -S
                 if (reduceA22 && reduceS2){
