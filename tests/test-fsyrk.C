@@ -401,17 +401,17 @@ bool check_computeS1S2 (const Field& F, size_t N, size_t K, FFLAS_TRANSPOSE tran
     F.init (y2, b);
     
     F.neg(negy2,y2);
-    WriteMatrix(std::cerr<<"A = "<<std::endl, F, Arows, Acols, A, lda);
-    WriteMatrix(std::cerr<<"A = ", F, Arows, Acols, A, lda, FflasSageMath);
-    std::cerr<<"A11=A[:2,:2]; A21=A[2:,:2]; A12=A[:2,2:]; A22=A[2:,2:]; Y=Matrix(GF("
-             <<F.cardinality()<<"),"<<STrows<<","<<STcols<<",["<<y1<<","<<y2<<","<<negy2<<","<<y1<<"])"<<std::endl
-             <<"S = (A21-A11)*Y; T = A22 - A21*Y"<<std::endl;
-    std::cerr<<"y1, y2 = "<<y1<<" "<<y2<<std::endl;
+    // WriteMatrix(std::cerr<<"A = "<<std::endl, F, Arows, Acols, A, lda);
+    // WriteMatrix(std::cerr<<"A = ", F, Arows, Acols, A, lda, FflasSageMath);
+    // std::cerr<<"A11=A[:2,:2]; A21=A[2:,:2]; A12=A[:2,2:]; A22=A[2:,2:]; Y=Matrix(GF("
+    //          <<F.cardinality()<<"),"<<STrows<<","<<STcols<<",["<<y1<<","<<y2<<","<<negy2<<","<<y1<<"])"<<std::endl
+    //          <<"S = (A21-A11)*Y; T = A22 - A21*Y"<<std::endl;
+    // std::cerr<<"y1, y2 = "<<y1<<" "<<y2<<std::endl;
     
     computeS1S2 (F, trans, 4*N, 4*K, y1, y2, A, lda, S, lds, T, ldt, WH); 
 
-    WriteMatrix(std::cerr<<"S = "<<std::endl, F, STrows, STcols, S, lds);
-    WriteMatrix(std::cerr<<"T = "<<std::endl, F, STrows, STcols, T, ldt);
+    // WriteMatrix(std::cerr<<"S = "<<std::endl, F, STrows, STcols, S, lds);
+    // WriteMatrix(std::cerr<<"T = "<<std::endl, F, STrows, STcols, T, ldt);
 
     
     typename Field::Element_ptr V, Y, W;
@@ -520,7 +520,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
         // ok = ok && check_fsyrk_bkdiag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
 
         ok = ok && check_computeS1S2(*F, n, k, FflasNoTrans, G);
-        // ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
+        ok = ok && check_computeS1S2(*F, n, k, FflasTrans, G);
         nbit--;
         delete F;
     }
@@ -529,7 +529,9 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t w, 
 
 int main(int argc, char** argv)
 {
-    cerr<<setprecision(10);
+    cerr<<setprecision(17);
+    cout<<setprecision(17);
+
     Givaro::Integer q=-1;
     size_t b=0;
     int k=125;
@@ -559,10 +561,10 @@ int main(int argc, char** argv)
     srand(seed);
     bool ok = true;
     do{
-        // ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
-        // ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<Modular<double> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,w,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,w,a,c,iters,seed);
-        // ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
+        ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,w,a,c,iters,seed);
         // ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,w,a,c,iters,seed);
         // ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,w,a,c,iters,seed);
         // conversion to RNS basis not available yet for fsyrk

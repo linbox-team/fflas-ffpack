@@ -57,7 +57,6 @@ namespace FFLAS{ namespace Protected{
             }else{
                 Outmin = x * Op1min;
                 Outmax = x * Op1max;
-                // std::cerr<<"ICI: Outmax = "<<Outmax<<" x = "<<x<<" Op1max = "<<Op1max<<std::endl;
                 return false;
             }
         }
@@ -99,12 +98,10 @@ namespace FFLAS{ namespace Protected{
                 return false;
             }
         } else {
-            std::cerr<<"NeedPreAxpyRed : "<<std::endl;
             if (Op2max > (WH.MaxStorableValue - Op1max) / x ||
                 Op2min < (-WH.MaxStorableValue + Op1min) / x ){
                 Outmin = (x+1) * WH.FieldMin ;
                 Outmax = (x+1) * WH.FieldMax;
-                // std::cerr<<"Outmax = "<<Outmax<<std::endl;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
                 Op2min = WH.FieldMin;
@@ -112,11 +109,7 @@ namespace FFLAS{ namespace Protected{
                 return true;
             }else{
                 Outmin = Op1min + x * Op2min;
-                std::cerr<<"Op1max ("<<Op1max<<") + x ("<<x<<") * Op2max ("<<Op2max
-                         <<") = ";
-                           Outmax = Op1max + x * Op2max;
-                           std::cerr<<Outmax<<std::endl;
-                std::cerr<<"Outmax unreduced = "<<Outmax<<std::endl;
+                Outmax = Op1max + x * Op2max;
                 return false;
             }
         }
@@ -189,10 +182,8 @@ namespace FFLAS {
             Axxcols=N2;
         }
 
-        typename Field::Element negx, negy, y1, y2;
+        typename Field::Element negx, negy;
         F.init(negx);
-        F.init(y1);
-        F.init(y2);
         F.neg(negx, x);
         F.init(negy);
         F.neg(negy, y); 
@@ -225,17 +216,17 @@ namespace FFLAS {
         if (S2minr < S2min) S2min = S2minr;
         if (S2maxr > S2max) S2max = S2maxr;
         
-        std::cerr<<"reduceS1 = "<<reduceS1<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
+        // std::cerr<<"reduceS1 = "<<reduceS1<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
         bool reduceS2 = false;
         bool reduceA11 = false;
         if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
             reduceS2 = true;
             reduceA11 = true;
         }
-        std::cerr<<"reduceS2 = "<<reduceS2<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
+        // std::cerr<<"reduceS2 = "<<reduceS2<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
         bool reduceS3 = false;
-        std::cerr<<"S3min = "<<S3min<<" S3max = "<<S3max<<" WH.Amin = "<<WH.Amin<<" WH.Amax = "<<WH.Amax
-                 <<" negy = "<<negy<<std::endl;
+        // std::cerr<<"S3min = "<<S3min<<" S3max = "<<S3max<<" WH.Amin = "<<WH.Amin<<" WH.Amax = "<<WH.Amax
+        //          <<" negy = "<<negy<<std::endl;
         bool redS3 = Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH);
         bool redS3r = Protected::NeedPreAxpyReduction (Sminr, Smaxr, S3min, S3max, WH.Amin, WH.Amax, y, WH);
         if (redS3 || redS3r) {
@@ -244,7 +235,7 @@ namespace FFLAS {
         if (Smin > Sminr) Smin = Sminr;
         if (Smax < Smaxr) Smax = Smaxr;
         
-        std::cerr<<"reduceS3 = "<<reduceS3<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
+        // std::cerr<<"reduceS3 = "<<reduceS3<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
          bool reduceA22 = false;
         if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
@@ -256,19 +247,17 @@ namespace FFLAS {
         if (reduceA22) freduce (F, Axxrows, Axxcols, A22, lda);
 
         if (trans==FflasNoTrans){
-            F.assign(y1, y);
-            F.assign(y2, negy);
                 // S <- A21 Y
             for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
                 if (reduceS1)
                     fscal (F, K2, x, A21, 1, S, 1);
                 else
                     fscal (DF, K2, x, A21, 1, S, 1);
-                WriteMatrix(std::cerr<<"S1 = "<<std::endl, F, 1, K2, S, K2);
+
                 if (!F.isZero(y)){
-                    std::cerr<<" S1 ("<<*S<<") + negy ("<<negy<<") * A21r("<<*A21r<<") = ";
+                    // std::cerr<<" S1 ("<<*S<<") + negy ("<<negy<<") * A21r("<<*A21r<<") = ";
                     faxpy (DF, K4, negy, A21r, 1, S, 1);
-                    std::cerr<<*S<<std::endl;
+                    // std::cerr<<*S<<std::endl;
                     faxpy (DF, K4, y, A21, 1, Sr, 1);
                     if (reduceS2)
                         freduce (F, K2, S, 1);
@@ -281,52 +270,66 @@ namespace FFLAS {
                     freduce (F, K2, T, 1);
                 }
                     // S <- S - A11 Y
-                WriteMatrix(std::cerr<<"S2 = "<<std::endl, F, 1, K2, S, K2);
-                std::cerr<<" S2 ("<<*S<<") + negx ("<<negx<<") * A11("<<*A11<<") = ";
+                // WriteMatrix(std::cerr<<"S2 = "<<std::endl, F, 1, K2, S, K2);
+                // std::cerr<<" S2 ("<<*S<<") + negx ("<<negx<<") * A11("<<*A11<<") = ";
                 faxpy (DF, K2, negx, A11, 1, S, 1);
-                std::cerr<<*S<<std::endl;
-                WriteMatrix(std::cerr<<"S3 = "<<std::endl, F, 1, K2, S, K2);
+                // std::cerr<<*S<<std::endl;
+                // WriteMatrix(std::cerr<<"S3 = "<<std::endl, F, 1, K2, S, K2);
                 if (reduceS3 || F.isZero(y))
                     freduce (F, K2, S, 1);
-                WriteMatrix(std::cerr<<"S3 mod p = "<<std::endl, F, 1, K2, S, K2);
+                // WriteMatrix(std::cerr<<"S3 mod p = "<<std::endl, F, 1, K2, S, K2);
                 if (!F.isZero(y)){
-                    std::cerr<<" S3 ("<<*S<<") + y ("<<y<<") * A11r("<<*A11r<<") = ";
+                    // std::cerr<<" S3 ("<<*S<<") + y ("<<y<<") * A11r("<<*A11r<<") = ";
                     faxpy (DF, K4, y, A11r, 1, S, 1);
-                    std::cerr<<*S<<std::endl;
+                    // std::cerr<<*S<<std::endl;
                     faxpy (DF, K4, negy, A11, 1, Sr, 1);
                     freduce (F, K2, S, 1);
                 }
                     //freduce (F,K2,S, 1);
             }
-        } else { // FflasTrans
-            F.assign(y1, y);
-            F.assign(y2, negy);
-            
+        } else { // FflasTrans         
             for (size_t i=0; i<K4; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, A22r+=lda, S+=lds, Sr+=lds, T+=ldt, Tr+=ldt){
                 // S <- Y A21
-                fscal (DF, N2, x, A21, 1, S, 1);
-                fscal (DF, N2, x, A21r, 1, Sr, 1);
+                
+                if (reduceS1){
+                    fscal (F, N2, x, A21, 1, S, 1);
+                    fscal (F, N2, x, A21r, 1, Sr, 1);
+                } else {
+                    fscal (DF, N2, x, A21, 1, S, 1);
+                    fscal (DF, N2, x, A21r, 1, Sr, 1);
+                }
                 if (!F.isZero(y)){
                     faxpy (DF, N2, negy, A21r, 1, S, 1);
                     faxpy (DF, N2, y, A21, 1, Sr, 1);
+                    if (reduceS2){
+                        freduce(F, N2, S, 1);
+                        freduce(F, N2, Sr, 1);
+                    }
                 }
                     // T <- A22 -S
-
-                fsub (DF, N2, A22, 1, S, 1, T, 1);
-                fsub (DF, N2, A22r, 1, Sr, 1, Tr, 1);
-                
+                if (reduceA22 && reduceS2){
+                    fsub (F, N2, A22, 1, S, 1, T, 1);
+                    fsub (F, N2, A22r, 1, Sr, 1, Tr, 1);
+                } else {
+                    fsub (DF, N2, A22, 1, S, 1, T, 1);
+                    freduce (F, N2, T, 1);
+                    fsub (DF, N2, A22r, 1, Sr, 1, Tr, 1);
+                    freduce (F, N2, Tr, 1);
+                }
                     // S <- S - Y A11
                 faxpy (DF, N2, negx, A11, 1, S, 1);
+                if (reduceS3 || F.isZero(y)) freduce (F, N2, S, 1);
                 faxpy (DF, N2, negx, A11r, 1, Sr, 1);
+                if (reduceS3 || F.isZero(y)) freduce (F, N2, Sr, 1);
+                
                 if (!F.isZero(y)){
                     faxpy (DF, N2, y, A11r, 1, S, 1);
+                    freduce (F,N2,S, 1);
                     faxpy (DF, N2, negy, A11, 1, Sr, 1);
+                    freduce (F,N2,Sr, 1);
                 }
-                
-                freduce (F,N2,S, 1);
-                freduce (F,N2,Sr, 1);
-                freduce (F,N2,T, 1);
-                freduce (F,N2,Tr, 1);
+                    // freduce (F,N2,T, 1);
+                    // freduce (F,N2,Tr, 1);
             }
             
         }
