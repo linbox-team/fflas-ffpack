@@ -378,7 +378,7 @@ namespace FFLAS {
             H.Outmin = Hfp.Outmin;
             H.Outmax = Hfp.Outmax;
         }
-        H.checkOut(F,N,N,C,ldc);
+        H.checkOut(F, UpLo, N, N, C, ldc);
         return C;
     }
 

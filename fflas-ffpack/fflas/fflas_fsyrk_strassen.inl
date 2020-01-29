@@ -141,7 +141,7 @@ namespace FFLAS {
                  typename Field::Element_ptr A, const size_t lda,
                  typename Field::Element_ptr S, const size_t lds,
                  typename Field::Element_ptr T, const size_t ldt,
-                 MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> WH)  {
+                 MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>& WH)  {
             // WH stores and maintain bounds on A11 in Amin,Amax, A21 in Bmin, Bmax and A11, in Cmin,Cmax
             // Bounds on S and T are stored in Outmin and Outmax
 
@@ -205,15 +205,19 @@ namespace FFLAS {
             reduceA21 = true;
         }
         bool reduceS1 = false;
-        bool redS1 = Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y, WH);
-        bool redS1r = Protected::NeedPreAxpyReduction (S2minr, S2maxr, S1min, S1max, WH.Bmin, WH.Bmax, negy, WH);
-        if (redS1 || redS1r){ // Need to avoid lazy bool eval in order to always evaluate S2minr S2maxr
-            reduceA21 = true;
-            reduceS1 = true;
+        if (y){
+            bool redS1 = Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y, WH);
+            bool redS1r = Protected::NeedPreAxpyReduction (S2minr, S2maxr, S1min, S1max, WH.Bmin, WH.Bmax, negy, WH);
+            if (redS1 || redS1r){ // Need to avoid lazy bool eval in order to always evaluate S2minr S2maxr
+                reduceA21 = true;
+                reduceS1 = true;
+            }
+            if (S2minr < S2min) S2min = S2minr;
+            if (S2maxr > S2max) S2max = S2maxr;
+        } else {
+            S2min = S1min;
+            S2max = S1max;
         }
-        if (S2minr < S2min) S2min = S2minr;
-        if (S2maxr > S2max) S2max = S2maxr;
-
         bool reduceS2 = false;
         bool reduceA11 = false;
         if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
@@ -221,20 +225,25 @@ namespace FFLAS {
             reduceA11 = true;
         }
         bool reduceS3 = false;
-        bool redS3 = Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH);
-        bool redS3r = Protected::NeedPreAxpyReduction (Sminr, Smaxr, S3min, S3max, WH.Amin, WH.Amax, y, WH);
-        if (redS3 || redS3r) {
-            reduceS3 = true;
+        if (y){
+            bool redS3 = Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH);
+            bool redS3r = Protected::NeedPreAxpyReduction (Sminr, Smaxr, S3min, S3max, WH.Amin, WH.Amax, y, WH);
+            if (redS3 || redS3r) {
+                reduceS3 = true;
+            }
+            if (Smin > Sminr) Smin = Sminr;
+            if (Smax < Smaxr) Smax = Smaxr;
+        } else {
+            Smin = S3min;
+            Smax = S3max;
         }
-        if (Smin > Sminr) Smin = Sminr;
-        if (Smax < Smaxr) Smax = Smaxr;
-        
         bool reduceA22 = false;
         if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
                 // TODO: shouldn't we also reduce S2?
         }
-
+        WH.initOut();
+        
         if (reduceA21) freduce (F, Axxrows, Axxcols, A21, lda);
         if (reduceA11) freduce (F, Axxrows, Axxcols, A, lda);
         if (reduceA22) freduce (F, Axxrows, Axxcols, A22, lda);
@@ -480,11 +489,12 @@ namespace FFLAS {
             }
                 // S1 = (A21-A11) x Y in S1 (C21)
                 // S2 =  A22 - A21 x Y  in S2 (C12)
-            WH.Bmin = WH.Amin; WH.Bmax = WH.Amax; WH.Cmin = WH.Amin; WH.Cmax = WH.Amax;
-            computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, WH);
+            MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
+            PH.Bmin = PH.Amin; PH.Bmax = PH.Amax; PH.Cmin = PH.Amin; PH.Cmax = PH.Amax;
+            computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, PH);
 
                 //  P4^T =  S2 x S1^T in  C22
-            MMH_t H4 (F, -1, WH.Outmin, WH.Outmax, WH.Outmin, WH.Outmax, 0,0);
+            MMH_t H4 (F, -1, PH.Outmin, PH.Outmax, PH.Outmin, PH.Outmax, 0,0);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
             else
@@ -497,7 +507,8 @@ namespace FFLAS {
 
                 // P5 = S3 x S3^T in C12
                 // TODO: update the bounds in the helper
-            MMH_t H5 (F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, 2*WH.Bmin, 2*WH.Bmax, 0,0);
+            MMH_t H5 (F, WH.recLevel-1, PH.Outmin-WH.Amax, PH.Outmax-WH.Amin,
+                      PH.Outmin-WH.Amax, PH.Outmax-WH.Amin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
 
                 // S4 = S3 + A12 in S4
@@ -720,7 +731,8 @@ namespace FFLAS {
             WH.Outmin = min3 (U3Min, U4Min, U5Min);
             WH.Outmax = max3 (U3Max, U4Max, U5Max);
         }
-         return C;
+        WH.checkOut(F, uplo, N, N, C, ldc);
+        return C;
     }
 }
 
