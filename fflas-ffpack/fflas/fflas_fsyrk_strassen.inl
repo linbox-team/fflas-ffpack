@@ -154,7 +154,6 @@ namespace FFLAS {
         const typename MMH_t::DelayedField & DF = WH.delayedField;
         typedef typename  MMH_t::DelayedField::Element DFElt;
 
-        // std::cerr<<"#COMPUTES1S2: A21min = "<<WH.Bmin<<" A21max = "<<WH.Bmax<<" A11min = "<<WH.Amin<<" A11max = "<<WH.Amax<<std::endl;
         size_t N2 = N>>1;
         size_t K2 = K>>1;
         size_t K4 = K2>>1;
@@ -521,28 +520,8 @@ namespace FFLAS {
                 // S2 =  A22 - A21 x Y  in S2 (C12)
             MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
             PH.Bmin = WH.Amin; PH.Bmax = WH.Amax; PH.Cmin = WH.Amin; PH.Cmax = WH.Amax;
-            // std::cerr<<"##########################################################" <<std::endl;
-            // WriteMatrix(std::cerr<<"A21 = ",F, N2, K2, A21, lda, FflasSageMath);
-            // WriteMatrix(std::cerr<<"A11 = ",F, N2, K2, A, lda, FflasSageMath);
-            // WriteMatrix(std::cerr<<"A12 = ",F, N2, K2, A12, lda, FflasSageMath);
-            // WriteMatrix(std::cerr<<"A22 = ",F, N2, K2, A22, lda, FflasSageMath);
+
             computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, PH);
-            // std::cerr<<"Y=Matrix(GF("<<F.cardinality()<<"),"<<K2<<","<<K2<<");"<<std::endl;
-            // std::cerr<<"Y[:"<<K2/2<<",:"<<K2/2<<"]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"Y[:"<<K2/2<<","<<K2/2<<":]="<<y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"Y["<<K2/2<<":,:"<<K2/2<<"]="<<-y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"Y["<<K2/2<<":,"<<K2/2<<":]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"S1 = (A21-A11)*Y; S2 = A22-A21*Y;"<<std::endl;
-            // WriteMatrix(std::cerr<<"S1v = ",F, N2, K2, S1, lds, FflasSageMath);
-            // WriteMatrix(std::cerr<<"S2v = ",F, N2, K2, S2, lds, FflasSageMath);
-            // std::cerr<<"if (S1v != S1):"<<std::endl
-            //          <<"    print S1; print S1v"<<std::endl
-            //          <<"else:"<<std::endl
-            //          <<"    print ('S1 = S1v')"<<std::endl;
-            // std::cerr<<"if (S2v != S2):"<<std::endl
-            //          <<"    print S2;print S2v"<<std::endl
-            //          <<"else:"<<std::endl
-            //          <<"    print ('S2 = S2v')"<<std::endl;
 
                 //  P4^T =  S2 x S1^T in  C22
             MMH_t H4 (F, -1, PH.Outmin, PH.Outmax, PH.Outmin, PH.Outmax, 0,0);
@@ -550,27 +529,19 @@ namespace FFLAS {
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
             else
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S1, lds, S2, lds, F.zero, C22, ldc, H4);
-            // WriteMatrix(std::cerr<<"P4 = ",F,N2,N2,C22,ldc,FflasSageMath);
 
             if (K>N){ fflas_delete(S2); }
 
                 // S3 = S1 - A22 in S1
             fsubin (DF, Arows, Acols, A22, lda, S1, lds);
 
-            // WriteMatrix(std::cerr<<"S3 = ",F,N2,K2,S1,lds,FflasSageMath);
-
                 // P5 = S3 x S3^T in C12
-                // TODO: update the bounds in the helper
             MMH_t H5 (F, WH.recLevel-1, PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin,
                       PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
 
-            // WriteMatrix(std::cerr<<"P5 = ",F,N2,N2,C12,ldc,FflasSageMath);
-
                 // S4 = S3 + A12 in S4
             fadd (DF, Arows, Acols, S1, lds, A12, lda, S4, lds);
-
-            // WriteMatrix(std::cerr<<"S4 = ",F,N2,K2,S4,lds,FflasSageMath);
 
                 // P3 = A22 x S4^T in C21
             MMH_t H3 (F, WH.recLevel-1, PH.Cmin, PH.Cmax, PH.Outmin+WH.Bmin-PH.Cmax, PH.Outmax+WH.Bmax-PH.Cmin, 0,0);
@@ -584,16 +555,11 @@ namespace FFLAS {
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S4, lds, A22, lda, F.zero, C21, ldc, H3);
             }
 
-            // WriteMatrix(std::cerr<<"P3 = ",F,N2,N2,C21,ldc,FflasSageMath);
-
             if (K>N){ fflas_delete(S1); }
 
                 // P1 = A11 x A11^T in C11
             MMH_t H1 (F, WH.recLevel-1, PH.Amin, PH.Amax, PH.Amin, PH.Amax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
-
-            // WriteMatrix(std::cerr<<"P1 = ",F,N2,N2,C11,ldc,FflasSageMath);
-            // WriteMatrix(std::cerr<<"P3 = ",F,N2,N2,C21,ldc,FflasSageMath);
 
                 // U1 = P1 + P5 in C12
             DFElt U1Min, U1Max;
@@ -672,29 +638,7 @@ namespace FFLAS {
             MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
             PH.Bmin = WH.Amin; PH.Bmax = WH.Amax; PH.Cmin = WH.Amin; PH.Cmax = WH.Amax;
 
-            //  std::cerr<<"******************************************" <<std::endl;
-            // WriteMatrix(std::cerr<<"A21 = ",F, N2, K2, A21, lda, FflasSageMath);
-            // WriteMatrix(std::cerr<<"A11 = ",F, N2, K2, A, lda, FflasSageMath);
-            // WriteMatrix(std::cerr<<"A22 = ",F, N2, K2, A22, lda, FflasSageMath);
-
             computeS1S2 (F, trans, N, K, y1, y2, A, lda, T, ldt, S2, lds, PH);
-            
-            // std::cerr<<"Y=Matrix(GF("<<F.cardinality()<<"),"<<K2<<","<<K2<<");"<<std::endl;
-            // std::cerr<<"Y[:"<<K2/2<<",:"<<K2/2<<"]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"Y[:"<<K2/2<<","<<K2/2<<":]="<<y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"Y["<<K2/2<<":,:"<<K2/2<<"]="<<-y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"Y["<<K2/2<<":,"<<K2/2<<":]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
-            // std::cerr<<"S1 = (A21-A11)*Y; S2 = A22-A21*Y;"<<std::endl;
-            // WriteMatrix(std::cerr<<"S1v = ",F, N2, K2, T, ldt, FflasSageMath);
-            // WriteMatrix(std::cerr<<"S2v = ",F, N2, K2, S2, lds, FflasSageMath);
-            // std::cerr<<"if (S1v != S1):"<<std::endl
-            //          <<"    print S1; print S1v"<<std::endl
-            //          <<"else:"<<std::endl
-            //          <<"    print ('S1 = S1v')"<<std::endl;
-            // std::cerr<<"if (S2v != S2):"<<std::endl
-            //          <<"    print S2;print S2v"<<std::endl
-            //          <<"else:"<<std::endl
-            //          <<"    print ('S2 = S2v')"<<std::endl;
 
                 // Up(C11) = Low(C22) (saving C22)
             if (uplo == FflasLower)
