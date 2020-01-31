@@ -169,6 +169,7 @@ namespace FFLAS { /*  Traits */
 
     template <typename Element, typename Compute>
     struct ModeTraits<Givaro::Modular<Element,Compute> >{typedef typename ModeCategories::DelayedTag value;};
+    template<> struct ModeTraits<Givaro::Modular<int64_t,uint64_t> > {typedef typename ModeCategories::DefaultTag value;};
 
     template<typename Compute> struct ModeTraits<Givaro::Modular<int8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
     template<typename Compute> struct ModeTraits<Givaro::Modular<int16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};

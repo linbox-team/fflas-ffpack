@@ -63,7 +63,11 @@ namespace FFPACK {
     template<typename Field>
     Field* chooseField(Givaro::Integer q, uint64_t b, uint64_t seed){
         Givaro::Integer maxV= maxFieldElt<Field>();
-        //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            // For the moment, Modular<intXX_t> returns a maxcard which does not always allow compute products over the Storage_t which is assumed to be possible in many place in fflas-ffpack.
+            // Reducing the maxcard consequently:
+        if (std::is_same<Field,Givaro::Modular<int64_t>>::value) maxV = 3037000500;
+        if (std::is_same<Field,Givaro::Modular<int32_t>>::value) maxV = 46341;
+            //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         std::mt19937 mt_rand(seed);
         Givaro::Integer::seeding(mt_rand());
         if (maxV>0 && (q> maxV || b> maxV.bitsize()))

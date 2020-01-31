@@ -67,9 +67,12 @@ namespace FFLAS {
 
         const DFElt MaxStorableValue = limits<typename DelayedField::Element>::max();
         const DFElt AbsMax = std::max(-F.minElement(), F.maxElement());
-        const DFElt r = MaxStorableValue / (AbsMax*AbsMax);
+        const DFElt r = MaxStorableValue / AbsMax/AbsMax;
         size_t delayedDim = FFLAS::Protected::min_types<DFElt>(r);
-
+        if (!delayedDim){
+            ModeCategories::DefaultTag DT;
+            return fdot(F, N, x, incx, y, incy, DT);
+        }
         typename Field::Element d;
         F.init (d);
         F.assign (d, F.zero);

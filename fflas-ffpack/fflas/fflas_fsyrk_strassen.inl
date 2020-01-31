@@ -41,7 +41,6 @@ namespace FFLAS{ namespace Protected{
                 Outmax = x * WH.FieldMin;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
-                // std::cerr<<"NeedPreScal: x<0: Outmin ("<<Outmin<<") = x ("<<x<<") * WH.FieldMax ("<<WH.FieldMax<<")"<<std::endl;
                 return true;
             }else{
                 Outmin = x * Op1max;
@@ -54,7 +53,6 @@ namespace FFLAS{ namespace Protected{
                 Outmax = x * WH.FieldMax;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
-                // std::cerr<<"NeedPreScal: x>0: Outmin ("<<Outmin<<") = x ("<<x<<") * WH.FieldMin ("<<WH.FieldMin<<")"<<std::endl;
                 return true;
             }else{
                 Outmin = x * Op1min;
@@ -85,11 +83,9 @@ namespace FFLAS{ namespace Protected{
     // x is assumed to be reduced
     {
         if (x<0){
-            // std::cerr<<"x<0"<<std::endl;
             if (Op2min < (WH.MaxStorableValue - Op1max) / x ||
                 Op2max > (-WH.MaxStorableValue - Op1min) / x ){
                 Outmin = WH.FieldMin + x * WH.FieldMax ;
-                // std::cerr<<"Outmin ("<<Outmin<<") =  WH.FieldMin ("<<WH.FieldMin<<") + x ("<<x<<") * WH.FieldMax"<<std::endl;
                 Outmax = WH.FieldMax + x * WH.FieldMin;
                 Op1min = WH.FieldMin;
                 Op1max = WH.FieldMax;
@@ -102,7 +98,6 @@ namespace FFLAS{ namespace Protected{
                 return false;
             }
         } else {
-            // std::cerr<<"x ("<<x<<") >0"<<std::endl;
             if (Op2max > (WH.MaxStorableValue - Op1max) / x ||
                 Op2min < (-WH.MaxStorableValue - Op1min) / x ){
                 Outmin = (x+1) * WH.FieldMin ;
@@ -210,7 +205,7 @@ namespace FFLAS {
         if (Protected::NeedPreScalReduction (S1min, S1max, WH.Bmin, WH.Bmax, x, WH)){
             reduceA21 = true;
         }
-        // std::cerr<<"#reduceA21 = "<<reduceA21<<" S1min = "<<S1min<<" S1max = "<<S1max<<std::endl;
+
         bool reduceS1 = false;
         if (y){
             bool redS1 = Protected::NeedPreAxpyReduction (S2min, S2max, S1min, S1max, WH.Bmin, WH.Bmax, y, WH);
@@ -225,16 +220,14 @@ namespace FFLAS {
             S2min = S1min;
             S2max = S1max;
         }
-        // std::cerr<<"#reduceS1 = "<<reduceS1<<" S2min = "<<S2min<<" S2max = "<<S2max<<std::endl;
+
         bool reduceS2 = false;
         bool reduceA11 = false;
         if (Protected::NeedPreAxpyReduction (S3min, S3max, S2min, S2max, WH.Amin, WH.Amax, negx, WH)){
             reduceS2 = true;
             reduceA11 = true;
         }
-        // std::cerr<<"#reduceS2 = "<<reduceS2<<" S3min = "<<S3min<<" S3max = "<<S3max<<std::endl;
 
-        
         bool reduceS3 = false;
         if (y){
             bool redS3 = Protected::NeedPreAxpyReduction (Smin, Smax, S3min, S3max, WH.Amin, WH.Amax, negy, WH);
@@ -249,7 +242,6 @@ namespace FFLAS {
             Smin = S3min;
             Smax = S3max;
         }
-        // std::cerr<<"#reduceS3 = "<<reduceS3<<" Smin = "<<Smin<<" Smax = "<<Smax<<std::endl;
         bool reduceA22 = false;
         if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
@@ -257,6 +249,9 @@ namespace FFLAS {
         }
         WH.initOut();
         
+        const bool ForcedFieldArith = std::is_same<Field,Givaro::Modular<int64_t> >::value;
+        if (ForcedFieldArith){reduceA21 = reduceS1 = reduceA11 = reduceA22 = true; reduceS2 = reduceS3 = false;}
+
         if (reduceA21) freduce (F, Axxrows, Axxcols, A21, lda);
         if (reduceA11) freduce (F, Axxrows, Axxcols, A, lda);
         if (reduceA22) freduce (F, Axxrows, Axxcols, A22, lda);
@@ -264,15 +259,23 @@ namespace FFLAS {
         if (trans==FflasNoTrans){
                 // S <- A21 Y
             for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
-                if (reduceS1)
-                    fscal (F, K2, x, A21, 1, S, 1);
-                else
+                if (reduceS1){
+                    if (!ForcedFieldArith)
+                        fscal (F, K2, x, A21, 1, S, 1);
+                    else
+                            // fscal does not support full range of cardinalities of Modular<int_64_t>, hence forcing generic mode
+                        details::fscal (F, K2, x, A21, 1, S, 1, FieldCategories::GenericTag());
+                } else
                     fscal (DF, K2, x, A21, 1, S, 1);
 
-                // WriteMatrix(std::cerr<<"S1 = "<<std::endl,F, 1, K2, S, lds);
                 if (!F.isZero(y)){
-                    faxpy (DF, K4, negy, A21r, 1, S, 1);
-                    faxpy (DF, K4, y, A21, 1, Sr, 1);
+                    if (!ForcedFieldArith){
+                        faxpy (DF, K4, negy, A21r, 1, S, 1);
+                        faxpy (DF, K4, y, A21, 1, Sr, 1);
+                    } else {
+                        faxpy (F, K4, negy, A21r, 1, S, 1);
+                        faxpy (F, K4, y, A21, 1, Sr, 1);
+                    }
                 }
                 if (reduceS2)
                     freduce (F, K2, S, 1);
@@ -280,19 +283,30 @@ namespace FFLAS {
                 if (reduceA22 && reduceS2){
                     fsub (F, K2, A22, 1, S, 1, T, 1);
                 } else {
-                    fsub (DF, K2, A22, 1, S, 1, T, 1);
-                    freduce (F, K2, T, 1);
+                    if (!ForcedFieldArith){
+                        fsub (DF, K2, A22, 1, S, 1, T, 1);
+                        freduce (F, K2, T, 1);
+                    } else {
+                        fsub (F, K2, A22, 1, S, 1, T, 1);
+                    }
                 }
                     // S <- S - A11 Y
-                // WriteMatrix(std::cerr<<"avant S3 negx = "<<negx<<" S3 = "<<std::endl,F, 1, K2, S, lds);
-                faxpy (DF, K2, negx, A11, 1, S, 1);
-                // WriteMatrix(std::cerr<<"S3 = "<<std::endl,F, 1, K2, S, lds);
+                if (!ForcedFieldArith){
+                    faxpy (DF, K2, negx, A11, 1, S, 1);
+                } else {
+                    faxpy (F, K2, negx, A11, 1, S, 1);
+                }
                 if (reduceS3 || F.isZero(y))
                     freduce (F, K2, S, 1);
                 if (!F.isZero(y)){
-                    faxpy (DF, K4, y, A11r, 1, S, 1);
-                    faxpy (DF, K4, negy, A11, 1, Sr, 1);
-                    freduce (F, K2, S, 1);
+                    if (!ForcedFieldArith){
+                        faxpy (DF, K4, y, A11r, 1, S, 1);
+                        faxpy (DF, K4, negy, A11, 1, Sr, 1);
+                        freduce (F, K2, S, 1);
+                    } else {
+                        faxpy (F, K4, y, A11r, 1, S, 1);
+                        faxpy (F, K4, negy, A11, 1, Sr, 1);
+                    }
                 }
             }
         } else { // FflasTrans         
@@ -507,9 +521,10 @@ namespace FFLAS {
                 // S2 =  A22 - A21 x Y  in S2 (C12)
             MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
             PH.Bmin = WH.Amin; PH.Bmax = WH.Amax; PH.Cmin = WH.Amin; PH.Cmax = WH.Amax;
-            // std::cerr<<"******************************************" <<std::endl;
+            // std::cerr<<"##########################################################" <<std::endl;
             // WriteMatrix(std::cerr<<"A21 = ",F, N2, K2, A21, lda, FflasSageMath);
             // WriteMatrix(std::cerr<<"A11 = ",F, N2, K2, A, lda, FflasSageMath);
+            // WriteMatrix(std::cerr<<"A12 = ",F, N2, K2, A12, lda, FflasSageMath);
             // WriteMatrix(std::cerr<<"A22 = ",F, N2, K2, A22, lda, FflasSageMath);
             computeS1S2 (F, trans, N, K, y1, y2, A,lda, S1, lds, S2, lds, PH);
             // std::cerr<<"Y=Matrix(GF("<<F.cardinality()<<"),"<<K2<<","<<K2<<");"<<std::endl;
@@ -535,20 +550,27 @@ namespace FFLAS {
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S2, lds, S1, lds, F.zero, C22, ldc, H4);
             else
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S1, lds, S2, lds, F.zero, C22, ldc, H4);
+            // WriteMatrix(std::cerr<<"P4 = ",F,N2,N2,C22,ldc,FflasSageMath);
 
             if (K>N){ fflas_delete(S2); }
 
                 // S3 = S1 - A22 in S1
             fsubin (DF, Arows, Acols, A22, lda, S1, lds);
 
+            // WriteMatrix(std::cerr<<"S3 = ",F,N2,K2,S1,lds,FflasSageMath);
+
                 // P5 = S3 x S3^T in C12
                 // TODO: update the bounds in the helper
             MMH_t H5 (F, WH.recLevel-1, PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin,
-                      PH.Outmin-WH.Amax, PH.Outmax-WH.Amin, 0,0);
+                      PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, S1, lds, F.zero, C12, ldc, H5);
+
+            // WriteMatrix(std::cerr<<"P5 = ",F,N2,N2,C12,ldc,FflasSageMath);
 
                 // S4 = S3 + A12 in S4
             fadd (DF, Arows, Acols, S1, lds, A12, lda, S4, lds);
+
+            // WriteMatrix(std::cerr<<"S4 = ",F,N2,K2,S4,lds,FflasSageMath);
 
                 // P3 = A22 x S4^T in C21
             MMH_t H3 (F, WH.recLevel-1, PH.Cmin, PH.Cmax, PH.Outmin+WH.Bmin-PH.Cmax, PH.Outmax+WH.Bmax-PH.Cmin, 0,0);
@@ -562,11 +584,16 @@ namespace FFLAS {
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, S4, lds, A22, lda, F.zero, C21, ldc, H3);
             }
 
+            // WriteMatrix(std::cerr<<"P3 = ",F,N2,N2,C21,ldc,FflasSageMath);
+
             if (K>N){ fflas_delete(S1); }
 
                 // P1 = A11 x A11^T in C11
             MMH_t H1 (F, WH.recLevel-1, PH.Amin, PH.Amax, PH.Amin, PH.Amax, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, C11, ldc, H1);
+
+            // WriteMatrix(std::cerr<<"P1 = ",F,N2,N2,C11,ldc,FflasSageMath);
+            // WriteMatrix(std::cerr<<"P3 = ",F,N2,N2,C21,ldc,FflasSageMath);
 
                 // U1 = P1 + P5 in C12
             DFElt U1Min, U1Max;
@@ -643,10 +670,32 @@ namespace FFLAS {
                 // S1 = (A21-A11) x Y^T in T1
                 // S2 = A22 - A21 x Y^T in C12
             MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait>  PH(WH);
-            PH.Bmin = PH.Amin; PH.Bmax = PH.Amax; PH.Cmin = PH.Amin; PH.Cmax = PH.Amax;
+            PH.Bmin = WH.Amin; PH.Bmax = WH.Amax; PH.Cmin = WH.Amin; PH.Cmax = WH.Amax;
+
+            //  std::cerr<<"******************************************" <<std::endl;
+            // WriteMatrix(std::cerr<<"A21 = ",F, N2, K2, A21, lda, FflasSageMath);
+            // WriteMatrix(std::cerr<<"A11 = ",F, N2, K2, A, lda, FflasSageMath);
+            // WriteMatrix(std::cerr<<"A22 = ",F, N2, K2, A22, lda, FflasSageMath);
 
             computeS1S2 (F, trans, N, K, y1, y2, A, lda, T, ldt, S2, lds, PH);
             
+            // std::cerr<<"Y=Matrix(GF("<<F.cardinality()<<"),"<<K2<<","<<K2<<");"<<std::endl;
+            // std::cerr<<"Y[:"<<K2/2<<",:"<<K2/2<<"]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"Y[:"<<K2/2<<","<<K2/2<<":]="<<y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"Y["<<K2/2<<":,:"<<K2/2<<"]="<<-y2<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"Y["<<K2/2<<":,"<<K2/2<<":]="<<y1<<"*identity_matrix(GF("<<F.cardinality()<<"),"<<K2/2<<");"<<std::endl;
+            // std::cerr<<"S1 = (A21-A11)*Y; S2 = A22-A21*Y;"<<std::endl;
+            // WriteMatrix(std::cerr<<"S1v = ",F, N2, K2, T, ldt, FflasSageMath);
+            // WriteMatrix(std::cerr<<"S2v = ",F, N2, K2, S2, lds, FflasSageMath);
+            // std::cerr<<"if (S1v != S1):"<<std::endl
+            //          <<"    print S1; print S1v"<<std::endl
+            //          <<"else:"<<std::endl
+            //          <<"    print ('S1 = S1v')"<<std::endl;
+            // std::cerr<<"if (S2v != S2):"<<std::endl
+            //          <<"    print S2;print S2v"<<std::endl
+            //          <<"else:"<<std::endl
+            //          <<"    print ('S2 = S2v')"<<std::endl;
+
                 // Up(C11) = Low(C22) (saving C22)
             if (uplo == FflasLower)
                 for (size_t i=1; i<N2; ++i)
@@ -673,14 +722,14 @@ namespace FFLAS {
             fsubin (DF, Arows, Acols, A22, lda, T, ldt);
 
                 // P5 = S3 x S3^T in C12
-            MMH_t H5 (F, WH.recLevel-1, PH.Outmin-WH.Amax, PH.Outmax-WH.Amin,PH.Outmin-WH.Bmax, PH.Outmax-WH.Bmin, 0,0);
+            MMH_t H5 (F, WH.recLevel-1, PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin, PH.Outmin-PH.Cmax, PH.Outmax-PH.Cmin, 0,0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, T, ldt, F.zero, C12, ldc, H5);
 
                 // S4 = S3 + A12 in T1
             faddin (DF, Arows, Acols, A12, lda, T, ldt);
 
                 //  P3 = A22 x S4^T + beta C21 in C21
-            MMH_t H3 (F, WH.recLevel-1, PH.Cmin, PH.Cmax, PH.Outmin+WH.Bmin-WH.Bmax, PH.Outmax+WH.Bmax-WH.Bmin, WH.Cmin, WH.Cmax);
+            MMH_t H3 (F, WH.recLevel-1, PH.Cmin, PH.Cmax, PH.Outmin+WH.Bmin-PH.Cmax, PH.Outmax+WH.Bmax-PH.Cmin, WH.Cmin, WH.Cmax);
             if (uplo == FflasLower)
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, A22, lda, T, ldt, beta, C21, ldc, H3);
             else{
@@ -690,8 +739,9 @@ namespace FFLAS {
                 H3.Bmax = PH.Cmax;
                 fgemm (F, trans, OppTrans, N2, N2, K2, alpha, T, ldt, A22, lda, beta, C21, ldc, H3);
             }
+
                 // P1 = A11 x A11^T in T1
-            MMH_t H1 (F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+            MMH_t H1 (F, WH.recLevel-1, PH.Amin, PH.Amax, PH.Amin, PH.Amax, 0, 0);
             fsyrk_strassen (F, uplo, trans, N2, K2, y1, y2, alpha, A11, lda, F.zero, T, ldt, H1);
 
                 // U1 = P5 + P1  in C12 // Still symmetric

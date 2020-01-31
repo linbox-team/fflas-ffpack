@@ -317,6 +317,7 @@ namespace FFLAS {
             // Might as well reduce inputs
             if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
                 H.initA();
+                H.initB();
                 freduce_constoverride (F, (trans==FflasNoTrans)?N:K, (trans==FflasNoTrans)?K:N, A, lda);
             }
             if (!F.isZero(beta) && (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax)){
