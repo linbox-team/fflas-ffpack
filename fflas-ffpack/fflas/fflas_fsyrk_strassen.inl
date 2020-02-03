@@ -248,8 +248,10 @@ namespace FFLAS {
         }
         WH.initOut();
         
-        const bool ForcedFieldArith = std::is_same<Field,Givaro::Modular<int64_t> >::value;
-        if (ForcedFieldArith){reduceA21 = reduceS1 = reduceA11 = reduceA22 = true; reduceS2 = reduceS3 = false;}
+            // Note that the field must ensure that an axpy (a.b+c) can be stored in a storage_t.
+            // This is more constraining than what Modular<int64_t,uint64_t>::MaxCardinality ensures.
+            // A specific test is add in utils/test-utils.h to avoid generating such field in the testsuite.
+            // TODO: add asserts here and there to warn user against this issue.
 
         if (reduceA21) freduce (F, Axxrows, Axxcols, A21, lda);
         if (reduceA11) freduce (F, Axxrows, Axxcols, A, lda);
@@ -259,22 +261,13 @@ namespace FFLAS {
                 // S <- A21 Y
             for (size_t i=0; i<N2; ++i, A11+=lda, A11r+=lda, A21+=lda, A21r+=lda, A22+=lda, S+=lds, Sr+=lds, T+=ldt){
                 if (reduceS1){
-                    if (!ForcedFieldArith)
-                        fscal (F, K2, x, A21, 1, S, 1);
-                    else
-                            // fscal does not support full range of cardinalities of Modular<int_64_t>, hence forcing generic mode
-                        details::fscal (F, K2, x, A21, 1, S, 1, FieldCategories::GenericTag());
+                    fscal (F, K2, x, A21, 1, S, 1);
                 } else
                     fscal (DF, K2, x, A21, 1, S, 1);
 
                 if (!F.isZero(y)){
-                    if (!ForcedFieldArith){
                         faxpy (DF, K4, negy, A21r, 1, S, 1);
                         faxpy (DF, K4, y, A21, 1, Sr, 1);
-                    } else {
-                        faxpy (F, K4, negy, A21r, 1, S, 1);
-                        faxpy (F, K4, y, A21, 1, Sr, 1);
-                    }
                 }
                 if (reduceS2)
                     freduce (F, K2, S, 1);
@@ -282,30 +275,17 @@ namespace FFLAS {
                 if (reduceA22 && reduceS2){
                     fsub (F, K2, A22, 1, S, 1, T, 1);
                 } else {
-                    if (!ForcedFieldArith){
                         fsub (DF, K2, A22, 1, S, 1, T, 1);
                         freduce (F, K2, T, 1);
-                    } else {
-                        fsub (F, K2, A22, 1, S, 1, T, 1);
-                    }
                 }
                     // S <- S - A11 Y
-                if (!ForcedFieldArith){
-                    faxpy (DF, K2, negx, A11, 1, S, 1);
-                } else {
-                    faxpy (F, K2, negx, A11, 1, S, 1);
-                }
+                faxpy (DF, K2, negx, A11, 1, S, 1);
                 if (reduceS3 || F.isZero(y))
                     freduce (F, K2, S, 1);
                 if (!F.isZero(y)){
-                    if (!ForcedFieldArith){
-                        faxpy (DF, K4, y, A11r, 1, S, 1);
-                        faxpy (DF, K4, negy, A11, 1, Sr, 1);
-                        freduce (F, K2, S, 1);
-                    } else {
-                        faxpy (F, K4, y, A11r, 1, S, 1);
-                        faxpy (F, K4, negy, A11, 1, Sr, 1);
-                    }
+                    faxpy (DF, K4, y, A11r, 1, S, 1);
+                    faxpy (DF, K4, negy, A11, 1, Sr, 1);
+                    freduce (F, K2, S, 1);
                 }
             }
         } else { // FflasTrans         
@@ -404,6 +384,13 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc,
            MMHelper<Field, MMHelperAlgo::Winograd, Mode> & H){
 
+        if (!H.recLevel){
+            MMHelper<Field, MMHelperAlgo::Classic, Mode>  H2 (H);
+            fsyrk (F, UpLo, trans, N, K, alpha, A, lda, beta, C, ldc, H2);
+            H.Outmin = H2.Outmin;
+            H.Outmax = H2.Outmax;
+            return C;
+        }
         size_t q = 1 << (H.recLevel+1);
         size_t Ns = (N/q)*q;
         size_t Ks = (K/q)*q;
