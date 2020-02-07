@@ -243,8 +243,8 @@ bool launch_MM_dispatch(const Field &F,
         FFLAS_TRANSPOSE ta = FflasNoTrans ;
         FFLAS_TRANSPOSE tb = FflasNoTrans ;
         if (! par) {
-            // if (random()%2) ta = FflasTrans ;
-            // if (random()%2) tb = FflasTrans ;
+            if (random()%2) ta = FflasTrans ;
+            if (random()%2) tb = FflasTrans ;
         }
 
         if (mm<0)

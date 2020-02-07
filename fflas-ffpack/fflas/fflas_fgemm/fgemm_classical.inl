@@ -128,7 +128,7 @@ namespace FFLAS {
                 // igemm requires to store the sum of 4 products without reductions,
                 // secretly inform the helper to bypass igemm (very dirty!)
             Hfp.recLevel = -2;
-        
+
         fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf,
                (DFCElt_ptr)A +nblock*shiftA, lda,
                (DFCElt_ptr)B +nblock*shiftB, ldb, betadf,
