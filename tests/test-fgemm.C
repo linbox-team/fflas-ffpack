@@ -36,6 +36,7 @@
 #define ENABLE_CHECKER_fgemm 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 #include <iomanip>
 #include <iostream>
@@ -242,8 +243,8 @@ bool launch_MM_dispatch(const Field &F,
         FFLAS_TRANSPOSE ta = FflasNoTrans ;
         FFLAS_TRANSPOSE tb = FflasNoTrans ;
         if (! par) {
-            if (random()%2) ta = FflasTrans ;
-            if (random()%2) tb = FflasTrans ;
+            // if (random()%2) ta = FflasTrans ;
+            // if (random()%2) tb = FflasTrans ;
         }
 
         if (mm<0)
@@ -302,9 +303,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 
         if (nbw<0)
             nbw = (int) random() % 7;
-#ifdef __FFLASFFPACK_DEBUG
-        F->write(std::cerr) << std::endl;
-#endif
+
         typedef typename Field::Element  Element ;
         typename Field::RandIter R(*F,seed++);
         typename Field::NonZeroRandIter NZR(R);
@@ -351,7 +350,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
             ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
             //std::cout << k << "/24" << std::endl; ++k;
         }
-        //std::cout<<std::endl;
+        std::cout<<std::endl;
         nbit--;
         if ( !ok )
             //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
@@ -418,7 +417,7 @@ int main(int argc, char** argv)
         seed++;
     } while (loop && ok);
 
-
+    std::cerr<<"with seed = "<<seed-1<<std::endl;
 
 
     return !ok ;
