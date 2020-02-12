@@ -155,6 +155,7 @@ namespace FFLAS {
              const size_t m , const size_t n,
              typename Field::Element_ptr A, const size_t lda)
     {
+        assert(m<=n); // otherwise n-i or i+1 might go out of range
         if (UpLo == FflasUpper){
             for (size_t i = 0 ; i < m ; ++i)
                 freduce (F, n-i, A+i*(lda+1), 1);
