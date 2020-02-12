@@ -123,11 +123,18 @@ namespace FFLAS {
         typedef typename HelperType::DelayedField::Element DFElt;
         typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
         typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
+        if ((std::is_same<Field,Givaro::Modular<int64_t>>::value || std::is_same<Field,Givaro::ModularBalanced<int64_t>>::value)
+            && (k2 < 4))
+                // igemm requires to store the sum of 4 products without reductions,
+                // secretly inform the helper to bypass igemm (very dirty!)
+            Hfp.recLevel = -2;
 
         fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf,
                (DFCElt_ptr)A +nblock*shiftA, lda,
                (DFCElt_ptr)B +nblock*shiftB, ldb, betadf,
                (DFElt_ptr)C, ldc, Hfp);
+
+        Hfp.checkOut(F,m,n,C,ldc);
 
         for (size_t i = 0; i < nblock; ++i) {
             freduce (F, m, n, C, ldc);
@@ -136,6 +143,8 @@ namespace FFLAS {
                    (DFCElt_ptr)A +i*shiftA, lda,
                    (DFCElt_ptr)B +i*shiftB, ldb, F.one,
                    (DFElt_ptr)C, ldc, Hfp);
+            Hfp.checkOut(F,m,n,C,ldc);
+
         }
 
         if (!F.isOne(alpha) && !F.isMOne(alpha)){
@@ -230,7 +239,7 @@ namespace FFLAS {
                        typename Field::Element_ptr C, const size_t ldc,
                        MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
     {
-        MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F,0);
+        MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(H);
         fgemm (F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,Hd);
         H.setOutBounds (k,alpha,beta);
     }
@@ -296,8 +305,13 @@ namespace FFLAS {
         FFLASFFPACK_check(ldc);
 
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and defined(__x86_64__)
-        igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
-#else
+        if (!H.recLevel){
+                // igemm assumes that 4 products can be accumulated without overflow
+                // Using the recLevel to secretly inform that igemm can not be used (very dirty!)
+            igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
+            return;
+        }
+#endif
         for (size_t i=0; i<m; i++){
             for (size_t j=0; j<n; j++)
                 Cd[i*ldc+j] *= beta;
@@ -307,7 +321,6 @@ namespace FFLAS {
                     Cd[i*ldc+j] += a*((tb==FflasNoTrans) ? Bd[l*ldb+j] : Bd[l+j*ldb]);
             }
         }
-#endif
     }
 } // FFLAS
 
