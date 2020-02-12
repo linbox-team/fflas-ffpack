@@ -416,7 +416,7 @@ int main(int argc, char** argv)
         seed++;
     } while (loop && ok);
 
-    std::cerr<<"with seed = "<<seed-1<<std::endl;
+    if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
 
 
     return !ok ;
