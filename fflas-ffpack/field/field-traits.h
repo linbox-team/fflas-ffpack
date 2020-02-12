@@ -344,6 +344,23 @@ namespace FFLAS { /* associatedDelayedField */
 
 } // FFLAS
 
+namespace FFLAS { /* MaxCadinality */
+    template <class Field>
+    inline typename Field::Residu_t maxCardinality() {return Field::maxCardinality();}
+
+// Need to override Givaro's default, as Compute_t (uint64_t) is larger than Storage_t
+    template<>
+    inline uint64_t maxCardinality <Givaro::Modular<int64_t> >(){
+        // floor(2^31.5) such that ab+c fits in int64_t with abs(a,b,c) <= (p-1)
+        return UINT64_C(3037000500);
+    }
+    template<>
+    inline uint32_t maxCardinality<Givaro::Modular<int32_t> >(){
+        // floor(2^15.5) such that ab+c fits in int32_t with abs(a,b,c) <= (p-1)
+        return UINT32_C(46341);
+    }
+} // FFLAS
+
 #endif // __FFLASFFPACK_field_field_traits_H
 
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
