@@ -76,6 +76,7 @@ namespace FFLAS {
     namespace MMHelperAlgo{
         struct Auto{};
         struct Classic{};
+        struct DivideAndConquer{};
         struct Winograd{};
         struct WinogradPar{};
         struct Bini{};
@@ -254,6 +255,28 @@ namespace FFLAS {
                         std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
                         return false;
                     }
+#endif
+            return true;
+        }
+        bool checkOut(const Field& F, FFLAS_UPLO uplo, const size_t M, const size_t N,
+                      typename Field::ConstElement_ptr A, const size_t lda ){
+#ifdef __FFLASFFPACK_DEBUG
+            if (uplo == FflasUpper){
+                for (size_t i=0; i<M;++i)
+                    for (size_t j=i; j<N;++j)
+                        if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){
+                            std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
+                            return false;
+                        }
+            } else {
+                for (size_t i=0; i<M;++i)
+                    for (size_t j=0; j<=i;++j)
+                        if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){
+                            std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
+                            return false;
+                        }
+
+            }
 #endif
             return true;
         }

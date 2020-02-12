@@ -429,7 +429,7 @@ namespace FFLAS {
         fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 
         Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
-
+        
         H.initOut();
 
         return C;

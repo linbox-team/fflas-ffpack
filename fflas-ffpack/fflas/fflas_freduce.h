@@ -151,6 +151,22 @@ namespace FFLAS {
     }
     template<class Field>
     void
+    freduce (const Field& F, const FFLAS_UPLO UpLo,
+             const size_t m , const size_t n,
+             typename Field::Element_ptr A, const size_t lda)
+    {
+        assert(m<=n); // otherwise n-i or i+1 might go out of range
+        if (UpLo == FflasUpper){
+            for (size_t i = 0 ; i < m ; ++i)
+                freduce (F, n-i, A+i*(lda+1), 1);
+        } else { // Lower
+            for (size_t i = 0 ; i < m ; ++i)
+                freduce (F, i+1, A+i*lda, 1);
+        }
+        return;
+    }
+    template<class Field>
+    void
     pfreduce (const Field& F, const size_t m , const size_t n,
               typename Field::Element_ptr A, const size_t lda, const size_t numths)
     {
