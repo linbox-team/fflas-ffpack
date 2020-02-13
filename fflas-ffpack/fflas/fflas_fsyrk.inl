@@ -200,8 +200,7 @@ namespace FFLAS {
 
     namespace Protected {
         template <class Field, class AlgoT, class ParSeqTrait>
-        inline void ScalAndReduce (const Field& F, const FFLAS_UPLO UpLo,
-                                   const size_t M, const size_t N,
+        inline void ScalAndReduce (const Field& F, const FFLAS_UPLO UpLo, const size_t N,
                                    const typename Field::Element alpha,
                                    typename Field::Element_ptr A, const size_t lda,
                                    const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
@@ -211,14 +210,14 @@ namespace FFLAS {
                 F.convert(al, alpha);
                 if (al<0) al = -al;
                 if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
-                    freduce (F, UpLo, M, N, A, lda);
-                    fscalin (F, M, N, alpha, A, lda);
+                    freduce (F, UpLo, N, A, lda);
+                    fscalin (F, N, N, alpha, A, lda);
                 } else {
-                    fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
-                    freduce (F, UpLo, M, N, A, lda);
+                    fscalin (H.delayedField, N, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
+                    freduce (F, UpLo, N, A, lda);
                 }
             } else
-                freduce (F, UpLo, M, N, A, lda);
+                freduce (F, UpLo, N, A, lda);
         }
     }
 
@@ -254,7 +253,7 @@ namespace FFLAS {
 
         fsyrk (F, UpLo, trans, N, K, alpha_, A, lda, beta_, C, ldc, HD);
 
-        Protected::ScalAndReduce (F, UpLo, N, N, alpha, C, ldc, HD);
+        Protected::ScalAndReduce (F, UpLo, N, alpha, C, ldc, HD);
 
         H.initOut();
 
@@ -322,7 +321,7 @@ namespace FFLAS {
             }
             if (!F.isZero(beta) && (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax)){
                 H.initC();
-                freduce (F, UpLo, N, N, C, ldc);
+                freduce (F, UpLo, N, C, ldc);
             }
             kmax = H.MaxDelayedDim (betadf);
         }
@@ -355,7 +354,7 @@ namespace FFLAS {
                betadf, (DFElt_ptr)C, ldc, Hfp);
 
         for (size_t i = 0; i < nblock; ++i) {
-            freduce (F, UpLo, N, N, C, ldc);
+            freduce (F, UpLo, N, C, ldc);
             Hfp.initC();
             fsyrk (H.delayedField, UpLo, trans, N, k2, alphadf,
                    (DFCElt_ptr)A +i*shiftA, lda,
@@ -369,7 +368,7 @@ namespace FFLAS {
             // getting -Outmin returns a int, not the same base type.
             if (std::max(static_cast<const decltype(Hfp.Outmin)&>(-Hfp.Outmin), Hfp.Outmax)
                 >Hfp.MaxStorableValue/al){
-                freduce (F, UpLo, N, N, C, ldc);
+                freduce (F, UpLo, N, C, ldc);
                 Hfp.initOut();
             }
 
