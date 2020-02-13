@@ -177,6 +177,12 @@ namespace FFLAS {
     freduce (const Field& F, const size_t m , const size_t n,
              typename Field::Element_ptr A, const size_t lda);
 
+        //! freduce for square symmetric matrices
+    template<class Field>
+    void
+    freduce (const Field& F,  const FFLAS_UPLO uplo, const size_t N,
+             typename Field::Element_ptr A, const size_t lda);
+
     /** freduce
      * \f$A \gets  B mod F\f$.
      * @param F field

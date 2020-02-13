@@ -551,11 +551,17 @@ namespace FFLAS {
                 // U1 = P1 + P5 in C12
             DFElt U1Min, U1Max;
             if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H5.Outmin, H5.Outmax, WH)){
-                freduce(F,N2,N2,C12,ldc);
-                freduce(F,N2,N2,C11,ldc);
+                freduce(F,uplo,N2,C12,ldc);
+                freduce(F,uplo,N2,C11,ldc);
             }
             faddin (DF, uplo, N2, C11, ldc, C12, ldc);
 
+                // U2 = U1 + P4 in C12
+            DFElt U2Min, U2Max;
+            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
+                freduce(F,uplo,N2,C12,ldc);
+                freduce(F,N2,N2,C22,ldc);
+            }
                 // make U1 explicit: Up(U1)=Low(U1)^T
             if (uplo == FflasLower)
                 for (size_t i=0; i<N2; i++)
@@ -564,12 +570,6 @@ namespace FFLAS {
                 for (size_t i=0; i<N2; i++)
                     fassign(F, i, C12+i, ldc, C12+i*ldc, 1);
 
-                // U2 = U1 + P4 in C12
-            DFElt U2Min, U2Max;
-            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
-                freduce(F,N2,N2,C12,ldc);
-                freduce(F,N2,N2,C22,ldc);
-            }
             for (size_t i=0; i<N2; ++i){
                 faddin (DF,  N2, C22+i*ldc, 1, C12+i, ldc);
             }
@@ -585,8 +585,8 @@ namespace FFLAS {
                 // U5 = U2 + P4^T in C22
             DFElt U5Min, U5Max;
             if (Protected::NeedPreAddReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
-                freduce(F,N2,N2,C22,ldc);
-                freduce(F,N2,N2,C12,ldc);
+                freduce(F,uplo,N2,C22,ldc);
+                freduce(F,uplo,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C22, ldc);
 
@@ -597,8 +597,8 @@ namespace FFLAS {
                 // U3 = P1 + P2 in C11
             DFElt U3Min, U3Max;
             if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
-                freduce(F,N2,N2,C11,ldc);
-                freduce(F,N2,N2,C12,ldc);
+                freduce(F,uplo,N2,C11,ldc);
+                freduce(F,uplo,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C11, ldc);
                 // Updating WH with Outmin, Outmax of the result
@@ -678,11 +678,17 @@ namespace FFLAS {
                 // U1 = P5 + P1  in C12 // Still symmetric
             DFElt U1Min, U1Max;
             if (Protected::NeedPreAddReduction (U1Min, U1Max, H5.Outmin, H5.Outmax, H1.Outmin, H1.Outmax, WH)){
-                freduce(F,N2,N2,C12,ldc);
-                freduce(F,N2,N2,T,ldt);
+                freduce(F,uplo,N2,C12,ldc);
+                freduce(F,uplo,N2,T,ldt);
            }
             faddin (DF, uplo, N2, T, ldt, C12, ldc);
 
+                // U2 = U1 + P4 in C12
+            DFElt U2Min, U2Max;
+            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
+                freduce(F,uplo,N2,C12,ldc);
+                freduce(F,N2,N2,C22,ldc);
+            }
                 // Make U1 explicit (copy the N^2/2 missing part)
             if (uplo == FflasLower)
                 for (size_t i=0; i<N2; ++i)
@@ -691,12 +697,6 @@ namespace FFLAS {
                 for (size_t i=0; i<N2; ++i)
                     fassign (DF, i, C12 + i, ldc, C12 + i*ldc, 1);                
 
-                // U2 = U1 + P4 in C12
-            DFElt U2Min, U2Max;
-            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
-                freduce(F,N2,N2,C12,ldc);
-                freduce(F,N2,N2,C22,ldc);
-            }
             for (size_t i=0; i<N2; i++)
                 faddin (DF, N2, C22 + i*ldc, 1, C12 + i, ldc);
 
@@ -711,8 +711,8 @@ namespace FFLAS {
                 // U5 = U2 + P4^T  in C22 (only the lower triang part)
             DFElt U5Min, U5Max;
             if (Protected::NeedPreAddReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
-                freduce(F,N2,N2,C22,ldc);
-                freduce(F,N2,N2,C12,ldc);
+                freduce(F,uplo,N2,C22,ldc);
+                freduce(F,uplo,N2,C12,ldc);
             }
             faddin (DF, uplo, N2, C12, ldc, C22, ldc);
             freduce(F,N2,N2,C22,ldc);
@@ -743,8 +743,8 @@ namespace FFLAS {
                 // U3 = P1 + P2 in C11
             DFElt U3Min, U3Max;
             if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
-                freduce(F,N2,N2,C11,ldc);
-                freduce(F,N2,N2,T,ldt);
+                freduce(F,uplo,N2,C11,ldc);
+                freduce(F,uplo,N2,T,ldt);
             }
             faddin (DF, uplo, N2, T, ldt, C11, ldc);
 
