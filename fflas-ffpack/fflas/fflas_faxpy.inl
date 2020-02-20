@@ -172,14 +172,38 @@ namespace FFLAS { namespace details {
             }
             else
             {
-                typename Field::Element_ptr Xc = fflas_new (F,N) ;
-                typename Field::Element_ptr Yc = fflas_new (F,N) ;
-                fassign(F,N,X,incX,Xc,1);
-                fassign(F,N,Y,incY,Yc,1);
-                faxpy(F,N,a,Xc,1,Yc,1,FieldCategories::ModularTag());
-                fassign(F,N,Yc,1,Y,incY);
-                fflas_delete(Xc);
-                fflas_delete(Yc);
+                typename Field::Element_ptr Xc;
+                typename Field::Element_ptr Yc;
+                if (incX != 1)
+                {
+                    Xc = fflas_new (F,N);
+                    fassign(F,N,X,incX,Xc,1);
+                }
+                else
+                {
+                    Xc = const_cast<typename Field::Element_ptr>(X); // Oh the horror
+                }
+                if (incY != 1)
+                {
+                    Yc = fflas_new (F,N);
+                    fassign(F,N,Y,incY,Yc,1);
+                }
+                else
+                {
+                    Yc = const_cast<typename Field::Element_ptr>(Y);
+                }
+
+                vectorised::axpyp(F,a,Xc,Yc,N);
+
+                if (incY != 1)
+                {
+                    fassign(F,N,Yc,1,Y,incY);
+                    fflas_delete(Yc);
+                }
+                if (incX != 1)
+                {
+                    fflas_delete(Xc);
+                }
             }
         }
     }
