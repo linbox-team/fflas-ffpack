@@ -235,7 +235,7 @@ echo "-----------------------------------------------"
 # Getting GMP from Givaro - AB 2014-12-12
 #FF_CHECK_GMP
 
-PKG_CHECK_MODULES([GIVARO],[givaro >= 4.1.0])
+PKG_CHECK_MODULES([GIVARO],[givaro >= 4.1.1])
 FF_CHECK_GIVARO_USABILITY()
 
 
