@@ -179,9 +179,12 @@ AC_SUBST(SIMD_FLAGS)
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
 AS_IF([ test  "x$CCNAM" = "xgcc492" ],[REQUIRED_FLAGS="${REQUIRED_FLAGS} -fpermissive"],[])
 
-dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
-dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc"],[REQUIRED_FLAGS="${REQUIRED_FLAGS} -fabi-version=6"],[])
+dnl With GCC 4.x, the default ABI version is 2. With this version, __m128 and
+dnl __m256 are the same types and therefore we cannot have overloads for both
+dnl types without linking error. It is fixed in ABI version 4.
+dnl FIXME: Why do we set ABI version to 6 ?
+AS_IF([test "x$CCNAM" = "xgccl5"],[REQUIRED_FLAGS+=" -fabi-version=6"])
+
 
 AC_SUBST(REQUIRED_FLAGS)
 
