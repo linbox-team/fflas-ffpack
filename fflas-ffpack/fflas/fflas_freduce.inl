@@ -524,7 +524,7 @@ namespace FFLAS { namespace details {
             {
                 typename Field::Element_ptr Ac = fflas_new (F,m) ;
                 fassign (F,m,A,incX,Ac,1);
-                freduce (F,m,Ac,1,FieldCategories::ModularTag());
+                vectorised::modp(F,Ac,m,Ac);
                 fassign (F,m,Ac,1,A,incX);
                 fflas_delete (Ac);
             }
@@ -563,7 +563,7 @@ namespace FFLAS { namespace details {
                 }
                 else
                 {
-                    Ac = const_cast<typename Field::Element_ptr>(A); // Oh the horror
+                    Ac = A;
                 }
                 if (incY != 1)
                 {
@@ -572,19 +572,19 @@ namespace FFLAS { namespace details {
                 }
                 else
                 {
-                    Bc = const_cast<typename Field::Element_ptr>(B);
+                    Bc = const_cast<typename Field::Element_ptr>(B); // Oh the horror
                 }
 
                 vectorised::modp(F,Bc,m,Ac);
 
-                if (incY != 1)
-                {
-                    fassign(F,m,Bc,1,B,incY);
-                    fflas_delete(Bc);
-                }
                 if (incX != 1)
                 {
+                    fassign(F,m,Ac,1,A,incX);
                     fflas_delete(Ac);
+                }
+                if (incY != 1)
+                {
+                    fflas_delete(Bc);
                 }
             }
         }

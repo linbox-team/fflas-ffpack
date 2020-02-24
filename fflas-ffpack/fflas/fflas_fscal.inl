@@ -235,7 +235,7 @@ namespace FFLAS { namespace details {
                 }
                 else
                 {
-                    Yc = const_cast<typename Field::Element_ptr>(Y);
+                    Yc = Y;
                 }
 
                 vectorised::scalp(F,Yc,a,Xc,N);

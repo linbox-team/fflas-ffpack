@@ -190,7 +190,7 @@ namespace FFLAS { namespace details {
                 }
                 else
                 {
-                    Yc = const_cast<typename Field::Element_ptr>(Y);
+                    Yc = Y;
                 }
 
                 vectorised::axpyp(F,a,Xc,Yc,N);
