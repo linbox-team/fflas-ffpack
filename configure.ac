@@ -94,7 +94,7 @@ FPMATH_FLAGS
 # __m256 are the same types and therefore we cannot have overloads for both
 # types without linking error. It is fixed in ABI version 4.
 # FIXME: Why do we set ABI version to 6
-AS_CASE([$CCNAM], [gcc48*|gcc49*], [REQUIRED_FLAGS+=" -fabi-version=6"])
+AS_CASE([$CCNAM], [gcc4*], [REQUIRED_FLAGS+=" -fabi-version=6"])
 
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
 AS_CASE([$CCNAM], [gcc492], [REQUIRED_FLAGS+=" -fpermissive"])
