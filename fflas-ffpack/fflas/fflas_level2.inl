@@ -177,6 +177,12 @@ namespace FFLAS {
     freduce (const Field& F, const size_t m , const size_t n,
              typename Field::Element_ptr A, const size_t lda);
 
+        //! freduce for square symmetric matrices
+    template<class Field>
+    void
+    freduce (const Field& F,  const FFLAS_UPLO uplo, const size_t N,
+             typename Field::Element_ptr A, const size_t lda);
+
     /** freduce
      * \f$A \gets  B mod F\f$.
      * @param F field
@@ -453,6 +459,15 @@ namespace FFLAS {
     template <class Field>
     void
     faddin (const Field& F, const size_t M, const size_t N,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            typename Field::Element_ptr C, const size_t ldc);
+
+    //! fadding for symmetric matrices
+    template <class Field>
+    void
+    faddin (const Field& F,
+            const FFLAS_UPLO uplo,
+            const size_t N,
             typename Field::ConstElement_ptr B, const size_t ldb,
             typename Field::Element_ptr C, const size_t ldc);
 

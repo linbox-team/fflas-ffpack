@@ -51,40 +51,34 @@ namespace FFLAS {
 }
 namespace FFPACK {
 
-    template<typename Field>
-    Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::maxCardinality();}
-    template<>
-    Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
-
     /*** Field chooser for test according to characteristic q and bitsize b ***/
     /* if q=-1 -> field is chosen randomly with a charateristic of b bits
        if b=0 -> bitsize is chosen randomly according to maxFieldElt
        */
     template<typename Field>
     Field* chooseField(Givaro::Integer q, uint64_t b, uint64_t seed){
-        Givaro::Integer maxV= maxFieldElt<Field>();
-        //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        std::mt19937 mt_rand(seed);
-        Givaro::Integer::seeding(mt_rand());
+        Givaro::Integer maxV = static_cast<Givaro::Integer>(FFLAS::maxCardinality<Field>());
         if (maxV>0 && (q> maxV || b> maxV.bitsize()))
             return nullptr;
-        if (b<=1){
-            auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
-                                     mt_rand);
-            b = bitrand();
-        }
+
+        std::mt19937 mt_rand(seed);
+        Givaro::Integer::seeding(mt_rand());
         Givaro::IntPrimeDom IPD;
         Givaro::Integer p;
-        if (q==-1){
-            // Choose characteristic as a random prime of b bits
+
+        if (q == -1){ // No modulus specified
             do{
                 Givaro::Integer _p;
-                Givaro::Integer::random_exact_2exp(_p,b);
-                IPD.prevprime(p, _p+1 );
-            }while( (p < 2) );
+                if (b <= 1){ // No bitsize specified
+                    Givaro::Integer::random_lessthan<true> (_p, maxV);
+                } else {
+                    Givaro::Integer::random_exact_2exp (_p, b);
+                }
+                IPD.prevprime(p, _p+1);
+            } while (p < 2 && p > maxV);
+        } else { // modulus specified
+            p=q;
         }
-        else p=q;
-
         return new Field(p);
     }
 

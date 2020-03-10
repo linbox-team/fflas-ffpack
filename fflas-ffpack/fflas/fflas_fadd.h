@@ -256,6 +256,26 @@ namespace FFLAS {
 
     template <class Field>
     void
+    faddin (const Field& F,
+            const FFLAS_UPLO uplo,
+            const size_t N,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            typename Field::Element_ptr C, const size_t ldc)
+    {
+        const typename Field::Element  *Bi = B;
+        typename Field::Element_ptr Ci = C;
+        if (uplo == FflasUpper){
+            for (size_t i=N; i>0; --i,  Bi+=ldb+1, Ci+=ldc+1)
+                faddin(F,i,Bi,1,Ci,1);
+        } else {
+            for (size_t i=1; i <= N; ++i, Bi+=ldb, Ci+=ldc)
+                faddin(F,i,Bi,1,Ci,1);
+        }
+    }
+
+
+    template <class Field>
+    void
     fsubin (const Field& F, const size_t M, const size_t N,
             typename Field::ConstElement_ptr B, const size_t ldb,
             typename Field::Element_ptr C, const size_t ldc)

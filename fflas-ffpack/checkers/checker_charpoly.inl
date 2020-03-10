@@ -156,6 +156,24 @@ namespace FFPACK {
         }
     };
 
+
+    template <class Polynomial>
+    class CheckerImplem_charpoly<Givaro::ZRing<Givaro::Integer>,Polynomial> {
+            // Charpoly check over theintegers is not yet implemented
+            // A possibility is to map to a field
+    public:
+        typedef Givaro::ZRing<Givaro::Integer> Ring;
+        CheckerImplem_charpoly(const Ring& F_, const size_t n_, typename Ring::ConstElement_ptr A, size_t lda_) {}
+
+        CheckerImplem_charpoly(typename Ring::RandIter &G, const size_t n_, typename Ring::ConstElement_ptr A, size_t lda_) {}
+
+        ~CheckerImplem_charpoly() {}
+
+        inline bool check(Polynomial &g) {
+            std::clog << "Warning: charpoly over ZRing<Integer> not checked." << std::endl;
+            return true;
+        }
+    };
 }
 
 #endif // __FFLASFFPACK_checker_charpoly_INL
