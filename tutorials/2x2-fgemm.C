@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     FFLAS::WriteMatrix (std::cout << "B:="<<std::endl, F, k, n, B, n) << std::endl;
 
     // C <-- 1. A.B + 0. C
-    fgemm (F, FflasNoTrans, FflasNoTrans, m, n, k, F.one, A, m, B, n, F.zero, C, n);
+    fgemm (F, FflasNoTrans, FflasNoTrans, m, n, k, F.one, A, k, B, n, F.zero, C, n);
 
     // C is mxn with leading dimension n
     FFLAS::WriteMatrix (std::cout << "C:="<<std::endl, F, m, n, C, n) << " modulo 11" << std::endl;
