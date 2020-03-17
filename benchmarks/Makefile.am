@@ -23,14 +23,12 @@
 SUBDIRS =
 benchmarks:  $(BENCHMARKS)
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@ -I$(top_srcdir) $(PRECOMPILE_FLAGS)
-
+AM_CXXFLAGS = $(FFLASFFPACK_CXXFLAGS) $(GIVARO_CFLAGS) $(BLAS_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)
+LDADD = $(GIVARO_LIBS) $(BLAS_LIBS) $(PARLIBS)
 if FFLASFFPACK_PRECOMPILED
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
-else
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+LDADD += $(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
+LDADD += $(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 endif
 
 PERFPUBLISHERFILE=benchmarks-report.xml
