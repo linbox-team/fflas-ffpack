@@ -80,8 +80,11 @@ CXXFLAGS="${CXX11FLAGS} ${CXXFLAGS}"
 
 AS_ECHO([---------------------------------------])
 
-# Set OPTIM_FLAGS, DEBUG_FLAGS depending on compiler and command line arguments
-SET_FLAGS
+dnl With GCC 4.x, the default ABI version is 2. With this version, __m128 and
+dnl __m256 are the same types and therefore we cannot have overloads for both
+dnl types without linking error. It is fixed in ABI version 4.
+dnl FIXME: Why do we set ABI version to 6 ?
+AS_CASE([$CCNAM], [gcc4*], [REQUIRED_FLAGS+=" -fabi-version=6"])
 
 # Append -march=native to OPTIM_FLAGS if not present in CXXFLAGS and
 # not cross-compiling and --no-marchnative is not set

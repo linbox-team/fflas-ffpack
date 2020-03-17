@@ -68,19 +68,20 @@ If full is given, we become paranoïd about warnings and treat them as errors.])
 CCNAM=""
 
 AC_DEFUN([AC_COMPILER_NAME], [
-    AC_MSG_CHECKING(for family name of compiler)
+		AC_MSG_CHECKING(for family name of compiler)
 
-    dnl CHECKING for various compilers
-    dnl ICC ?
-    AS_IF([ test -z "${CCNAM}"], [
-        AC_TRY_RUN( [
-            #ifdef __INTEL_COMPILER
-                int main() { return 0 ; }
-            #else
-                not intel
-            #endif],
-            [ CCNAM=icc ])
-        ])
+		dnl CHECKING for various compilers
+		dnl ICC ?
+		AC_TRY_RUN( [
+           #ifdef __INTEL_COMPILER
+              int main() { return 0 ; }
+           #else
+              not intel
+           #endif],
+		      [ AC_MSG_RESULT(icc)
+            CCNAM=icc
+            AC_SUBST(CCNAM)
+		])
 
     dnl PATHSCALE > 4 ?
     AS_IF([ test -z "${CCNAM}"], [
@@ -94,27 +95,31 @@ AC_DEFUN([AC_COMPILER_NAME], [
         ])
 
     dnl CLANG >= 3.9 ?
-    AS_IF([ test -z "${CCNAM}"], [
-        AC_TRY_RUN( [
-            #ifdef __clang__
-                int main() { return !((__clang_major__ >= 4) || (__clang_major__ == 3 && __clang_minor__ >= 9)) ; }
-            #else
-                not clang3.9
-            #endif],
-            [ CCNAM=clang ])
-        ])
+		AS_IF([ test -z "${CCNAM}"], [
+			AC_TRY_RUN( [
+				#ifdef __clang__
+				   int main() { return !((__clang_major__ >= 4) ||(__clang_major__  ==3 && __clang_minor__ >= 9) ) ; }
+			   #else
+				   not clang3.9
+				#endif], [
+		CCNAM=clang
+		AC_SUBST(CCNAM)
+		AC_MSG_RESULT($CCNAM) ])
+		])
 
-    dnl 3.1 < CLANG <=  3.8 ?
-    AS_IF([ test -z "${CCNAM}"], [
-        AC_TRY_RUN( [
-            #ifdef __clang__
-                int main() { return !(__clang_major__ == 3 && __clang_minor__ >= 1 && __clang_minor__ <= 8) ; }
-            #else
-                not clang3.8
-            #endif],
-            [ CCNAM=clang38 ])
-        ])
-
+  dnl 3.1 < CLANG <=  3.8 ?
+		AS_IF([ test -z "${CCNAM}"], [
+			AC_TRY_RUN( [
+				#ifdef __clang__
+				   int main() { return !(__clang_major__  ==3 && __clang_minor__ >=1 && __clang_minor__ <=8) ; }
+			   #else
+				   not clang3.8
+				#endif], [
+		CCNAM=clang38
+		AC_SUBST(CCNAM)
+		AC_MSG_RESULT($CCNAM) ])
+		])
+    
     dnl GCC >= 5 ?
     AS_IF([ test -z "${CCNAM}"], [
         AC_TRY_RUN( [
@@ -148,16 +153,15 @@ AC_DEFUN([AC_COMPILER_NAME], [
             [ CCNAM=gcc492 ])
         ])
 
-    dnl other ?
-    AS_IF([ test -z "${CCNAM}"],
-            [
-            CCNAM=unknow
-            AC_MSG_RESULT($CCNAM)
-            AS_BOX([*** unknown compiler, please file a bug. ***], [*])
-            ],
-            [
-            AC_MSG_RESULT($CCNAM)
-            ])
+		dnl  other ?
 
-    AC_SUBST(CCNAM)
+		AS_IF([ test -z "${CCNAM}"],
+				[ AC_MSG_RESULT(unknown)
+				  CCNAM=unknown
+				  AC_SUBST(CCNAM)
+				  echo
+				  echo " *** unknow compiler. please file a bug "
+				  echo
+				])
+
 ])
