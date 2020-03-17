@@ -68,112 +68,96 @@ If full is given, we become paranoïd about warnings and treat them as errors.])
 CCNAM=""
 
 AC_DEFUN([AC_COMPILER_NAME], [
-		AC_MSG_CHECKING(for family name of compiler)
+    AC_MSG_CHECKING(for family name of compiler)
 
-		dnl CHECKING for various compilers
-		dnl ICC ?
-		AC_TRY_RUN( [
-           #ifdef __INTEL_COMPILER
-   int main() { return 0 ; }
-   #else
-   not intel
-		   #endif],
-		[ AC_MSG_RESULT(icc)
-   CCNAM=icc
-   AC_SUBST(CCNAM)
-		])
+    dnl CHECKING for various compilers
+    dnl ICC ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __INTEL_COMPILER
+                int main() { return 0 ; }
+            #else
+                not intel
+            #endif],
+            [ CCNAM=icc ])
+        ])
 
-dnl PATHSCALE > 4 ?
-		AS_IF([ test -z "${CCNAM}"], [
-			AC_TRY_RUN( [
-				#ifdef __PATHSCALE__
-				   int main() { return !(__PATHCC__ >= 4) ; }
-   #else
-				   not ekopath neither.
-				#endif], [
-		AC_MSG_RESULT(eko)
-		CCNAM=eko
-		AC_SUBST(CCNAM) ])
-		])
+    dnl PATHSCALE > 4 ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __PATHSCALE__
+               int main() { return !(__PATHCC__ >= 4) ; }
+            #else
+               not ekopath either.
+            #endif],
+            [ CCNAM=eko ])
+        ])
 
-dnl CLANG >= 3.9 ?
-		AS_IF([ test -z "${CCNAM}"], [
-			AC_TRY_RUN( [
-				#ifdef __clang__
-				   int main() { return !((__clang_major__ >= 4) ||(__clang_major__  ==3 && __clang_minor__ >= 9) ) ; }
-			   #else
-				   not clang3.9
-				#endif], [
-		CCNAM=clang
-		AC_SUBST(CCNAM)
-		AC_MSG_RESULT($CCNAM) ])
-		])
-dnl 3.1 < CLANG <=  3.8 ?
-		AS_IF([ test -z "${CCNAM}"], [
-			AC_TRY_RUN( [
-				#ifdef __clang__
-				   int main() { return !(__clang_major__  ==3 && __clang_minor__ >=1 && __clang_minor__ <=8) ; }
-			   #else
-				   not clang3.8
-				#endif], [
-		CCNAM=clang38
-		AC_SUBST(CCNAM)
-		AC_MSG_RESULT($CCNAM) ])
-		])
+    dnl CLANG >= 3.9 ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __clang__
+                int main() { return !((__clang_major__ >= 4) || (__clang_major__ == 3 && __clang_minor__ >= 9)) ; }
+            #else
+                not clang3.9
+            #endif],
+            [ CCNAM=clang ])
+        ])
 
-dnl GCC >= 4.9.3 ?
-		AS_IF([ test -z "${CCNAM}"], [
-			AC_TRY_RUN( [
-				#ifdef __GNUC__
-				   int main() { return !(__GNUC__ >= 5 || (__GNUC__ == 4  && (__GNUC_MINOR__ > 9 ||
-				       (__GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ > 2)))) ; }
-				#else
-				   not gcc neither.
-				#endif], [
-		CCNAM=gcc
-		AC_SUBST(CCNAM)
-		AC_MSG_RESULT($CCNAM)
-		])
-		])
+    dnl 3.1 < CLANG <=  3.8 ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __clang__
+                int main() { return !(__clang_major__ == 3 && __clang_minor__ >= 1 && __clang_minor__ <= 8) ; }
+            #else
+                not clang3.8
+            #endif],
+            [ CCNAM=clang38 ])
+        ])
 
-dnl GCC == 4.9.2 ?
-		AS_IF([ test -z "${CCNAM}"], [
-			AC_TRY_RUN( [
-				#ifdef __GNUC__
-				   int main() { return !(__GNUC__ == 4  && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ ==2 ) ; }
-				#else
-				   not gcc neither.
-				#endif], [
-		CCNAM=gcc492
-		AC_SUBST(CCNAM)
-		AC_MSG_RESULT($CCNAM)
-		])
-		])
+    dnl GCC >= 5 ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __GNUC__
+                int main() { return !(__GNUC__ >= 5 ) ; }
+            #else
+                not gcc neither.
+            #endif],
+            [ CCNAM=gcc ])
+        ])
 
+    dnl 4.3 <= GCC < 5 ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __GNUC__
+                int main() { return !(__GNUC__ == 4 && __GNUC_MINOR__ >= 3) ; }
+            #else
+               not gcc neither.
+            #endif],
+            [ CCNAM=gcc4 ])
+        ])
 
-dnl GCC >= 4.8 < 4.9.2 ?
-		AS_IF([ test -z "${CCNAM}"], [
-			AC_TRY_RUN( [
-				#ifdef __GNUC__
-				   int main() { return !(__GNUC__ == 4  && (__GNUC_MINOR__ == 8 ||
-				       (__GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ < 2))) ; }
-				#else
-				   not gcc neither.
-				#endif], [
-		CCNAM=gcc48
-		AC_SUBST(CCNAM)
-		AC_MSG_RESULT($CCNAM)
-		])
-		])
-		dnl  other ?
+    dnl GCC == 4.9.2 ?
+    AS_IF([ test -z "${CCNAM}"], [
+        AC_TRY_RUN( [
+            #ifdef __GNUC__
+                int main() { return !(__GNUC__ == 4  && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ == 2 ) ; }
+            #else
+               not gcc neither.
+            #endif],
+            [ CCNAM=gcc492 ])
+        ])
 
-		AS_IF([ test -z "${CCNAM}"],
-				[ AC_MSG_RESULT(unknown)
-				  CCNAM=unknown
-				  AC_SUBST(CCNAM)
-				  echo
-				  echo " *** unknow compiler. please file a bug "
-				  echo
-				])
+    dnl other ?
+    AS_IF([ test -z "${CCNAM}"],
+            [
+            CCNAM=unknow
+            AC_MSG_RESULT($CCNAM)
+            AS_BOX([*** unknown compiler, please file a bug. ***], [*])
+            ],
+            [
+            AC_MSG_RESULT($CCNAM)
+            ])
+
+    AC_SUBST(CCNAM)
 ])
-

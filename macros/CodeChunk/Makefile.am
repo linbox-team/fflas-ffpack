@@ -27,8 +27,5 @@ EXTRA_DIST=            \
        lapack.C        \
        cblas.C         \
        fblas.C         \
-       cuda.C          \
-       instrset.h      \
-       instrset_detect.cpp\
-       gmp.C
+       cuda.C
 
