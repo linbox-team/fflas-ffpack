@@ -1,4 +1,3 @@
-/------------------ fflas-ffpack.pc ------------------------
 prefix=@prefix@
 exec_prefix=@prefix@
 libdir=@prefix@/lib
@@ -11,4 +10,3 @@ Version: @VERSION@
 Requires: givaro >= 4.1.1
 Libs: @PARLIBS@ @PRECOMPILE_LIBS@ @BLAS_LIBS@
 Cflags: -I@includedir@  @BLAS_CFLAGS@  @PARFLAGS@ @PRECOMPILE_FLAGS@ @REQUIRED_FLAGS@
-\-------------------------------------------------------
