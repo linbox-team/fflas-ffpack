@@ -392,6 +392,14 @@ namespace FFPACK{
         FFLAS::fflas_delete(rr,cc);
     }
 
+    inline void RandomLTQSRankProfileMatrix (size_t n, size_t r, size_t t, size_t * rows, size_t *cols){
+
+        size_t * Q = FFLAS::fflas_new<size_t>(n);
+        size_t * P = FFLAS::fflas_new<size_t>(n);
+
+        FFLAS::fflas_delete(P,Q);
+    }
+
     /** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
@@ -689,6 +697,24 @@ namespace FFPACK{
         FFLAS::fflas_delete( U);
         FFLAS::fflas_delete( Q);
 
+        return A;
+    }
+
+    template <class Field, class RandIter>
+    inline typename Field::Element_ptr
+    RandomLTQSMatrixWithRankandQSorder (Field& F, size_t n, size_t r, size_t t,
+					typename Field::Element_ptr A, size_t lda, RandIter& G){
+
+        size_t * pivot_r = FFLAS::fflas_new<size_t> (r);
+        size_t * pivot_c = FFLAS::fflas_new<size_t> (r);
+
+        RandomLTQSRankProfileMatrix (n, r, t, pivot_r, pivot_c);
+
+        RandomMatrixWithRankandRPM (F, n, n, r, A, lda, pivot_r, pivot_c, G);
+
+        FFLAS::fzero (F, FFLAS::FflasRight, FFLAS::FflasNonUnit, n, n, A, lda);
+
+        FFLAS::fflas_delete(pivot_r,pivot_c);
         return A;
     }
 } // FFPACK
