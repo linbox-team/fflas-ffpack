@@ -99,17 +99,39 @@ size_t bruhat_gen (const Field& Fi,
     
     }
 
-void get_bruhatgenR(const Field& Fi, const size_t N, const size_t * P, const size_t * Q, size_t * R){
-    FFLAS::fzero(Fi, N, N, R,N);
-    for(size_t i=0;i<r1;i++){
-            size_t row = P1[i];
-            size_t col = Q1[i];
-            fassign(Fi, 1, Fi.one, 1, R+P1[i]*N+Q1[i],1);
+void get_bruhatgenR(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
+    FFLAS::fzero(Fi, N, N, R,ldr);
+    for(size_t i=0;i<r;i++){
+            size_t row = P[i];
+            size_t col = Q[i];
+            Fi.assign(R[P[i]*ldr+Q[j]],Fi.one);;
         }
     
 }
-void get_bruhatgentriangular(const Field& Fi, const bool Triangular, const size_t N, const size_t *P, const size_t * Q, const size_t * A, size_t * T)
-{
+void get_bruhatgentriangular(const Field& Fi, const enum Upper, const size_t N, const size_t r, const size_t *P, const size_t * Q, const size_t * A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
+{   FFLAS::fzero(Fi, N, N, T, N);
+    //U
+    if (Upper==FFLAS::FflasUpper) {
+        for(size_t i=0; i<r;i++){
+            size_t row = P[i];
+            size_t col = Q[i];
+            fassign(Fi, N-1-row-col, A+row*lda+col,1,T+row*ldt+col,1);
+            for(size_t j=0;j<i;j++){
+                Fi.assign(T[row*ldt+Q[j]],Fi.zero);
+            }
+        }
+        
+    }
+    //L
+    else
+    {   for(size_t i=0; i<r;i++){
+            size_t row = P[i];
+            size_t col = Q[i];
+            fassign(Fi, N-1-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
+            for(size_t, j=0;j<i;j++){
+                Fi.assign(T[P[j]*ldt+col],Fi.zero);
+            }
+    }
     
 }
    
