@@ -54,6 +54,7 @@ BASIC_TESTS =               \
 		test-rpm   \
 		test-compressQ      \
 		test-lu             \
+		test-quasisep       \
 		test-pluq-check     \
 		test-fsyrk          \
 		test-fsyr2k          \
@@ -111,6 +112,7 @@ test_permutations_SOURCES         = test-permutations.C
 test_rpm_SOURCES         = test-rpm.C
 
 test_lu_SOURCES              = test-lu.C
+test_quasisep_SOURCES              = test-quasisep.C
 test_det_SOURCES               = test-det.C
 test_pluq_check_SOURCES = test-pluq-check.C
 test_det_check_SOURCES = test-det-check.C
