@@ -60,7 +60,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     size_t r2 = LTBruhatGen (F, diag, n, B, lda, P, Q);
 
         // TODO: implement LTQSorder
-    size_t s = LTQSorder (r, P, Q);
+    size_t s;// = LTQSorder (r, P, Q);
 
     if (s != t){
       fail = true;
@@ -111,7 +111,7 @@ bool launch_test (const Field & F, size_t n, size_t r, size_t t, RandIter& G)
             // TODO implement this randomGenerator
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A,lda,G);
 
-        fail = fail || test_BruhatGenerator <Field,diag> (F,n,r,t,A,lda);
+        fail = fail || test_BruhatGenerator <Field,diag> (F, n, r, t, A, lda, G);
 
         if (fail) std::cout << "failed at user params" << std::endl;
         fflas_delete( A );
