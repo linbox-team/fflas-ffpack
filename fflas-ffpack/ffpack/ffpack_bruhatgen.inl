@@ -134,4 +134,33 @@ void get_bruhatgentriangular(const Field& Fi, const enum Upper, const size_t N, 
     }
     
 }
+}
+size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
+    size_t * rows = FFLAS::fflas_new<size_t >(N);
+    size_t * cols = FFLAS::fflas_new<size_t >(N);
+    for(size_t i=0;i<n;i++)
+    {
+        rows[i]=0;
+        cols[i]=0;
+    }
+    for(size_t i=0;i<r;i++)
+    {
+        rows[P[i]]=1;
+        cols[Q[i]]=1;
+    }
+    size_t s=0;
+    size_t t=0;
+    if(rows[i]==1)
+    {
+        s=1;
+        t=1;
+    }
+    for(size_t i=1;i<n;i++)
+    {
+        if (rows[i]==1) t+=1;
+        if (cols[n-i+1]==1) s-=1;
+        s = max(s,t);
+    }
+    return(s);
+}
    
