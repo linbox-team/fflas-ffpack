@@ -77,7 +77,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     Element_ptr U = fflas_new(F,n,n);
 
     // TODO: later on, don't build a dense matrix for R
-        //  getLTBruhatGen(F, n, R, P, Q, R, n);
+        //getLTBruhatGen(F, n, r, P, Q, R, n);
         //getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, R, B, lda, P, Q, L,n);
         //getLTBruhatGen(F, FflasUpper, diag, n, R, B, lda, P, Q, U, n);
 
