@@ -1806,6 +1806,12 @@ namespace FFPACK { /* Solutions */
 } // FFPACK
 // #include "ffpack.inl"
 
+
+namespace FFPACK { /* Quasi-separable matrices*/
+        // TODO add signatures of ffpack_bruhat.inl
+
+}
+
 namespace FFPACK { /* not used */
 
     /** LQUPtoInverseOfFullRankMinor.
@@ -1868,6 +1874,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack_det_mp.inl"
+#include "ffpack_bruhatgen.inl"
 #include "ffpack.inl"
 
 #endif // __FFLASFFPACK_ffpack_H
