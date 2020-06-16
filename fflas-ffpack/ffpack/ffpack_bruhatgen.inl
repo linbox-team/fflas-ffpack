@@ -26,8 +26,8 @@
 
 
 
-
-size_t bruhat_gen (const Field& Fi,
+template<class Field>
+inline size_t bruhat_gen (const Field& Fi,
             const size_t N,
            typename Field::Element_ptr A, const size_t lda,
            size_t * P, size_t * Q)
@@ -99,7 +99,8 @@ size_t bruhat_gen (const Field& Fi,
     
     }
 
-void get_bruhatgenR(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
+template<class Field>
+inline void get_bruhatgenR(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
     FFLAS::fzero(Fi, N, N, R,ldr);
     for(size_t i=0;i<r;i++){
             size_t row = P[i];
@@ -108,7 +109,8 @@ void get_bruhatgenR(const Field& Fi, const size_t N, const size_t r,const size_t
         }
     
 }
-void get_bruhatgentriangular(const Field& Fi, const FFLAS_UPLO Uplo, const size_t N, const size_t r, const size_t *P, const size_t * Q, Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
+template<class Field>
+ inline void get_bruhatgentriangular(const Field& Fi, const FFLAS_UPLO Uplo, const size_t N, const size_t r, const size_t *P, const size_t * Q, Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
 {   FFLAS::fzero(Fi, N, N, T, N);
     //U
     if (Uplo==FFLAS::FflasUpper) {
@@ -140,7 +142,8 @@ void get_bruhatgentriangular(const Field& Fi, const FFLAS_UPLO Uplo, const size_
     
 }
 }
-size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
+template<class Field>
+inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
     std::vector bool rows(n,false);
     std::vector bool cols(n,false);
     for(size_t i=0;i<r;i++)
@@ -158,8 +161,8 @@ size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t *
 
     for(size_t i=1;i<n;i++)
     {
-        if (rows[i]) {t+=1; s+=1;}
-        if (cols[n-i]) s-=1;
+        if (rows[i])   t+=1;
+        if (cols[n-i]) t-=1;
         s = max(s,t);
     }
     return(s);
