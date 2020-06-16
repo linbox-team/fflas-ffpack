@@ -40,8 +40,10 @@ namespace FFLAS {
     };
     /// Is triangular matrix's shape upper ?
     enum FFLAS_UPLO {
-        FflasUpper = 121, /**< Triangular matrix is Upper triangular (if \f$i>j\f$ then \f$T_{i,j} = 0\f$)*/
-        FflasLower = 122  /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
+        FflasUpper = 121,  /**< Triangular matrix is Upper triangular (if \f$i>j\f$ then \f$T_{i,j} = 0\f$)*/
+        FflasLower = 122,  /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
+        FflasLeftTri = 123,   /**< Triangular matrix is Left triangular  (if \f$j>n-i-1\f$ then \f$T_{i,j} = 0\f$)*/
+        FflasRightTri = 124   /**< Triangular matrix is Right triangular (if \f$j<n-i-1\f$ then \f$T_{i,j} = 0\f$)*/
     };
 
     /// Is the triangular matrix implicitly unit diagonal ?
