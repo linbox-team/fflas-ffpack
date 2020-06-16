@@ -750,7 +750,7 @@ namespace FFPACK{
 
         RandomMatrixWithRankandRPM (F, n, n, r, A, lda, pivot_r, pivot_c, G);
 
-        FFLAS::fzero (F, FFLAS::FflasRight, FFLAS::FflasNonUnit, n, n, A, lda);
+        FFLAS::fzero (F, FFLAS::FflasRightTri, FFLAS::FflasNonUnit, n, A, lda);
 
         FFLAS::fflas_delete(pivot_r,pivot_c);
         return A;
