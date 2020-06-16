@@ -405,7 +405,7 @@ namespace FFPACK{
         size_t i=0;
         size_t p=0;
         while (i<n && p<r){
-            if (randcols[i] < n - randrows[i] - 1){
+            if (randcols[i] < n - randrows[i] - 1 &&  !pivot_in_row[randrows[i]] && !pivot_in_col[randcols[i]]){
                 rows[p] = randrows[i];
                 cols[p] = randcols[i];
                 pivot_in_col [cols[p]] = true;
