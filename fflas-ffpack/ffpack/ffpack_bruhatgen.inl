@@ -39,7 +39,7 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         return(0);}
         
         size_t N2 = N >> 1; // N = colonnes
-        FFLAS::FFLAS_DIAG OppDiag =(Diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit : FFLAS::FflasUnit;
+        FFLAS::FFLAS_DIAG OppDiag =(diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit : FFLAS::FflasUnit;
         // A1 = P1 [ L1 ] [ U1 V1 ] Q1
         //         [ M1 ]
         size_t r1 = PLUQ (Fi, diag, N-N2, N2, A, lda, P, Q);
@@ -60,7 +60,7 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         // D <- L1^-1 B1
         ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, r1, N-N2, Fi.one, A, lda, A2, lda);
         // E <- C1 U1^-1
-        ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, r1, Fi.one, A, lda, A3, lda);
+        ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, diag, N-N2, r1, Fi.one, A, lda, A3, lda);
         // F <- B2 - M1 D
         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-N2-r1, N-N2, r1, Fi.mOne, A + r1*lda, lda, A2, lda, Fi.one, A2+r1*lda, lda);
         // G <- C2 - E V1
@@ -100,7 +100,7 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
     return(r1+r2+r3);		
     
     }
-#endif
+
 template<class Field>
 inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
   FFLAS::fzero(Fi, N, N, R,ldr){
