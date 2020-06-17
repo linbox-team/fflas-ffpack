@@ -25,7 +25,7 @@
  */
 
 
-
+#if 0
 template<class Field>
 inline size_t bruhat_gen (const Field& Fi,
             const size_t N,
@@ -98,19 +98,19 @@ inline size_t bruhat_gen (const Field& Fi,
     return(r1+r2+r3);		
     
     }
-
+#endif
 template<class Field>
 inline void get_bruhatgenR(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
     FFLAS::fzero(Fi, N, N, R,ldr);
     for(size_t i=0;i<r;i++){
             size_t row = P[i];
             size_t col = Q[i];
-            Fi.assign(R[P[i]*ldr+Q[j]],Fi.one);;
+            Fi.assign(R[P[i]*ldr+Q[i]],Fi.one);;
         }
     
 }
 template<class Field>
- inline void get_bruhatgentriangular(const Field& Fi, const FFLAS_UPLO Uplo, const size_t N, const size_t r, const size_t *P, const size_t * Q, Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
+inline void get_bruhatgentriangular(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo, const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
 {   FFLAS::fzero(Fi, N, N, T, N);
     //U
     if (Uplo==FFLAS::FflasUpper) {
@@ -130,7 +130,7 @@ template<class Field>
             size_t row = P[i];
             size_t col = Q[i];
             fassign(Fi, N-2-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
-            for(size_t, j=0;j<i;j++){
+            for(size_t j=0;j<i;j++){
                 Fi.assign(T[P[j]*ldt+col],Fi.zero);
             }
          
@@ -140,12 +140,12 @@ template<class Field>
             Fi.assign(T[N-1-i+ldt*i],Fi.one);
         }
     
+    }
 }
-}
-template<class Field>
+
 inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
-    std::vector bool rows(n,false);
-    std::vector bool cols(n,false);
+    std::vector<bool> rows(N,false);
+    std::vector<bool> cols(N,false);
     for(size_t i=0;i<r;i++)
     {
         rows[P[i]]=true;
@@ -159,11 +159,11 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
         t=1;
     }
 
-    for(size_t i=1;i<n;i++)
+    for(size_t i=1;i<N;i++)
     {
         if (rows[i])   t+=1;
-        if (cols[n-i]) t-=1;
-        s = max(s,t);
+        if (cols[N-i]) t-=1;
+        s = std::max(s,t);
     }
     return(s);
 }
