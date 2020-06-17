@@ -25,10 +25,10 @@
  */
 
 
-<<<<<<< HEAD
-=======
-#if 0
->>>>>>> 1b62732ac170372575a5dc625b2b3c4b3317bb8c
+#ifndef __FFLASFFPACK_ffpack_bruhatgen_inl
+#define __FFLASFFPACK_ffpack_bruhatgen_inl
+
+namespace FFPACK{
 template<class Field>
 inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
             const size_t N,
@@ -112,11 +112,8 @@ inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const
     
 }
 template<class Field>
-<<<<<<< HEAD
-inline void getLTBruhatGen(const Field& Fi, const FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
-=======
-inline void get_bruhatgentriangular(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo, const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
->>>>>>> 1b62732ac170372575a5dc625b2b3c4b3317bb8c
+inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
+
 {   FFLAS::fzero(Fi, N, N, T, N);
     //U
     if (Uplo==FFLAS::FflasUpper) {
@@ -152,19 +149,15 @@ inline void get_bruhatgentriangular(const Field& Fi, const FFLAS::FFLAS_UPLO Upl
           for(size_t i=0; i<r;i++){
             size_t row = P[i];
             size_t col = Q[i];
-<<<<<<< HEAD
+
             fassign(Fi, N-1-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
-            for(size_t, j=0;j<i;j++){
-=======
-            fassign(Fi, N-2-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
             for(size_t j=0;j<i;j++){
->>>>>>> 1b62732ac170372575a5dc625b2b3c4b3317bb8c
                 Fi.assign(T[P[j]*ldt+col],Fi.zero);
             }
           
           }
         }
-<<<<<<< HEAD
+
         else
           {
             for(size_t i=0; i<r;i++){
@@ -178,14 +171,7 @@ inline void get_bruhatgentriangular(const Field& Fi, const FFLAS::FFLAS_UPLO Upl
           
             }
           }
-=======
-        for (size_t i=0; i<N; i++)
-        {
-            Fi.assign(T[N-1-i+ldt*i],Fi.one);
-        }
-    
-    }
->>>>>>> 1b62732ac170372575a5dc625b2b3c4b3317bb8c
+
 }
 
 inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
