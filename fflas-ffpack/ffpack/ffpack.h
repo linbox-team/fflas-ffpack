@@ -1809,7 +1809,61 @@ namespace FFPACK { /* Solutions */
 
 namespace FFPACK { /* Quasi-separable matrices*/
         // TODO add signatures of ffpack_bruhat.inl
+    /** LTBruhatGen
+     * Suppose A is Left Triangular Matrix
+     * This procedure computes the Bruhat Representation of A and return the rank of A
+     * @param Fi base Field
+     * @param diag
+     * @param N size of A
+     * @param A the matrix we search the Bruhat representation
+     * @param lda the leading dimension of A
+     * @param P a permutation matrix
+     * @param Q a permutation matrix
+     */
+  template<class Field>
+  size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
+                             const size_t N,
+                             typename Field::Element_ptr A, const size_t lda,
+                             size_t * P, size_t * Q);
+    /** GetLTBruhatGen
+     * This procedure Computes the Rank Revealing Matrix based on the Bruhta representation of a Matrix
+     * @param Fi base Field
+     * @param N size of the matrix
+     * @param r the rank of the matrix
+     * @param P a permutation matrix
+     * @param Q a permutation matrix
+     * @param R the matrix that will contain the rank revealing matrix
+     * @param ldr the leading fimension of R
+     */
+  template<class Field>
+  void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr);
+    /** GetLTBruhatGen
+     * This procedure computes the matrix L or U f the Bruhat Representation
+     * Suppose that A is the bruhat representation of a matrix
+     * @param Fi base Field
+     * @param Uplo choose if the procedure return L or U
+     * @param diag 
+     * @param N size of A
+     * @param r rank of A
+     * @param P permutaion matrix
+     * @param Q permutation matrix
+     * @param A a bruhat representation
+     * @param lda leading dimension of A
+     * @param T matrix that will contains L or U
+     * @param ldt leading dimension of T
+     */
+  template<class Field>
+   void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt);
 
+    /** LTQSorder
+     * This procedure the order of quasiseparability of a matrix
+     * @param N size of the matrix
+     * @param r rank of the matrix
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     */
+  size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q);
+  
 }
 
 namespace FFPACK { /* not used */
