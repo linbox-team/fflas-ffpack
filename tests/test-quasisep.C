@@ -123,7 +123,28 @@ bool launch_test (const Field & F, size_t n, size_t r, size_t t, RandIter& G)
     }
     return !fail;
 }
+template <class Field, class RandGen>
+bool testLTQSRPM (const Field & F,size_t n, size_t r, size_t t, RandGen& G){
 
+    size_t * rows = FFLAS::fflas_new<size_t>(r);
+    size_t * cols = FFLAS::fflas_new<size_t>(r);
+    RandomLTQSRankProfileMatrix (n, r,  t, rows, cols);
+
+    typename Field::Element_ptr A = fflas_new(F,n,n);
+    get_bruhatgenR(F, n, r, rows, cols, A, n);
+
+    WriteMatrix (std::cerr<<"A = "<<std::endl,F,n,n,A,n);
+    
+    fflas_delete(A);
+    size_t s = LTQSorder (n, r, rows, cols);
+    if (s=t){
+        std::cerr<<"PASS"<<std::endl;
+        return true;
+    } else {
+        std::cerr<<"Failed testLTQSRPM: QS order expected: "<<t<<", but got "<<s<<std::endl;
+        return false;
+    }
+}
 template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,  size_t iters, uint64_t seed){
     bool ok = true ;
@@ -144,8 +165,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,
         std::cout<<oss.str();
         std::cout<<" ... ";
 
-        ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
-        ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
+        ok = ok && testLTQSRPM (*F,n,r,t,G);
+            // ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
+            // ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
 
         nbit--;
         if ( !ok )
