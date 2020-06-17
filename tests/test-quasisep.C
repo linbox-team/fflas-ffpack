@@ -58,10 +58,10 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     size_t * Q = fflas_new<size_t> (n);
 
     size_t r2;
-       /r2 =  LTBruhatGen (F, diag, n, B, lda, P, Q);
+       r2 =  LTBruhatGen (F, diag, n, B, lda, P, Q);
 
         
-    size_t s = LTQSorder (r, P, Q);
+    size_t s = LTQSorder (n,r, P, Q);
 
     if (s != t){
       fail = true;
@@ -77,9 +77,9 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     Element_ptr U = fflas_new(F,n,n);
 
     // TODO: later on, don't build a dense matrix for R
-        getLTBruhatGen(F, n, r, P, Q, R, n);
-       /getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, R, B, lda, P, Q, L,n);
-       /getLTBruhatGen(F, FflasUpper, diag, n, R, B, lda, P, Q, U, n);
+       getLTBruhatGen(F, n, r, P, Q, R, n);
+       getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, R, B, lda, P, Q, L,n);
+       getLTBruhatGen(F, FflasUpper, diag, n, R, B, lda, P, Q, U, n);
 
     // B <- L R^T
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
@@ -131,7 +131,7 @@ bool testLTQSRPM (const Field & F,size_t n, size_t r, size_t t, RandGen& G){
     RandomLTQSRankProfileMatrix (n, r,  t, rows, cols);
 
     typename Field::Element_ptr A = fflas_new(F,n,n);
-    get_bruhatgenR(F, n, r, rows, cols, A, n);
+    getLTBruhatGen(F, n, r, rows, cols, A, n);
 
     WriteMatrix (std::cerr<<"A = "<<std::endl,F,n,n,A,n);
     

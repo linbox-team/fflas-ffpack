@@ -86,14 +86,14 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         
         size_t r2 = LTBruhatGen(Fi,diag,N-N2, A2,lda, P+r1, Q+r1);
         for(size_t i=0;i<r1;i++){
-            size_t row = P1[i];
+            size_t row = P[i];
             fassign(Fi, N-N2-1-row, D+i*ldd, 1, A2+row*lda, 1);
         }
         fflas_delete(D);
         //A3 <- LT-Bruhat(I)
         size_t r3 = LTBruhatgen(Fi,diag, N2, A3, lda, P+r1+r2, Q+r1+r2);
         for(size_t i=0;i<r1;i++){
-            size_t col = Q1[i];
+            size_t col = Q[i];
             fassign(Fi, N2-1-col, E+i, lde, A3+col,lda);
         }
         fflas_delete(E);
@@ -102,12 +102,13 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
     }
 
 template<class Field>
-inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
-  FFLAS::fzero(Fi, N, N, R,ldr){
+inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr)
+{
+  FFLAS::fzero(Fi, N, N, R,ldr);
     for(size_t i=0;i<r;i++){
             size_t row = P[i];
             size_t col = Q[i];
-            Fi.assign(R[P[i]*ldr+Q[i]],Fi.one);;
+            Fi.assign(R[P[i]*ldr+Q[i]],Fi.one);
         }
     
 }
@@ -144,7 +145,7 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
     //L
     else
       {
-        if(diag==FFLAS::Fflas::NonUnit){
+        if(diag==FFLAS::FflasNonUnit){
 
           for(size_t i=0; i<r;i++){
             size_t row = P[i];
@@ -165,14 +166,15 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
               size_t col = Q[i];
               fassign(Fi, N-2-row-col, A+(row+1)*lda+col,lda,T+(row+1)*ldt+col,ldt);
               Fi.assign(T[row*ldt+col],Fi.one);
-              for(size_t, j=0;j<i;j++){
+              for(size_t j=0;j<i;j++){
                 Fi.assign(T[P[j]*ldt+col],Fi.zero);
               }
           
             }
           }
-
+      }
 }
+    
 
 inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
     std::vector<bool> rows(N,false);
