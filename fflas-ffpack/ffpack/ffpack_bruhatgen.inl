@@ -100,7 +100,6 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
     return(r1+r2+r3);		
     
     }
-#endif
 template<class Field>
 inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr){
   FFLAS::fzero(Fi, N, N, R,ldr){
