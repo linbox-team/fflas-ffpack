@@ -40,34 +40,34 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         
         size_t N2 = N >> 1; // N = colonnes
         FFLAS::FFLAS_DIAG OppDiag =(diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit : FFLAS::FflasUnit;
+        size_t * P1 = FFLAS::fflas_new<size_t>(N-N2);
+        size_t * Q1 = FFLAS::fflas_new<size_t>(N2);
         // A1 = P1 [ L1 ] [ U1 V1 ] Q1
         //         [ M1 ]
-        size_t r1 = PLUQ (Fi, diag, N-N2, N2, A, lda, P, Q);
+        size_t r1 = PLUQ (Fi, diag, N-N2, N2, A, lda, P1, Q1);
+        LAPACKPerm2MathPerm (P, P1, N-N2);
+        LAPACKPerm2MathPerm (Q, Q1, N2);
         typename Field::Element_ptr A2 = A + N2;
         typename Field::Element_ptr A3 = A + (N-N2)*lda;
         typename Field::Element_ptr F = A2 + r1*lda;
         typename Field::Element_ptr G = A3 + r1;
         // [ B1 ] <- P1^T A2
         // [ B2 ]
-#ifdef MONOTONIC_APPLYP
-        MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), N-N2, A2, lda, P, r1);
-        MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A3, lda, Q, r1);
-#else
-        applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), N-N2, A2, lda, P);
+        applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), N-N2, A2, lda, P1);
         // [ C1 C2 ] <- A3 Q1^T
-        applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A3, lda, Q);
-#endif
+        applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A3, lda, Q1);
+
         // D <- L1^-1 B1
         ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, r1, N-N2, Fi.one, A, lda, A2, lda);
         // E <- C1 U1^-1
-        ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, diag, N-N2, r1, Fi.one, A, lda, A3, lda);
+        ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, diag, N2, r1, Fi.one, A, lda, A3, lda);
         // F <- B2 - M1 D
         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-N2-r1, N-N2, r1, Fi.mOne, A + r1*lda, lda, A2, lda, Fi.one, A2+r1*lda, lda);
         // G <- C2 - E V1
         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N2, N2-r1, r1, Fi.mOne, A3, lda, A+r1, lda, Fi.one, A3+r1, lda);
         // Expand L1\U1 into Bruhat generator
-        applyP(Fi,FFLAS::FflasLeft,FFLAS::FflasTrans, N2, size_t(0), N-N2, A, lda, P);
-        applyP(Fi, FFLAS::FflasRight,FFLAS::FflasNoTrans, N-N2,size_t(0), N2, A, lda, Q);
+        applyP(Fi,FFLAS::FflasLeft,FFLAS::FflasTrans, N2, size_t(0), N-N2, A, lda, P1);
+        applyP(Fi, FFLAS::FflasRight,FFLAS::FflasNoTrans, N-N2,size_t(0), N2, A, lda, Q1);
         //On stock D et E
         typename Field::Element_ptr D= FFLAS::fflas_new(Fi, r1, N-N2); 
         FFLAS::fassign(Fi, r1,N-N2, A2, lda, D, N-N2);
@@ -79,20 +79,24 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         FFLAS::fzero(Fi, N2, r1, A3, lda);
         //H <- P1  [ 0 ]
         //         [ F ]
-        applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N-N2, size_t(0), N2, A2, lda, P);
+        applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N-N2, size_t(0),N-N2, A2, lda, P1);
         //I <- [ 0 G ] Q1
-        applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N-N2, size_t(0),N2, A3, lda, Q);
+        applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N2, size_t(0),N2, A3, lda, Q1);
+        FFLAS::fflas_delete(P1,Q1);
         //A2 <- LT-Bruhat(H)
         
         size_t r2 = LTBruhatGen(Fi,diag,N-N2, A2,lda, P+r1, Q+r1);
-        for(size_t i=0;i<r1;i++){
+        for (size_t i=r1;i<r1+r2;i++) Q[i]+=N2;
+        //Restore raws of D into their position in A2
+        for (size_t i=0;i<r1;i++){
             size_t row = P[i];
             FFLAS::fassign (Fi, N-N2-1-row, D+i*ldd, 1, A2+row*lda, 1);
         }
         FFLAS::fflas_delete(D);
         //A3 <- LT-Bruhat(I)
         size_t r3 = LTBruhatGen (Fi,diag, N2, A3, lda, P+r1+r2, Q+r1+r2);
-        for(size_t i=0;i<r1;i++){
+        for (size_t i=r1+r2;i<r1+r2+r3;i++) P[i]+=N-N2;
+        for (size_t i=0;i<r1;i++){
             size_t col = Q[i];
             FFLAS::fassign(Fi, N2-1-col, E+i, lde, A3+col,lda);
         }
@@ -108,7 +112,7 @@ inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const
     for(size_t i=0;i<r;i++){
             size_t row = P[i];
             size_t col = Q[i];
-            Fi.assign(R[P[i]*ldr+Q[i]],Fi.one);
+            Fi.assign(R[row*ldr+col],Fi.one);
         }
     
 }
@@ -176,12 +180,16 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
             }
           }
       }
+ 
 }
     
 
 inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
     std::vector<bool> rows(N,false);
     std::vector<bool> cols(N,false);
+    FFLAS::WritePermutation(std::cerr<<"P=",P,r);
+    FFLAS::WritePermutation(std::cerr<<"Q=",Q,r);
+    
     for(size_t i=0;i<r;i++)
     {
         rows[P[i]]=true;
@@ -198,7 +206,7 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
     for(size_t i=1;i<N;i++)
     {
         if (rows[i])   t+=1;
-        if (cols[N-i]) t-=1;
+        if (cols[N-1-i]) t-=1;
         s = std::max(s,t);
     }
     return(s);

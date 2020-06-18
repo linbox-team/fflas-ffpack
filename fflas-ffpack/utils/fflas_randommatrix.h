@@ -425,7 +425,7 @@ namespace FFPACK{
             std::vector<bool> pivot_in_row (n,false);
             std::vector<bool> pivot_in_col (n,false);
             p=0;
-            for (size_t i=0; i<n; ++i) leadingRk[i]=0;
+            for (size_t i=0; i<n-1; ++i) leadingRk[i]=0;
             fullRkBlocks = 0;
             while (p<r && fullRkBlocks < n-1){ // finish the last pivots by random samples
                 size_t i = RandInt (0,n-1);
@@ -774,7 +774,14 @@ namespace FFPACK{
         size_t * pivot_c = FFLAS::fflas_new<size_t> (r);
 
         RandomLTQSRankProfileMatrix (n, r, t, pivot_r, pivot_c);
+        typename Field::Element_ptr R =FFLAS::fflas_new(F,n,n);
+        getLTBruhatGen(F, n, r, pivot_r, pivot_c, R, n);
 
+        FFLAS:: WriteMatrix (std::cerr<<"R = "<<std::endl,F,n,n,R,n);
+        FFLAS::fflas_delete(R);
+        FFLAS::WritePermutation(std::cerr<<"P=",pivot_r,r);
+        FFLAS::WritePermutation(std::cerr<<"Q=",pivot_c,r);
+    
         RandomMatrixWithRankandRPM (F, n, n, r, A, lda, pivot_r, pivot_c, G);
 
         FFLAS::fzero (F, FFLAS::FflasRightTri, FFLAS::FflasNonUnit, n, A, lda);
