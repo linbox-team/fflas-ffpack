@@ -187,8 +187,6 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
 inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q){
     std::vector<bool> rows(N,false);
     std::vector<bool> cols(N,false);
-    FFLAS::WritePermutation(std::cerr<<"P=",P,r);
-    FFLAS::WritePermutation(std::cerr<<"Q=",Q,r);
     
     for(size_t i=0;i<r;i++)
     {

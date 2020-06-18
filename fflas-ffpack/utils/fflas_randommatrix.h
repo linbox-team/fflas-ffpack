@@ -395,74 +395,76 @@ namespace FFPACK{
     inline void RandomLTQSRankProfileMatrix (size_t n, size_t r, size_t t, size_t * rows, size_t *cols){
 
         size_t * leadingRk = FFLAS::fflas_new<size_t>(n-1); //leadingRk[i] = rank of the leading (i+1) x (n-i-1) submatrix
-
-            // size_t i=0;
-        // size_t* randrows = FFLAS::fflas_new<size_t>(n);
-        // size_t* randcols = FFLAS::fflas_new<size_t>(n);
-        // RandomIndexSubset (n-1, n-1, randrows);
-        // RandomIndexSubset (n-1, n-1, randcols);
-        // while (i<n && p<r){
-        //     if (randcols[i] < n - randrows[i] - 1 &&  !pivot_in_row[randrows[i]] && !pivot_in_col[randcols[i]]){
-        //         rows[p] = randrows[i];
-        //         cols[p] = randcols[i];
-        //         pivot_in_col [cols[p]] = true;
-        //         pivot_in_row [rows[p]] = true;
-        //         p++; i++;
-        //     } else if (randcols[i] > n - randrows[i] - 1  &&  !pivot_in_row[randcols[i]] && !pivot_in_col[randrows[i]]){
-        //             // pivot i on the right triangular part -> folding by symmetry over the left triangular part
-        //         rows[p] = randcols[i];
-        //         cols[p] = randrows[i];
-        //         pivot_in_col [cols[p]] = true;
-        //         pivot_in_row [rows[p]] = true;
-        //         i++; p++;
-        //     } else { i++; } // pivot i on the main anti-diagonal -> skipping
-        // }
-
-        size_t fullRkBlocks;
-        size_t p;
+        size_t fullRkBlocks, p, max_t;
+        size_t* randrows = FFLAS::fflas_new<size_t>(n-1);
+        size_t* randcols = FFLAS::fflas_new<size_t>(n-1);
         do {
-//            std::cerr<<"Iteration n,r,t="<<n<<" "<<r<<" "<<t<<std::endl;
-            std::vector<bool> pivot_in_row (n,false);
-            std::vector<bool> pivot_in_col (n,false);
-            p=0;
+                //std::cerr<<"Iteration n,r,t="<<n<<" "<<r<<" "<<t<<std::endl;
+            std::vector<bool> pivot_in_row (n-1,false);
+            std::vector<bool> pivot_in_col (n-1,false);
+            RandomIndexSubset (n-1, n-1, randrows);
+            RandomIndexSubset (n-1, n-1, randcols);
+            p=0; max_t=0;
             for (size_t i=0; i<n-1; ++i) leadingRk[i]=0;
             fullRkBlocks = 0;
-            while (p<r && fullRkBlocks < n-1){ // finish the last pivots by random samples
-                size_t i = RandInt (0,n-1);
-                size_t j = RandInt (0,n-1);
-                    //std::cerr<<"Pick ("<<i<<", "<<j<<")"<<std::endl;
-                if (j > n-i-1){ // flip right and left triangular part
-                        //                  std::cerr<<"i,j,n-i-1 = "<<i<<" "<<j<<" "<<(n-i-1)<<std::endl;
-                    size_t tmp = n-j-1;
-                    j = n-i-1;
-                    i=tmp;
-//                    std::cerr<<"Right -> Left  ("<<i<<", "<<j<<")"<<std::endl;
-
-                }
-                if (j==n-i-1) continue;
-                if (!pivot_in_row[i] && !pivot_in_col[j]){
+            for (size_t k=0; k<n-1 && p<r; ++k){
+                size_t i = randrows[k];
+                size_t j = randcols[k];
+                if (j < n-i-1){
                     bool admissible = true;
-                    for (size_t k=i; k<n-j-1; k++)
-                        admissible = admissible && (leadingRk[k] < t);
-                        //                  if (admissible) std::cerr<<"Admissible = "<<std::endl;
+                    for (size_t l=i; l<n-j-1; l++)
+                        admissible = admissible && (leadingRk[l] < t);
                     if (admissible){
-                        rows[p] = i;
-                        cols[p] = j;
+                        rows[p] = i; pivot_in_row[i]=true;
+                        cols[p] = j; pivot_in_col[j]=true;
+                            //std::cerr<<"Pick ("<<i<<", "<<j<<")"<<std::endl;
                         p++;
-                        pivot_in_row[i]=true;
-                        pivot_in_col[j]=true;
-                        for (size_t k=i; k<n-j-1; k++){
-                            leadingRk[k]++;
-                            if (leadingRk[k] == t) fullRkBlocks++;
+                        for (size_t l=i; l<n-j-1; l++){
+                            leadingRk[l]++;
+                            if (max_t < leadingRk[l]) max_t = leadingRk[l];
+                            if (leadingRk[l] == std::min(std::min(t,l+1),n-1-l)) fullRkBlocks++;
                         }
                     }
                 }
             }
-//            if (p<r && fullRkBlocks == n-1) std::cerr<<"No room left -> starting over again"<<std::endl;
-        } while (p<r && fullRkBlocks == n-1);
-            //      std::cerr<<"done"<<std::endl;
+            
+                //std::cerr<<"done with Step 1: p = "<<p<<" max_t = "<<max_t<<" fullRkBlocks = "<<fullRkBlocks<<std::endl;
+            std::vector<size_t> available_rows;
+            std::vector<size_t> available_cols;
+            for (size_t i=0; i<n-1; i++) {
+                if (!pivot_in_row[i]) available_rows.push_back(i);
+                if (!pivot_in_col[i]) available_cols.push_back(i);
+            }
+            size_t tries=0;
+            size_t maxtries=n*t;
+            while (p<r && fullRkBlocks < n-1 && tries<maxtries){ // finish the last pivots by random samples
+                size_t i = available_rows[RandInt (0,n-1-r)];
+                size_t j = available_cols[RandInt (0,n-1-r)];
+                if (j<n-i-1){
+                        //std::cerr<<"Pick ("<<i<<", "<<j<<")"<<std::endl;
+                    tries++;
+                    if (!pivot_in_row[i] && !pivot_in_col[j]){
+                        bool admissible = true;
+                        for (size_t k=i; k<n-j-1; k++)
+                            admissible = admissible && (leadingRk[k] < t);
+                        if (admissible){
+                            rows[p] = i; pivot_in_row[i]=true;
+                            cols[p] = j; pivot_in_col[j]=true;
+                            p++;
+                            pivot_in_col[j]=true;
+                            for (size_t l=i; l<n-j-1; l++){
+                                leadingRk[l]++;
+                                if (max_t< leadingRk[l]) max_t=leadingRk[l];
+                                if (leadingRk[l] == std::min(std::min(t,l+1),n-1-l)) fullRkBlocks++;
+                            }
+                        }
+                    }
+                }
+            }
+                //std::cerr<<"Before looping: p < r : "<<p<<" < "<<r<<" max_t < t: "<<max_t<<" < "<<t<<std::endl;
+        } while (p<r || max_t <t);
         FFLAS::fflas_delete (leadingRk);
-//        FFLAS::fflas_delete (randcols,randrows);
+        FFLAS::fflas_delete (randcols,randrows);
     }
 
     /** @brief  Random Matrix with prescribed rank and rank profile matrix
@@ -774,13 +776,12 @@ namespace FFPACK{
         size_t * pivot_c = FFLAS::fflas_new<size_t> (r);
 
         RandomLTQSRankProfileMatrix (n, r, t, pivot_r, pivot_c);
-        typename Field::Element_ptr R =FFLAS::fflas_new(F,n,n);
-        getLTBruhatGen(F, n, r, pivot_r, pivot_c, R, n);
-
-        FFLAS:: WriteMatrix (std::cerr<<"R = "<<std::endl,F,n,n,R,n);
-        FFLAS::fflas_delete(R);
-        FFLAS::WritePermutation(std::cerr<<"P=",pivot_r,r);
-        FFLAS::WritePermutation(std::cerr<<"Q=",pivot_c,r);
+        // typename Field::Element_ptr R =FFLAS::fflas_new(F,n,n);
+        // getLTBruhatGen(F, n, r, pivot_r, pivot_c, R, n);
+        // FFLAS:: WriteMatrix (std::cerr<<"R = "<<std::endl,F,n,n,R,n);
+        // FFLAS::fflas_delete(R);
+        // FFLAS::WritePermutation(std::cerr<<"generating a matrix with P=",pivot_r,r);
+        // FFLAS::WritePermutation(std::cerr<<"generating a matrix with Q=",pivot_c,r);
     
         RandomMatrixWithRankandRPM (F, n, n, r, A, lda, pivot_r, pivot_c, G);
 

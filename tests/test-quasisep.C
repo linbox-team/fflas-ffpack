@@ -133,11 +133,11 @@ bool testLTQSRPM (const Field & F,size_t n, size_t r, size_t t, RandGen& G){
     typename Field::Element_ptr A = fflas_new(F,n,n);
     getLTBruhatGen(F, n, r, rows, cols, A, n);
 
-    WriteMatrix (std::cerr<<"A = "<<std::endl,F,n,n,A,n);
+        //WriteMatrix (std::cerr<<"A = "<<std::endl,F,n,n,A,n);
     
     fflas_delete(A);
     size_t s = LTQSorder (n, r, rows, cols);
-    if (s=t){
+    if (s==t){
         std::cerr<<"PASS"<<std::endl;
         return true;
     } else {
@@ -167,7 +167,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,
 
         ok = ok && testLTQSRPM (*F,n,r,t,G);
         ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
-            // ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
+        ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
 
         nbit--;
         if ( !ok )
@@ -187,7 +187,7 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     size_t n=93;
-    size_t r=50;
+    size_t r=30;
     size_t t=8;
     size_t iters=3;
     bool loop=false;
@@ -222,8 +222,8 @@ int main(int argc, char** argv)
       ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,r,t,iters,seed);
       ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,r,t,iters,seed);
       ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/6,r/6,t/6,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/6,r/6,t/6,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,iters,seed);
     } while (loop && ok);
 
     return !ok;
