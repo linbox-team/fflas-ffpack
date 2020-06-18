@@ -58,7 +58,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     size_t * Q = fflas_new<size_t> (n);
 
     size_t r2;
-       r2 =  LTBruhatGen (F, diag, n, B, lda, P, Q);
+    r2 =  LTBruhatGen (F, diag, n, B, lda, P, Q);
 
         
     size_t s = LTQSorder (n,r, P, Q);
@@ -77,9 +77,9 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     Element_ptr U = fflas_new(F,n,n);
 
     // TODO: later on, don't build a dense matrix for R
-       getLTBruhatGen(F, n, r, P, Q, R, n);
-       getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, R, B, lda, P, Q, L,n);
-       getLTBruhatGen(F, FflasUpper, diag, n, R, B, lda, P, Q, U, n);
+    getLTBruhatGen(F, n, r, P, Q, R, n);
+    getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, r, P, Q, B, lda, L,n);
+    getLTBruhatGen(F, FflasUpper, diag, n, r, P, Q, B, lda, U, n);
 
     // B <- L R^T
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
@@ -166,7 +166,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,
         std::cout<<" ... ";
 
         ok = ok && testLTQSRPM (*F,n,r,t,G);
-            // ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
+        ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
             // ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
 
         nbit--;
@@ -207,8 +207,8 @@ int main(int argc, char** argv)
 
     parseArguments(argc,argv,as);
 
-    if (r > n) r = n;
-    if (t > r) t = r;
+    if (r > n) r = n/2;
+    if (t > r) t = r/2;
 
     srand(seed);
     

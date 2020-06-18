@@ -87,16 +87,16 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         size_t r2 = LTBruhatGen(Fi,diag,N-N2, A2,lda, P+r1, Q+r1);
         for(size_t i=0;i<r1;i++){
             size_t row = P[i];
-            fassign(Fi, N-N2-1-row, D+i*ldd, 1, A2+row*lda, 1);
+            FFLAS::fassign (Fi, N-N2-1-row, D+i*ldd, 1, A2+row*lda, 1);
         }
-        fflas_delete(D);
+        FFLAS::fflas_delete(D);
         //A3 <- LT-Bruhat(I)
-        size_t r3 = LTBruhatgen(Fi,diag, N2, A3, lda, P+r1+r2, Q+r1+r2);
+        size_t r3 = LTBruhatGen (Fi,diag, N2, A3, lda, P+r1+r2, Q+r1+r2);
         for(size_t i=0;i<r1;i++){
             size_t col = Q[i];
-            fassign(Fi, N2-1-col, E+i, lde, A3+col,lda);
+            FFLAS::fassign(Fi, N2-1-col, E+i, lde, A3+col,lda);
         }
-        fflas_delete(E);
+        FFLAS::fflas_delete(E);
     return(r1+r2+r3);		
     
     }
@@ -113,7 +113,10 @@ inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const
     
 }
 template<class Field>
-inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt)
+inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag,
+                           const size_t N, const size_t r, const size_t *P, const size_t * Q,
+                           typename Field::ConstElement_ptr A, const size_t lda,
+                           typename Field::Element_ptr T, const size_t ldt)
 
 {   FFLAS::fzero(Fi, N, N, T, N);
     //U
@@ -122,7 +125,7 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
           for(size_t i=0; i<r;i++){
             size_t row = P[i];
             size_t col = Q[i];
-            fassign(Fi, N-1-row-col, A+row*lda+col,1,T+row*ldt+col,1);
+            FFLAS::fassign(Fi, N-1-row-col, A+row*lda+col,1,T+row*ldt+col,1);
             for(size_t j=0;j<i;j++){
                 Fi.assign(T[row*ldt+Q[j]],Fi.zero);
             }
@@ -133,7 +136,7 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
           for(size_t i=0; i<r;i++){
             size_t row = P[i];
             size_t col = Q[i];
-            fassign(Fi, N-2-row-col, A+row*lda+col+1,1,T+row*ldt+col+1,1);
+            FFLAS::fassign(Fi, N-2-row-col, A+row*lda+col+1,1,T+row*ldt+col+1,1);
             Fi.assign(T[row*ldt+col],Fi.one);
             for(size_t j=0;j<i;j++){
               Fi.assign(T[row*ldt+Q[j]],Fi.zero);
@@ -151,7 +154,7 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
             size_t row = P[i];
             size_t col = Q[i];
 
-            fassign(Fi, N-1-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
+            FFLAS::fassign(Fi, N-1-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
             for(size_t j=0;j<i;j++){
                 Fi.assign(T[P[j]*ldt+col],Fi.zero);
             }
@@ -164,7 +167,7 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
             for(size_t i=0; i<r;i++){
               size_t row = P[i];
               size_t col = Q[i];
-              fassign(Fi, N-2-row-col, A+(row+1)*lda+col,lda,T+(row+1)*ldt+col,ldt);
+              FFLAS::fassign(Fi, N-2-row-col, A+(row+1)*lda+col,lda,T+(row+1)*ldt+col,ldt);
               Fi.assign(T[row*ldt+col],Fi.one);
               for(size_t j=0;j<i;j++){
                 Fi.assign(T[P[j]*ldt+col],Fi.zero);
