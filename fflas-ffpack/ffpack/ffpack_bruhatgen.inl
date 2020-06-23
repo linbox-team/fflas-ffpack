@@ -244,8 +244,27 @@ inline void CompressToBlockBiDiagonal(const Field&Fi,size_t N, size_t s, size_t 
             }
         }
     }
-  
 
+      // Compute M such that LM is in column echelon form, where L is the
+      // left factor of a Bruhat decomposition
+      // M is allocated in this function and should be deleted after using it.
+  size_t* void Bruhat2EchelonPermutation (N,R,P,Q){
+
+      size_t * Qinv = FFLAS::fflas_new<size_t>(N);
+      size_t * Qs = FFLAS::fflas_new<size_t>(R);
+      size_t * M = FFLAS::fflas_new<size_t>(R);
+
+      for (size_t i=0; i<R; i++){
+          Qinv [Q [i]] = i;
+          Qs[i] = Q[i];
+      }
+      std::sort (Qs, Qs+R);
+
+      for (size_t i=0; i<R; i++)
+          M[i] = Qinv [Qs[i]];
+      return M;
+  }
+  
 
 
 
