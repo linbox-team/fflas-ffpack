@@ -188,26 +188,67 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
     std::vector<bool> rows(N,false);
     std::vector<bool> cols(N,false);
     
-    for(size_t i=0;i<r;i++)
+    for (size_t i=0;i<r;i++)
     {
         rows[P[i]]=true;
         cols[Q[i]]=true;
     }
     size_t s=0;
     size_t t=0;
-    if(rows[0])
+    if (rows[0])
     {
         s=1;
         t=1;
     }
 
-    for(size_t i=1;i<N;i++)
+    for (size_t i=1;i<N;i++)
     {
         if (rows[i])   t+=1;
         if (cols[N-1-i]) t-=1;
         s = std::max(s,t);
     }
     return(s);
+}
+
+template<class Field>
+inline void CompressToBlockBiDiagonal(const Field&Fi,size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx){
+  std::vector<bool> rows(N,false);
+  std::vector<bool> cols(N,false);
+    
+  for (size_t i=0;i<r;i++)
+    {
+      rows[P[i]]=true;
+      cols[Q[i]]=true;
+    }
+  int k = N/s;
+  int m =N%s;
+  for (size_t i=1;i<k;i++)
+    {
+      FFLAS::fassign(Fi, s, s, C+((k-i)*s)*lda+i*s,lda,X+i*s,ldx);
+      FFLAS::fzero(Fi, s, s, C+((k-i)*s)*lda+i*s,lda);
+    }
+  for (size_t i=0;i<k-1;i++)
+    { for(size_t t=0;t<s;t++)
+        {
+          if(cols[i*s+t])
+            {
+              bool haschanged = false;
+              for(size_t l=0;l<s;l++)
+                {
+                  if(!haschanged && !cols[(i+1)*s+l])
+                    {
+                      FFLAS::fassign(Fi,(k-1-i)*s , C+i*s+t,lda, C+(i+1)*s+l, lda)
+                        haschanged = true;
+                    }
+                }
+            }
+        }
+    }
+  
+
+
+
+
 }
    
 } //namespace FFPACK
