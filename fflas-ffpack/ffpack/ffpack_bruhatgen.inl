@@ -250,18 +250,18 @@ inline void CompressToBlockBiDiagonal(const Field&Fi,size_t N, size_t s, size_t 
       // M is allocated in this function and should be deleted after using it.
   size_t* void Bruhat2EchelonPermutation (N,R,P,Q){
 
-      size_t * Qinv = FFLAS::fflas_new<size_t>(N);
-      size_t * Qs = FFLAS::fflas_new<size_t>(R);
+      size_t * Pinv = FFLAS::fflas_new<size_t>(N);
+      size_t * Ps = FFLAS::fflas_new<size_t>(R);
       size_t * M = FFLAS::fflas_new<size_t>(R);
 
       for (size_t i=0; i<R; i++){
-          Qinv [Q [i]] = i;
-          Qs[i] = Q[i];
+          Pinv [P [i]] = i;
+          Ps[i] = P[i];
       }
-      std::sort (Qs, Qs+R);
+      std::sort (Ps, Ps+R);
 
       for (size_t i=0; i<R; i++)
-          M[i] = Qinv [Qs[i]];
+          M[i] = Q [Pinv [Ps[i]]];
       return M;
   }
   
