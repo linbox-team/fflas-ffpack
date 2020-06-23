@@ -211,34 +211,47 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
 }
 
 template<class Field>
-inline void CompressToBlockBiDiagonal(const Field&Fi,size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx){
-  std::vector<bool> rows(N,false);
-  std::vector<bool> cols(N,false);
-    
+inline void CompressToBlockBiDiagonal(const Field&Fi,size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx, size_t *K){
+  
+  //On crée un vecteur stockant la taille des colonnes, on échange ces données au fur et à mesure des permutations de A, on stocke 0 si pas de pivot
+  //Permet d'éviter
+  size_t * size_col = FFLAS::fflas_new<size_t>(N);
   for (size_t i=0;i<r;i++)
     {
-      rows[P[i]]=true;
-      cols[Q[i]]=true;
+      size_col[Q[i]] = N-1-P[i]-Q[i]
     }
-  int k = N/s;
-  int m =N%s;
-  for (size_t i=1;i<k;i++)
-    {
-      FFLAS::fassign(Fi, s, s, C+((k-i)*s)*lda+i*s,lda,X+i*s,ldx);
-      FFLAS::fzero(Fi, s, s, C+((k-i)*s)*lda+i*s,lda);
+  //C est la matrice à transformer, R la matrice de permutation permetant de passer de A à C, Rinvert[i] =l'ancienne position de la nouvelle colonne i
+  size_t ki = 0;
+  size_t i =0;
+  size_t S=0;
+  while (ki<N-1||S<N)
+    { K[i] = ki;
+      size_t k =new_rows_pivots[i*s]; //information sur la ligne du  pivot de la colonne i*s
+      FFLAS::fassign(Fi, k-ki, s, C+(ki*lda+i*s,lda,X+ki*ldx,ldx);//On stock Di
+      FFLAS::fzero(Fi, s, k-ki, C+ki*lda+i*s,lda);
+      ki=k;
+      S+=s; 
+      i++;
     }
-  for (size_t i=0;i<k-1;i++)
+ if (S>=N)
+   {
+     
+   }
+
+      //Construction de S
+  for (size_t j=2;j<i++;j++)
     { for(size_t t=0;t<s;t++)
         {
-          if(cols[i*s+t])
+          if(size_col[(j-2)*s+t]=!0)//Si la colonne n'est pas nulle
             {
               bool haschanged = false;
+              size_t size_to_move = size_col[(j-2)*s+l]+new_rows_pivots[(j-2)*s+l]-K[j];
               for(size_t l=0;l<s;l++)
-                {
-                  if(!haschanged && !cols[(i+1)*s+l])
-                    {
-                      FFLAS::fassign(Fi,(k-1-i)*s , C+i*s+t,lda, C+(i+1)*s+l, lda)
-                        haschanged = true;
+                { size_t size_enable = size_col[(j-1)*s+l]-(K[j]-new_rows_pivots[(j-1)*s+l])
+                  if(!haschanged && size_col[(j-1)*s+l]<=0) //S'il y a de la place
+                    { 
+                      FFLAS::fassign(Fi,taille_col[(j-2)*s+t , C+i*s+t,lda, C+(i+1)*s+l, lda)
+                      haschanged = true;
                     }
                 }
             }
