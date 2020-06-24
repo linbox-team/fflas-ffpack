@@ -211,7 +211,7 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
 }
 
 template<class Field>
-inline void CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx, size_t *K, size_t *M){
+inline void CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size *T){
   if (Uplo==FFLAS::FflasUpper)//U
  {
     typename Field::Element_ptr D = X + 0;
@@ -270,6 +270,7 @@ inline void CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Up
 		      FFLAS::fassign(Fi,end_row[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]+((j-1)*s+t)*ldc,1, C+K[j+1]+(j*s+l)*ldc, 1)
                       haschanged = true;
 		      end_row[j*s+l]= end_row[(j-1)*s+t];
+		      T[(j-1)*s+t] = j*s+l;
                     }
 		  l++;
                 }
@@ -334,6 +335,7 @@ inline void CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Up
                     { 
 		      FFLAS::fassign(Fi,end_col[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]*ldc+(j-1)*s+t,ldc, C+K[j+1]*ldc+j*s+l, ldc)
                       haschanged = true;
+		      T[(j-1)*s+t]= j*s+l;
 		      end_col[j*s+l]= end_col[(j-1)*s+t];
                     }
 		  l++;
