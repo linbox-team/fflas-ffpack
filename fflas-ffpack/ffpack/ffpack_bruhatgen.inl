@@ -251,7 +251,7 @@ inline void CompressToBlockBiDiagonal(const Field&Fi,size_t N, size_t s, size_t 
                   if(!haschanged && size_col[(j-1)*s+l]<=0) //S'il y a de la place
                     { 
                       FFLAS::fassign(Fi,taille_col[(j-2)*s+t , C+i*s+t,lda, C+(i+1)*s+l, lda)
-                      haschanged = true;
+                    haschanged = true;
                     }
                 }
             }
