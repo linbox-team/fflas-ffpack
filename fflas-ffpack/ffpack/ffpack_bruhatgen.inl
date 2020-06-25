@@ -212,140 +212,90 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
 
 template<class Field>
 inline void CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size *T){
-  if (Uplo==FFLAS::FflasUpper)//U
- {
-    typename Field::Element_ptr D = X + 0;
-    typename Field::Element_ptr S = X + s;
-  size_t * Pinv = FFLAS::fflas_new<size_t>(N);
-  for (size_t i=0; i<r; i++){
-          Pinv [P [i]] = i;
-      }
-  
-  M = Bruhat2EchelonPermutation (N,r,Q,P);
+ 
   Field::Element_ptr C=FFLAS::fflas_new(Fi, N, N);
   size_t ldc=N;
   FFLAS::fassign(Fi, N, N, A, lda, C, ldc);
-  applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), N, C, lda, M);
- 
-  size_t * end_raw = FFLAS::fflas_new<size_t>(r);
-  for (size_t i=0;i<r;i++)
-    {
-      end_row[i] = N-2-M[i];
-    }
-  size_t CurrentBlockCol = 0;
-  size_t NbBlocks = 0;
-  size_t BlockRow=0;
-  while (BlockRow<r)
-    { K[NbBlocks] = CurrentBlockCol;
-      size_t raws, NextBlockCol;
-      if (BlockRow+s >= r)
-	{
-	  raws =r-BlockRow;
-	  NextBlockCol = N;
-        } else{
-	raws =s;
-	NextBlockCol = Q[Pinv[M[BlockRow+raws]]]; // ligne du premier pivot du prochain bloc
-      }
-      FFLAS::fassign(Fi, raws,NextBlockCol-CurrentBlockCol, C+CurrentBlockCol+BlockRow*ldc,ldc,D+CurrentBlockCol,ldx);//On stock Di
-      CurrentBlockCol=NextBlockCol;
-      BlockRaw+=raws; 
-      NbBlocks++;
-    }
-     
-  K[NbBlocks]=N;
-      //Construction de S
-  for (size_t j=1;j<NbBlocks;j++)
-    {
-      FFLAS::fassign(Fi,s, K[j+1]-K[j], C+K[j]+(j-1)*s*ldc,ldc, S+K[j],ldx);
-      for(size_t t=0;t<s;t++)
-        {
-          if(end_row[(j-1)*s+t] >= K[j+1])//Si la colonne n'est pas nulle
-            {
-              bool haschanged = false;
-	      size_t l=0;
-              while(l<s && !haschanged)
-                {
-                  if (end_row[j*s+l]<K[j+1]) //S'il y a de la place
-                    { 
-		      FFLAS::fassign(Fi,end_row[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]+((j-1)*s+t)*ldc,1, C+K[j+1]+(j*s+l)*ldc, 1)
-                      haschanged = true;
-		      end_row[j*s+l]= end_row[(j-1)*s+t];
-		      T[(j-1)*s+t] = j*s+l;
-                    }
-		  l++;
-                }
-            }
-        }
-    }
-  FFLAS::fflas_delete(C);
-  FFLAS::fflas_delete(end_col);
- }else{ //L
   typename Field::Element_ptr D = X + 0;
-  typename Field::Element_ptr S = X + s;
-  size_t * Qinv = FFLAS::fflas_new<size_t>(N);
-  for (size_t i=0; i<r; i++){
-          Qinv [Q [i]] = i;
+if (Uplo==FFLAS::FflasUpper)//U
+  {typename Field::Element_ptr S = X + s*ldx;
+   size_t * Pinv = FFLAS::fflas_new<size_t>(N);
+   for (size_t i=0; i<r; i++){
+         Pinv [P [i]] = i;
       }
-  
+    M = Bruhat2EchelonPermutation (N,r,Q,P);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), N, C, lda, M);
+  }
+ else{
+   typename Field::Element_ptr S = X+s;
+   size_t * Qinv = FFLAS::fflas_new<size_t>(N);
+   for (size_t i=0; i<r; i++){
+     Qinv [Q [i]] = i;
+    }
   M = Bruhat2EchelonPermutation (N,r,P,Q);
-  Field::Element_ptr C=FFLAS::fflas_new(Fi, N, N);
-  size_t ldc=N;
-  FFLAS::fassign(Fi, N, N, A, lda, C, ldc);
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, M);
- 
-  size_t * end_col = FFLAS::fflas_new<size_t>(r);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, M);}
+  
+  size_t * last_coeff = FFLAS::fflas_new<size_t>(r);
   for (size_t i=0;i<r;i++)
     {
-      end_col[i] = N-2-M[i];
+      last_coeff[i] = N-2-M[i];
     }
-  size_t CurrentBlockRow = 0;
+  size_t CurrentBlockPos = 0;
   size_t NbBlocks = 0;
-  size_t BlockCol=0;
-  while (S<r)
-    { K[NbBlocks] = CurrentBlockRow;
-      size_t cols, NextBlockRow;
-      if (BlockCol+s >= r)
+  size_t BlockPivot=0;
+  while (BlockPivot<r)
+    { K[NbBlocks] = CurrentBlockPos;
+      size_t BlockSize, NextBlockPos;
+      if (BlockPivot+s >= r)
 	{
-	  cols =r-BlockCol;
+	  BlockSize =r-BlockPivot;
 	  NextBlockRow = N;
         } else{
-	cols =s;
-	NextBlockRow = P[Qinv[M[BlockCol+cols]]]; // ligne du premier pivot du prochain bloc
+	BlockSize = s;
+	if (Uplo==FFLAS::FflasUpper){//U
+	  NextBlockPos = Q[Pinv[M[BlockPivot+BlockSize]]];
+	  FFLAS::fassign(Fi, BlockSize, NextBlockPos-CurrentBlockPos, C+CurrentBlockPos+BlockPivot*ldc,ldc,D+CurrentBlockPos,ldx);//On stock Di
+	}
+	else{//L
+	NextBlockPos = P[Qinv[M[BlockPivot+BlockSize]]];// ligne du premier pivot du prochain bloc
+	FFLAS::fassign(Fi, NextBlockPos-CurrentBlockPos, BlockSize, C+CurrentBlockPos*ldc+BlockPivot,ldc,D+CurrentBlockPos*ldx,ldx);//On stock Di
+	}
       }
-      FFLAS::fassign(Fi, NextBlockRow-CurrentBlockRow, cols, C+CurrentBlockRow*ldc+BlockCol,ldc,D+CurrentBlockRow*ldx,ldx);//On stock Di
-      CurrentBlockRow=NextBlockRow;
-      BlockCol+=cols; 
+      
+      CurrentBlockPos=NextBlockPos;
+      BlockPivot+=BlockSize; 
       NbBlocks++;
     }
      
   K[NbBlocks]=N;
       //Construction de S
   for (size_t j=1;j<NbBlocks;j++)
-    {
-      FFLAS::fassign(Fi, K[j+1]-K[j], s, C+K[j]*ldc+(j-1)*s,ldc, S+K[j]*ldx,ldx);
+    {if (Uplo==FFLAS::FflasUpper){//U
+	FFLAS::fassign(Fi,s, K[j+1]-K[j], C+K[j]+(j-1)*s*ldc,ldc, S+K[j],ldx);
+      }
+      else{
+	FFLAS::fassign(Fi, K[j+1]-K[j], s, C+K[j]*ldc+(j-1)*s,ldc, S+K[j]*ldx,ldx);
+      }
       for(size_t t=0;t<s;t++)
         {
-          if(end_col[(j-1)*s+t] >= K[j+1])//Si la colonne n'est pas nulle
+          if(last_coeff[(j-1)*s+t] >= K[j+1])//Si la colonne n'est pas nulle
             {
-              bool haschanged = false;
 	      size_t l=0;
-              while(l<s && !haschanged)
-                {
-                  if (end_col[j*s+l]<K[j+1]) //S'il y a de la place
-                    { 
-		      FFLAS::fassign(Fi,end_col[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]*ldc+(j-1)*s+t,ldc, C+K[j+1]*ldc+j*s+l, ldc)
-                      haschanged = true;
-		      T[(j-1)*s+t]= j*s+l;
-		      end_col[j*s+l]= end_col[(j-1)*s+t];
-                    }
+              while(last_coeff[j*s+l]>=K[j+1])
+                {   
 		  l++;
                 }
-            }
+	      if (Uplo==FFLAS::FflasUpper){//U
+		FFLAS::fassign(Fi,last_coeff[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]+((j-1)*s+t)*ldc,1, C+K[j+1]+(j*s+l)*ldc, 1)
+	      }else{FFLAS::fassign(Fi,last_coeff[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]*ldc+(j-1)*s+t,ldc, C+K[j+1]*ldc+j*s+l, ldc);}
+	      T[(j-1)*s+t]= j*s+l;
+	      last_coeff[j*s+l]= last_coeff[(j-1)*s+t];
+	    }
         }
     }
   FFLAS::fflas_delete(C);
-  FFLAS::fflas_delete(end_col);
- }
+  FFLAS::fflas_delete(last_coeff);
+
 }
 
  // Compute M such that LM is in column echelon form, where L is the
