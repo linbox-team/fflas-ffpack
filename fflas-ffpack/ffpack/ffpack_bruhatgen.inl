@@ -225,7 +225,7 @@ if (Uplo==FFLAS::FflasUpper)//U
          Inv [P [i]] = i;
       }
     M = Bruhat2EchelonPermutation (N,r,Q,P);
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), N, C, lda, M);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), r, C, lda, M);
   }
  else{
     S = X+s;
@@ -233,7 +233,7 @@ if (Uplo==FFLAS::FflasUpper)//U
      Inv [Q [i]] = i;
     }
   M = Bruhat2EchelonPermutation (N,r,P,Q);
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, M);}
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), r, C, lda, M);}
   
   size_t * last_coeff = FFLAS::fflas_new<size_t>(r);
   for (size_t i=0;i<r;i++)
@@ -268,6 +268,8 @@ if (Uplo==FFLAS::FflasUpper)//U
     }
      
   K[NbBlocks]=N;
+  for (size_t i=0; i<r;i++)
+    T[i]=i;
       //Construction de S
   for (size_t j=1;j<NbBlocks;j++)
     {if (Uplo==FFLAS::FflasUpper){//U
@@ -346,17 +348,17 @@ if (Uplo==FFLAS::FflasUpper)//U
      //We Apply M-1
      if (Uplo==FFLAS::FflasUpper)//U
   {
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, A, lda, M);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), r, A, lda, M);
   }
  else{
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, A, lda, M);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), r, A, lda, M);
  }
 
 }
  // Compute M such that LM is in column echelon form, where L is the
       // left factor of a Bruhat decomposition
       // M is allocated in this function and should be deleted after using it.
-  size_t* Bruhat2EchelonPermutation (size_t N,size_t R, size_t* P,size_t *Q){
+  size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);

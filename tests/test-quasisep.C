@@ -107,7 +107,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     }
 
 
-    fflas_delete ( U2, Xu,Ku,Mu,Tu,L2,Kl,Xl,Ml,Tl);
+    //fflas_delete ( U2, Xu,Ku,Mu,Tu,L2,Kl,Xl,Ml,Tl);
     // B <- L R^T
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
     // L <- B U
