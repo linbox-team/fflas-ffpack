@@ -81,6 +81,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, r, P, Q, B, lda, L,n);
     getLTBruhatGen(F, FflasUpper, diag, n, r, P, Q, B, lda, U, n);
     //test of compression into block bi diagonal
+     WriteMatrix(std::cout<<"U="<<std::endl,F,n,n,U,n)<<std::endl;
      Element_ptr U2= fflas_new(F, n,n);
     fassign(F,n,n,U,n,U2,n);
     Element_ptr Xu = fflas_new(F, 2*s, n);
@@ -89,18 +90,21 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     size_t * Tu = fflas_new<size_t>(r);
     size_t NbBlocksU = CompressToBlockBiDiagonal(F, FflasUpper, n, s, r, P, Q, U,n ,Xu,n,Ku,Mu,Tu);
     ExpandBlockBiDiagonalToBruhat(F,FflasUpper,n,s,r,P,Q,U2,n,Xu,n,NbBlocksU,Ku,Mu,Tu);
+    WriteMatrix(std::cout<<"U2="<<std::endl,F,n,n,U2,n)<<std::endl;
     if(!fequal(F,n,n,U,n,U2,n)){
       fail= true;
       std::cerr<<"ERROR: Compression of U lost information"<<std::endl;
     }
+    WriteMatrix(std::cout<<"L="<<std::endl,F,n,n,L,n)<<std::endl;
     Element_ptr L2= fflas_new(F, n,n);
     fassign(F,n,n,L,n,L2,n);
     Element_ptr Xl = fflas_new(F, n, 2*s);
     size_t * Kl = fflas_new<size_t> (r+1);
     size_t * Ml = fflas_new<size_t> (r);
     size_t * Tl = fflas_new<size_t>(r);
-    size_t NbBlocksL = CompressToBlockBiDiagonal(F, FflasLower, n, s, r, P, Q, L,n ,Xl,n,Kl,Ml,Tl);
-    ExpandBlockBiDiagonalToBruhat(F,FflasLower,n,s,r,P,Q,L2,n,Xl,n,NbBlocksL,Kl,Ml,Tl);
+    size_t NbBlocksL = CompressToBlockBiDiagonal(F, FflasLower, n, s, r, P, Q, L,n ,Xl,2*s,Kl,Ml,Tl);
+    ExpandBlockBiDiagonalToBruhat(F,FflasLower,n,s,r,P,Q,L2,n,Xl,2*s,NbBlocksL,Kl,Ml,Tl);
+    WriteMatrix(std::cout<<"L2="<<std::endl,F,n,n,U2,n)<<std::endl;
     if(!fequal(F,n,n,L,n,L2,n)){
       fail= true;
       std::cerr<<"ERROR: Compression of L lost information"<<std::endl;

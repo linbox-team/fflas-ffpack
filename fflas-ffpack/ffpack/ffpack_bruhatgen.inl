@@ -225,7 +225,12 @@ if (Uplo==FFLAS::FflasUpper)//U
          Inv [P [i]] = i;
       }
     M = Bruhat2EchelonPermutation (N,r,Q,P);
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), r, C, lda, M);
+    size_t * MLap = FFLAS::fflas_new<size_t>(r);
+    MathPerm2LAPACKPerm(MLap, M, N);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), r, C, lda, MLap);
+    FFLAS::WritePermutation(std::cout<<"Mu="<<std::endl,M,r)<<std::endl;
+  FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
+    FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
   }
  else{
     S = X+s;
@@ -233,8 +238,14 @@ if (Uplo==FFLAS::FflasUpper)//U
      Inv [Q [i]] = i;
     }
   M = Bruhat2EchelonPermutation (N,r,P,Q);
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), r, C, lda, M);}
-  
+   FFLAS::WritePermutation(std::cout<<"Ml="<<std::endl,M,r)<<std::endl;
+  size_t * MLap = FFLAS::fflas_new<size_t>(r);
+  MathPerm2LAPACKPerm(MLap, M, N);
+  FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), r, C, lda, MLap);
+  FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
+ }
+ 
   size_t * last_coeff = FFLAS::fflas_new<size_t>(r);
   for (size_t i=0;i<r;i++)
     {
@@ -346,12 +357,14 @@ if (Uplo==FFLAS::FflasUpper)//U
 	  FFLAS::fassign(Fi, N-K[NbBlocks-1], r-(NbBlocks-1)*s,D+K[NbBlocks-1]*ldx,ldx, A+K[NbBlocks-1]*lda+(NbBlocks-1)*s,lda);
 	}
      //We Apply M-1
+     size_t * MLap = FFLAS::fflas_new<size_t>(r);
+    MathPerm2LAPACKPerm(MLap, M, N);
      if (Uplo==FFLAS::FflasUpper)//U
   {
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), r, A, lda, M);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), r, A, lda, MLap);
   }
  else{
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), r, A, lda, M);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), r, A, lda, MLap);
  }
 
 }
@@ -369,7 +382,11 @@ if (Uplo==FFLAS::FflasUpper)//U
           Ps[i] = P[i];
       }
       std::sort (Ps, Ps+R);
-
+      FFLAS::WritePermutation(std::cout<<"Pivots Colonnes="<<std::endl,P,R)<<std::endl;
+      FFLAS::WritePermutation(std::cout<<"Pivots Lignes="<<std::endl,Q,R)<<std::endl;
+      FFLAS::WritePermutation(std::cout<<"Pivots triés="<<std::endl,Ps,R)<<std::endl;
+      FFLAS::WritePermutation(std::cout<<"Inv="<<std::endl,Pinv,N)<<std::endl;
+      
       for (size_t i=0; i<R; i++)
           M[i] = Q [Pinv [Ps[i]]];
       return (M);
