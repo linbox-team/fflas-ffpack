@@ -211,26 +211,26 @@ inline size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const s
 }
 
 template<class Field>
-inline void CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size *T){
+inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size_t *T){
  
-  Field::Element_ptr C=FFLAS::fflas_new(Fi, N, N);
+  typename Field::Element_ptr C=FFLAS::fflas_new(Fi, N, N);
   size_t ldc=N;
   FFLAS::fassign(Fi, N, N, A, lda, C, ldc);
   typename Field::Element_ptr D = X + 0;
+  typename Field::Element_ptr S;
+  size_t * Inv = FFLAS::fflas_new<size_t>(N);
 if (Uplo==FFLAS::FflasUpper)//U
-  {typename Field::Element_ptr S = X + s*ldx;
-   size_t * Pinv = FFLAS::fflas_new<size_t>(N);
+  { S = X + s*ldx;
    for (size_t i=0; i<r; i++){
-         Pinv [P [i]] = i;
+         Inv [P [i]] = i;
       }
     M = Bruhat2EchelonPermutation (N,r,Q,P);
     applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), N, C, lda, M);
   }
  else{
-   typename Field::Element_ptr S = X+s;
-   size_t * Qinv = FFLAS::fflas_new<size_t>(N);
+    S = X+s;
    for (size_t i=0; i<r; i++){
-     Qinv [Q [i]] = i;
+     Inv [Q [i]] = i;
     }
   M = Bruhat2EchelonPermutation (N,r,P,Q);
   applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, M);}
@@ -249,15 +249,15 @@ if (Uplo==FFLAS::FflasUpper)//U
       if (BlockPivot+s >= r)
 	{
 	  BlockSize =r-BlockPivot;
-	  NextBlockRow = N;
+	  NextBlockPos = N;
         } else{
 	BlockSize = s;
 	if (Uplo==FFLAS::FflasUpper){//U
-	  NextBlockPos = Q[Pinv[M[BlockPivot+BlockSize]]];
+	  NextBlockPos = Q[Inv[M[BlockPivot+BlockSize]]];
 	  FFLAS::fassign(Fi, BlockSize, NextBlockPos-CurrentBlockPos, C+CurrentBlockPos+BlockPivot*ldc,ldc,D+CurrentBlockPos,ldx);//On stock Di
 	}
 	else{//L
-	NextBlockPos = P[Qinv[M[BlockPivot+BlockSize]]];// ligne du premier pivot du prochain bloc
+	NextBlockPos = P[Inv[M[BlockPivot+BlockSize]]];// ligne du premier pivot du prochain bloc
 	FFLAS::fassign(Fi, NextBlockPos-CurrentBlockPos, BlockSize, C+CurrentBlockPos*ldc+BlockPivot,ldc,D+CurrentBlockPos*ldx,ldx);//On stock Di
 	}
       }
@@ -286,7 +286,7 @@ if (Uplo==FFLAS::FflasUpper)//U
 		  l++;
                 }
 	      if (Uplo==FFLAS::FflasUpper){//U
-		FFLAS::fassign(Fi,last_coeff[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]+((j-1)*s+t)*ldc,1, C+K[j+1]+(j*s+l)*ldc, 1)
+		FFLAS::fassign(Fi,last_coeff[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]+((j-1)*s+t)*ldc,1, C+K[j+1]+(j*s+l)*ldc, 1);
 	      }else{FFLAS::fassign(Fi,last_coeff[(j-1)*s+t]-K[j+1]+1 , C+K[j+1]*ldc+(j-1)*s+t,ldc, C+K[j+1]*ldc+j*s+l, ldc);}
 	      T[(j-1)*s+t]= j*s+l;
 	      last_coeff[j*s+l]= last_coeff[(j-1)*s+t];
@@ -295,13 +295,68 @@ if (Uplo==FFLAS::FflasUpper)//U
     }
   FFLAS::fflas_delete(C);
   FFLAS::fflas_delete(last_coeff);
+  return(NbBlocks);
+}
+template<class Field>
+inline void  ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda,typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T){
+
+  FFLAS::fzero(Fi,N,N,A,lda);
+  typename Field::Element_ptr D = X + 0;
+  //We copy S
+if (Uplo==FFLAS::FflasUpper)//U
+  {typename Field::Element_ptr S = X + s*ldx;
+    for (size_t j=1;j<NbBlocks;j++){
+      FFLAS::fassign(Fi,s, K[j+1]-K[j],S+K[j],ldx, A+K[j]+(j-1)*s*lda,lda);}
+  }
+ else{
+   typename Field::Element_ptr S = X+s;
+   for (size_t j=1;j<NbBlocks;j++){
+     FFLAS::fassign(Fi, K[j+1]-K[j], s,S+K[j]*ldx,ldx, A+K[j]*lda+(j-1)*s,lda);
+    }
+ }
+//Extend S
+ for (size_t i=1; i < NbBlocks; i++){
+   for (size_t l=0; l<s; l++){
+     if (T[(NbBlocks-i-1)*s+l] != (NbBlocks-i-1)*s+l){
+	 if(Uplo==FFLAS::FflasUpper){
+	   FFLAS::fassign(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]+T[(NbBlocks-i-1)*s+l]*lda, 1, A+K[NbBlocks-i]+((NbBlocks-i-1)*s+l)*lda,1);
+	   FFLAS::fzero(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]+((NbBlocks-i-1)*s+l)*lda,1);
+	 }else{
+	   FFLAS::fassign(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]*lda+T[(NbBlocks-i-1)*s+l], lda, A+K[NbBlocks-i]*lda+(NbBlocks-i-1)*s+l,lda);
+	   FFLAS::fzero(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]*lda+(NbBlocks-i-1)*s+l,lda);
+	 }
+       }
+   }
+ }
+     //We copy D
+     for (size_t i=0; i<NbBlocks-1;i++){
+       if (Uplo==FFLAS::FflasUpper){//U
+	 FFLAS::fassign(Fi, s, K[i+1]-K[i], D+K[i],ldx,A+K[i]+i*s*lda,lda);
+	}
+	else{//L
+	  FFLAS::fassign(Fi, K[i+1]-K[i], s,D+K[i]*ldx,ldx, A+K[i]*lda+i*s,lda);
+	}
+     }
+     if (Uplo==FFLAS::FflasUpper){//U
+       FFLAS::fassign(Fi, r-(NbBlocks-1)*s, N-K[NbBlocks-1], D+K[NbBlocks-1],ldx,A+K[NbBlocks-1]+(NbBlocks-1)*s*lda,lda);
+	}
+	else{//L
+	  FFLAS::fassign(Fi, N-K[NbBlocks-1], r-(NbBlocks-1)*s,D+K[NbBlocks-1]*ldx,ldx, A+K[NbBlocks-1]*lda+(NbBlocks-1)*s,lda);
+	}
+     //We Apply M-1
+     if (Uplo==FFLAS::FflasUpper)//U
+  {
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, A, lda, M);
+  }
+ else{
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, A, lda, M);
+ }
 
 }
-
  // Compute M such that LM is in column echelon form, where L is the
       // left factor of a Bruhat decomposition
       // M is allocated in this function and should be deleted after using it.
-  size_t* void Bruhat2EchelonPermutation (N,R,P,Q){
+  size_t* Bruhat2EchelonPermutation (size_t N,size_t R, size_t* P,size_t *Q){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);
@@ -315,13 +370,12 @@ if (Uplo==FFLAS::FflasUpper)//U
 
       for (size_t i=0; i<R; i++)
           M[i] = Q [Pinv [Ps[i]]];
-      return M;
-  }
+      return (M);
+   }
   
 
 
 
-}
 
    
 } //namespace FFPACK

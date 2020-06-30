@@ -1856,14 +1856,62 @@ namespace FFPACK { /* Quasi-separable matrices*/
    void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt);
 
     /** LTQSorder
-     * This procedure the order of quasiseparability of a matrix
+     * This procedure computes the order of quasiseparability of a matrix
      * @param N size of the matrix
      * @param r rank of the matrix
      * @param P permutation matrix
      * @param Q permutation matrix
      */
   size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q);
-  
+
+    /**CompressToBlockBiDiagonal
+     * This procedure compress a compact representation of a row echelon form or column echelon form
+     * @param Fi base Field
+     * @param Uplo chosse if the procedure is based on row or column
+     * @param N size of the matrix
+     * @param s order of qausiseparability
+     * @param r rank
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     * @param A the matrix to compact
+     * @param lda leading dimension of A
+     * @param X matrix that will stock the representation
+     * @param ldx leading dimension of X
+     * @param K stock the position of the blocks in A
+     * @param M permutation matrix
+     * @param T stock the operation done in the procedure
+     */
+  template<class Field>
+  size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size_t *T);
+
+  /**ExpandBlockBiDiagonal
+     * This procedure expand a compact representation of a row echelon form or column echelon form
+     * @param Fi base Field
+     * @param Uplo chosse if the procedure is based on row or column
+     * @param N size of the matrix
+     * @param s order of qausiseparability
+     * @param r rank
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     * @param A the matrix that will sotck the expanded representation
+     * @param lda leading dimension of A
+     * @param X matrix to expand
+     * @param ldx leading dimension of X
+     * @param K stock the position of the blocks in A
+     * @param M permutation matrix
+     * @param T stock the operation done in the procedure
+     */
+  template<class Field>
+  void ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T);
+
+  /**Bruhat2EchelonPermutation (N,R,P,Q)
+   * Compute M such that LM or MU is in echelon form where L or U are factors of the Bruhat Rpresentation
+   * @param N size of the matrix
+   * @param R rank
+   * @param P permutation Matrix
+   * @param U permutation Matrix
+   */
+  size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q);
 }
 
 namespace FFPACK { /* not used */

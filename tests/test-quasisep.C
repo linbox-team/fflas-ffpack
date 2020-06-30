@@ -80,7 +80,34 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     getLTBruhatGen(F, n, r, P, Q, R, n);
     getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, r, P, Q, B, lda, L,n);
     getLTBruhatGen(F, FflasUpper, diag, n, r, P, Q, B, lda, U, n);
+    //test of compression into block bi diagonal
+     Element_ptr U2= fflas_new(F, n,n);
+    fassign(F,n,n,U,n,U2,n);
+    Element_ptr Xu = fflas_new(F, 2*s, n);
+    size_t * Ku = fflas_new<size_t> (r+1);
+    size_t * Mu = fflas_new<size_t> (r);
+    size_t * Tu = fflas_new<size_t>(r);
+    size_t NbBlocksU = CompressToBlockBiDiagonal(F, FflasUpper, n, s, r, P, Q, U,n ,Xu,n,Ku,Mu,Tu);
+    ExpandBlockBiDiagonalToBruhat(F,FflasUpper,n,s,r,P,Q,U2,n,Xu,n,NbBlocksU,Ku,Mu,Tu);
+    if(!fequal(F,n,n,U,n,U2,n)){
+      fail= true;
+      std::cerr<<"ERROR: Compression of U lost information"<<std::endl;
+    }
+    Element_ptr L2= fflas_new(F, n,n);
+    fassign(F,n,n,L,n,L2,n);
+    Element_ptr Xl = fflas_new(F, n, 2*s);
+    size_t * Kl = fflas_new<size_t> (r+1);
+    size_t * Ml = fflas_new<size_t> (r);
+    size_t * Tl = fflas_new<size_t>(r);
+    size_t NbBlocksL = CompressToBlockBiDiagonal(F, FflasLower, n, s, r, P, Q, L,n ,Xl,n,Kl,Ml,Tl);
+    ExpandBlockBiDiagonalToBruhat(F,FflasLower,n,s,r,P,Q,L2,n,Xl,n,NbBlocksL,Kl,Ml,Tl);
+    if(!fequal(F,n,n,L,n,L2,n)){
+      fail= true;
+      std::cerr<<"ERROR: Compression of L lost information"<<std::endl;
+    }
 
+
+    fflas_delete ( U2, Xu,Ku,Mu,Tu,L2,Kl,Xl,Ml,Tl);
     // B <- L R^T
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
     // L <- B U
@@ -145,6 +172,7 @@ bool testLTQSRPM (const Field & F,size_t n, size_t r, size_t t, RandGen& G){
         return false;
     }
 }
+
 template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,  size_t iters, uint64_t seed){
     bool ok = true ;
@@ -168,7 +196,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,
         ok = ok && testLTQSRPM (*F,n,r,t,G);
         ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
         ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
-
+	ok = ok && 
         nbit--;
         if ( !ok )
             //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
