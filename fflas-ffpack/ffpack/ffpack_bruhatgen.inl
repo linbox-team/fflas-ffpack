@@ -413,10 +413,23 @@ if (Uplo==FFLAS::FflasUpper)//U
 
       FFLAS::fflas_delete(Pinv,Ps);
    }
-  /*  template<class> Field
-    inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl, Field::Elepement_ptr B,size_t t, size_t ldb){
+/* template<class> Field
+    inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl, Field::Elepement_ptr B,size_t t, size_t ldb)
+    {
 
     Field::Element_ptr Y = fflas_new(Fi, N, N);
+    Field::Element_ptr Z = fflans_new(Fi,N, N);
+    std::vector<bool> ispivot(N,false);
+    size_t * R = FFLAS::fflas_new<size_t>(N);
+    for(size_t i=0;i<N;i++)
+      R[i]=i;
+    for (size_t i=0;i<r;i++)
+      {
+	ispivot[P[i]]=true;
+	R[P[i]]=Q[i]]
+      }
+    MathPerm2LAPACKPerm(R,R,N);
+    
     for (size_t i=1; i<NbBlocksU;i++)
       {
 	 // Dj*Bj
@@ -426,10 +439,16 @@ if (Uplo==FFLAS::FflasUpper)//U
 	
       }
     ExpandBlockBiDiagonalToEchelon(Fi, FFLAS::FflasUplo, N, s, r,  Y, N, Xu, ldu, NbBlocksU, Ku, Tu);
+
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
+    for (size_t j=0;j<N;j++)
+      if(!ispivot[j])
+	FFLAS::fzero(Fi, 1,N, Y+j*N, N);
+      
     
 
 
-  }
-  */
+	}*/
+  
 } //namespace FFPACK
 #endif //_FFPACK_ffpack_bruhatgen_inl
