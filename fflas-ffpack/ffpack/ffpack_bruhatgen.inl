@@ -218,29 +218,40 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
   FFLAS::fassign(Fi, N, N, A, lda, C, ldc);
   typename Field::Element_ptr D = X + 0;
   typename Field::Element_ptr S;
+  FFLAS::FFLAS_SIDE Side;
+  FFLAS::FFLAS_TRANSPOSE Trans;
+  FFLAS::FFLAS_SIDE OppSide;
+  FFLAS::FFLAS_TRANSPOSE OppTrans;
+  const size_t * outer;
+  const size_t * inner;
   size_t * Inv = FFLAS::fflas_new<size_t>(N);
-if (Uplo==FFLAS::FflasUpper)//U
-  { S = X + s*ldx;
+  if(Uplo==FFLAS::FflasUpper){
+    S = X + s*ldx;
+    outer = Q;
+    inner = P;
+    Side = FFLAS::FflasLeft;
+    Trans = FFLAS::FflasNoTrans;
+    OppSide = FFLAS::FflasRight;
+    OppTrans = FFLAS::FflasTrans;
+      
+  }
+  else{
+    S = X+s;
+    outer = P;
+    inner = Q;
+    Side = FFLAS::FflasRight;
+    Trans = FFLAS::FflasTrans;
+    OppSide = FFLAS::FflasLeft;
+    OppTrans = FFLAS::FflasNoTrans;
+  }
+
    for (size_t i=0; i<r; i++){
-         Inv [P [i]] = i;
+         Inv [inner [i]] = i;
       }
-   Bruhat2EchelonPermutation (N,r,Q,P,M);
+   Bruhat2EchelonPermutation (N,r,outer,inner,M);
     size_t * MLap = FFLAS::fflas_new<size_t>(N);
     MathPerm2LAPACKPerm(MLap, M, N);
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
-    FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
-  }
- else{
-    S = X+s;
-   for (size_t i=0; i<r; i++){
-     Inv [Q [i]] = i;
-    }
-   Bruhat2EchelonPermutation (N,r,P,Q,M);
-  size_t * MLap = FFLAS::fflas_new<size_t>(N);
-  MathPerm2LAPACKPerm(MLap, M, N);
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, C, lda, MLap);
-  FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
- }
+    applyP (Fi, Side, Trans, N, size_t(0), N, C, lda, MLap);
  
   size_t * last_coeff = FFLAS::fflas_new<size_t>(r);
   for (size_t i=0;i<r;i++)
@@ -263,11 +274,8 @@ if (Uplo==FFLAS::FflasUpper)//U
 	  NextBlockPos = N;
         } else{
 	  BlockSize = s;
-	  if (Uplo==FFLAS::FflasUpper)//U
-	    NextBlockPos = Q[Inv[M[BlockPivot+BlockSize]]];
-	  else
-	    NextBlockPos = P[Inv[M[BlockPivot+BlockSize]]];
-	}
+	  NextBlockPos = outer[Inv[M[BlockPivot+BlockSize]]];
+	  
 	if (Uplo==FFLAS::FflasUpper){//U
 	  FFLAS::fassign(Fi, BlockSize, NextBlockPos-CurrentBlockPos, C+CurrentBlockPos+BlockPivot*ldc,ldc,D+CurrentBlockPos,ldx);//On stock Di
 	 
