@@ -274,16 +274,16 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
 	  NextBlockPos = N;
         } else{
 	  BlockSize = s;
-	  NextBlockPos = outer[Inv[M[BlockPivot+BlockSize]]];
+	  NextBlockPos = outer[Inv[M[BlockPivot+BlockSize]]];}
 	  
-	if (Uplo==FFLAS::FflasUpper){//U
-	  FFLAS::fassign(Fi, BlockSize, NextBlockPos-CurrentBlockPos, C+CurrentBlockPos+BlockPivot*ldc,ldc,D+CurrentBlockPos,ldx);//On stock Di
+        if (Uplo==FFLAS::FflasUpper){//U
+        FFLAS::fassign(Fi, BlockSize, NextBlockPos-CurrentBlockPos, C+CurrentBlockPos+BlockPivot*ldc,ldc,D+CurrentBlockPos,ldx);//On stock Di
 	 
-	}
-	else{//L
-	FFLAS::fassign(Fi, NextBlockPos-CurrentBlockPos, BlockSize, C+CurrentBlockPos*ldc+BlockPivot,ldc,D+CurrentBlockPos*ldx,ldx);//On stock Di
+        }
+        else{//L
+        FFLAS::fassign(Fi, NextBlockPos-CurrentBlockPos, BlockSize, C+CurrentBlockPos*ldc+BlockPivot,ldc,D+CurrentBlockPos*ldx,ldx);//On stock Di
+        }
 	
-	}
       
       CurrentBlockPos=NextBlockPos;
       BlockPivot+=BlockSize; 
@@ -324,9 +324,10 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
   FFLAS::fflas_delete(C);
   FFLAS::fflas_delete(last_coeff);
   return(NbBlocks);
+
 }
 template<class Field>
-inline void  ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda,typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T){
+inline void  ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, typename Field::Element_ptr A, size_t lda,typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T){
 
   FFLAS::fzero(Fi,N,N,A,lda);
   typename Field::Element_ptr D = X + 0;
@@ -374,7 +375,6 @@ if (Uplo==FFLAS::FflasUpper)//U
 	else{//L
 	  FFLAS::fassign(Fi, N-K[NbBlocks-1], r-(NbBlocks-1)*s,D+K[NbBlocks-1]*ldx,ldx, A+K[NbBlocks-1]*lda+(NbBlocks-1)*s,lda);
 	}
-     FFLAS::WriteMatrix(std::cout<<"Uordred2="<<std::endl,Fi,N,N,A,lda)<<std::endl;
      //We Apply M-1
      size_t * MLap = FFLAS::fflas_new<size_t>(N);
     MathPerm2LAPACKPerm(MLap, M, N);
@@ -413,11 +413,23 @@ if (Uplo==FFLAS::FflasUpper)//U
 
       FFLAS::fflas_delete(Pinv,Ps);
    }
-  
+  /*  template<class> Field
+    inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl, Field::Elepement_ptr B,size_t t, size_t ldb){
+
+    Field::Element_ptr Y = fflas_new(Fi, N, N);
+    for (size_t i=1; i<NbBlocksU;i++)
+      {
+	 // Dj*Bj
+        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, Ku[i+1]-Ku[i], Fi.One, Xu+Ku[i], ldu, B+K[j]*ldb, ldb, Fi.zero, Xu+Ku[i], ldu);
+	// Sj*Bj
+	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, Ku[i+1]-Ku[i], Fi.One, Xu+Ku[i]+s*ldu,ldu,B+K[j]*ldb,Fi.zero, Xu+Ku[i]+s*ldu,ldu);
+	
+      }
+    ExpandBlockBiDiagonalToEchelon(Fi, FFLAS::FflasUplo, N, s, r,  Y, N, Xu, ldu, NbBlocksU, Ku, Tu);
+    
 
 
-
-
-   
+  }
+  */
 } //namespace FFPACK
 #endif //_FFPACK_ffpack_bruhatgen_inl

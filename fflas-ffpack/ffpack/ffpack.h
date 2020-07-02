@@ -1891,8 +1891,6 @@ namespace FFPACK { /* Quasi-separable matrices*/
      * @param N size of the matrix
      * @param s order of qausiseparability
      * @param r rank
-     * @param P permutation matrix
-     * @param Q permutation matrix
      * @param A the matrix that will sotck the expanded representation
      * @param lda leading dimension of A
      * @param X matrix to expand
@@ -1902,7 +1900,7 @@ namespace FFPACK { /* Quasi-separable matrices*/
      * @param T stock the operation done in the procedure
      */
   template<class Field>
-  void ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T);
+  void ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T);
 
    /**Bruhat2EchelonPermutation (N,R,P,Q)
     * Compute M such that LM or MU is in echelon form where L or U are factors of the Bruhat Rpresentation
