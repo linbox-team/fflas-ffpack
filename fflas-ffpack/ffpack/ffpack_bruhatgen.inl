@@ -371,7 +371,7 @@ if (Uplo==FFLAS::FflasUpper)//U
  // Compute M such that LM is in column echelon form, where L is the
       // left factor of a Bruhat decomposition
       // M is allocated in this function and should be deleted after using it.
-  size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q){
+size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);
@@ -397,6 +397,8 @@ if (Uplo==FFLAS::FflasUpper)//U
       for (size_t i=0; i<N; ++i)
           if (!ispivot[i])
               M [curr++] = i;
+
+      FFLAS::fflas_delete(Pinv,Ps);
       return M;
    }
   
