@@ -225,9 +225,9 @@ if (Uplo==FFLAS::FflasUpper)//U
          Inv [P [i]] = i;
       }
     M = Bruhat2EchelonPermutation (N,r,Q,P);
-    size_t * MLap = FFLAS::fflas_new<size_t>(r);
+    size_t * MLap = FFLAS::fflas_new<size_t>(N);
     MathPerm2LAPACKPerm(MLap, M, N);
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), r, C, lda, MLap);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
     FFLAS::WritePermutation(std::cout<<"Mu="<<std::endl,M,r)<<std::endl;
   FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
     FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
@@ -239,10 +239,10 @@ if (Uplo==FFLAS::FflasUpper)//U
     }
   M = Bruhat2EchelonPermutation (N,r,P,Q);
    FFLAS::WritePermutation(std::cout<<"Ml="<<std::endl,M,r)<<std::endl;
-  size_t * MLap = FFLAS::fflas_new<size_t>(r);
+  size_t * MLap = FFLAS::fflas_new<size_t>(N);
   MathPerm2LAPACKPerm(MLap, M, N);
   FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), r, C, lda, MLap);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, C, lda, MLap);
   FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
  }
  
@@ -375,7 +375,7 @@ if (Uplo==FFLAS::FflasUpper)//U
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);
-      size_t * M = FFLAS::fflas_new<size_t>(R);
+      size_t * M = FFLAS::fflas_new<size_t>(N);
 
       for (size_t i=0; i<R; i++){
           Pinv [P [i]] = i;
@@ -386,10 +386,18 @@ if (Uplo==FFLAS::FflasUpper)//U
       FFLAS::WritePermutation(std::cout<<"Pivots Lignes="<<std::endl,Q,R)<<std::endl;
       FFLAS::WritePermutation(std::cout<<"Pivots triés="<<std::endl,Ps,R)<<std::endl;
       FFLAS::WritePermutation(std::cout<<"Inv="<<std::endl,Pinv,N)<<std::endl;
-      
-      for (size_t i=0; i<R; i++)
-          M[i] = Q [Pinv [Ps[i]]];
-      return (M);
+
+      std::vector<bool> ispivot(N,false);
+      for (size_t i=0; i<R; i++){
+          size_t piv = Q [Pinv [Ps[i]]];
+          M[i] = piv;
+          ispivot [piv]=true;
+      }
+      size_t curr=R;
+      for (size_t i=0; i<N; ++i)
+          if (!ispivot[i])
+              M [curr++] = i;
+      return M;
    }
   
 
