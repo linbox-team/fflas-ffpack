@@ -357,14 +357,14 @@ if (Uplo==FFLAS::FflasUpper)//U
 	  FFLAS::fassign(Fi, N-K[NbBlocks-1], r-(NbBlocks-1)*s,D+K[NbBlocks-1]*ldx,ldx, A+K[NbBlocks-1]*lda+(NbBlocks-1)*s,lda);
 	}
      //We Apply M-1
-     size_t * MLap = FFLAS::fflas_new<size_t>(r);
-    MathPerm2LAPACKPerm(MLap, M, N);
+     size_t * MLap = FFLAS::fflas_new<size_t>(N);
+     MathPerm2LAPACKPerm(MLap, M, N);
      if (Uplo==FFLAS::FflasUpper)//U
   {
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), r, A, lda, MLap);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, A, lda, MLap);
   }
  else{
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), r, A, lda, MLap);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, A, lda, MLap);
  }
 
 }
