@@ -219,31 +219,27 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
   typename Field::Element_ptr D = X + 0;
   typename Field::Element_ptr S;
   size_t * Inv = FFLAS::fflas_new<size_t>(N);
-  if (Uplo==FFLAS::FflasUpper)//U
+if (Uplo==FFLAS::FflasUpper)//U
   { S = X + s*ldx;
-      for (size_t i=0; i<r; i++){
-          Inv [P [i]] = i;
+   for (size_t i=0; i<r; i++){
+         Inv [P [i]] = i;
       }
-      Bruhat2EchelonPermutation (N,r,Q,P,M);
-      size_t * MLap = FFLAS::fflas_new<size_t>(N);
-      MathPerm2LAPACKPerm(MLap, M, N);
-      applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
-      FFLAS::WritePermutation(std::cout<<"Mu="<<std::endl,M,r)<<std::endl;
-      FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
-      FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
+   Bruhat2EchelonPermutation (N,r,Q,P,M);
+    size_t * MLap = FFLAS::fflas_new<size_t>(N);
+    MathPerm2LAPACKPerm(MLap, M, N);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
+    FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
   }
  else{
-     S = X+s;
-     for (size_t i=0; i<r; i++){
-         Inv [Q [i]] = i;
-     }
-     Bruhat2EchelonPermutation (N,r,P,Q,M);
-     FFLAS::WritePermutation(std::cout<<"Ml="<<std::endl,M,r)<<std::endl;
-     size_t * MLap = FFLAS::fflas_new<size_t>(N);
-     MathPerm2LAPACKPerm(MLap, M, N);
-     FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
-     applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, C, lda, MLap);
-     FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
+    S = X+s;
+   for (size_t i=0; i<r; i++){
+     Inv [Q [i]] = i;
+    }
+   Bruhat2EchelonPermutation (N,r,P,Q,M);
+  size_t * MLap = FFLAS::fflas_new<size_t>(N);
+  MathPerm2LAPACKPerm(MLap, M, N);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, C, lda, MLap);
+  FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
  }
  
   size_t * last_coeff = FFLAS::fflas_new<size_t>(r);
@@ -251,6 +247,10 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
     {
       last_coeff[i] = N-2-M[i];
     }
+  if(Uplo==FFLAS::FflasUpper)
+    FFLAS::fzero(Fi, 2*s,N,X,ldx);
+  else
+    FFLAS::fzero(Fi, N, 2*s, X,ldx);
   size_t CurrentBlockPos = 0;
   size_t NbBlocks = 0;
   size_t BlockPivot=0;
@@ -262,21 +262,27 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
 	  BlockSize =r-BlockPivot;
 	  NextBlockPos = N;
         } else{
-	BlockSize = s;
+	  BlockSize = s;
+	  if (Uplo==FFLAS::FflasUpper)//U
+	    NextBlockPos = Q[Inv[M[BlockPivot+BlockSize]]];
+	  else
+	    NextBlockPos = P[Inv[M[BlockPivot+BlockSize]]];
+	}
 	if (Uplo==FFLAS::FflasUpper){//U
-	  NextBlockPos = Q[Inv[M[BlockPivot+BlockSize]]];
 	  FFLAS::fassign(Fi, BlockSize, NextBlockPos-CurrentBlockPos, C+CurrentBlockPos+BlockPivot*ldc,ldc,D+CurrentBlockPos,ldx);//On stock Di
+	 
 	}
 	else{//L
-	NextBlockPos = P[Inv[M[BlockPivot+BlockSize]]];// ligne du premier pivot du prochain bloc
 	FFLAS::fassign(Fi, NextBlockPos-CurrentBlockPos, BlockSize, C+CurrentBlockPos*ldc+BlockPivot,ldc,D+CurrentBlockPos*ldx,ldx);//On stock Di
+	
 	}
-      }
       
       CurrentBlockPos=NextBlockPos;
       BlockPivot+=BlockSize; 
       NbBlocks++;
+      
     }
+   
      
   K[NbBlocks]=N;
   for (size_t i=0; i<r;i++)
@@ -306,6 +312,7 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
 	    }
         }
     }
+ 
   FFLAS::fflas_delete(C);
   FFLAS::fflas_delete(last_coeff);
   return(NbBlocks);
@@ -326,20 +333,23 @@ if (Uplo==FFLAS::FflasUpper)//U
    for (size_t j=1;j<NbBlocks;j++){
      FFLAS::fassign(Fi, K[j+1]-K[j], s,S+K[j]*ldx,ldx, A+K[j]*lda+(j-1)*s,lda);
     }
+   
  }
+ 
 //Extend S
- for (size_t i=1; i < NbBlocks; i++){
+ for (size_t i=1; i < NbBlocks-1; i++){
    for (size_t l=0; l<s; l++){
-     if (T[(NbBlocks-i-1)*s+l] != (NbBlocks-i-1)*s+l){
+     if (T[(NbBlocks-i-2)*s+l] != (NbBlocks-i-2)*s+l){
 	 if(Uplo==FFLAS::FflasUpper){
-	   FFLAS::fassign(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]+T[(NbBlocks-i-1)*s+l]*lda, 1, A+K[NbBlocks-i]+((NbBlocks-i-1)*s+l)*lda,1);
-	   FFLAS::fzero(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]+((NbBlocks-i-1)*s+l)*lda,1);
+	   FFLAS::fassign(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]+T[(NbBlocks-i-2)*s+l]*lda, 1, A+K[NbBlocks-i]+((NbBlocks-i-2)*s+l)*lda,1);
+	   FFLAS::fzero(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]+T[(NbBlocks-i-2)*s+l]*lda,1);
 	 }else{
-	   FFLAS::fassign(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]*lda+T[(NbBlocks-i-1)*s+l], lda, A+K[NbBlocks-i]*lda+(NbBlocks-i-1)*s+l,lda);
-	   FFLAS::fzero(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]*lda+(NbBlocks-i-1)*s+l,lda);
+	   FFLAS::fassign(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]*lda+T[(NbBlocks-i-2)*s+l], lda, A+K[NbBlocks-i]*lda+(NbBlocks-i-2)*s+l,lda);
+	   FFLAS::fzero(Fi, N-K[NbBlocks-i], A+K[NbBlocks-i]*lda+T[(NbBlocks-i-2)*s+l],lda);
 	 }
        }
    }
+   
  }
      //We copy D
      for (size_t i=0; i<NbBlocks-1;i++){
@@ -356,22 +366,23 @@ if (Uplo==FFLAS::FflasUpper)//U
 	else{//L
 	  FFLAS::fassign(Fi, N-K[NbBlocks-1], r-(NbBlocks-1)*s,D+K[NbBlocks-1]*ldx,ldx, A+K[NbBlocks-1]*lda+(NbBlocks-1)*s,lda);
 	}
+     FFLAS::WriteMatrix(std::cout<<"Uordred2="<<std::endl,Fi,N,N,A,lda)<<std::endl;
      //We Apply M-1
      size_t * MLap = FFLAS::fflas_new<size_t>(N);
-     MathPerm2LAPACKPerm(MLap, M, N);
+    MathPerm2LAPACKPerm(MLap, M, N);
      if (Uplo==FFLAS::FflasUpper)//U
   {
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, A, lda, MLap);
+    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, N, size_t(0), N, A, lda, MLap);
   }
  else{
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, A, lda, MLap);
+  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, size_t(0), N, A, lda, MLap);
  }
 
 }
  // Compute M such that LM is in column echelon form, where L is the
       // left factor of a Bruhat decomposition
       // M is allocated in this function and should be deleted after using it.
-void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t* M){
+  void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t* M){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);
@@ -381,11 +392,6 @@ void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t 
           Ps[i] = P[i];
       }
       std::sort (Ps, Ps+R);
-      FFLAS::WritePermutation(std::cout<<"Pivots Colonnes="<<std::endl,P,R)<<std::endl;
-      FFLAS::WritePermutation(std::cout<<"Pivots Lignes="<<std::endl,Q,R)<<std::endl;
-      FFLAS::WritePermutation(std::cout<<"Pivots triés="<<std::endl,Ps,R)<<std::endl;
-      FFLAS::WritePermutation(std::cout<<"Inv="<<std::endl,Pinv,N)<<std::endl;
-
       std::vector<bool> ispivot(N,false);
       for (size_t i=0; i<R; i++){
           size_t piv = Q [Pinv [Ps[i]]];
