@@ -1904,14 +1904,15 @@ namespace FFPACK { /* Quasi-separable matrices*/
   template<class Field>
   void ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T);
 
-  /**Bruhat2EchelonPermutation (N,R,P,Q)
-   * Compute M such that LM or MU is in echelon form where L or U are factors of the Bruhat Rpresentation
-   * @param N size of the matrix
-   * @param R rank
-   * @param P permutation Matrix
-   * @param U permutation Matrix
-   */
-  size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q);
+   /**Bruhat2EchelonPermutation (N,R,P,Q)
+    * Compute M such that LM or MU is in echelon form where L or U are factors of the Bruhat Rpresentation
+    * @param[in] N size of the matrix
+    * @param[in] R rank
+    * @param[in] P permutation Matrix
+    * @param[in] Q permutation Matrix
+    * @param[out] M output permutation matrix
+    */
+    void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t * M);
 }
 
 namespace FFPACK { /* not used */

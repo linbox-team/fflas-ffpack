@@ -219,31 +219,31 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
   typename Field::Element_ptr D = X + 0;
   typename Field::Element_ptr S;
   size_t * Inv = FFLAS::fflas_new<size_t>(N);
-if (Uplo==FFLAS::FflasUpper)//U
+  if (Uplo==FFLAS::FflasUpper)//U
   { S = X + s*ldx;
-   for (size_t i=0; i<r; i++){
-         Inv [P [i]] = i;
+      for (size_t i=0; i<r; i++){
+          Inv [P [i]] = i;
       }
-    M = Bruhat2EchelonPermutation (N,r,Q,P);
-    size_t * MLap = FFLAS::fflas_new<size_t>(N);
-    MathPerm2LAPACKPerm(MLap, M, N);
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
-    FFLAS::WritePermutation(std::cout<<"Mu="<<std::endl,M,r)<<std::endl;
-  FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
-    FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
+      Bruhat2EchelonPermutation (N,r,Q,P,M);
+      size_t * MLap = FFLAS::fflas_new<size_t>(N);
+      MathPerm2LAPACKPerm(MLap, M, N);
+      applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
+      FFLAS::WritePermutation(std::cout<<"Mu="<<std::endl,M,r)<<std::endl;
+      FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
+      FFLAS::WriteMatrix(std::cout<<"Uorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
   }
  else{
-    S = X+s;
-   for (size_t i=0; i<r; i++){
-     Inv [Q [i]] = i;
-    }
-  M = Bruhat2EchelonPermutation (N,r,P,Q);
-   FFLAS::WritePermutation(std::cout<<"Ml="<<std::endl,M,r)<<std::endl;
-  size_t * MLap = FFLAS::fflas_new<size_t>(N);
-  MathPerm2LAPACKPerm(MLap, M, N);
-  FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
-  applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, C, lda, MLap);
-  FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
+     S = X+s;
+     for (size_t i=0; i<r; i++){
+         Inv [Q [i]] = i;
+     }
+     Bruhat2EchelonPermutation (N,r,P,Q,M);
+     FFLAS::WritePermutation(std::cout<<"Ml="<<std::endl,M,r)<<std::endl;
+     size_t * MLap = FFLAS::fflas_new<size_t>(N);
+     MathPerm2LAPACKPerm(MLap, M, N);
+     FFLAS::WritePermutation(std::cout<<"MLap="<<std::endl,MLap,N)<<std::endl;
+     applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N, size_t(0), N, C, lda, MLap);
+     FFLAS::WriteMatrix(std::cout<<"Lorderd="<<std::endl,Fi,N,N,C,N)<<std::endl;
  }
  
   size_t * last_coeff = FFLAS::fflas_new<size_t>(r);
@@ -371,11 +371,10 @@ if (Uplo==FFLAS::FflasUpper)//U
  // Compute M such that LM is in column echelon form, where L is the
       // left factor of a Bruhat decomposition
       // M is allocated in this function and should be deleted after using it.
-size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q){
+void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t* M){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);
-      size_t * M = FFLAS::fflas_new<size_t>(N);
 
       for (size_t i=0; i<R; i++){
           Pinv [P [i]] = i;
@@ -399,7 +398,6 @@ size_t* Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size
               M [curr++] = i;
 
       FFLAS::fflas_delete(Pinv,Ps);
-      return M;
    }
   
 
