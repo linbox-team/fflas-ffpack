@@ -413,42 +413,248 @@ if (Uplo==FFLAS::FflasUpper)//U
 
       FFLAS::fflas_delete(Pinv,Ps);
    }
-/* template<class> Field
-    inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl, Field::Elepement_ptr B,size_t t, size_t ldb)
+ template<class> Field
+ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl, Field::Elepement_ptr B,size_t t, size_t ldb, Field::Element_ptr C, size_t ldc)
     {
-
-    Field::Element_ptr Y = fflas_new(Fi, N, N);
-    Field::Element_ptr Z = fflans_new(Fi,N, N);
-    std::vector<bool> ispivot(N,false);
-    size_t * R = FFLAS::fflas_new<size_t>(N);
-    for(size_t i=0;i<N;i++)
-      R[i]=i;
-    for (size_t i=0;i<r;i++)
-      {
-	ispivot[P[i]]=true;
-	R[P[i]]=Q[i]]
-      }
-    MathPerm2LAPACKPerm(R,R,N);
-    
-    for (size_t i=1; i<NbBlocksU;i++)
-      {
-	 // Dj*Bj
-        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, Ku[i+1]-Ku[i], Fi.One, Xu+Ku[i], ldu, B+K[j]*ldb, ldb, Fi.zero, Xu+Ku[i], ldu);
-	// Sj*Bj
-	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, Ku[i+1]-Ku[i], Fi.One, Xu+Ku[i]+s*ldu,ldu,B+K[j]*ldb,Fi.zero, Xu+Ku[i]+s*ldu,ldu);
-	
-      }
-    ExpandBlockBiDiagonalToEchelon(Fi, FFLAS::FflasUplo, N, s, r,  Y, N, Xu, ldu, NbBlocksU, Ku, Tu);
-
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, size_t(0), N, C, lda, MLap);
-    for (size_t j=0;j<N;j++)
-      if(!ispivot[j])
-	FFLAS::fzero(Fi, 1,N, Y+j*N, N);
       
-    
-
-
-	}*/
+    Field::Element_ptr Y = fflas_new(Fi, N, N);
+    Field::Element_ptr Z = fflas_new(Fi,N, N);
+    size_t * Tuinv = FFLAS::fflas_new<size_t>(r);
+    std::vector<bool> IsFinalU(r,true);
+    for(size_t i=0;i<r;i++)
+      {
+	if(Tu[i]==i && IsFinalU[i])
+	  {
+	    Tuinv[i]=i;
+	  }
+	else if(Tu[i]!=i &&IsFinalU[i])
+	  {
+	    Tuinv[Tu[i]]=i;
+	    IsFinalU[Tu[i]]=false;
+	  }
+	else
+	  {
+	    Tuinv[Tu[i]]=Tuinv[i];
+	    IsFinalU[Tu[i]]=false;
+	  }
+      }
+    size_t * Tlinv = FFLAS::fflas_new<size_t>(r);
+    std::vector<bool> IsFinalL(r,true);
+    for(size_t i=0;i<r;i++)
+      {
+	if(Tl[i]==i && IsFinalL[i])
+	  {
+	    Tlinv[i]=i;
+	  }
+	else if(Tl[i]!=i &&IsFinalL[i])
+	  {
+	    Tlinv[Tl[i]]=i;
+	    IsFinalL[Tl[i]]=false;
+	  }
+	else
+	  {
+	    Tuinv[Tl[i]]=Tlinv[i];
+	    IsFinalL[Tl[i]]=false;
+	  }
+      }
+  
+    size_t S = 0;
+    size_t k = 0;
+    while( S+s<N)
+      {
+	S+=s;
+	k++;
+      }
+    size_t rs = N-S;
+    k++;
+    size_t blocksu = 0;
+    size_t blocksl=NbBlocksL;
+    if(Kl[NbBlocksL-1]>S)
+      blocksl-=1;
+    size_t gridsizeU;
+    size_t gridsizeL;
+    typename Field::ELement_ptr Sj= fflas_new(Fi, 2*s,t);
+    typename Field::Element_ptr Xj = fflas_new(Fi,r,t);
+    typename Field::Element_ptr Yj = fflas_new(Fi, r, t);
+    typename Field::Element_ptr Z = fflas_new(Fi, r, t);
+    typename Field::Element_ptr TlZ = fflas_new(Fi, r, t);
+    typename Field::Element_ptr trailing_term = fflas_new(Fi, s, t);
+    typename Field::Element_ptr E = fflas_new(Fi, r, s);
+    typename Field::Element_ptr Er = fflas_new(Fi, r, s);
+    typename Field::Element_ptr TlEr = fflas_new(Fi, r,s);
+    typename Field::Element_ptr CRE = fflas_new(Fi, s,s);
+    typename Field::Element_ptr SCRE = fflas_new(Fi, s, s);
+    FFLAS::fzero(Fi, r,t, Z,t);
+    for (size_t i=0;i<k-1;i++)
+      {     FFLAS::fzero(Fi, 2*s,t,Sj,t);
+	    FFLAS::fzero(Fi,r,t,Xj,t);
+	    FFLAS::fzero(Fi,r,t,Yj,t);
+	    FFLAS::fzero(Fi,r,t,TlZ,t);
+	    if (Ku[blocksu+1]-i*s<s)
+	      { //Dj*Bj
+		if (blocksu+1<NbBlocksU)
+		  grid_sizeU =s;
+		else
+		  grid_sizeU = r-(blocksu)*s
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, Ku[blocksu+1]-i*s, Fi.One, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, Xj+blocksu*s*t, t);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,grid_sizeU, t, i*s+s-Ku[blocksu+1], Fi.One, Xu+Ku[blocksu+1], ldu, B+Ku[blocksu+1]*ldb, ldb, Fi.zero, Xj+(blocksu+1)*s*t, t);
+		//Sj*Bj
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, Ku[blocksu+1]-i*s, Fi.One, Xu+i*s+s*ldu, ldu, B+i*s*ldb, ldb, Fi.zero, Sj, t);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, i*s+s-Ku[blocksu+1], Fi.One, Xu+Ku[blocksu+1]+s*ldu, ldu, B+Ku[blocksu+1]*ldb, ldb, Fi.zero, Sj+s*t, t);
+		//Apply Tu
+		if(blocksu>0)
+		  {
+		    for(size_t l=0; l<s; l++)
+		      FFLAS::faddin(Fi,t,Sj+l*t,1,Xj+Tuinv[(blocksu-1)*s+l]*t,1);
+		  }
+		for (size_t l=0; l<s; l++)
+		  if(blocksu*s+l<r)
+		    FFLAS::faddin(Fi,t,Sj+l*t,1,Xj+Tuinv[blocksu*s+l]*t,1);
+	      }
+	    else
+	      { // Dj*Bj
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, s, Fi.One, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, Xj+blocksu*s*t, t);
+		// Sj*Bj
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, s, Fi.One, Xu+S+s*ldu, ldu, i*s+i*s*ldb, ldb, Fi.zero, Sj, t);
+		//Apply Tu
+		if(blocksu>0)
+		  {
+		    for(size_t l=0; l<s; l++)
+		      FFLAS::faddin(Fi,t,Sj+l*t,1,Xj+Tuinv[(blocksu-1)*s+l]*t,1);
+		  }
+	      }
+	    // Apply R to Xj
+	    for(size_t j=0; j<r;j++)
+	      {
+		fassign(Fi,t, Xj+Q[j]*t,1, Yj+P[j]*t, 1);
+	      }
+	    //Zj
+	    FFLAS::faddin(Fi,r,t,Yj,t,Z,t);
+	    //Compute Tl*Zj
+	    for(size_t l=0;l<r,l++)
+	      {
+		FFLAS::faddin(Fi,t,Z+l*t,1,TlZ+Tlinv[l]*t,1);
+	      }
+	    if (blocksl<NbBlocksl)
+	      grid_sizeL= s;
+	    else
+	      grid_sizeL = r-(blocksl-1)*s
+	      
+	    if (S-i*s-Kl[blocksl-1]<s)
+	      { //Dj*Zj
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[blocksl-1]-(S-(i+1)*s), t, s, Fi.One, Xl+(S-(i+1)*s)*ldl, ldl, Z+((blocksl-2)*s*t, t, Fi.zero, C+(S-(i+1)*s)*ldc, ldc);
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, S-i*s-Kl[blocksl-1],t, grid_sizeL, Fi.One, Xl+Kl[blocksl-1]*ldl, ldl, Z+(blocksl-1)*s*t, t, Fi.zero, C+Kl[blocksl-1]*ldc, ldc);
+		
+		//Sj*Zj
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[blocksl-1]-(S-(i+1)*s), t, s, Fi.One, Xl+(S-(i+1)*s)*ldl+s, ldl, TlZ+(blocksl-1)*s*t, t, Fi.zero, Sj, t);
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,S-i*s-Kl[blocksl-1], t, s, Fi.One, Xl+Kl[blocksl-1]*ldl+s, ldl, TlZ+blocksl*s*t, t, Fi.zero, Sj+Kl[blocksl-1]-(S-(i+1)*s), t);	
+	      }
+	    else
+	      {
+		 //Dj*Bj
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, grid_sizeL, Fi.One, Xl+(S-(i+1)*s)*ldl, ldl, Z+(blocksl-1)*s*t, t, Fi.zero, C+(S-(i+1)*s)*ldc, ldc);
+		
+		//Sj*Bj
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, Fi.One, Xl+S*ldl+s, ldl, TlZ+blocksl*s*t, t, Fi.zero, Sj, t);
+	      }
+	    FFLAS::faddin(Fi,s,t,Sj,t,C+(N-S-s)*ldc,ldc);
+	    //Next Block
+	    if (Ku[blocksu+1]-S<s)
+	      blocksu++;
+	    if (N-S-Kl[blocksl-1]<s)
+	      blocksl--;
+	}
+	blocksu = 0;
+	blocksl = NbBlocksL;  
+	size_t row_pos = N;
+	size_t grid_sizerow;
+	size_t grid_sizecol;
+	for(size_t i=0; i<k;i++)
+	  { if (i<k-1)
+	       {
+		 grid_sizecol = s;
+	       }
+	    else{
+	      grid_sizecol = N-S;
+	    }
+	    
+	    //Compute (Left(CiREN-i+1)BN-i+1) the trailing term
+	       FFLAS::fzero(Fi, s, t, trailing_term,t);
+	       FFLAS::fzero(Fi, r, s,E,s);
+	       FFLAS::fzero(Fi, r, s, Er, s);
+	       FFLAS::fzero(Fi, r,s, TlEr, s);
+	       FFLAS::fzero(Fi, s,s, CRE,s);
+	       FFLAS::fzero(Fi, s, s, SCRE,s);
+	    if(Ku[blocksu+1]-i*s<grid_sizecol)
+	      {
+		if(blocksu>0)
+		  {for (size_t l=0; l<s; l++)
+		  {
+		    FFLAS::fassign(Fi,s,Ku[blocksu+1]-i*s,Xu+i*s+s*ldu,ldu, E+Tuinv[(blocksu-1)*s+l]*s,s);
+		    FFLAS::fassign(Fi, s, i*s+grid_sizecol - Ku[blocksu+1], Xu+Ku[blocksu+1]+s*ldu,ldu, E+Tuinv[blocksu*s+l]*s+Ku[blocksu+1]-i*s,s);
+		  }}
+		FFLAS::fassign(Fi,s,Ku[blocksu+1]-i*s, s,Xu+i*s,ldu, E+i*s*s,s);
+		FFLAS::fassign(Fi, s, i*s+grid_sizecol -Ku[blocksu+1], Xu+Ku[blocksu+1],ldu, E+i*s*s+Ku[blocksu+1]-i*s,s);
+	      }
+	    else
+	      { if(blocksu>0)
+		  {for (size_t l=0; l<s; l++)
+		  { 
+		    FFLAS::fassign(Fi,s,grid_sizecol,Xu+i*s+s*ldu,ldu, E+Tuinv[(blocksu-1)*s+l]*s,s);
+		 
+		  }}
+		FFLAS::fassign(Fi,s,grid_sizecol,Xu+i*s,ldu, E+i*s*s,s);
+	      }
+	    // Apply R to E
+	    for(size_t j=0; j<r;j++)
+	      {
+		fassign(Fi,grid_sizecol, E+Q[j]*s,1, Er+P[j]*s, 1);
+	      }
+	    //Compute Left(CRE)
+	    for (size_t j=0; j<r;j++)
+	      {
+		FFLAS::faddin(Fi,grid_sizecol,Er+l*s,1,TlEr+Tlinv[l]*s,1);
+	      }
+	    if (i<k)
+	       {
+		 grid_sizerow = s;
+	       }
+	    else{
+	         grid_sizerow = N-S;
+	    }
+	    if (row_pos-Kl[blockls-1]<grid_sizerow)
+	      {if(blocksl>1)
+		//DN-j
+		fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::NoTrans, Kl[blocksl-1]-(row_pos-grid_sizerow),s,s, Fi.One, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-2)*s *s,s, CRE,s);
+		fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::NoTrans, row_pos-Kl[blocksl-1],s,s, Fi.One, Xl+Kl[blocksl-1]*ldl,ldl,Er+(blocksl-1)*s *s,s, CRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
+		//SN-j
+		if(blocksl>2)
+	        fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::NoTrans, Kl[blocksl-1]-(row_pos-grid_size),s,s, Fi.One, Xl+(row_pos-grid_size)*ldl+s,ldl,TlEr+(blocksl-3)*s *s,s, SCRE,s);
+		if(blocksl>1)
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::NoTrans, row_pos-Kl[blocksl-1],s,s, Fi.One, Xl+Kl[blocksl-1]*ldl+s,ldl,TlEr+(blocksl-2)*s *s,s, SCRE+(Kl[blocksl-1]-(row_pos-grid_size))*s,s);
+	      }
+	    else
+	      { //DN-j
+		fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::NoTrans, grid_size_row,s,s, Fi.One, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-1)*s *s,s, CRE,s);
+		//SN-j
+		fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::NoTrans, gride_sizerow,s,s, Fi.One, Xl+(N-S-s)*ldl+s,ldl,TlEr+(blocksl-2)*s*s,s, SCRE,s);
+	      }
+	    FFLAS::faddin(Fi, grid_sizerow, grid_sizecol, SCRE, s, CRE, s);
+	    for (size_t i=0; i<s; i++)
+	      fzero(s, i+1, CRE + i*s + s-i-1, 1);
+	    fgemm(Fi,FFLAS::FflasNoTrans,FFLAS::NoTrans, grid_sizerow, t, grid_sizecol, Fi.One, CRE, s, B+i*s*t, t, trailing_term, t);
+	    FFLAS::faddin(Fi,grid_sizerow,t,trailing_term,t,C+(row_pos-grid_size_row)*ldc,ldc);
+	    
+	    //Next Block
+	    row_pos -= size_grid;
+	    if (Ku[blocksu+1]-S<s)
+	      blocksu++;
+	    if (N-S-Kl[blocksl+1]<s)
+	      blocksl--;
+        }
+  
+	
+    }
   
 } //namespace FFPACK
 #endif //_FFPACK_ffpack_bruhatgen_inl

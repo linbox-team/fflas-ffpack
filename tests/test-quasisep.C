@@ -98,7 +98,6 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     size_t * Ml = fflas_new<size_t> (n);
     size_t * Tl = fflas_new<size_t>(r);
     size_t NbBlocksL = CompressToBlockBiDiagonal(F, FflasLower, n, s, r, P, Q, L,n ,Xl,2*s,Kl,Ml,Tl);
-    WriteMatrix(std::cout<<"Xl="<<std::endl,F,n,2*s,Xl,2*s)<<std::endl;
     ExpandBlockBiDiagonalToBruhat(F,FflasLower,n,s,r,L2,n,Xl,2*s,NbBlocksL,Kl,Ml,Tl);
     if(!fequal(F,n,n,L,n,L2,n)){
       fail= true;
