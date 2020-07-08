@@ -47,7 +47,7 @@ using namespace FFLAS;
 
 template<class Field, FFLAS_DIAG diag, class RandIter>
 bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
-			   typename Field::ConstElement_ptr A, size_t lda, RandIter& G)
+			   typename Field::ConstElement_ptr A, size_t lda,typename Field::Element_ptr TS, size_t l ,RandIter& G)
 {
     bool fail = false;
     typedef typename Field::Element_ptr Element_ptr ;
@@ -103,14 +103,20 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
       fail= true;
       std::cerr<<"ERROR: Compression of L lost information"<<std::endl;
     }
-
+    Element_ptr CBruhat = fflas_new(F, n, l);
+    productBruhatxTS(F, n, s, r, P, Q, Xu, n, NbBlocksU, Ku, Tu, Xl, 2*s, NbBlocksL, Kl, Tl, TS, l, l, CBruhat, l);
+    Element_ptr Cfgemm = fflas_new(F, n, l);
+    fgemm(F, FflasNoTrans, FflasNoTrans, n,l,n,F.one,A, lda, TS, l, F.zero, Cfgemm, l); 
 
     //fflas_delete ( U2, Xu,Ku,Mu,Tu,L2,Kl,Xl,Ml,Tl);
     // B <- L R^T
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
     // L <- B U
     fgemm(F, FflasNoTrans, FflasNoTrans, n,n,n, F.one, B, lda, U, n, F.zero, L, n);
-
+    if(!fequal(F,n,l,CBruhat,l,Cfgemm,l)){
+      fail= true;
+      std::cerr<<"ERROR: fgmemm != productBruhatxTS"<<std::endl;
+    }
     // Extract the left triangular part of L
     for (size_t i=0; i<n; ++i)
       fzero(F, i+1, L + i*n + n-i-1, 1);
@@ -125,7 +131,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
 }
 
 template<class Field, FFLAS_DIAG diag, class RandIter>
-bool launch_test (const Field & F, size_t n, size_t r, size_t t, RandIter& G)
+bool launch_test (const Field & F, size_t n, size_t r, size_t t, size_t l,RandIter& G)
 {
     //typedef typename Field::Element Element ;
     typedef typename Field::Element_ptr Element_ptr ;
@@ -133,11 +139,11 @@ bool launch_test (const Field & F, size_t n, size_t r, size_t t, RandIter& G)
     { /*  user provided params, larger lda */
         size_t lda = n+10 ;
         Element_ptr A = fflas_new (F, n, lda);
-
+	Element_ptr TS = fflas_new(F, n, l);
             // TODO implement this randomGenerator
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A,lda,G);
-
-        fail = fail || test_BruhatGenerator <Field,diag> (F, n, r, t, A, lda, G);
+	RandomMatrix(F, n, l, TS,l,G);
+        fail = fail || test_BruhatGenerator <Field,diag> (F, n, r, t, A, lda,TS, l,G);
 
         if (fail) std::cout << "failed at user params" << std::endl;
         fflas_delete( A );
@@ -172,7 +178,7 @@ bool testLTQSRPM (const Field & F,size_t n, size_t r, size_t t, RandGen& G){
 }
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,  size_t iters, uint64_t seed){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,size_t l,  size_t iters, uint64_t seed){
     bool ok = true ;
     int nbit=(int)iters;
 
@@ -192,8 +198,8 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,
         std::cout<<" ... ";
 
         ok = ok && testLTQSRPM (*F,n,r,t,G);
-        ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,G);
-        ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,G);
+        ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,l,G);
+        ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,l,G);
 	ok = ok && 
         nbit--;
         if ( !ok )
@@ -215,6 +221,7 @@ int main(int argc, char** argv)
     size_t n=93;
     size_t r=30;
     size_t t=8;
+    size_t l=6;
     size_t iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
@@ -240,16 +247,16 @@ int main(int argc, char** argv)
     
     bool ok=true;
     do{
-      ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,l,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,l/4,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,l/4,iters,seed);
     } while (loop && ok);
 
     return !ok;
