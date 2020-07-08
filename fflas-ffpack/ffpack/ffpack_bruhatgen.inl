@@ -487,7 +487,6 @@ template<class Field>
       {     FFLAS::fzero(Fi, 2*s,t,Sj,t);
 	    FFLAS::fzero(Fi,r,t,Xj,t);
 	    FFLAS::fzero(Fi,r,t,Yj,t);
-	    FFLAS::fzero(Fi,r,t,TlZ,t);
 	    if (Ku[blocksu+1]-i*s<s)
 	      { //Dj*Bj
 		if (blocksu+1<NbBlocksU)
@@ -522,16 +521,19 @@ template<class Field>
 		  }
 	      }
 	    // Apply R to Xj
+	    // FFLAS::WriteMatrix(std::cout<<"Xj="<<std::endl,Fi, N,t, Xj, t) <<std::endl;
 	    for(size_t j=0; j<r;j++)
-	      {
+	      { if(P[j]<r && Q[j]<r)
 		FFLAS::fassign(Fi,t, Xj+Q[j]*t,1, Yj+P[j]*t, 1);
+		else if (P[j]<r)
+		  FFLAS::fzero(Fi,t,Yj+P[j]*t,1);
 	      }
 	    //Zj
 	    FFLAS::faddin(Fi,r,t,Yj,t,Z,t);
 	    //Compute Tl*Zj
 	    for(size_t l=0;l<r;l++)
 	      {
-		FFLAS::faddin(Fi,t,Z+l*t,1,TlZ+Tlinv[l]*t,1);
+		FFLAS::fassign(Fi,t,Z+Tlinv[l]*t,1,TlZ+l*t,1);
 	      }
 	    if (blocksl<NbBlocksL)
 	      grid_sizeL= s;
@@ -611,7 +613,7 @@ template<class Field>
 	    //Compute Left(CRE)
 	    for (size_t j=0; j<r;j++)
 	      {
-		FFLAS::faddin(Fi,grid_sizecol,Er+j*s,1,TlEr+Tlinv[j]*s,1);
+		FFLAS::faddin(Fi,grid_sizecol,Er+Tlinv[j]*s,1,TlEr+j*s,1);
 	      }
 	    if (i<k)
 	       {
@@ -650,7 +652,7 @@ template<class Field>
 	    if (N-S-Kl[blocksl+1]<s)
 	      blocksl--;
         }
-  
+	FFLAS::fflas_delete(Sj,Xj,Yj,Z, TlZ, CRE, SCRE, trailing_term, Er, TlEr, E);
 	
     }
   
