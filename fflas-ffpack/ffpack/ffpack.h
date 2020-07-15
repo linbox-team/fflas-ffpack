@@ -1911,12 +1911,18 @@ namespace FFPACK { /* Quasi-separable matrices*/
     * @param[out] M output permutation matrix
     */
     void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t * M);
+
+
+  size_t * TInverter (size_t * T, size_t r);
+
+  template<class Field>
+  void ComputeRPermutation (const Field&Fi, size_t N, size_t r, const size_t * P, const size_t * Q, size_t * R,size_t * MU, size_t * ML);
   /**productBruhatxTS
    *Comput the product between the CRE compact representation of a matrix A and B a tall matrix
    */
 
   template<class Field>
-  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl, typename Field::Element_ptr B,size_t t, size_t ldb, typename Field::Element_ptr C, size_t ldc);
+  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu, size_t * MU,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t * Tl, size_t * ML,typename Field::Element_ptr B,size_t t, size_t ldb, typename Field::Element_ptr C, size_t ldc);
 }
 
 namespace FFPACK { /* not used */
