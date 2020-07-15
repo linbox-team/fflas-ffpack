@@ -442,26 +442,19 @@ size_t * TInverter (size_t * T, size_t r)
       return(Tinv);
     }
 
+//Compute Rtranspose in the CRE decomposition, mus be apply to the left of a matrix. R[col]=line
 template <class Field>
 inline void ComputeRPermutation (const Field&Fi, size_t N, size_t r, const size_t * P, const size_t * Q, size_t * R,size_t * MU, size_t * ML)
     {
      
-      size_t * MUInv = FFLAS::fflas_new(N);
-      size_t * MLInv = FFLAS::fflas_new(N);
-      for(size_t i=0;i<N;i++)
-	{
-	  MUInv[MU[i]]=i;
-	  MLInv[ML[i]]=i;
-	}
       for (size_t i=0;i<r;i++)
 	{
-	  R[MUInv[P[i]]] = MLInv[Q[i]];
+	  R[MU[P[i]]] = ML[Q[i]];
 	}
-      FFLAS::fflas_delete(MUInv, MLInv);
 
     }
 template<class Field>
- inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl,typename  Field::Element_ptr B,size_t t, size_t ldb,typename Field::Element_ptr C, size_t ldc)
+inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,size_t * MU,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl,,size_t * ML,typename  Field::Element_ptr B,size_t t, size_t ldb,typename Field::Element_ptr C, size_t ldc)
     {
       
       size_t * Tuinv = TInverter(Tu, r);
@@ -477,6 +470,8 @@ template<class Field>
 	blocksl-=1;
       size_t grid_sizeU;
       size_t grid_sizeL;
+      size_t * R=fflas_new(r);
+      ComputeRPermutation(Fi, N, r, P, Q, R, MU, ML);
       typename Field::Element_ptr SX= FFLAS::fflas_new(Fi, 2*s,t);
       typename Field::Element_ptr DX = FFLAS::fflas_new(Fi,2*s,t);
       typename Field::Element_ptr Z = FFLAS::fflas_new(Fi, r, t);
@@ -562,7 +557,7 @@ template<class Field>
 	    if (N-S-Kl[blocksl-1]<s)
 	      blocksl--;
 	}
-	FFLAS::fflas_delete(Sj,Dj,Z, TlZ);
+	FFLAS::fflas_delete(SX,DX,Z, TlZ);
 	blocksl = NbBlocksL;  
 	size_t row_pos = N;
 	size_t grid_sizerow;
