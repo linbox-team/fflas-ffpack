@@ -387,9 +387,9 @@ if (Uplo==FFLAS::FflasUpper)//U
  }
 
 }
- // Compute M such that LM is in column echelon form, where L is the
-      // left factor of a Bruhat decomposition
-      // M is allocated in this function and should be deleted after using it.
+ // Compute the permutation M (in MathPermutation format) such that LM^T is in column echelon form, where L is the
+ // left factor of a Bruhat decomposition
+      // M has to be by the caller of this function.
   void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t* M){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
