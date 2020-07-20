@@ -113,6 +113,8 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
     // L <- B U
     fgemm(F, FflasNoTrans, FflasNoTrans, n,n,n, F.one, B, lda, U, n, F.zero, L, n);
+    WriteMatrix(std::cerr<<"CBruhat = "<<std::endl,F,n,t,CBruhat,t)<<std::endl;
+    WriteMatrix(std::cerr<<"Cfgemm = "<<std::endl,F,n,t,Cfgemm,t)<<std::endl;
     if(!fequal(F,n,l,CBruhat,l,Cfgemm,l)){
       fail= true;
       std::cerr<<"ERROR: fgmemm != productBruhatxTS"<<std::endl;
