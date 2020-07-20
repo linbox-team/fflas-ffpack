@@ -110,17 +110,18 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     Element_ptr Cfgemm = fflas_new(F, n, l);
     fgemm(F, FflasNoTrans, FflasNoTrans, n,l,n,F.one,A, lda, TS, l, F.zero, Cfgemm, l); 
 
-    //fflas_delete ( U2, Xu,Ku,Mu,Tu,L2,Kl,Xl,Ml,Tl);
+    if(!fequal(F,n,l,CBruhat,l,Cfgemm,l)){
+      fail= true;
+      std::cerr<<"ERROR: fgmemm != productBruhatxTS"<<std::endl;
+      WriteMatrix(std::cerr<<"CBruhat = "<<std::endl,F,n,l,CBruhat,l)<<std::endl;
+      WriteMatrix(std::cerr<<"Cfgemm = "<<std::endl,F,n,l,Cfgemm,l)<<std::endl;
+    }
+
+        //fflas_delete ( U2, Xu,Ku,Mu,Tu,L2,Kl,Xl,Ml,Tl);
     // B <- L R^T
     fgemm(F, FflasNoTrans, FflasTrans, n,n,n, F.one, L, n, R, n, F.zero, B, lda);
     // L <- B U
     fgemm(F, FflasNoTrans, FflasNoTrans, n,n,n, F.one, B, lda, U, n, F.zero, L, n);
-    WriteMatrix(std::cerr<<"CBruhat = "<<std::endl,F,n,t,CBruhat,l)<<std::endl;
-    WriteMatrix(std::cerr<<"Cfgemm = "<<std::endl,F,n,t,Cfgemm,l)<<std::endl;
-    if(!fequal(F,n,l,CBruhat,l,Cfgemm,l)){
-      fail= true;
-      std::cerr<<"ERROR: fgmemm != productBruhatxTS"<<std::endl;
-    }
     // Extract the left triangular part of L
     for (size_t i=0; i<n; ++i)
       fzero(F, i+1, L + i*n + n-i-1, 1);
@@ -225,7 +226,7 @@ int main(int argc, char** argv)
     size_t n=93;
     size_t r=30;
     size_t t=8;
-    size_t l=6;
+    size_t m=6;
     size_t iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
@@ -235,6 +236,7 @@ int main(int argc, char** argv)
         { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
         { 'n', "-n N", "Set the matrix order.", TYPE_INT , &n },
         { 'r', "-r R", "Set the rank.", TYPE_INT , &r },
+        { 'm', "-m M", "Set the col dim of the TS matrix.", TYPE_INT , &m },
         { 't', "-t T", "Set the order of quasi-separability.", TYPE_INT , &t },
         { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
         { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
@@ -251,16 +253,16 @@ int main(int argc, char** argv)
     
     bool ok=true;
     do{
-      ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,l,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,l/4,iters,seed);
-      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,l/4,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,m,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,m/4,iters,seed);
+      ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,m/4,iters,seed);
     } while (loop && ok);
 
     return !ok;

@@ -556,7 +556,7 @@ namespace FFPACK {
                             return 0;
                     }
                     else { /*  R>0 */
-                        // Ar <- Ar.P
+                        // Ar <- Ar.P^T
                         FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
                                         Ndown, 0,(int) R, Ar, lda, P);
                         // Ar <- Ar.U1^-1
