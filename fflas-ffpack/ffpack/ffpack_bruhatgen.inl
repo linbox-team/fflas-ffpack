@@ -496,8 +496,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 		for (size_t l=0;l<s;l++)
 		  {FFLAS::faddin(Fi, t, DX+l*t, 1,Z+R[blocksu*s+l]*t ,1);}
 		for (size_t l=0; l<grid_sizeU; l++)
-		  { std::cout<<"grid_sizeU="<<grid_sizeU<<std::endl;
-		    std::cout<<"(blocksu+1)*s+l="<<(blocksu+1)*s+l<<std::endl;
+		  {
 		  FFLAS::faddin(Fi, t, DX+(s+l)*t, 1, Z+R[(blocksu+1)*s+l]*t,1);}
 		//SX<-SjU*Bj 
 		if(blocksu>0) 
@@ -539,7 +538,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 	      { 
 		FFLAS::fassign(Fi,t,Z+Tlinv[l]*t,1,TlZ+l*t,1);
 	      }
-	    std::cout<<"blocksl="<<blocksl<<std::endl;
+	    
 	    if (blocksl<NbBlocksL)
 	      grid_sizeL= s;
 	    else
@@ -565,6 +564,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, Fi.one, Xl+(S-(i+1)*s)*ldl+s, ldl, TlZ+(blocksl-2)*s*t, t, Fi.zero, SX, t);
 	      }
 	    FFLAS::faddin(Fi,s,t,SX,t,C+(S-(i+1)*s)*ldc,ldc);
+	    FFLAS::WriteMatrix(std::cout<<"C="<<std::endl,Fi, N, t, C, t)<<std::endl;
 	    //Next Block
 	    if (Ku[blocksu+1]-i*s<s)
 	      blocksu++;
@@ -598,7 +598,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 	       FFLAS::fzero(Fi, r,s, TlEr, s);
 	       //Expand Ei and apply R
 	    if(Ku[blocksu+1]-i*s<grid_sizecol)
-	      { if(blocksu+1 == NbBlocksU-1)
+	      { if(blocksu+1 == NbBlocksU-1) //We should not consider a line superior to r
 		  grid_sizeU = r - (blocksu+1)*s;
 		else
 		  grid_sizeU = s;
@@ -618,7 +618,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 		  
 	      }
 	    else
-	      { if(blocksu == NbBlocksU-1)
+	      { if(blocksu == NbBlocksU-1) //We should not consider a line superior to r
 		  grid_sizeU = r - blocksu*s;
 		else
 		  grid_sizeU = s;

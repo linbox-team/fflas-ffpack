@@ -103,6 +103,8 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
       fail= true;
       std::cerr<<"ERROR: Compression of L lost information"<<std::endl;
     }
+    WriteMatrix(std::cerr<<"A="<<std::endl,F,n,n, A,n)<<std::endl;
+    WriteMatrix(std::cerr<<"TS="<<std::endl,F,n,l, TS,l)<<std::endl;
     Element_ptr CBruhat = fflas_new(F, n, l);
     productBruhatxTS(F, n, s, r, P, Q, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*s, NbBlocksL, Kl, Tl, Ml,TS, l, l, CBruhat, l);
     Element_ptr Cfgemm = fflas_new(F, n, l);
