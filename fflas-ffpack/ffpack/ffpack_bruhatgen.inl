@@ -265,7 +265,7 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
     FFLAS::fzero(Fi, N, 2*s, X,ldx);
   size_t CurrentBlockPos = 0;
   size_t NbBlocks = 0;
-  size_t BlockPivot=0;
+  size_t BlockPivot = 0;
   while (BlockPivot<r)
     { K[NbBlocks] = CurrentBlockPos;
       size_t BlockSize, NextBlockPos;
@@ -480,10 +480,14 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
       typename Field::Element_ptr TlZ = FFLAS::fflas_new(Fi, r, t);
       FFLAS::fzero(Fi, r,t, Z,t);
       FFLAS::fzero(Fi, N, t, C, t);
+      FFLAS::WritePermutation(std::cout<<"KU="<<std::endl,Ku, NbBlocksU+1)<<std::endl;
       for (size_t i=0;i<k;i++)
-	{     FFLAS::fzero(Fi, 2*s, t, SX, t);
+	{ FFLAS::fzero(Fi, 2*s, t, DX, t);
+	  FFLAS::fzero(Fi, 2*s, t, SX, t);
+	  std::cout<<"i*s="<<i*s<<std::endl;
 	  if (Ku[blocksu+1]-i*s<s) //if current blocks split over the s next column
-	      { //We should not consider a line superior to r
+	    {   std::cout<<"Cassage de block"<<std::endl;
+		//We should not consider a line superior to r
 		if (blocksu+1<NbBlocksU-1)
 		  grid_sizeU =s;
 		else
@@ -647,26 +651,26 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 	    if (row_pos-Kl[blocksl-1]<grid_sizerow)
 	      { //DN-j
 		if(blocksl>1)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[blocksl-1]-(row_pos-grid_sizerow),s,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-2)*s *s,s,Fi.zero, CRE,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[blocksl-1]-(row_pos-grid_sizerow),grid_sizecol,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-2)*s *s,s,Fi.zero, CRE,s);
 		if(blocksl<NbBlocksL)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],s,s, Fi.one, Xl+Kl[blocksl-1]*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],grid_sizecol,s, Fi.one, Xl+Kl[blocksl-1]*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
 		else
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],s,r-(NbBlocksL-1)*s, Fi.one, Xl+Kl[blocksl-1]*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],grid_sizecol,r-(NbBlocksL-1)*s, Fi.one, Xl+Kl[blocksl-1]*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
 		//SN-j
 		if(blocksl>2)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[blocksl-1]-(row_pos-grid_sizerow),s,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl+s,ldl,TlEr+(blocksl-3)*s *s,s, Fi.zero,SCRE,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[blocksl-1]-(row_pos-grid_sizerow),grid_sizecol,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl+s,ldl,TlEr+(blocksl-3)*s *s,s, Fi.zero,SCRE,s);
 		if(blocksl>1)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],s,s, Fi.one, Xl+Kl[blocksl-1]*ldl+s,ldl,TlEr+(blocksl-2)*s *s,s, Fi.zero,SCRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],grid_sizecol,s, Fi.one, Xl+Kl[blocksl-1]*ldl+s,ldl,TlEr+(blocksl-2)*s *s,s, Fi.zero,SCRE+(Kl[blocksl-1]-(row_pos-grid_sizerow))*s,s);
 	      }
 	    else
 	      { //DN-j
 		if(blocksl<NbBlocksL)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_sizerow,s,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_sizerow,grid_sizecol,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE,s);
 		else
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_sizerow,s,r-(NbBlocksL-1)*s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_sizerow,grid_sizecol,r-(NbBlocksL-1)*s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE,s);
 		//SN-j
 		if(blocksl>1)
-		  fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,grid_sizerow,s,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl+s,ldl,TlEr+(blocksl-2)*s*s,s, Fi.zero,SCRE,s);
+		  fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,grid_sizerow,grid_sizecol,s, Fi.one, Xl+(row_pos-grid_sizerow)*ldl+s,ldl,TlEr+(blocksl-2)*s*s,s, Fi.zero,SCRE,s);
 	      }
 	    FFLAS::faddin(Fi, grid_sizerow, grid_sizecol, SCRE, s, CRE, s);
 	    for (size_t i=0; i<s; i++)
