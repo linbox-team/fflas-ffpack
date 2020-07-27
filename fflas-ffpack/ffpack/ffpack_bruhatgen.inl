@@ -466,16 +466,16 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
       size_t rs = N%s;
       if (rs) k++;
       size_t S=N-s;
-      // std::cerr<<"Entering CompactBruhat x TS"<<std::endl;
-      // std::cerr<<"  Pivots: ";
-      // for (size_t i=0; i<r; i++) std::cerr<<" ("<<P[i]<<", "<<Q[i]<<"),  ";
-      // std::cerr<<std::endl;
-      // FFLAS::WritePermutation(std::cerr<<"  Block structure of U: KU="<<std::endl,Ku, NbBlocksU+1)<<std::endl;
-      // FFLAS::WritePermutation(std::cerr<<"  Block structure of L: KL="<<std::endl,Kl, NbBlocksL+1)<<std::endl;
-      // FFLAS::WriteMatrix(std::cerr<<"  Xu = "<<std::endl,Fi, 2*s, N, Xu, ldu)<<std::endl;
-      // FFLAS::WriteMatrix(std::cerr<<"  Xl = "<<std::endl,Fi, N, 2*s, Xl, ldl)<<std::endl;
+      std::cerr<<"Entering CompactBruhat x TS"<<std::endl;
+      std::cerr<<"  Pivots: ";
+      for (size_t i=0; i<r; i++) std::cerr<<" ("<<P[i]<<", "<<Q[i]<<"),  ";
+      std::cerr<<std::endl;
+      FFLAS::WritePermutation(std::cerr<<"  Block structure of U: KU="<<std::endl,Ku, NbBlocksU+1)<<std::endl;
+      FFLAS::WritePermutation(std::cerr<<"  Block structure of L: KL="<<std::endl,Kl, NbBlocksL+1)<<std::endl;
+      FFLAS::WriteMatrix(std::cerr<<"  Xu = "<<std::endl,Fi, 2*s, N, Xu, ldu)<<std::endl;
+      FFLAS::WriteMatrix(std::cerr<<"  Xl = "<<std::endl,Fi, N, 2*s, Xl, ldl)<<std::endl;
 
-      // std::cerr<<"N,s,rs,k = "<<N<<" "<<s<<" "<<rs<<" "<<k<<std::endl;
+      std::cerr<<"N,s,rs,k = "<<N<<" "<<s<<" "<<rs<<" "<<k<<std::endl;
 	//Gives the information about our position in XU (line = blocksu*s) and (Xl column= blocksl*s)
       size_t blocksu = 0;
       size_t blocksl=NbBlocksL;
@@ -635,21 +635,22 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
                     grid_sizeU = r - blocksu*s;
 		else
                     grid_sizeU = s;
-//                std::cerr<<"In the else : grid_sizeU = "<<grid_sizeU<<std::endl;
+                std::cerr<<"In the else : grid_sizeU = "<<grid_sizeU<<std::endl;
 
                 if(blocksu>0) {
-//                    std::cerr<<"blocksu > 0"<<std::endl;
+                    std::cerr<<"blocksu > 0"<<std::endl;
                     for (size_t l=0; l<s; l++) { 
-                        FFLAS::fassign (Fi, grid_dim, Xu + i*s + (s+l)*ldu + l, 1, Er+R[Tuinv[(blocksu-1)*s+l]]*s,1);
+                        FFLAS::WriteMatrix(std::cout<<"copying row "<<l<<"+s of Xu (D) = "<<std::endl,Fi, 1,grid_dim, Xu+i*s+(s+l)*ldu+l, ldu)<<std::endl;
+                        FFLAS::fassign (Fi, grid_dim, Xu + i*s + (s+l)*ldu , 1, Er+R[Tuinv[(blocksu-1)*s+l]]*s,1);
                     }
                 }
 		for (size_t l=0; l<grid_sizeU; l++) {
-                        // FFLAS::WriteMatrix(std::cout<<"copying row "<<l<<" of Xu = "<<std::endl,Fi, 1,grid_dim, Xu+i*s+l*ldu, ldu)<<std::endl;
+                         FFLAS::WriteMatrix(std::cout<<"copying row "<<l<<" of Xu = "<<std::endl,Fi, 1,grid_dim, Xu+i*s+l*ldu, ldu)<<std::endl;
 
                     FFLAS::fassign (Fi, grid_dim, Xu + i*s + l*ldu, 1, Er+R[blocksu*s+l]*s, 1);
                 }
 	      }
-//            FFLAS::WriteMatrix(std::cout<<"Er="<<std::endl,Fi, r,s, Er, s)<<std::endl;
+            FFLAS::WriteMatrix(std::cout<<"Er="<<std::endl,Fi, r,s, Er, s)<<std::endl;
 
 	    //Compute Left(CRE)
 	    for (size_t j=0; j<r;j++)
