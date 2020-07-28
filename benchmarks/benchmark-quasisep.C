@@ -66,7 +66,7 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         size_t * P = fflas_new<size_t> (n);
         size_t * Q = fflas_new<size_t> (n);
         Element_ptr L = fflas_new(F,n,n);
-        Element_ptr R = fflas_new(F,n,n);
+            //      Element_ptr R = fflas_new(F,n,n);
         Element_ptr U = fflas_new(F,n,n);
         
         Element_ptr Xu = fflas_new(F, 2*t, n);
@@ -82,7 +82,7 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         chrono.clear();
         chrono.start();
         r2 =  LTBruhatGen (F, FflasNonUnit, n, A, lda, P, Q);
-        getLTBruhatGen(F, n, r, P, Q, R, n);
+//        getLTBruhatGen(F, n, r, P, Q, R, n);
         getLTBruhatGen(F, FflasLower, FflasUnit, n, r, P, Q, A, lda, L,n);
         size_t NbBlocksL = CompressToBlockBiDiagonal(F, FflasLower, n, t, r, P, Q, L,n ,Xl,2*t,Kl,Ml,Tl);
         getLTBruhatGen(F, FflasUpper, FflasNonUnit, n, r, P, Q, A, lda, U, n);
@@ -92,13 +92,13 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         if (r2!=r){ std::cerr<<"ERROR: r != r2"<<std::endl; exit(-1);}
 
         time_gen+=chrono.usertime();
-        FFLAS::fflas_delete(A,L,R,U);
+        FFLAS::fflas_delete(A,L,U);
 
         Element_ptr CBruhat = fflas_new(F, n, m);
  
         chrono.clear();
         chrono.start();
-        productBruhatxTS(F, n, t, r, P, Q, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*t, NbBlocksL, Kl, Tl, Ml,TS, m, ldts, CBruhat, m);
+        productBruhatxTS(F, n, t, r, m, P, Q, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*t, NbBlocksL, Kl, Tl, Ml,TS, ldts, F.zero, CBruhat, m);
         chrono.stop();
 
         time_cbxts += chrono.usertime();

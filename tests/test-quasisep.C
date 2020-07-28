@@ -111,7 +111,7 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     // WriteMatrix(std::cerr<<"TS="<<std::endl,F,n,l, TS,l)<<std::endl;
 
     Element_ptr CBruhat = fflas_new(F, n, l);
-    productBruhatxTS(F, n, s, r, P, Q, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*s, NbBlocksL, Kl, Tl, Ml,TS, l, l, CBruhat, l);
+    productBruhatxTS(F, n, s, r, l, P, Q, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*s, NbBlocksL, Kl, Tl, Ml,TS, l, F.zero, CBruhat, l);
     Element_ptr Cfgemm = fflas_new(F, n, l);
     fgemm(F, FflasNoTrans, FflasNoTrans, n,l,n,F.one,A, lda, TS, l, F.zero, Cfgemm, l); 
 

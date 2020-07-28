@@ -123,64 +123,50 @@ inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const F
                            typename Field::Element_ptr T, const size_t ldt)
 
 {   FFLAS::fzero(Fi, N, N, T, N);
-    //U
-    if (Uplo==FFLAS::FflasUpper) {
-      if(diag==FFLAS::FflasNonUnit){
-          for(size_t i=0; i<r;i++){
-            size_t row = P[i];
-            size_t col = Q[i];
-            FFLAS::fassign(Fi, N-1-row-col, A+row*lda+col,1,T+row*ldt+col,1);
-            for(size_t j=0;j<i;j++){
-                Fi.assign(T[row*ldt+Q[j]],Fi.zero);
+    if (Uplo==FFLAS::FflasUpper) {     //U
+        if(diag==FFLAS::FflasNonUnit){
+            for(size_t i=0; i<r;i++){
+                size_t row = P[i];
+                size_t col = Q[i];
+                FFLAS::fassign(Fi, N-1-row-col, A+row*lda+col,1,T+row*ldt+col,1);
+                for(size_t j=0;j<i;j++){
+                    Fi.assign(T[row*ldt+Q[j]],Fi.zero);
+                }
             }
-          }
-      }
-      else
-        {
-          for(size_t i=0; i<r;i++){
-            size_t row = P[i];
-            size_t col = Q[i];
-            FFLAS::fassign(Fi, N-2-row-col, A+row*lda+col+1,1,T+row*ldt+col+1,1);
-            Fi.assign(T[row*ldt+col],Fi.one);
-            for(size_t j=0;j<i;j++){
-              Fi.assign(T[row*ldt+Q[j]],Fi.zero);
+        } else {
+            for(size_t i=0; i<r;i++){
+                size_t row = P[i];
+                size_t col = Q[i];
+                FFLAS::fassign(Fi, N-2-row-col, A+row*lda+col+1,1,T+row*ldt+col+1,1);
+                Fi.assign(T[row*ldt+col],Fi.one);
+                for(size_t j=0;j<i;j++){
+                    Fi.assign(T[row*ldt+Q[j]],Fi.zero);
+                }
             }
-          }
+        }
+    } else{ //L
+        if(diag==FFLAS::FflasNonUnit){
+            for(size_t i=0; i<r;i++){
+                size_t row = P[i];
+                size_t col = Q[i];
 
+                FFLAS::fassign(Fi, N-1-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
+                for(size_t j=0;j<i;j++){
+                    Fi.assign(T[P[j]*ldt+col],Fi.zero);
+                }
+            }
+        } else {
+            for(size_t i=0; i<r;i++){
+                size_t row = P[i];
+                size_t col = Q[i];
+                FFLAS::fassign(Fi, N-2-row-col, A+(row+1)*lda+col,lda,T+(row+1)*ldt+col,ldt);
+                Fi.assign(T[row*ldt+col],Fi.one);
+                for(size_t j=0;j<i;j++){
+                    Fi.assign(T[P[j]*ldt+col],Fi.zero);
+                }
+            }
         }
     }
-    //L
-    else
-      {
-        if(diag==FFLAS::FflasNonUnit){
-
-          for(size_t i=0; i<r;i++){
-            size_t row = P[i];
-            size_t col = Q[i];
-
-            FFLAS::fassign(Fi, N-1-row-col, A+row*lda+col,lda,T+row*ldt+col,ldt);
-            for(size_t j=0;j<i;j++){
-                Fi.assign(T[P[j]*ldt+col],Fi.zero);
-            }
-          
-          }
-        }
-
-        else
-          {
-            for(size_t i=0; i<r;i++){
-              size_t row = P[i];
-              size_t col = Q[i];
-              FFLAS::fassign(Fi, N-2-row-col, A+(row+1)*lda+col,lda,T+(row+1)*ldt+col,ldt);
-              Fi.assign(T[row*ldt+col],Fi.one);
-              for(size_t j=0;j<i;j++){
-                Fi.assign(T[P[j]*ldt+col],Fi.zero);
-              }
-          
-            }
-          }
-      }
- 
 }
     
 
@@ -418,7 +404,7 @@ if (Uplo==FFLAS::FflasUpper)//U
 //Compute a table Tinv that gives us all the information we need to expand S. If T[i]=j means that line i of S has been fold into line j
 // Then Tinv[j]=i means that line j was originally into line 1
 
-size_t * TInverter (size_t * T, size_t r)
+size_t * TInverter (const size_t * T, size_t r)
     {
       size_t * Tinv = FFLAS::fflas_new<size_t>(r);
       std::vector<bool> IsFinal(r, true); //Stock the information if Line i is a line where no other line fold into
@@ -446,17 +432,51 @@ size_t * TInverter (size_t * T, size_t r)
 
 //Compute Rtranspose in the CRE decomposition, must be apply to the left of a matrix. R[col]=line
 template <class Field>
-inline void ComputeRPermutation (const Field&Fi, size_t N, size_t r, const size_t * P, const size_t * Q, size_t * R,size_t * MU, size_t * ML)
-{
- 
-      for (size_t i=0;i<r;i++)
-	{
-	  R[MU[P[i]]] = ML[Q[i]];
-	}
-
+inline void ComputeRPermutation (const Field&Fi, size_t N, size_t r, const size_t * P, const size_t * Q,
+                                 size_t * R, const size_t * MU, const size_t * ML){
+       for (size_t i=0;i<r;i++){
+           R[MU[P[i]]] = ML[Q[i]];
+       }
     }
+
+/**
+ * @brief Compute the product of a left-triangular quasi-separable matrix A, represented by a compact Bruhat generator, 
+ * with a dense rectangular matrix B:  \f$ C \gets A \times B + beta C \f$
+ *
+ * @param F the base field
+ * @param N the order of \p A
+ * @param s the order of quasiseparability of \p A
+ * @param r the number of pivots in the left-triangular par of the rank profile matrix of \p A
+ * @param t the number of columns of \p B
+ * @param P the row indices of the pivots of \p A
+ * @param Q the column indices of the pivots of \p A
+ * @param Xu the compact storage of U: Du blocks in the first s rows, Su blocks in the last s rows
+ * @param ldxu the leading dimension of \p Xu
+ * @param NbBlocksU the number of diagonal blocks in the compact storage of U
+ * @param Ku the list of starting column positions for each block of the storage of U
+ * @param Tu the folding matrix for the compact storage of U: \f$ Du + Tu  Su\f$ is in row echelon form
+ * @param Mu a permutation matrix such that \f$ Mu (Du + Tu  Su)\f$ is the U factor of the Bruhat generator
+ * @param Xl the compact storage of L: Dl blocks in the first s columns, Sl blocks in the last s columns
+ * @param ldxl the leading dimension of \p Xl
+ * @param NbBlocksL the number of diagonal blocks in the compact storage of L
+ * @param Kl the list of starting row positions for each block of the storage of L
+ * @param Tl the folding matrix for the compact storage of L: \f$ Dl + Sl  Tl \f$ is in column echelon form
+ * @param Ml a permutation matrix such that \f$(Dl + Tl Sl) Ml \f$ is the L factor of the Bruhat generator
+ * @param B an \f$ N \times t\f$ dense matrix
+ * @param ldb leading dimension of \p B
+ * @param beta scaling constant
+ * @param [inout] C output matrix
+ * @param ldc leading dimension of \p C
+ */
 template<class Field>
-inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu ,size_t * MU,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t *Tl,size_t * ML,typename  Field::Element_ptr B,size_t t, size_t ldb,typename Field::Element_ptr C, size_t ldc)
+inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q,
+                               typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU,
+                               const size_t * Ku, const size_t *Tu , const size_t * MU,
+                               typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL,
+                               const size_t *Kl, const size_t *Tl, const size_t * ML,
+                               typename  Field::Element_ptr B, size_t ldb,
+                               const typename Field::Element beta,
+                               typename Field::Element_ptr C, size_t ldc)
     {
         size_t * Tuinv = TInverter(Tu, r);
         size_t * Tlinv = TInverter(Tl, r);
@@ -490,7 +510,6 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
       typename Field::Element_ptr Z = FFLAS::fflas_new(Fi, r, t);
       typename Field::Element_ptr TlZ = FFLAS::fflas_new(Fi, r, t);
       FFLAS::fzero(Fi, r,t, Z,t);
-      FFLAS::fzero(Fi, N, t, C, t);
       // FFLAS::WritePermutation(std::cout<<"KU="<<std::endl,Ku, NbBlocksU+1)<<std::endl;
 
       for (size_t i = 0; i < k-1; i++) {
@@ -582,8 +601,8 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 	    if (currbkrow < Kl[blocksl-1]){ // If the current row slice intersects 2  blocks Dj
                     //std::cerr<<"YES"<<std::endl;
                     //DjL*Zj
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[blocksl-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl, ldl, Z+(blocksl-2)*s*t, t, Fi.zero, C+currbkrow*ldc, ldc);
-	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, S-i*s-Kl[blocksl-1],t, grid_sizeL, Fi.one, Xl+Kl[blocksl-1]*ldl, ldl, Z+(blocksl-1)*s*t, t, Fi.zero, C+Kl[blocksl-1]*ldc, ldc);
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[blocksl-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl, ldl, Z+(blocksl-2)*s*t, t, beta, C+currbkrow*ldc, ldc);
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, S-i*s-Kl[blocksl-1],t, grid_sizeL, Fi.one, Xl+Kl[blocksl-1]*ldl, ldl, Z+(blocksl-1)*s*t, t, beta, C+Kl[blocksl-1]*ldc, ldc);
 		
 		//SjL*Zj
 		if(blocksl>2)
@@ -592,7 +611,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 	      } else {
                     //std::cerr<<"NO"<<std::endl;
 		 //DjL*Zj
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkrows, t, grid_sizeL, Fi.one, Xl+currbkrow*ldl, ldl, Z+(blocksl-1)*s*t, t, Fi.zero, C+currbkrow*ldc, ldc);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkrows, t, grid_sizeL, Fi.one, Xl+currbkrow*ldl, ldl, Z+(blocksl-1)*s*t, t, beta, C+currbkrow*ldc, ldc);
 		
 		//SjL*Zj
 		if (blocksl > 1)
@@ -716,7 +735,7 @@ inline  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, con
 	    if (row_pos < Kl[blocksl-1])
 	      blocksl--;
         }
-	FFLAS::fflas_delete( CRE, trailing_term, Er, TlEr);
+	FFLAS::fflas_delete (CRE, trailing_term, Er, TlEr);
 	
     }
   
