@@ -106,16 +106,13 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
     }
 
 template<class Field>
-inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr)
-{
-  FFLAS::fzero(Fi, N, N, R,ldr);
-    for(size_t i=0;i<r;i++){
-            size_t row = P[i];
-            size_t col = Q[i];
-            Fi.assign(R[row*ldr+col],Fi.one);
-        }
-    
+inline void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q,
+                           typename Field::Element_ptr R, const size_t ldr){
+    FFLAS::fzero(Fi, N, N, R,ldr);
+    for(size_t i=0;i<r;i++)
+        Fi.assign(R[P[i]*ldr+Q[i]],Fi.one);
 }
+
 template<class Field>
 inline void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag,
                            const size_t N, const size_t r, const size_t *P, const size_t * Q,
