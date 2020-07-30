@@ -513,91 +513,80 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
             // std::cerr<<"N,s,rs,k = "<<N<<" "<<s<<" "<<rs<<" "<<k<<std::endl;
 
             //Gives the information about our position in XU (line = blocksu*s) and (Xl column= blocksl*s)
-        size_t blocksu = 0;
-        size_t blocksl = NbBlocksL;
+        size_t currbkU = 0;
+        size_t currbkL = NbBlocksL;
       // The parial sums do not involve the last rs rows of C: skipping the last row slice of L when in the last s rows.
-      if (Kl [NbBlocksL-1] >=  N-s) blocksl--;
-
-      size_t bkU_nrows = s;
+      if (Kl [NbBlocksL-1] >=  N-s) currbkL--;
 
       typename Field::Element_ptr SX= FFLAS::fflas_new(Fi, 2*s,t);
       typename Field::Element_ptr DX = FFLAS::fflas_new(Fi,2*s,t);
       typename Field::Element_ptr Z = FFLAS::fflas_new(Fi, r, t);
       typename Field::Element_ptr TlZ = FFLAS::fflas_new(Fi, r, t);
       FFLAS::fzero(Fi, r,t, Z,t);
-      FFLAS::fzero(Fi, N, t, C, t);
-      // FFLAS::WritePermutation(std::cout<<"KU="<<std::endl,Ku, NbBlocksU+1)<<std::endl;
 
-      for (size_t i = 0; i < k-1; i++) {
+      for (size_t i = 0; i < k-1; i++) { // Loop over the slices Bi of s rows of B except the last one
 
-          size_t bkrows = s;
-          if (i==k-2 && rs) bkrows = rs; // first block row has rs rows
-
+              // 1. Compute  X = Ei x Bi
+              //    by storing Dx and Sx such that X = Dx + Tu x Sx
+          
           FFLAS::fzero(Fi, 2*s, t, DX, t);
 	  FFLAS::fzero(Fi, 2*s, t, SX, t);
-	  // std::cout<<"i*s="<<i*s<<std::endl;
-          // std::cerr<<"Ku["<<blocksu+1<<"] = "<<Ku[blocksu+1]<<std::endl;
-	  if (Ku[blocksu+1]-i*s<s) //if current blocks split over the s next column
-	    {
-                // std::cout<<"Cassage de block"<<std::endl;
-                size_t fst_ncols = Ku[blocksu+1]-i*s;
-                size_t snd_ncols = s-fst_ncols;
-		//We should not consider a line superior to r
-		if (blocksu+1<NbBlocksU-1)
-		  bkU_nrows =s;
-		else
-		  bkU_nrows = r-(blocksu+1)*s;
+
+	  if (Ku[currbkU+1]-i*s<s) { // current slice of E intersects two blocks of Du
+
+              size_t fst_ncols = Ku[currbkU+1] - i*s;
+              size_t snd_ncols = s-fst_ncols;
+                  //We should not consider a line superior to r
+              size_t bkU_nrows = (currbkU+1<NbBlocksU-1) ? s :  r-(currbkU+1)*s;
 		
 		//DX<-DjU*Bj
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, fst_ncols, Fi.one, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, DX, t);
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,bkU_nrows, t, snd_ncols, Fi.one, Xu+Ku[blocksu+1], ldu, B+Ku[blocksu+1]*ldb, ldb, Fi.zero, DX+s*t, t);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,bkU_nrows, t, snd_ncols, Fi.one, Xu+Ku[currbkU+1], ldu, B+Ku[currbkU+1]*ldb, ldb, Fi.zero, DX+s*t, t);
 
                 // FFLAS::WriteMatrix(std::cerr<<"  DX = "<<std::endl,Fi, s+bkU_nrows, t, DX, t)<<std::endl;
                 // FFLAS::WriteMatrix(std::cout<<" avant accumulation Z="<<std::endl,Fi,r,t,Z,t)<<std::endl;
 
                     //Apply R and add to Z
 		for (size_t l=0;l<s;l++){
-                    FFLAS::faddin(Fi, t, DX+l*t, 1,Z+R[blocksu*s+l]*t ,1);
+                    FFLAS::faddin(Fi, t, DX+l*t, 1,Z+R[currbkU*s+l]*t ,1);
                 }
 		for (size_t l=0; l<bkU_nrows; l++) {
-                    FFLAS::faddin(Fi, t, DX+(s+l)*t, 1, Z+R[(blocksu+1)*s+l]*t,1);
+                    FFLAS::faddin(Fi, t, DX+(s+l)*t, 1, Z+R[(currbkU+1)*s+l]*t,1);
                 }
 
                     //FFLAS::WriteMatrix(std::cout<<" apres accumulation Z="<<std::endl,Fi,r,t,Z,t)<<std::endl;
 		//SX<-SjU*Bj 
-		if(blocksu>0)
+		if(currbkU>0)
                     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, fst_ncols, Fi.one, Xu+i*s+s*ldu, ldu, B+i*s*ldb, ldb, Fi.zero, SX, t);
 
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, snd_ncols, Fi.one, Xu+Ku[blocksu+1]+s*ldu, ldu, B+Ku[blocksu+1]*ldb, ldb, Fi.zero, SX+s*t, t);
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, snd_ncols, Fi.one, Xu+Ku[currbkU+1]+s*ldu, ldu, B+Ku[currbkU+1]*ldb, ldb, Fi.zero, SX+s*t, t);
                 
                     //FFLAS::WriteMatrix(std::cerr<<"  SX = "<<std::endl,Fi, 2*s, t, SX, t)<<std::endl;
 
 		//Apply R*Tu and add to Z
-		if(blocksu>0){
+		if(currbkU>0){
 		    for(size_t l=0; l<s; l++)
-		      FFLAS::faddin(Fi,t,SX+l*t,1,Z+R[Tuinv[(blocksu-1)*s+l]]*t,1);
+		      FFLAS::faddin(Fi,t,SX+l*t,1,Z+R[Tuinv[(currbkU-1)*s+l]]*t,1);
 		  }
 		for (size_t l=0; l<s; l++){
-                        //std::cerr<<"blocksu = "<<blocksu<<" blocksu*s+l = "<<blocksu*s+l<<" Tuinv[...] = "<<Tuinv[blocksu*s+l]<<std::endl;
-                    FFLAS::faddin(Fi,t,SX+(l+s)*t,1,Z+R[Tuinv[blocksu*s+l]]*t,1);
+                        //std::cerr<<"currbkU = "<<currbkU<<" currbkU*s+l = "<<currbkU*s+l<<" Tuinv[...] = "<<Tuinv[currbkU*s+l]<<std::endl;
+                    FFLAS::faddin(Fi,t,SX+(l+s)*t,1,Z+R[Tuinv[currbkU*s+l]]*t,1);
                 }
-            } else { // s-dimensional column slice doesn't split a block in U
-		if (blocksu<NbBlocksU-1)
-		  bkU_nrows =s;
-		else
-		  bkU_nrows = r-(blocksu)*s;
-		// DX<-DjU*Bj
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,bkU_nrows, t, s, Fi.one, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, DX, t);
+          } else { // s-dimensional column slice doesn't split a block in U
+              size_t bkU_nrows = (currbkU<NbBlocksU-1) ? s : r-(currbkU)*s;
+              
+                  // DX<-DjU*Bj
+              fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,bkU_nrows, t, s, Fi.one, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, DX, t);
 		//Apply R and add to Z
 	
 		for (size_t l=0;l<bkU_nrows;l++)
-		  FFLAS::faddin(Fi, t, DX+l*t ,1,Z+R[blocksu*s+l]*t ,1);
+		  FFLAS::faddin(Fi, t, DX+l*t ,1,Z+R[currbkU*s+l]*t ,1);
 		// SX<-SjU*Bj
-		if(blocksu>0)
+		if(currbkU>0)
 		  {fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, s, Fi.one, Xu+i*s+s*ldu, ldu, B+i*s*ldb, ldb, Fi.zero, SX, t);
 		    //Apply R*Tu and add to Z
 		    for (size_t l=0; l<s; l++)
-		      FFLAS::faddin(Fi,t, SX+l*t, 1, Z+R[Tuinv[(blocksu-1)*s+l]]*t,1);
+		      FFLAS::faddin(Fi,t, SX+l*t, 1, Z+R[Tuinv[(currbkU-1)*s+l]]*t,1);
 		   }
 	      }
 
@@ -606,38 +595,40 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
 		FFLAS::fassign(Fi,t,Z+Tlinv[l]*t,1,TlZ+l*t,1);
             }
 	    
-            size_t bkL_ncols =  (blocksl<NbBlocksL) ? s : r-(blocksl-1)*s;
-
-            size_t currbkrow = N - (i+1)*s - bkrows;
+            size_t bkL_ncols =  (currbkL<NbBlocksL) ? s : r-(currbkL-1)*s;
+            size_t bkC_nrows = (i==k-2 && rs) ? rs : s; // last slice of C has rs rows
+            size_t currbkrow = N - (i+1)*s - bkC_nrows;
                 //std::cerr<<"i = "<<i<<" currbkrow = "<<currbkrow<<" bkL_ncols = "<<bkL_ncols<<std::endl;
-	    if (currbkrow < Kl[blocksl-1]){ // If the current row slice intersects 2  blocks Dj
+	    if (currbkrow < Kl[currbkL-1]){ // If the current row slice intersects 2  blocks Dj
                     //DjL*Zj
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[blocksl-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl, ldl, Z+(blocksl-2)*s*t, t, beta, C+currbkrow*ldc, ldc);
-	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-(i+1)*s-Kl[blocksl-1],t, bkL_ncols, Fi.one, Xl+Kl[blocksl-1]*ldl, ldl, Z+(blocksl-1)*s*t, t, beta, C+Kl[blocksl-1]*ldc, ldc);
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[currbkL-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl, ldl, Z+(currbkL-2)*s*t, t, beta, C+currbkrow*ldc, ldc);
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-(i+1)*s-Kl[currbkL-1],t, bkL_ncols, Fi.one, Xl+Kl[currbkL-1]*ldl, ldl, Z+(currbkL-1)*s*t, t, beta, C+Kl[currbkL-1]*ldc, ldc);
 		
 		//SjL*Zj
-		if(blocksl>2)
-                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[blocksl-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl+s, ldl, TlZ+(blocksl-3)*s*t, t, Fi.one, C+currbkrow*ldc, ldc);
-	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,N-(i+1)*s-Kl[blocksl-1], t, s, Fi.one, Xl+Kl[blocksl-1]*ldl+s, ldl, TlZ+(blocksl-2)*s*t, t, Fi.one, C+Kl[blocksl-1]*ldc, ldc);	
-	      } else {
+		if(currbkL>2)
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[currbkL-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl+s, ldl, TlZ+(currbkL-3)*s*t, t, Fi.one, C+currbkrow*ldc, ldc);
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,N-(i+1)*s-Kl[currbkL-1], t, s, Fi.one, Xl+Kl[currbkL-1]*ldl+s, ldl, TlZ+(currbkL-2)*s*t, t, Fi.one, C+Kl[currbkL-1]*ldc, ldc);	
+            } else {
 		 //DjL*Zj
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkrows, t, bkL_ncols, Fi.one, Xl+currbkrow*ldl, ldl, Z+(blocksl-1)*s*t, t, beta, C+currbkrow*ldc, ldc);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkC_nrows, t, bkL_ncols, Fi.one, Xl+currbkrow*ldl, ldl, Z+(currbkL-1)*s*t, t, beta, C+currbkrow*ldc, ldc);
 		
 		//SjL*Zj
-		if (blocksl > 1)
-                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkrows, t, s, Fi.one, Xl+currbkrow*ldl + s, ldl, TlZ+(blocksl-2)*s*t, t, Fi.one, C+currbkrow*ldc, ldc);
+		if (currbkL > 1)
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkC_nrows, t, s, Fi.one, Xl+currbkrow*ldl + s, ldl, TlZ+(currbkL-2)*s*t, t, Fi.one, C+currbkrow*ldc, ldc);
 	      }
                 //FFLAS::faddin(Fi,s,t,SX,t,C+(S-(i+1)*s)*ldc,ldc);
 	    // FFLAS::WriteMatrix(std::cout<<"C="<<std::endl,Fi, N, t, C, t)<<std::endl;
 	    //Next Block
-	    if (Ku[blocksu+1] < (i+1)*s) // one block Dj has been completed in U
-	      blocksu++;
-	    if (currbkrow < Kl[blocksl-1]) // one block Dj has been completed in L
-	      blocksl--;
+	    if (Ku[currbkU+1] < (i+1)*s) // one block Dj has been completed in U
+	      currbkU++;
+	    if (currbkrow < Kl[currbkL-1]) // one block Dj has been completed in L
+	      currbkL--;
 	}
 	FFLAS::fflas_delete(SX,DX,Z, TlZ);
-	blocksu = 0;
-	blocksl = NbBlocksL;  
+
+            // TODO : move the following code into a dedicated routine: expandLCRE
+        currbkU = 0;
+	currbkL = NbBlocksL;  
 	size_t row_pos = N;
 	typename Field::Element_ptr trailing_term = FFLAS::fflas_new(Fi, s, t);
 	typename Field::Element_ptr Er = FFLAS::fflas_new(Fi, r, s);
@@ -651,44 +642,37 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
 	       FFLAS::fzero(Fi, r, s, Er, s);
 	       FFLAS::fzero(Fi, r,s, TlEr, s);
 	       //Expand Ei and apply R
-	    if(Ku[blocksu+1]-i*s<grid_dim)
-	      { if(blocksu+1 == NbBlocksU-1) //We should not consider a line superior to r
-		  bkU_nrows = r - (blocksu+1)*s;
-		else
-		  bkU_nrows = s;
-		if(blocksu>0)
+	    if(Ku[currbkU+1]-i*s<grid_dim) {
+                size_t bkU_nrows =  (currbkU+1 == NbBlocksU-1) ? r - (currbkU+1)*s : s;
+
+		if(currbkU>0)
 		  {for (size_t l=0; l<s; l++)
 		      { //S
-			FFLAS::fassign(Fi,Ku[blocksu+1]-i*s,Xu+i*s+(s+l)*ldu,1, Er+R[Tuinv[(blocksu-1)*s+l]]*s,1);
+			FFLAS::fassign(Fi,Ku[currbkU+1]-i*s,Xu+i*s+(s+l)*ldu,1, Er+R[Tuinv[(currbkU-1)*s+l]]*s,1);
 		    
 		  }}
 		for (size_t l=0;l<s;l++)
 		  { //S
-		    FFLAS::fassign(Fi, i*s+grid_dim - Ku[blocksu+1], Xu+Ku[blocksu+1]+(s+l)*ldu,1, Er+R[Tuinv[blocksu*s+l]]*s+Ku[blocksu+1]-i*s,1);
+		    FFLAS::fassign(Fi, i*s+grid_dim - Ku[currbkU+1], Xu+Ku[currbkU+1]+(s+l)*ldu,1, Er+R[Tuinv[currbkU*s+l]]*s+Ku[currbkU+1]-i*s,1);
 		    //D
-		    FFLAS::fassign(Fi,Ku[blocksu+1]-i*s, Xu+i*s+l*ldu,1 ,Er+R[blocksu*s+l]*s,1);}
+		    FFLAS::fassign(Fi,Ku[currbkU+1]-i*s, Xu+i*s+l*ldu,1 ,Er+R[currbkU*s+l]*s,1);}
 		for (size_t l=0; l<bkU_nrows;l++)
-		    FFLAS::fassign(Fi,  i*s+grid_dim -Ku[blocksu+1], Xu+Ku[blocksu+1]+l*ldu,1, Er+R[(blocksu+1)*s+l]*s+Ku[blocksu+1]-i*s,1);
+		    FFLAS::fassign(Fi,  i*s+grid_dim -Ku[currbkU+1], Xu+Ku[currbkU+1]+l*ldu,1, Er+R[(currbkU+1)*s+l]*s+Ku[currbkU+1]-i*s,1);
 		  
 	      }
 	    else {
-                if(blocksu == NbBlocksU-1) //We should not consider a line superior to r
-                    bkU_nrows = r - blocksu*s;
-		else
-                    bkU_nrows = s;
-                // std::cerr<<"In the else : bkU_nrows = "<<bkU_nrows<<std::endl;
+                size_t bkU_nrows = (currbkU == NbBlocksU-1) ? r - currbkU*s : s;
 
-                if(blocksu>0) {
-                    // std::cerr<<"blocksu > 0"<<std::endl;
+                if(currbkU>0) {
                     for (size_t l=0; l<s; l++) { 
                         // FFLAS::WriteMatrix(std::cout<<"copying row "<<l<<"+s of Xu (D) = "<<std::endl,Fi, 1,grid_dim, Xu+i*s+(s+l)*ldu+l, ldu)<<std::endl;
-                        FFLAS::fassign (Fi, grid_dim, Xu + i*s + (s+l)*ldu , 1, Er+R[Tuinv[(blocksu-1)*s+l]]*s,1);
+                        FFLAS::fassign (Fi, grid_dim, Xu + i*s + (s+l)*ldu , 1, Er+R[Tuinv[(currbkU-1)*s+l]]*s,1);
                     }
                 }
 		for (size_t l=0; l<bkU_nrows; l++) {
                          // FFLAS::WriteMatrix(std::cout<<"copying row "<<l<<" of Xu = "<<std::endl,Fi, 1,grid_dim, Xu+i*s+l*ldu, ldu)<<std::endl;
 
-                    FFLAS::fassign (Fi, grid_dim, Xu + i*s + l*ldu, 1, Er+R[blocksu*s+l]*s, 1);
+                    FFLAS::fassign (Fi, grid_dim, Xu + i*s + l*ldu, 1, Er+R[currbkU*s+l]*s, 1);
                 }
 	      }
                 //FFLAS::WriteMatrix(std::cout<<"Er="<<std::endl,Fi, r,s, Er, s)<<std::endl;
@@ -698,32 +682,32 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
 	      {
 		FFLAS::faddin(Fi,grid_dim,Er+Tlinv[j]*s,1,TlEr+j*s,1);
 	      }
-                // std::cerr<<"row_pos = "<<row_pos<<" blocksl-1 = "<<blocksl-1<<" Kl[blocksl-1] = "<<Kl[blocksl-1]<<" grid_dim = "<<grid_dim<<std::endl;
+                // std::cerr<<"row_pos = "<<row_pos<<" currbkL-1 = "<<currbkL-1<<" Kl[currbkL-1] = "<<Kl[currbkL-1]<<" grid_dim = "<<grid_dim<<std::endl;
 
-            size_t inner_dim = (blocksl<NbBlocksL) ? s : r-(NbBlocksL-1)*s;
+            size_t inner_dim = (currbkL<NbBlocksL) ? s : r-(NbBlocksL-1)*s;
 
-            if (row_pos-Kl[blocksl-1]<grid_dim) { // the current row slice intersects 2  blocks Dj
+            if (row_pos-Kl[currbkL-1]<grid_dim) { // the current row slice intersects 2  blocks Dj
                     //DN-j
                 // std::cerr<<"ici"<<std::endl;
-                if(blocksl>1){
-                    // std::cerr<<"blocksl>1"<<std::endl;
-                    fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[blocksl-1]-(row_pos-grid_dim),grid_dim,s, Fi.one, Xl+(row_pos-grid_dim)*ldl,ldl,Er+(blocksl-2)*s *s,s,Fi.zero, CRE,s);
+                if(currbkL>1){
+                    // std::cerr<<"currbkL>1"<<std::endl;
+                    fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[currbkL-1]-(row_pos-grid_dim),grid_dim,s, Fi.one, Xl+(row_pos-grid_dim)*ldl,ldl,Er+(currbkL-2)*s *s,s,Fi.zero, CRE,s);
                 }
 
-                fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],grid_dim, inner_dim, Fi.one, Xl+Kl[blocksl-1]*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE+(Kl[blocksl-1]-(row_pos-grid_dim))*s,s);
+                fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[currbkL-1],grid_dim, inner_dim, Fi.one, Xl+Kl[currbkL-1]*ldl,ldl,Er+(currbkL-1)*s *s,s, Fi.zero,CRE+(Kl[currbkL-1]-(row_pos-grid_dim))*s,s);
 
                     //SN-j
-		if(blocksl>2)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[blocksl-1]-(row_pos-grid_dim),grid_dim,s, Fi.one, Xl+(row_pos-grid_dim)*ldl+s,ldl,TlEr+(blocksl-3)*s *s,s, Fi.one,CRE,s);
-		if(blocksl>1)
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[blocksl-1],grid_dim,s, Fi.one, Xl+Kl[blocksl-1]*ldl+s,ldl,TlEr+(blocksl-2)*s *s,s, Fi.one,CRE+(Kl[blocksl-1]-(row_pos-grid_dim))*s,s);
+		if(currbkL>2)
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, Kl[currbkL-1]-(row_pos-grid_dim),grid_dim,s, Fi.one, Xl+(row_pos-grid_dim)*ldl+s,ldl,TlEr+(currbkL-3)*s *s,s, Fi.one,CRE,s);
+		if(currbkL>1)
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, row_pos-Kl[currbkL-1],grid_dim,s, Fi.one, Xl+Kl[currbkL-1]*ldl+s,ldl,TlEr+(currbkL-2)*s *s,s, Fi.one,CRE+(Kl[currbkL-1]-(row_pos-grid_dim))*s,s);
 	      }
 	    else
 	      { //DN-j
-		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_dim,grid_dim, inner_dim, Fi.one, Xl+(row_pos-grid_dim)*ldl,ldl,Er+(blocksl-1)*s *s,s, Fi.zero,CRE,s);
+		  fgemm (Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_dim,grid_dim, inner_dim, Fi.one, Xl+(row_pos-grid_dim)*ldl,ldl,Er+(currbkL-1)*s *s,s, Fi.zero,CRE,s);
 		//SN-j
-		if(blocksl>1)
-		  fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,grid_dim,grid_dim,s, Fi.one, Xl+(row_pos-grid_dim)*ldl+s,ldl,TlEr+(blocksl-2)*s*s,s, Fi.one,CRE,s);
+		if(currbkL>1)
+		  fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,grid_dim,grid_dim,s, Fi.one, Xl+(row_pos-grid_dim)*ldl+s,ldl,TlEr+(currbkL-2)*s*s,s, Fi.one,CRE,s);
 	      }
                 //FFLAS::faddin(Fi, grid_dim, grid_dim, SCRE, s, CRE, s);
                 // Left( )
@@ -734,16 +718,16 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
 
             // FFLAS::WriteMatrix(std::cout<<"Befoe fgemm C="<<std::endl,Fi, N,t, C, ldc)<<std::endl;
 
-	    fgemm(Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_dim, t, grid_dim, Fi.one, CRE, s, B+i*s*t, t, Fi.one, C+(row_pos-grid_dim)*ldc, ldc);
+	    fgemm(Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_dim, t, grid_dim, Fi.one, CRE, s, B+i*s*t, t, (row_pos == N) ? beta : Fi.one, C+(row_pos-grid_dim)*ldc, ldc);
                 //FFLAS::faddin(Fi,grid_dim,t,trailing_term,t,C+(row_pos-grid_dim)*ldc,ldc);
 	    
 	    //Next Block
 	    row_pos -= grid_dim;
-	    if (Ku[blocksu+1]-i*s < grid_dim)
-	      blocksu++;
-//	    if (row_pos-Kl[blocksl-1] < grid_dim)
-	    if (row_pos < Kl[blocksl-1])
-	      blocksl--;
+	    if (Ku[currbkU+1]-i*s < grid_dim)
+	      currbkU++;
+//	    if (row_pos-Kl[currbkL-1] < grid_dim)
+	    if (row_pos < Kl[currbkL-1])
+	      currbkL--;
         }
 	FFLAS::fflas_delete (CRE, trailing_term, Er, TlEr);
 	
