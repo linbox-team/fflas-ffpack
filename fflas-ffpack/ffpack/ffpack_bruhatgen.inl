@@ -473,7 +473,7 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
                                const size_t *Kl, const size_t *Tl, const size_t * ML,
                                typename  Field::Element_ptr B, size_t ldb,
                                const typename Field::Element beta,
-                               typename Field::Element_ptr C, size_t ldc)
+                               typename Field::Element_ptr D, size_t ldd)
     {
         size_t * Tuinv = TInverter(Tu, r);
         size_t * Tlinv = TInverter(Tl, r);
@@ -515,13 +515,12 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
             //Gives the information about our position in XU (line = blocksu*s) and (Xl column= blocksl*s)
         size_t currbkU = 0;
         size_t currbkL = NbBlocksL;
-      // The parial sums do not involve the last rs rows of C: skipping the last row slice of L when in the last s rows.
+      // The partial sums do not involve the last rs rows of C: skipping the last row slice of L when in the last s rows.
       if (Kl [NbBlocksL-1] >=  N-s) currbkL--;
 
       typename Field::Element_ptr SX= FFLAS::fflas_new(Fi, 2*s,t);
-      typename Field::Element_ptr DX = FFLAS::fflas_new(Fi,2*s,t);
+      typename Field::Element_ptr DX = SX;
       typename Field::Element_ptr Z = FFLAS::fflas_new(Fi, r, t);
-      typename Field::Element_ptr TlZ = FFLAS::fflas_new(Fi, r, t);
       FFLAS::fzero(Fi, r,t, Z,t);
 
       for (size_t i = 0; i < k-1; i++) { // Loop over the slices Bi of s rows of B except the last one
@@ -529,103 +528,136 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
               // 1. Compute  X = Ei x Bi
               //    by storing Dx and Sx such that X = Dx + Tu x Sx
           
-          FFLAS::fzero(Fi, 2*s, t, DX, t);
-	  FFLAS::fzero(Fi, 2*s, t, SX, t);
-
-	  if (Ku[currbkU+1]-i*s<s) { // current slice of E intersects two blocks of Du
-
+	  if (Ku[currbkU+1]-i*s<s) { // column slice Ei intersects two blocks of Du
+                  /*       | <-- s ---> |
+                   * --||--|-------||   |
+                   *   ||  | Suj-1 ||   |
+                   * --||--|-------||---|-------||
+                   *   ||  | Duj   ||   | Suj   ||
+                   *   ||--|-------||---|-------||--
+                   *       |       ||   | Duj+1 || 
+                   *       |       ||---|-------||--
+                   */
               size_t fst_ncols = Ku[currbkU+1] - i*s;
               size_t snd_ncols = s-fst_ncols;
-                  //We should not consider a line superior to r
-              size_t bkU_nrows = (currbkU+1<NbBlocksU-1) ? s :  r-(currbkU+1)*s;
+              size_t bkU_nrows = (currbkU+1 < NbBlocksU-1) ? s :  r-(currbkU+1)*s; // nrows of Duj+1
 		
-		//DX<-DjU*Bj
+                  // Dxi <- [ Duj ||    0  ] x Bi
+                  //        [     || Duj+1 ]
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, fst_ncols, Fi.one, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, DX, t);
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,bkU_nrows, t, snd_ncols, Fi.one, Xu+Ku[currbkU+1], ldu, B+Ku[currbkU+1]*ldb, ldb, Fi.zero, DX+s*t, t);
+                
+                    // Zi <- Zi + R x Dxi
+		for (size_t l=0;l<s;l++)
+                    FFLAS::faddin (Fi, t, DX + l*t, 1, Z + R[currbkU*s+l]*t, 1);
+                for (size_t l=0; l<bkU_nrows; l++)
+                    FFLAS::faddin (Fi, t, DX + (s+l)*t, 1, Z + R[(currbkU+1)*s+l]*t, 1);
 
-                // FFLAS::WriteMatrix(std::cerr<<"  DX = "<<std::endl,Fi, s+bkU_nrows, t, DX, t)<<std::endl;
-                // FFLAS::WriteMatrix(std::cout<<" avant accumulation Z="<<std::endl,Fi,r,t,Z,t)<<std::endl;
-
-                    //Apply R and add to Z
-		for (size_t l=0;l<s;l++){
-                    FFLAS::faddin(Fi, t, DX+l*t, 1,Z+R[currbkU*s+l]*t ,1);
-                }
-		for (size_t l=0; l<bkU_nrows; l++) {
-                    FFLAS::faddin(Fi, t, DX+(s+l)*t, 1, Z+R[(currbkU+1)*s+l]*t,1);
-                }
-
-                    //FFLAS::WriteMatrix(std::cout<<" apres accumulation Z="<<std::endl,Fi,r,t,Z,t)<<std::endl;
-		//SX<-SjU*Bj 
+                    // Sxi <- [ Suj-1 ||  0  ] x Bi
+                    //        [       || Suj ]
 		if(currbkU>0)
                     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, fst_ncols, Fi.one, Xu+i*s+s*ldu, ldu, B+i*s*ldb, ldb, Fi.zero, SX, t);
-
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, snd_ncols, Fi.one, Xu+Ku[currbkU+1]+s*ldu, ldu, B+Ku[currbkU+1]*ldb, ldb, Fi.zero, SX+s*t, t);
                 
-                    //FFLAS::WriteMatrix(std::cerr<<"  SX = "<<std::endl,Fi, 2*s, t, SX, t)<<std::endl;
-
-		//Apply R*Tu and add to Z
+                    // Zi <- Zi + R x Tu x Sxi
 		if(currbkU>0){
 		    for(size_t l=0; l<s; l++)
-		      FFLAS::faddin(Fi,t,SX+l*t,1,Z+R[Tuinv[(currbkU-1)*s+l]]*t,1);
-		  }
-		for (size_t l=0; l<s; l++){
-                        //std::cerr<<"currbkU = "<<currbkU<<" currbkU*s+l = "<<currbkU*s+l<<" Tuinv[...] = "<<Tuinv[currbkU*s+l]<<std::endl;
-                    FFLAS::faddin(Fi,t,SX+(l+s)*t,1,Z+R[Tuinv[currbkU*s+l]]*t,1);
+		      FFLAS::faddin (Fi, t, SX + l*t, 1, Z + R [Tuinv [(currbkU-1)*s+l]]*t, 1);
                 }
-          } else { // s-dimensional column slice doesn't split a block in U
-              size_t bkU_nrows = (currbkU<NbBlocksU-1) ? s : r-(currbkU)*s;
+		for (size_t l=0; l<s; l++)
+                    FFLAS::faddin (Fi, t, SX + (l+s)*t, 1, Z + R [Tuinv [currbkU*s+l]]*t, 1);
+
+          } else { // column slice Ei intersects only a block of Du
+                  /*       | <- s -> |
+                   * --||--|---------|-||
+                   *   ||  |   Suj-1 | ||
+                   * --||--|---------|-||--
+                   *   ||  |    Duj  | ||  
+                   *   ||--|---------|-||--
+                   */
+
+              size_t bkU_nrows = (currbkU < NbBlocksU-1) ? s : r-(currbkU)*s;
               
-                  // DX<-DjU*Bj
+                  // Dxi <- Duj x Bi
               fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,bkU_nrows, t, s, Fi.one, Xu+i*s, ldu, B+i*s*ldb, ldb, Fi.zero, DX, t);
-		//Apply R and add to Z
-	
-		for (size_t l=0;l<bkU_nrows;l++)
-		  FFLAS::faddin(Fi, t, DX+l*t ,1,Z+R[currbkU*s+l]*t ,1);
-		// SX<-SjU*Bj
-		if(currbkU>0)
-		  {fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, s, Fi.one, Xu+i*s+s*ldu, ldu, B+i*s*ldb, ldb, Fi.zero, SX, t);
-		    //Apply R*Tu and add to Z
+
+                  // Zi <- Zi + R x Dxi
+              for (size_t l=0;l<bkU_nrows;l++)
+		  FFLAS::faddin (Fi, t, DX+l*t , 1, Z + R[currbkU*s+l]*t, 1);
+
+                  // Sxi <- Suj-1 x Bi
+              if (currbkU > 0){
+                  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,s, t, s, Fi.one, Xu+i*s+s*ldu, ldu, B+i*s*ldb, ldb, Fi.zero, SX, t);
+
+                      // Z <- Z + R x Tu x Sxj
 		    for (size_t l=0; l<s; l++)
-		      FFLAS::faddin(Fi,t, SX+l*t, 1, Z+R[Tuinv[(currbkU-1)*s+l]]*t,1);
-		   }
-	      }
+                        FFLAS::faddin(Fi,t, SX+l*t, 1, Z+R[Tuinv[(currbkU-1)*s+l]]*t,1);
+              }
+          }
+              // 2. Compute D{k-2-i} <- C{k-2-i} x Zi
 
-              //Compute Tl x Zj
-	    for(size_t l=0;l<r;l++){ 
-		FFLAS::fassign(Fi,t,Z+Tlinv[l]*t,1,TlZ+l*t,1);
-            }
-	    
-            size_t bkL_ncols =  (currbkL<NbBlocksL) ? s : r-(currbkL-1)*s;
-            size_t bkC_nrows = (i==k-2 && rs) ? rs : s; // last slice of C has rs rows
-            size_t currbkrow = N - (i+1)*s - bkC_nrows;
-                //std::cerr<<"i = "<<i<<" currbkrow = "<<currbkrow<<" bkL_ncols = "<<bkL_ncols<<std::endl;
-	    if (currbkrow < Kl[currbkL-1]){ // If the current row slice intersects 2  blocks Dj
-                    //DjL*Zj
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[currbkL-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl, ldl, Z+(currbkL-2)*s*t, t, beta, C+currbkrow*ldc, ldc);
-	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-(i+1)*s-Kl[currbkL-1],t, bkL_ncols, Fi.one, Xl+Kl[currbkL-1]*ldl, ldl, Z+(currbkL-1)*s*t, t, beta, C+Kl[currbkL-1]*ldc, ldc);
+              // TlZi <- Tl x Zi
+          typename Field::Element_ptr TlZ = FFLAS::fflas_new(Fi, r, t);
+          for(size_t l=0;l<r;l++)
+              FFLAS::fassign (Fi, t, Z + Tlinv[l]*t, 1, TlZ + l*t, 1);
+
+          size_t bkL_ncols =  (currbkL < NbBlocksL) ? s : r-(currbkL-1)*s;
+          size_t bkC_nrows = (i==k-2 && rs) ? rs : s; // nrows of C{k-2-i}
+          size_t currbkrow = N - (i+1)*s - bkC_nrows;
+
+          if (currbkrow < Kl[currbkL-1]){ // row slice C{k-2-i} intersects two blocks of Du
+                  /*   
+                   *    |=======|=======|
+                   *    |       |       |
+                   * ---|-------|-------|-------- <--- currbkrow
+                   *  ^ | Slj-2 |  Dlj-1|
+                   *  | |       |       |
+                   *  s |=======|=======|=======| <--- Kl[currbkL-1]
+                   *  |         |       |       | 
+                   *  v         |  Slj-1|  Dlj  | 
+                   *  ----------|-------|-------| 
+                   *            |=======|=======|
+                   */
+                  // D{k-2-i} <- [ Dlj-1 |      ] x Zi
+                  //             [       | Dlj  ]
+              size_t fst_nrows = Kl[currbkL-1] - currbkrow;
+              size_t snd_nrows = bkC_nrows - fst_nrows;
+              fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, fst_nrows, t, s, Fi.one, Xl+currbkrow*ldl, ldl, Z+(currbkL-2)*s*t, t, beta, D+currbkrow*ldd, ldd);
+              fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, snd_nrows, t, bkL_ncols, Fi.one, Xl+Kl[currbkL-1]*ldl, ldl, Z+(currbkL-1)*s*t, t, beta, D+Kl[currbkL-1]*ldd, ldd);
 		
-		//SjL*Zj
-		if(currbkL>2)
-                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,Kl[currbkL-1]-currbkrow, t, s, Fi.one, Xl+currbkrow*ldl+s, ldl, TlZ+(currbkL-3)*s*t, t, Fi.one, C+currbkrow*ldc, ldc);
-	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,N-(i+1)*s-Kl[currbkL-1], t, s, Fi.one, Xl+Kl[currbkL-1]*ldl+s, ldl, TlZ+(currbkL-2)*s*t, t, Fi.one, C+Kl[currbkL-1]*ldc, ldc);	
-            } else {
-		 //DjL*Zj
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkC_nrows, t, bkL_ncols, Fi.one, Xl+currbkrow*ldl, ldl, Z+(currbkL-1)*s*t, t, beta, C+currbkrow*ldc, ldc);
+                  // D{k-2-i} <- [ Slj-2 |      ] x Zi
+                  //             [       | Slj-1]
+              if (currbkL > 2) // Slj-1 and  exist
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, fst_nrows, t, s, Fi.one, Xl + currbkrow*ldl+s, ldl, TlZ+(currbkL-3)*s*t, t, Fi.one, D+currbkrow*ldd, ldd);
+	        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, snd_nrows, t, s, Fi.one, Xl + Kl[currbkL-1]*ldl+s, ldl, TlZ+(currbkL-2)*s*t, t, Fi.one, D+Kl[currbkL-1]*ldd, ldd);	
+          } else { // row slice C{k-2-i} only intersects one block Dl
+                  /*   
+                   *    |=======|=======| <--- Kl[currbkL-1]
+                   *  --|-------|-------| <--- currbkrow
+                   *  ^ |       |       | 
+                   *  s |       |       | 
+                   *  | |  Slj-1|  Dlj  | 
+                   *  v |       |       | 
+                   *  --|-------|-------| 
+                   *    |=======|=======|
+                   */
+                  // D{k-2-i} <-  Dlj x Zi + beta D{k-2-i}
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkC_nrows, t, bkL_ncols, Fi.one, Xl+currbkrow*ldl, ldl, Z+(currbkL-1)*s*t, t, beta, D+currbkrow*ldd, ldd);
 		
-		//SjL*Zj
+                  // D{k-2-i} <-  Slj-1 x TlZi + D{k-2-i}
 		if (currbkL > 1)
-                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkC_nrows, t, s, Fi.one, Xl+currbkrow*ldl + s, ldl, TlZ+(currbkL-2)*s*t, t, Fi.one, C+currbkrow*ldc, ldc);
-	      }
-                //FFLAS::faddin(Fi,s,t,SX,t,C+(S-(i+1)*s)*ldc,ldc);
-	    // FFLAS::WriteMatrix(std::cout<<"C="<<std::endl,Fi, N, t, C, t)<<std::endl;
-	    //Next Block
-	    if (Ku[currbkU+1] < (i+1)*s) // one block Dj has been completed in U
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bkC_nrows, t, s, Fi.one, Xl+currbkrow*ldl + s, ldl, TlZ+(currbkL-2)*s*t, t, Fi.one, D+currbkrow*ldd, ldd);
+          }
+          FFLAS::fflas_delete(TlZ);
+          
+              //Next Block
+          if (Ku [currbkU+1] < (i+1)*s) // one block Dj has been completed in U
 	      currbkU++;
-	    if (currbkrow < Kl[currbkL-1]) // one block Dj has been completed in L
+          if (currbkrow < Kl [currbkL-1]) // one block Dj has been completed in L
 	      currbkL--;
-	}
-	FFLAS::fflas_delete(SX,DX,Z, TlZ);
-
+      }
+      FFLAS::fflas_delete(SX,Z);
+        
             // TODO : move the following code into a dedicated routine: expandLCRE
         currbkU = 0;
 	currbkL = NbBlocksL;  
@@ -716,10 +748,10 @@ inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, si
 
             // FFLAS::WriteMatrix(std::cout<<"CRE ="<<std::endl,Fi, grid_dim,grid_dim, CRE, s)<<std::endl;
 
-            // FFLAS::WriteMatrix(std::cout<<"Befoe fgemm C="<<std::endl,Fi, N,t, C, ldc)<<std::endl;
+            // FFLAS::WriteMatrix(std::cout<<"Befoe fgemm C="<<std::endl,Fi, N,t, D, ldd)<<std::endl;
 
-	    fgemm(Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_dim, t, grid_dim, Fi.one, CRE, s, B+i*s*t, t, (row_pos == N) ? beta : Fi.one, C+(row_pos-grid_dim)*ldc, ldc);
-                //FFLAS::faddin(Fi,grid_dim,t,trailing_term,t,C+(row_pos-grid_dim)*ldc,ldc);
+	    fgemm(Fi,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, grid_dim, t, grid_dim, Fi.one, CRE, s, B+i*s*t, t, (row_pos == N) ? beta : Fi.one, D+(row_pos-grid_dim)*ldd, ldd);
+                //FFLAS::faddin(Fi,grid_dim,t,trailing_term,t,D+(row_pos-grid_dim)*ldd,ldd);
 	    
 	    //Next Block
 	    row_pos -= grid_dim;
