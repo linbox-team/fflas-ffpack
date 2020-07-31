@@ -54,6 +54,7 @@ pkgincludesub_HEADERS=        \
 		ffpack_rankprofiles.inl\
 		ffpack_ftrstr.inl\
 		ffpack_ftrssyr2k.inl\
+		ffpack_bruhatgen.inl\
 		$(multiprecision)
 
 
