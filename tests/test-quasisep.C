@@ -81,8 +81,8 @@ bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
     getLTBruhatGen(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, n, r, P, Q, B, lda, L,n);
     getLTBruhatGen(F, FflasUpper, diag, n, r, P, Q, B, lda, U, n);
 
-    // WriteMatrix(std::cerr<<"L = "<<std::endl,F,n,n,L,n);
-    // WriteMatrix(std::cerr<<"U = "<<std::endl,F,n,n,U,n);
+     // WriteMatrix(std::cerr<<"L = "<<std::endl,F,n,n,L,n);
+     // WriteMatrix(std::cerr<<"U = "<<std::endl,F,n,n,U,n);
 
         //test of compression into block bi diagonal
     Element_ptr U2= fflas_new(F, n,n);
@@ -268,9 +268,10 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,m,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,m/4,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,m/4,iters,seed);
+        seed++;
     } while (loop && ok);
 
-    if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;
+    if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
     
     return !ok;
 }
