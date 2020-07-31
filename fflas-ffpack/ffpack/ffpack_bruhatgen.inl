@@ -596,6 +596,8 @@ inline typename Field::Element_ptr expandLCRE (const Field& Fi, size_t N, size_t
  * @param beta scaling constant
  * @param [inout] C output matrix
  * @param ldc leading dimension of \p C
+ *
+ * @bib Pernet C. and Storjohann A. <i>\c Time and space efficient generators for quasiseparable matrices </i>, JSC (85), 2018, doi:10.1016/j.jsc.2017.07.010
  */
 template<class Field>
 inline  void productBruhatxTS (const Field& Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q,
