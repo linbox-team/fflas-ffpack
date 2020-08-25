@@ -93,7 +93,10 @@ install:
   - echo "CXX=${CXX}"
   - export FC=${GCC_VERSION:+gfortran-${GCC_VERSION}}
   - echo "FC=${FC}"
-  - gcc -march=native -Q --help=target
+  - g++ --version
+  - g++ -march=native -Q --help=target
+  - ${CXX} --version
+  - ${CXX} -march=native -Q --help=target
 
 
 before_script:
