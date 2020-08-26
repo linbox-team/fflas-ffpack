@@ -374,7 +374,7 @@ if (Uplo==FFLAS::FflasUpper)//U
  // Compute the permutation M (in MathPermutation format) such that LM^T is in column echelon form, where L is the
  // left factor of a Bruhat decomposition
       // M has to be by the caller of this function.
-  void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t* M){
+inline void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t* M){
 
       size_t * Pinv = FFLAS::fflas_new<size_t>(N);
       size_t * Ps = FFLAS::fflas_new<size_t>(R);
@@ -401,7 +401,7 @@ if (Uplo==FFLAS::FflasUpper)//U
 //Compute a table Tinv that gives us all the information we need to expand S. If T[i]=j means that line i of S has been fold into line j
 // Then Tinv[j]=i means that line j was originally into line 1
 
-size_t * TInverter (const size_t * T, size_t r)
+inline size_t * TInverter (const size_t * T, size_t r)
     {
       size_t * Tinv = FFLAS::fflas_new<size_t>(r);
       std::vector<bool> IsFinal(r, true); //Stock the information if Line i is a line where no other line fold into
