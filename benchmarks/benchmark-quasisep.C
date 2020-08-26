@@ -107,7 +107,7 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     }
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
-    std::cout << "Generator Time: " << time_gen / double(iter)  << " CBxTS Time: " << time_cbxts / double(iter);
+    std::cout << "Time: " << time_gen / double(iter)  << " (Generator) Time: " << time_cbxts / double(iter)<<" (CB x TS)";
 
 }
 
