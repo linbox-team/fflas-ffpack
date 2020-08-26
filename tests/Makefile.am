@@ -79,7 +79,7 @@ BASIC_TESTS =               \
 
 if FFLASFFPACK_PRECOMPILED
 INTERFACE_TESTS= test-interfaces-c
-test_interfaces_c_CFLAGS = $(AM_CXXFLAGS)
+#test_interfaces_c_CFLAGS = $(AM_CXXFLAGS)
 test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
