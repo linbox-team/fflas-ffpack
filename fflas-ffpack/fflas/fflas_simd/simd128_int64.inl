@@ -573,10 +573,10 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 #ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
         vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(b, a);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
+        return _mm_cmpgt_epi64 (a, b);
 #else
         //#pragma warning "The simd greater function is emulated, it may impact the performances."
         Converter ca, cb;
@@ -589,10 +589,10 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
 #ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
         vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(a, b);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
+        return _mm_cmpgt_epi64 (b, a);
 #else
         //#pragma warning "The simd greater function is emulated, it may impact the performances."
         Converter ca, cb;

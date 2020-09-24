@@ -652,17 +652,17 @@ template <> struct Simd256_impl<true, true, false, 2> : public Simd256_impl<true
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm256_cmpgt_epi16(a, b);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm256_cmpgt_epi16(b, a);
     }
 

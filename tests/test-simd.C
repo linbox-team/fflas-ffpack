@@ -460,6 +460,91 @@ struct ScalFunctions<Element,
 };
 
 /******************************************************************************/
+/* Tests that does not fit in the generic framework of test_op ****************/
+/******************************************************************************/
+template <class Simd, class Scal>
+bool
+do_test_greater_with_zero ()
+{
+    using Element = typename Simd::scalar_t;
+    using SimdVect = typename Simd::vect_t;
+    constexpr size_t SimdVectSize = Simd::vect_size;
+
+    vector<Element> v(SimdVectSize), out_scal(SimdVectSize),
+                                     out_simd(SimdVectSize);
+    generate_random_vector (v);
+
+    /* compute with scalar function */
+    for(size_t i = 0 ; i < SimdVectSize ; i++)
+        out_scal[i] = Scal::greater (0, v[i]);
+
+    /* compute with SIMD function */
+    SimdVect r = Simd::greater (Simd::set1 (0), Simd::loadu (v.data()));
+    Simd::storeu (out_simd.data(), r);
+
+    /* comparison */
+    auto eq = check_eq<Element>;
+    bool res = equal (out_scal.begin(), out_scal.end(), out_simd.begin(), eq);
+
+    /* print result line */
+    cout << Simd::type_string() << "<" << TypeName<Element>()
+         << "> test greater_with_zero"
+         << " " << string (39 - strlen(TypeName<Element>()), '.')
+         << " " << (res ? "success" : "failure") << endl;
+
+    /* in case of error, print all input and output values */
+    if(!res) {
+        cout << string (10, '-') << " debug data " << string (58, '-') << endl;
+        cout << "v: " << v << endl;
+        cout << "out_scal: " << out_scal << endl;
+        cout << "out_simd: " << out_simd << endl;
+        cout << string (80, '-') << endl;
+    }
+    return res;
+}
+
+template <class Simd, class Scal>
+bool
+do_test_lesser_with_zero ()
+{
+    using Element = typename Simd::scalar_t;
+    using SimdVect = typename Simd::vect_t;
+    constexpr size_t SimdVectSize = Simd::vect_size;
+
+    vector<Element> v(SimdVectSize), out_scal(SimdVectSize),
+                                     out_simd(SimdVectSize);
+    generate_random_vector (v);
+
+    /* compute with scalar function */
+    for(size_t i = 0 ; i < SimdVectSize ; i++)
+        out_scal[i] = Scal::lesser (0, v[i]);
+
+    /* compute with SIMD function */
+    SimdVect r = Simd::lesser (Simd::set1 (0), Simd::loadu (v.data()));
+    Simd::storeu (out_simd.data(), r);
+
+    /* comparison */
+    auto eq = check_eq<Element>;
+    bool res = equal (out_scal.begin(), out_scal.end(), out_simd.begin(), eq);
+
+    /* print result line */
+    cout << Simd::type_string() << "<" << TypeName<Element>()
+         << "> test lesser_with_zero"
+         << " " << string (40 - strlen(TypeName<Element>()), '.')
+         << " " << (res ? "success" : "failure") << endl;
+
+    /* in case of error, print all input and output values */
+    if(!res) {
+        cout << string (10, '-') << " debug data " << string (58, '-') << endl;
+        cout << "v: " << v << endl;
+        cout << "out_scal: " << out_scal << endl;
+        cout << "out_simd: " << out_simd << endl;
+        cout << string (80, '-') << endl;
+    }
+    return res;
+}
+
+/******************************************************************************/
 /* Test one SIMD implem *******************************************************/
 /******************************************************************************/
 
@@ -495,8 +580,10 @@ test_impl () {
     TEST_ONE_OP (fnmadd);
     TEST_ONE_OP (fnmaddin);
     TEST_ONE_OP (lesser);
+    btest &= do_test_lesser_with_zero<simd, Scal> ();
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
+    btest &= do_test_greater_with_zero<simd, Scal> ();
     TEST_ONE_OP (greater_eq);
     TEST_ONE_OP (eq);
 
@@ -537,8 +624,10 @@ test_impl () {
     TEST_ONE_OP (fnmaddx);
     TEST_ONE_OP (fnmaddxin);
     TEST_ONE_OP (lesser);
+    btest &= do_test_lesser_with_zero<simd, Scal> ();
     TEST_ONE_OP (lesser_eq);
     TEST_ONE_OP (greater);
+    btest &= do_test_greater_with_zero<simd, Scal> ();
     TEST_ONE_OP (greater_eq);
     TEST_ONE_OP (eq);
     TEST_ONE_OP (template sra<3>);
