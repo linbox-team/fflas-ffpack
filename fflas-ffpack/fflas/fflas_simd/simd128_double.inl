@@ -163,6 +163,29 @@ template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
      */
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_pd(a, b); }
 
+    /* unpacklohi:
+     * Args: a = [ a0, a1  ]
+     *       b = [ b0, b1  ]
+     * Return: r1 = [ a0, b0 ]
+     *         r2 = [ a1, b1 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        r1 = unpacklo (a, b);
+        r2 = unpackhi (a, b);
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return: r1 = [ a0, b0 ]
+     *         r2 = [ a1, b1 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        unpacklohi (r1, r2, a, b); /* same as unpacklohi for vect_size = 2 */
+    }
+
     /*
      * Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
      * and store the results in dst.

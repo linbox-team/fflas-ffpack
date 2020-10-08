@@ -211,6 +211,35 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
      */
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi16(a, b); }
 
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: r1 = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         r2 = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        r1 = unpacklo (a, b);
+        r2 = unpackhi (a, b);
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: r1 = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         r2 = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        vect_t t1, t2, idx;
+        /* 0x =  base_16 */
+        idx = _mm_set_epi8 (15,14,11,10,7,6,3,2,13,12,9,8,5,4,1,0);
+        t1 = _mm_shuffle_epi8 (a, idx);
+        t2 = _mm_shuffle_epi8 (b, idx);
+        r1 = _mm_unpacklo_epi64 (t1, t2);
+        r2 = _mm_unpackhi_epi64 (t1, t2);
+    }
+
     /*
      * Blend packed 16-bit integers from a and b using control mask imm8, and store the results in dst.
      * Args   :	[a0, ..., a7] int16_t

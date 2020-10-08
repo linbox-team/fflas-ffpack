@@ -267,22 +267,43 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 
     }
 
-    /*
-     * Unpack and interleave 16-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a15] int16_t
-     [b0, ..., b15] int16_t
-     * Return :	[a0, b0, ..., a7, b7] int16_t
-     *			[a8, b8, ..., a15, b15] int16_t
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return: r1 = [ a0, b0, a1, b1, ..., a6, b7, a7, b7 ]
+     *         r2 = [ a8, b8, a9, b9, ..., a14, b14, a15, b15 ]
      */
-    static INLINE void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
-        // using Simd256_64 = Simd256<uint64_t>;
-        // vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-        // vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-        vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
-        s1 = unpacklo_twice(a1, b1);
-        s2 = unpackhi_twice(a1, b1);
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        vect_t t1, t2;
+        /* 0xd8 = 3120 base_4 */
+        t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        r1 = _mm256_unpacklo_epi16 (t1, t2);
+        r2 = _mm256_unpackhi_epi16 (t1, t2);
+    }
 
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return: r1 = [ a0, a2, ..., a12, a14, b0, b2, ..., b12, b14 ]
+     *         r2 = [ a1, a3, ..., a13, a15, b1, b3, ..., b13, b15 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        vect_t t1, t2, s;
+        int16_t shuffle_idx[16] = { 0x0100, 0x0504, 0x0908, 0x0d0c,
+                                     0x0302, 0x0706, 0x0b0a, 0x0f0e,
+                                     0x0100, 0x0504, 0x0908, 0x0d0c,
+                                     0x0302, 0x0706, 0x0b0a, 0x0f0e };
+        s = loadu (shuffle_idx);
+        r1 = _mm256_shuffle_epi8 (a, s);
+        r2 = _mm256_shuffle_epi8 (b, s);
+        t1 = _mm256_unpacklo_epi64 (r1, r2);
+        t2 = _mm256_unpackhi_epi64 (r1, r2);
+        /* 0xd8 = 3120 base_4 */
+        r1 = _mm256_permute4x64_epi64 (t1, 0xd8);
+        r2 = _mm256_permute4x64_epi64 (t2, 0xd8);
     }
 
     /*
