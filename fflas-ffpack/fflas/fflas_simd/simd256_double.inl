@@ -170,6 +170,55 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
      */
     static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_pd(a, b); }
 
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: r1 = [ a0, b0, a1, b1 ]
+     *         r2 = [ a2, b2, a3, b3 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        vect_t t1, t2;
+        /* 0xd8 = 3120 base_4 */
+        t1 = _mm256_permute4x64_pd (a, 0xd8);
+        t2 = _mm256_permute4x64_pd (b, 0xd8);
+        r1 = _mm256_unpacklo_pd (t1, t2);
+        r2 = _mm256_unpackhi_pd (t1, t2);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1, t2;
+        t1 = _mm256_unpacklo_pd (a, b);
+        t2 = _mm256_unpackhi_pd (a, b);
+        r1 = _mm256_permute2f128_pd (t1, t2, 0x20);
+        r2 = _mm256_permute2f128_pd (t1, t2, 0x31);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: r1 = [ a0, a2, b0, b2 ]
+     *         r2 = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        r1 = _mm256_unpacklo_pd (a, b);
+        r2 = _mm256_unpackhi_pd (a, b);
+        /* 0xd8 = 3120 base_4 */
+        r1 = _mm256_permute4x64_pd (r1, 0xd8);
+        r2 = _mm256_permute4x64_pd (r2, 0xd8);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1, t2;
+        t1 = _mm256_permute2f128_pd (a, b, 0x20);
+        t2 = _mm256_permute2f128_pd (a, b, 0x31);
+        r1 = _mm256_unpacklo_pd (t1, t2);
+        r2 = _mm256_unpackhi_pd (t1, t2);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
     /*
      * Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
      * and store the results in dst.

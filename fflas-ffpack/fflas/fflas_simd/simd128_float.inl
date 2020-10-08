@@ -172,6 +172,33 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
      */
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_ps(a, b); }
 
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: r1 = [ a0, b0, a1, b1 ]
+     *         r2 = [ a2, b2, a3, b3 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        r1 = unpacklo (a, b);
+        r2 = unpackhi (a, b);
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: r1 = [ a0, a2, b0, b2 ]
+     *         r2 = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
+        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
+        r1 = _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
+        r2 = _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+    }
+
     /*
      * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
      * and store the results in dst.

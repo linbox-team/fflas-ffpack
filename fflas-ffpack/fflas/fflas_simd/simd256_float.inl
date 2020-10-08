@@ -166,6 +166,63 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
      */
     static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_ps(a, b); }
 
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: r1 = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         r2 = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        vect_t t1, t2;
+        /* 0xd8 = 3120 base_4 */
+        t1 = _mm256_castpd_ps (_mm256_permute4x64_pd
+                                            (_mm256_castps_pd (a), 0xd8));
+        t2 = _mm256_castpd_ps (_mm256_permute4x64_pd
+                                            (_mm256_castps_pd (b), 0xd8));
+        r1 = _mm256_unpacklo_ps (t1, t2);
+        r2 = _mm256_unpackhi_ps (t1, t2);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1, t2;
+        t1 = _mm256_unpacklo_ps (a, b);
+        t2 = _mm256_unpackhi_ps (a, b);
+        r1 = _mm256_permute2f128_ps (t1, t2, 0x20);
+        r2 = _mm256_permute2f128_ps (t1, t2, 0x31);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: r1 = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         r2 = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        /* 0xd8 = 3120 base_4 */
+        __m256d t1 = _mm256_castps_pd (_mm256_permute_ps (a, 0xd8));
+        __m256d t2 = _mm256_castps_pd (_mm256_permute_ps (b, 0xd8));
+        __m256d p1 = _mm256_unpacklo_pd (t1, t2);
+        __m256d p2 = _mm256_unpackhi_pd (t1, t2);
+        /* 0xd8 = 3120 base_4 */
+        r1 = _mm256_castpd_ps (_mm256_permute4x64_pd (p1, 0xd8));
+        r2 = _mm256_castpd_ps (_mm256_permute4x64_pd (p2, 0xd8));
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        /* 0xd8 = 3120 base_4 */
+        __m256d pa = _mm256_castps_pd (_mm256_permute_ps (a, 0xd8));
+        __m256d pb = _mm256_castps_pd (_mm256_permute_ps (b, 0xd8));
+        __m256d t1 = _mm256_permute2f128_pd (pa, pb, 0x20);
+        __m256d t2 = _mm256_permute2f128_pd (pa, pb, 0x31);
+        r1 = _mm256_castpd_ps (_mm256_unpacklo_pd (t1, t2));
+        r2 = _mm256_castpd_ps (_mm256_unpackhi_pd (t1, t2));
+
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
     /*
      * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
      * and store the results in dst.

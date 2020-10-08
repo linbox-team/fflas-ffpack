@@ -257,18 +257,35 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
         return unpackhi_twice(a1, b1);
     }
 
-    /*
-     * Unpack and interleave 64-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int64_t
-     [b0, b1, b2, b3] int64_t
-     * Return : [a0, b0, a1, b1] int64_t
-     *		   [a2, b2, a3, b3] int64_t
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: r1 = [ a0, b0, a1, b1 ]
+     *         r2 = [ a2, b2, a3, b3 ]
      */
-    static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
-        vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
-        vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        l = unpacklo_twice(a1, b1);
-        h = unpackhi_twice(a1, b1);
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        vect_t t1, t2;
+        /* 0xd8 = 3120 base_4 */
+        t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        r1 = _mm256_unpacklo_epi64 (t1, t2);
+        r2 = _mm256_unpackhi_epi64 (t1, t2);
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: r1 = [ a0, a2, b0, b2 ]
+     *         r2 = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        r1 = _mm256_unpacklo_epi64 (a, b);
+        r2 = _mm256_unpackhi_epi64 (a, b);
+        /* 0xd8 = 3120 base_4 */
+        r1 = _mm256_permute4x64_epi64 (r1, 0xd8);
+        r2 = _mm256_permute4x64_epi64 (r2, 0xd8);
     }
 
     /*

@@ -265,21 +265,39 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
         return unpackhi_twice(a1, b1);
     }
 
-    /*
-     * Unpack and interleave 32-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, ..., a3, b3] int32_t
-     *			[a4, b4, ..., a7, b7] int32_t
+    /* unpacklohi:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: r1 = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         r2 = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
      */
-    static INLINE void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
-        // using Simd256_64 = Simd256<uint64_t>;
-        // vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-        // vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-        vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
-        s1 = unpacklo_twice(a1, b1);
-        s2 = unpackhi_twice(a1, b1);
+    static INLINE void
+    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        vect_t t1, t2;
+        /* 0xd8 = 3120 base_4 */
+        t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        r1 = _mm256_unpacklo_epi32 (t1, t2);
+        r2 = _mm256_unpackhi_epi32 (t1, t2);
+    }
+
+    /* pack:
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: r1 = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         r2 = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+        vect_t t1, t2;
+        /* 0xd8 = 3120 base_4 */
+        r1 = _mm256_shuffle_epi32 (a, 0xd8);
+        r2 = _mm256_shuffle_epi32 (b, 0xd8);
+        t1 = _mm256_unpacklo_epi64 (r1, r2);
+        t2 = _mm256_unpackhi_epi64 (r1, r2);
+        /* 0xd8 = 3120 base_4 */
+        r1 = _mm256_permute4x64_epi64 (t1, 0xd8);
+        r2 = _mm256_permute4x64_epi64 (t2, 0xd8);
     }
 
     /*
