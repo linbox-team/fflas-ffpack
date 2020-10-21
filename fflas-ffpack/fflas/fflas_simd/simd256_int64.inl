@@ -34,6 +34,7 @@
 #error "You need AVX2 instructions to perform 256bits operations on int64_t"
 #endif
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -67,6 +68,14 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 4;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
@@ -519,6 +528,14 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
      * define the scalar type corresponding to the specialization
      */
     using scalar_t = uint64_t;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;

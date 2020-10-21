@@ -28,6 +28,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_double_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_double_INL
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -35,7 +36,7 @@
 /*
  * Simd128 specialized for double
  */
-template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
+template <> struct Simd128_impl<true, false, true, 8> {
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
     /*
@@ -52,6 +53,14 @@ template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 2;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
