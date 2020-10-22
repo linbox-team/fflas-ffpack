@@ -153,69 +153,158 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
 #endif
 
     /*
-     * Unpack and interleave double-precision (64-bit) floating-point elements from the low half of each 128-bit lane in a and b,
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3] double
-     [b0, b1, b2, b3] double
-     * Return : [a0, b0, a2, b2] double
-     */
-    static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_pd(a, b); }
-
-    /*
-     * Unpack and interleave double-precision (64-bit) floating-point elements from the high half of each 128-bit lane in a and b,
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3] double
-     [b0, b1, b2, b3] double
-     * Return : [a1, b1, a3, b3] double
-     */
-    static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_pd(a, b); }
-
-    /* unpacklohi:
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the low half of each 128-bit lane in a and b.
      * Args: a = [ a0, a1, a2, a3 ]
      *       b = [ b0, b1, b2, b3 ]
-     * Return: r1 = [ a0, b0, a1, b1 ]
-     *         r2 = [ a2, b2, a3, b3 ]
+     * Return:   [ a0, b0, a2, b2 ]
      */
-    static INLINE void
-    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm256_unpacklo_pd(a, b);
+    }
+
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the high half of each 128-bit lane in a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, b1, a3, b3 ]
+     */
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm256_unpackhi_pd(a, b);
+    }
+
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
 /* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
 #ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
-        vect_t t1, t2;
         /* 0xd8 = 3120 base_4 */
-        t1 = _mm256_permute4x64_pd (a, 0xd8);
-        t2 = _mm256_permute4x64_pd (b, 0xd8);
-        r1 = _mm256_unpacklo_pd (t1, t2);
-        r2 = _mm256_unpackhi_pd (t1, t2);
+        vect_t t1 = _mm256_permute4x64_pd (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_pd (b, 0xd8);
+        return _mm256_unpacklo_pd (t1, t2);
 #else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
-        vect_t t1, t2;
-        t1 = _mm256_unpacklo_pd (a, b);
-        t2 = _mm256_unpackhi_pd (a, b);
-        r1 = _mm256_permute2f128_pd (t1, t2, 0x20);
-        r2 = _mm256_permute2f128_pd (t1, t2, 0x31);
+        vect_t t1 = _mm256_unpacklo_pd (a, b);
+        vect_t t2 = _mm256_unpackhi_pd (a, b);
+        return _mm256_permute2f128_pd (t1, t2, 0x20);
 #endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
     }
 
-    /* pack:
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the high half of a and b.
      * Args: a = [ a0, a1, a2, a3 ]
      *       b = [ b0, b1, b2, b3 ]
-     * Return: r1 = [ a0, a2, b0, b2 ]
-     *         r2 = [ a1, a3, b1, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
      */
-    static INLINE void
-    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
 /* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
 #ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
-        r1 = _mm256_unpacklo_pd (a, b);
-        r2 = _mm256_unpackhi_pd (a, b);
         /* 0xd8 = 3120 base_4 */
-        r1 = _mm256_permute4x64_pd (r1, 0xd8);
-        r2 = _mm256_permute4x64_pd (r2, 0xd8);
+        vect_t t1 = _mm256_permute4x64_pd (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_pd (b, 0xd8);
+        return _mm256_unpackhi_pd (t1, t2);
 #else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
-        vect_t t1, t2;
-        t1 = _mm256_permute2f128_pd (a, b, 0x20);
-        t2 = _mm256_permute2f128_pd (a, b, 0x31);
-        r1 = _mm256_unpacklo_pd (t1, t2);
-        r2 = _mm256_unpackhi_pd (t1, t2);
+        vect_t t1 = _mm256_unpacklo_pd (a, b);
+        vect_t t2 = _mm256_unpackhi_pd (a, b);
+        return _mm256_permute2f128_pd (t1, t2, 0x31);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: lo = [ a0, b0, a1, b1 ]
+     *         hi = [ a2, b2, a3, b3 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_pd (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_pd (b, 0xd8);
+        lo = _mm256_unpacklo_pd (t1, t2);
+        hi = _mm256_unpackhi_pd (t1, t2);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1 = _mm256_unpacklo_pd (a, b);
+        vect_t t2 = _mm256_unpackhi_pd (a, b);
+        lo = _mm256_permute2f128_pd (t1, t2, 0x20);
+        hi = _mm256_permute2f128_pd (t1, t2, 0x31);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
+    /*
+     * Pack double-precision (64-bit) floating-point elements from the even
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, a2, b0, b2 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        vect_t t1 = _mm256_unpacklo_pd (a, b);
+        /* 0xd8 = 3120 base_4 */
+        return _mm256_permute4x64_pd (t1, 0xd8);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1 = _mm256_permute2f128_pd (a, b, 0x20);
+        vect_t t2 = _mm256_permute2f128_pd (a, b, 0x31);
+        return _mm256_unpacklo_pd (t1, t2);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
+    /*
+     * Pack double-precision (64-bit) floating-point elements from the odd
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, a3, b1, b3 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        vect_t t2 = _mm256_unpackhi_pd (a, b);
+        /* 0xd8 = 3120 base_4 */
+        return _mm256_permute4x64_pd (t2, 0xd8);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1 = _mm256_permute2f128_pd (a, b, 0x20);
+        vect_t t2 = _mm256_permute2f128_pd (a, b, 0x31);
+        return _mm256_unpackhi_pd (t1, t2);
+#endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: even = [ a0, a2, b0, b2 ]
+     *         odd  = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+/* _mm256_permute4x64_pd requires AVX2 but we only require AVX here */
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        vect_t t1 = _mm256_unpacklo_pd (a, b);
+        vect_t t2 = _mm256_unpackhi_pd (a, b);
+        /* 0xd8 = 3120 base_4 */
+        even = _mm256_permute4x64_pd (t1, 0xd8);
+        odd = _mm256_permute4x64_pd (t2, 0xd8);
+#else /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS not defined */
+        vect_t t1 = _mm256_permute2f128_pd (a, b, 0x20);
+        vect_t t2 = _mm256_permute2f128_pd (a, b, 0x31);
+        even = _mm256_unpacklo_pd (t1, t2);
+        odd = _mm256_unpackhi_pd (t1, t2);
 #endif /* __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS */
     }
 

@@ -148,42 +148,99 @@ template <> struct Simd128_impl<true, false, true, 8> : public Simd128fp_base {
 #endif
 
     /*
-     * Unpack and interleave double-precision (64-bit) floating-point elements from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1] double
-     [b0, b1] double
-     * Return : [a0, b0] double
-     */
-    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_pd(a, b); }
-
-    /*
-     * Unpack and interleave double-precision (64-bit) floating-point elements from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1] double
-     [b0, b1] double
-     * Return : [a1, b1] double
-     */
-    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_pd(a, b); }
-
-    /* unpacklohi:
-     * Args: a = [ a0, a1  ]
-     *       b = [ b0, b1  ]
-     * Return: r1 = [ a0, b0 ]
-     *         r2 = [ a1, b1 ]
-     */
-    static INLINE void
-    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
-        r1 = unpacklo (a, b);
-        r2 = unpackhi (a, b);
-    }
-
-    /* pack:
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the low half of a and b.
      * Args: a = [ a0, a1 ]
      *       b = [ b0, b1 ]
-     * Return: r1 = [ a0, b0 ]
-     *         r2 = [ a1, b1 ]
+     * Return:   [ a0, b0 ]
+     */
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpacklo_pd(a, b);
+    }
+
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a1, b1 ]
+     */
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpackhi_pd(a, b);
+    }
+
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a0, b0 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        return unpacklo_intrinsic(a, b);
+    }
+
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a1, b1 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        return unpackhi_intrinsic(a, b);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1  ]
+     *       b = [ b0, b1  ]
+     * Return: lo = [ a0, b0 ]
+     *         hi = [ a1, b1 ]
      */
     static INLINE void
-    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
-        unpacklohi (r1, r2, a, b); /* same as unpacklohi for vect_size = 2 */
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        lo = unpacklo (a, b);
+        hi = unpackhi (a, b);
+    }
+
+    /*
+     * Pack double-precision (64-bit) floating-point elements from the even
+     * positions of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a0, b0 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        return unpacklo (a, b); /* same as unpacklo for vect_size = 2 */
+    }
+
+    /*
+     * Pack double-precision (64-bit) floating-point elements from the odd
+     * positions of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a1, b1 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        return unpackhi (a, b); /* same as unpackhi for vect_size = 2 */
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return: even = [ a0, b0 ]
+     *         odd  = [ a1, b1 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        even = pack_even (a, b);
+        odd = pack_odd (a, b);
     }
 
     /*

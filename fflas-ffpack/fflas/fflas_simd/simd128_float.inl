@@ -157,46 +157,108 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
 #endif
 
     /*
-     * Unpack and interleave single-precision (32-bit) floating-point elements from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [a0, b0, a1, b1] float
-     */
-    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_ps(a, b); }
-
-    /*
-     * Unpack and interleave single-precision (32-bit) floating-point elements from the high half a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [a2, b2, a3, b3] float
-     */
-    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_ps(a, b); }
-
-    /* unpacklohi:
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the low half of a and b.
      * Args: a = [ a0, a1, a2, a3 ]
      *       b = [ b0, b1, b2, b3 ]
-     * Return: r1 = [ a0, b0, a1, b1 ]
-     *         r2 = [ a2, b2, a3, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
      */
-    static INLINE void
-    unpacklohi (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
-        r1 = unpacklo (a, b);
-        r2 = unpackhi (a, b);
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpacklo_ps(a, b);
     }
 
-    /* pack:
+    /*
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the high half of a and b.
      * Args: a = [ a0, a1, a2, a3 ]
      *       b = [ b0, b1, b2, b3 ]
-     * Return: r1 = [ a0, a2, b0, b2 ]
-     *         r2 = [ a1, a3, b1, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
+     */
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpackhi_ps(a, b);
+    }
+
+    /*
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        return unpacklo_intrinsic(a, b);
+    }
+
+    /*
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        return unpackhi_intrinsic(a, b);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: lo = [ a0, b0, a1, b1 ]
+     *         hi = [ a2, b2, a3, b3 ]
      */
     static INLINE void
-    pack (vect_t& r1, vect_t& r2, const vect_t a, const vect_t b) {
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        lo = unpacklo (a, b);
+        hi = unpackhi (a, b);
+    }
+
+    /*
+     * Pack single-precision (32-bit) floating-point elements from the even
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, a2, b0, b2 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
         /* 0xd8 = 3120 base_4 */
         __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
         __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
-        r1 = _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
-        r2 = _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+        return _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
+    }
+
+    /*
+     * Pack single-precision (32-bit) floating-point elements from the odd
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, a3, b1, b3 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
+        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
+        return _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: even = [ a0, a2, b0, b2 ]
+     *         odd  = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
+        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
+        even = _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
+        odd = _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
     }
 
     /*
