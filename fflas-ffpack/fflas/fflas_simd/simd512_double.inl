@@ -155,24 +155,123 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
         return _mm512_permute_pd(a, s);
     }
 
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the low half of each 128-bit lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a2, b2, a4, b4, a6, b6 ]
+     */
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpacklo_pd(a,b);
+    }
 
     /*
-     * Unpack and interleave double-precision (64-bit) floating-point elements from the low half of each 128-bit lane in a and b,
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
-     [b0, b1, b2, b3, b4, b5, b6, b7] double
-     * Return : [a0, b0, a2, b2, a4, b4, a6, b6] double
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the high half of each 128-bit lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a1, b1, a3, b3, a5, b5, a7, b7 ]
      */
-    static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm512_unpacklo_pd(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpackhi_pd(a,b);
+    }
 
     /*
-     * Unpack and interleave double-precision (64-bit) floating-point elements from the high half of each 128-bit lane in a and b,
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
-     [b0, b1, b2, b3, b4, b5, b6, b7] double
-     * Return : [a1, b1, a3, b3, a5, b5, a7, b7] double
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a1, b1, a2, b2, a3, b3 ]
      */
-    static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm512_unpackhi_pd(a, b); }
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
+        __m512i s = _mm512_loadu_epi64 (permute_idx);
+        vect_t ta = _mm512_permutexvar_pd (s, a)
+        vect_t tb = _mm512_permutexvar_pd (s, b)
+        return _mm512_unpacklo_pd (ta, tb);
+    }
+
+    /*
+     * Unpack and interleave double-precision (64-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a4, b4, a5, b5, a6, b6, a7, b7 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
+        __m512i s = _mm512_loadu_epi64 (permute_idx);
+        vect_t ta = _mm512_permutexvar_pd (s, a)
+        vect_t tb = _mm512_permutexvar_pd (s, b)
+        return _mm512_unpackhi_pd (ta, tb);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: lo = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         hi = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
+        __m512i s = _mm512_loadu_epi64 (permute_idx);
+        vect_t ta = _mm512_permutexvar_pd (s, a)
+        vect_t tb = _mm512_permutexvar_pd (s, b)
+        lo = _mm512_unpacklo_pd (ta, tb);
+        hi = _mm512_unpackhi_pd (ta, tb);
+    }
+
+    /*
+     * Pack double-precision (64-bit) floating-point elements from the even
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        __m512i s = _mm512_loadu_epi64 (permute_idx);
+        vect_t lo = _mm512_unpacklo_pd (a, b);
+        return _mm512_permutexvar_pd (s, lo)
+    }
+
+    /*
+     * Pack double-precision (64-bit) floating-point elements from the odd
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        __m512i s = _mm512_loadu_epi64 (permute_idx);
+        vect_t hi = _mm512_unpackhi_pd (a, b);
+        return _mm512_permutexvar_pd (s, hi)
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: even = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         odd = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        __m512i s = _mm512_loadu_epi64 (permute_idx);
+        vect_t lo = _mm512_unpacklo_pd (a, b);
+        vect_t hi = _mm512_unpackhi_pd (a, b);
+        even = _mm512_permutexvar_pd (s, lo)
+        odd  = _mm512_permutexvar_pd (s, hi)
+    }
 
     /*
      * Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,

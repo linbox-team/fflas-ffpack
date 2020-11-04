@@ -152,22 +152,131 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
     }
 
     /*
-     * Unpack and interleave single-precision (32-bit) floating-point elements from the low half of each 128-bit lane in a and b,
-     * and store the results in dst.
-     * Args   :	[a0, ..., a15] float
-     [b0, ..., b15] float
-     * Return :	[a0, b0, a1, b1, a4, b4, a5, b5, a8, b8, a9, b9, a12, b12, a13, b13] float
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the low half of each 128-bit lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:	 [ a0, b0, a1, b1, a4, b4, a5, b5, ..., a12, b12, a13, b13 ]
      */
-    static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm512_unpacklo_ps(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpacklo_ps(a,b);
+    }
 
     /*
-     * Unpack and interleave single-precision (32-bit) floating-point elements from the high half of each 128-bit lane in a and b,
-     * and store the results in dst.
-     * Args   :	[a0, ..., a7] float
-     [b0, ..., b7] float
-     * Return :	[a2, b2, a3, b3, a6, b6, a7, b7, a10, b10, a11, b11, a14, b14, a15, b15] float
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the high half of each 128-bit lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:	 [ a2, b2, a3, b3, a6, b6, a7, b7, ..., a14, b14, a15, b15 ]
      */
-    static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm512_unpackhi_ps(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpackhi_ps(a,b);
+    }
+
+    /*
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a0, b0, a1, b1, ..., a6, b7, a7, b7 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
+        __m512i s = _mm512_loadu_epi32 (permute_idx);
+        vect_t ta = _mm512_permutexvar_ps (s, a)
+        vect_t tb = _mm512_permutexvar_ps (s, b)
+        return _mm512_unpacklo_ps (ta, tb);
+    }
+
+    /*
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a8, b8, a9, b9, ..., a14, b14, a15, b15 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
+        __m512i s = _mm512_loadu_epi32 (permute_idx);
+        vect_t ta = _mm512_permutexvar_ps (s, a)
+        vect_t tb = _mm512_permutexvar_ps (s, b)
+        return _mm512_unpackhi_ps (ta, tb);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return: lo = [ a0, b0, a1, b1, ..., a6, b7, a7, b7 ]
+     *         hi = [ a8, b8, a9, b9, ..., a14, b14, a15, b15 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
+        __m512i s = _mm512_loadu_epi32 (permute_idx);
+        vect_t ta = _mm512_permutexvar_ps (s, a)
+        vect_t tb = _mm512_permutexvar_ps (s, b)
+        lo = _mm512_unpacklo_ps (ta, tb);
+        hi = _mm512_unpackhi_ps (ta, tb);
+    }
+
+    /*
+     * Pack single-precision (32-bit) floating-point elements from the even
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a0, a2, ..., a12, a14, b0, b2, ..., b12, b14 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        __m512i s = _mm512_loadu_epi32 (permute_idx);
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm512_shuffle_ps (a, 0xd8);
+        vect_t tb = _mm512_shuffle_ps (b, 0xd8);
+        vect_t lo = _mm512_unpacklo_ps (ta, tb);
+        return _mm512_permutexvar_ps (s, lo)
+    }
+
+    /*
+     * Pack single-precision (32-bit) floating-point elements from the odd
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a1, a3, ..., a13, a15, b1, b3, ..., b13, b15 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        __m512i s = _mm512_loadu_epi32 (permute_idx);
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm512_shuffle_ps (a, 0xd8);
+        vect_t tb = _mm512_shuffle_ps (b, 0xd8);
+        vect_t hi = _mm512_unpackhi_ps (ta, tb);
+        return _mm512_permutexvar_ps (s, hi)
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return: even = [ a0, a2, ..., a12, a14, b0, b2, ..., b12, b14 ]
+     *         odd = [ a1, a3, ..., a13, a15, b1, b3, ..., b13, b15 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        __m512i s = _mm512_loadu_epi32 (permute_idx);
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm512_shuffle_ps (a, 0xd8);
+        vect_t tb = _mm512_shuffle_ps (b, 0xd8);
+        vect_t lo = _mm512_unpacklo_ps (ta, tb);
+        vect_t hi = _mm512_unpackhi_ps (ta, tb);
+        even = _mm512_permutexvar_ps (s, lo)
+        odd = _mm512_permutexvar_ps (s, hi)
+    }
 
     /*
      * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
