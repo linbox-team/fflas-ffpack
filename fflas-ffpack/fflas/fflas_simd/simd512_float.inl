@@ -185,8 +185,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
     static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
         int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
         __m512i s = _mm512_loadu_si512 (permute_idx);
-        vect_t ta = _mm512_permutexvar_ps (s, a)
-        vect_t tb = _mm512_permutexvar_ps (s, b)
+        vect_t ta = _mm512_permutexvar_ps (s, a);
+        vect_t tb = _mm512_permutexvar_ps (s, b);
         return _mm512_unpacklo_ps (ta, tb);
     }
 
@@ -200,8 +200,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
         int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
         __m512i s = _mm512_loadu_si512 (permute_idx);
-        vect_t ta = _mm512_permutexvar_ps (s, a)
-        vect_t tb = _mm512_permutexvar_ps (s, b)
+        vect_t ta = _mm512_permutexvar_ps (s, a);
+        vect_t tb = _mm512_permutexvar_ps (s, b);
         return _mm512_unpackhi_ps (ta, tb);
     }
 
@@ -217,8 +217,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
     unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
         int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
         __m512i s = _mm512_loadu_si512 (permute_idx);
-        vect_t ta = _mm512_permutexvar_ps (s, a)
-        vect_t tb = _mm512_permutexvar_ps (s, b)
+        vect_t ta = _mm512_permutexvar_ps (s, a);
+        vect_t tb = _mm512_permutexvar_ps (s, b);
         lo = _mm512_unpacklo_ps (ta, tb);
         hi = _mm512_unpackhi_ps (ta, tb);
     }
@@ -234,7 +234,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
         int32_t permute_idx[16] = { 0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15 };
         __m512i s = _mm512_loadu_si512 (permute_idx);
         vect_t t1 = _mm512_shuffle_ps (a, b, 0x88); /* 0x88 = 2020 base_4 */
-        return _mm512_permutexvar_ps (s, t1)
+        return _mm512_permutexvar_ps (s, t1);
     }
 
     /*
@@ -248,7 +248,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
         int32_t permute_idx[16] = { 0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15 };
         __m512i s = _mm512_loadu_si512 (permute_idx);
         vect_t t2 = _mm512_shuffle_ps (a, b, 0xdd); /* 0xdd = 3131 base_4 */
-        return _mm512_permutexvar_ps (s, t2)
+        return _mm512_permutexvar_ps (s, t2);
     }
 
     /*
@@ -265,8 +265,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
         __m512i s = _mm512_loadu_si512 (permute_idx);
         vect_t t1 = _mm512_shuffle_ps (a, b, 0x88); /* 0x88 = 2020 base_4 */
         vect_t t2 = _mm512_shuffle_ps (a, b, 0xdd); /* 0xdd = 3131 base_4 */
-        even = _mm512_permutexvar_ps (s, t1)
-        odd = _mm512_permutexvar_ps (s, t2)
+        even = _mm512_permutexvar_ps (s, t1);
+        odd = _mm512_permutexvar_ps (s, t2);
     }
 
     /*

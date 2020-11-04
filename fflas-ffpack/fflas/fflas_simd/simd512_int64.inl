@@ -249,8 +249,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
         int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
         vect_t s = loadu (permute_idx);
-        vect_t ta = _mm512_permutexvar_epi64 (s, a)
-        vect_t tb = _mm512_permutexvar_epi64 (s, b)
+        vect_t ta = _mm512_permutexvar_epi64 (s, a);
+        vect_t tb = _mm512_permutexvar_epi64 (s, b);
         return _mm512_unpacklo_epi64 (ta, tb);
     }
 
@@ -263,8 +263,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
         int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
         vect_t s = loadu (permute_idx);
-        vect_t ta = _mm512_permutexvar_epi64 (s, a)
-        vect_t tb = _mm512_permutexvar_epi64 (s, b)
+        vect_t ta = _mm512_permutexvar_epi64 (s, a);
+        vect_t tb = _mm512_permutexvar_epi64 (s, b);
         return _mm512_unpackhi_epi64 (ta, tb);
     }
 
@@ -280,8 +280,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
         int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
         vect_t s = loadu (permute_idx);
-        vect_t ta = _mm512_permutexvar_epi64 (s, a)
-        vect_t tb = _mm512_permutexvar_epi64 (s, b)
+        vect_t ta = _mm512_permutexvar_epi64 (s, a);
+        vect_t tb = _mm512_permutexvar_epi64 (s, b);
         lo = _mm512_unpacklo_epi64 (ta, tb);
         hi = _mm512_unpackhi_epi64 (ta, tb);
     }
@@ -296,7 +296,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
         vect_t s = loadu (permute_idx);
         vect_t lo = _mm512_unpacklo_epi64 (a, b);
-        return _mm512_permutexvar_epi64 (s, lo)
+        return _mm512_permutexvar_epi64 (s, lo);
     }
 
     /*
@@ -309,7 +309,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
         vect_t s = loadu (permute_idx);
         vect_t hi = _mm512_unpackhi_epi64 (a, b);
-        return _mm512_permutexvar_epi64 (s, hi)
+        return _mm512_permutexvar_epi64 (s, hi);
     }
 
     /*
@@ -326,8 +326,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         vect_t s = loadu (permute_idx);
         vect_t lo = _mm512_unpacklo_epi64 (a, b);
         vect_t hi = _mm512_unpackhi_epi64 (a, b);
-        even = _mm512_permutexvar_epi64 (s, lo)
-        odd  = _mm512_permutexvar_epi64 (s, hi)
+        even = _mm512_permutexvar_epi64 (s, lo);
+        odd  = _mm512_permutexvar_epi64 (s, hi);
     }
 
     /*
