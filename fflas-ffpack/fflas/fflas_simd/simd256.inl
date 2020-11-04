@@ -49,25 +49,6 @@ struct Simd256fp_base {
     static INLINE CONST __m256 permute128(const __m256 a, const __m256 b) {
         return _mm256_permute2f128_ps(a, b, s);
     }
-
-    /*
-     * Unpack and interleave 128-bit integers from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1] int128_t
-     [b0, b1] int128_t
-     * Return : [a0, b0] int128_t
-     */
-    static INLINE CONST __m256d unpacklo128(const __m256d a, const __m256d b) { return permute128<0x20>(a, b); }
-    static INLINE CONST __m256 unpacklo128(const __m256 a, const __m256 b) { return permute128<0x20>(a, b); }
-
-    /*
-     * Unpack and interleave 128-bit integers from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1] int128_t
-     [b0, b1] int128_t
-     * Return : [a1, b1] int128_t
-     */
-    static INLINE CONST __m256d unpackhi128(const __m256d a, const __m256d b) { return permute128<0x31>(a, b); }
-    static INLINE CONST __m256 unpackhi128(const __m256 a, const __m256 b) { return permute128<0x31>(a, b); }
-
 #endif
 };
 
@@ -155,22 +136,6 @@ struct Simd256i_base {
     static INLINE CONST vect_t permute128(const vect_t a, const vect_t b) {
         return _mm256_permute2x128_si256(a, b, s);
     }
-
-    /*
-     * Unpack and interleave 128-bit integers from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1] int128_t
-     [b0, b1] int128_t
-     * Return : [a0, b0] int128_t
-     */
-    static INLINE CONST vect_t unpacklo128(const vect_t a, const vect_t b) { return permute128<0x20>(a, b); }
-
-    /*
-     * Unpack and interleave 128-bit integers from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1] int128_t
-     [b0, b1] int128_t
-     * Return : [a1, b1] int128_t
-     */
-    static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return permute128<0x31>(a, b); }
 #endif
 };
 
