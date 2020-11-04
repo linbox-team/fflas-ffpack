@@ -222,7 +222,6 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
      * lane in a and b.
      * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
      *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
-     * Return:   [ a0, b0, a1, b1, a4, b4, a5, b5 ]
      * Return:	 [ a0, b0, a1, b1, ..., a3, b3, a8, b8, ..., a11, b11 ]
      */
     static INLINE CONST vect_t
@@ -235,7 +234,6 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
      * lane in a and b.
      * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
      *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
-     * Return:   [ a2, b2, a3, b3, a6, b6, a7, b7 ]
      * Return:	 [ a4, b4, a5, b5, ..., a7, b7, a12, b12, ..., a15, b15 ]
      */
     static INLINE CONST vect_t
