@@ -231,13 +231,10 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
      * Return:   [ a0, a2, ..., a12, a14, b0, b2, ..., b12, b14 ]
      */
     static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
-        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        int32_t permute_idx[16] = { 0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15 };
         __m512i s = _mm512_loadu_si512 (permute_idx);
-        /* 0xd8 = 3120 base_4 */
-        vect_t ta = _mm512_shuffle_ps (a, 0xd8);
-        vect_t tb = _mm512_shuffle_ps (b, 0xd8);
-        vect_t lo = _mm512_unpacklo_ps (ta, tb);
-        return _mm512_permutexvar_ps (s, lo)
+        vect_t t1 = _mm512_shuffle_ps (a, b, 0x88); /* 0x88 = 2020 base_4 */
+        return _mm512_permutexvar_ps (s, t1)
     }
 
     /*
@@ -248,13 +245,10 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
      * Return:   [ a1, a3, ..., a13, a15, b1, b3, ..., b13, b15 ]
      */
     static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
-        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        int32_t permute_idx[16] = { 0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15 };
         __m512i s = _mm512_loadu_si512 (permute_idx);
-        /* 0xd8 = 3120 base_4 */
-        vect_t ta = _mm512_shuffle_ps (a, 0xd8);
-        vect_t tb = _mm512_shuffle_ps (b, 0xd8);
-        vect_t hi = _mm512_unpackhi_ps (ta, tb);
-        return _mm512_permutexvar_ps (s, hi)
+        vect_t t2 = _mm512_shuffle_ps (a, b, 0xdd); /* 0xdd = 3131 base_4 */
+        return _mm512_permutexvar_ps (s, t2)
     }
 
     /*
@@ -267,15 +261,12 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
      */
     static INLINE void
     pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
-        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        int32_t permute_idx[16] = { 0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15 };
         __m512i s = _mm512_loadu_si512 (permute_idx);
-        /* 0xd8 = 3120 base_4 */
-        vect_t ta = _mm512_shuffle_ps (a, 0xd8);
-        vect_t tb = _mm512_shuffle_ps (b, 0xd8);
-        vect_t lo = _mm512_unpacklo_ps (ta, tb);
-        vect_t hi = _mm512_unpackhi_ps (ta, tb);
-        even = _mm512_permutexvar_ps (s, lo)
-        odd = _mm512_permutexvar_ps (s, hi)
+        vect_t t1 = _mm512_shuffle_ps (a, b, 0x88); /* 0x88 = 2020 base_4 */
+        vect_t t2 = _mm512_shuffle_ps (a, b, 0xdd); /* 0xdd = 3131 base_4 */
+        even = _mm512_permutexvar_ps (s, t1)
+        odd = _mm512_permutexvar_ps (s, t2)
     }
 
     /*
