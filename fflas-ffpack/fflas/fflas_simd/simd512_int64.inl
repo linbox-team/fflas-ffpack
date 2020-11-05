@@ -669,27 +669,13 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
     static INLINE CONST vect_t sra(const vect_t a) { return _mm512_srli_epi64(a, s); }
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-
-        int64_t i = 0xFFFFFFFFFFFFFFFF;
-        __m512i c = _mm512_set1_epi64(i);
-        __m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
-        return d;
+        __m512i c = _mm512_set1_epi64(0xFFFFFFFFFFFFFFFFLL);
+        return _mm512_maskz_expand_epi64(_mm512_cmpgt_epu64_mask(a, b), c);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-
-        int64_t i = 0xFFFFFFFFFFFFFFFF;
-        __m512i c = _mm512_set1_epi64(i);
-        __m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
-        return d;
+        __m512i c = _mm512_set1_epi64(0xFFFFFFFFFFFFFFFFLL);
+        return _mm512_maskz_expand_epi64(_mm512_cmplt_epu64_mask(a, b), c);
     }
 
     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }
