@@ -28,6 +28,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_float_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_float_INL
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -51,6 +52,14 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
      *	number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 8;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *	alignement required by scalar_t pointer to be loaded in a vect_t

@@ -181,8 +181,8 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     bool res = equal (out_scal.begin(), out_scal.end(), out_simd.begin(), eq);
 
     /* print result line */
-    cout << Simd::type_string() << "<" << TypeName<Element>() << ">::" << fname
-         << " " << string (60 - fname.size() - strlen(TypeName<Element>()), '.')
+    cout << Simd::type_string() << "::" << fname << " "
+         << string (69 - fname.size() - Simd::type_string().size(), '.')
          << " " << (res ? "success" : "failure") << endl;
 
     /* in case of error, print all input and output values */
