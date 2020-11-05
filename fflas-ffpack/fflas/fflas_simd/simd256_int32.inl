@@ -37,6 +37,7 @@
 #include "fflas-ffpack/fflas/fflas_simd/simd256_int64.inl"
 #endif
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -70,6 +71,14 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 8;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
@@ -220,66 +229,120 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
     }
 
     /*
-     * Unpack and interleave 32-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, a1, b1, a4, b4, a5, b5] int32_t
+     * Unpack and interleave 32-bit integers from the low half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a1, b1, a4, b4, a5, b5 ]
      */
-    static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi32(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm256_unpacklo_epi32(a, b);
+    }
 
     /*
-     * Unpack and interleave 32-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a2, b2, a3, b3, a6, b6, a7, b7] int32_t
+     * Unpack and interleave 32-bit integers from the high half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a2, b2, a3, b3, a6, b6, a7, b7 ]
      */
-    static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi32(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm256_unpackhi_epi32(a, b);
+    }
 
     /*
-     * Unpack and interleave 32-bit integers from the low half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, ..., a3, b3] int32_t
+     * Unpack and interleave 32-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a1, b1, a2, b2, a3, b3 ]
      */
     static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-        //using Simd256_64 = Simd256<uint64_t>;
-        //Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
-        //Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-        vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
-        return unpacklo_twice(a1, b1);
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        return _mm256_unpacklo_epi32 (t1, t2);
     }
 
     /*
-     * Unpack and interleave 32-bit integers from the high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a4, b4, ..., a7, b7] int32_t
+     * Unpack and interleave 32-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a4, b4, a5, b5, a6, b6, a7, b7 ]
      */
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-        // using Simd256_64 = Simd256<uint64_t>;
-        // vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-        // vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-        vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
-        return unpackhi_twice(a1, b1);
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        return _mm256_unpackhi_epi32 (t1, t2);
     }
 
     /*
-     * Unpack and interleave 32-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, ..., a3, b3] int32_t
-     *			[a4, b4, ..., a7, b7] int32_t
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: lo = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         hi = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
      */
-    static INLINE void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
-        // using Simd256_64 = Simd256<uint64_t>;
-        // vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-        // vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        vect_t a1 = _mm256_permute4x64_epi64(a, 0xD8);
-        vect_t b1 = _mm256_permute4x64_epi64(a, 0xD8);
-        s1 = unpacklo_twice(a1, b1);
-        s2 = unpackhi_twice(a1, b1);
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        lo = _mm256_unpacklo_epi32 (t1, t2);
+        hi = _mm256_unpackhi_epi32 (t1, t2);
+    }
+
+    /*
+     * Pack 32-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm256_shuffle_epi32 (a, 0xd8);
+        vect_t tb = _mm256_shuffle_epi32 (b, 0xd8);
+        vect_t t1 = _mm256_unpacklo_epi64 (ta, tb);
+        /* 0xd8 = 3120 base_4 */
+        return _mm256_permute4x64_epi64 (t1, 0xd8);
+    }
+
+    /*
+     * Pack 32-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm256_shuffle_epi32 (a, 0xd8);
+        vect_t tb = _mm256_shuffle_epi32 (b, 0xd8);
+        vect_t t2 = _mm256_unpackhi_epi64 (ta, tb);
+        /* 0xd8 = 3120 base_4 */
+        return _mm256_permute4x64_epi64 (t2, 0xd8);
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: even = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         odd = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm256_shuffle_epi32 (a, 0xd8);
+        vect_t tb = _mm256_shuffle_epi32 (b, 0xd8);
+        vect_t t1 = _mm256_unpacklo_epi64 (ta, tb);
+        vect_t t2 = _mm256_unpackhi_epi64 (ta, tb);
+        /* 0xd8 = 3120 base_4 */
+        even = _mm256_permute4x64_epi64 (t1, 0xd8);
+        odd = _mm256_permute4x64_epi64 (t2, 0xd8);
     }
 
     /*
@@ -559,6 +622,14 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
      */
     using scalar_t = uint32_t;
 
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
@@ -658,17 +729,17 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm256_cmpgt_epi32(a, b);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm256_cmpgt_epi32(b, a);
     }
 

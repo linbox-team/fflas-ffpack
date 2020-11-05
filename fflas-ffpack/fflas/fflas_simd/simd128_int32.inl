@@ -37,6 +37,7 @@
 #include "fflas-ffpack/fflas/fflas_simd/simd128_int64.inl"
 #endif
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -60,6 +61,14 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 4;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
@@ -193,20 +202,103 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
     }
 
     /*
-     * Unpack and interleave 32-bit integers from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int32_t
-     [b0, b1, b2, b3] int32_t
-     * Return : [a0, b0, a1, b1] int32_t
+     * Unpack and interleave 32-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
      */
-    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_epi32(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpacklo_epi32(a, b);
+    }
 
     /*
-     * Unpack and interleave 32-bit integers from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int32_t
-     [b0, b1, b2, b3] int32_t
-     * Return : [a2, b2, a3, b3] int32_t
+     * Unpack and interleave 32-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
      */
-    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi32(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpackhi_epi32(a, b);
+    }
+
+    /*
+     * Unpack and interleave 32-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        return unpacklo_intrinsic(a, b);
+    }
+
+    /*
+     * Unpack and interleave 32-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        return unpackhi_intrinsic(a, b);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: lo = [ a0, b0, a1, b1 ]
+     *         hi = [ a2, b2, a3, b3 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        lo = unpacklo (a, b);
+        hi = unpackhi (a, b);
+    }
+
+    /*
+     * Pack 32-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, a2, b0, b2 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm_shuffle_epi32 (a, 0xd8);
+        vect_t t2 = _mm_shuffle_epi32 (b, 0xd8);
+        return _mm_unpacklo_epi64 (t1, t2);
+    }
+
+    /*
+     * Pack 32-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, a3, b1, b3 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm_shuffle_epi32 (a, 0xd8);
+        vect_t t2 = _mm_shuffle_epi32 (b, 0xd8);
+        return _mm_unpackhi_epi64 (t1, t2);
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: even = [ a0, a2, b0, b2 ]
+     *         odd  = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm_shuffle_epi32 (a, 0xd8);
+        vect_t t2 = _mm_shuffle_epi32 (b, 0xd8);
+        even = _mm_unpacklo_epi64 (t1, t2);
+        odd = _mm_unpackhi_epi64 (t1, t2);
+    }
 
     /*
      * Blend packed 32-bit integers from a and b using control mask imm8, and store the results in dst.
@@ -469,6 +561,14 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
      */
     using scalar_t = uint32_t;
 
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
@@ -562,17 +662,17 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm_cmpgt_epi32(a, b);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm_cmplt_epi32(a, b);
     }
 

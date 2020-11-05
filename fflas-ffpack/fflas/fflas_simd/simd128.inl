@@ -28,23 +28,12 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 
-struct Simd128fp_base {
-
-    /* Name of the Simd struct */
-    static inline const std::string type_string () { return "Simd128"; }
-
-
-};
-
 struct Simd128i_base {
 
     /*
      * alias to 128 bit simd register
      */
     using vect_t = __m128i;
-
-    /* Name of the Simd struct */
-    static inline const std::string type_string () { return "Simd128"; }
 
     /*
      *  Return vector of type vect_t with all elements set to zero
