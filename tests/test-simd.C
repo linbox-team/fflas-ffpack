@@ -198,6 +198,59 @@ test_op (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname) {
     return res;
 }
 
+template <class Simd, class RScal, class...AScal, class RSimd, class...ASimd>
+typename enable_if<sizeof...(AScal) == sizeof...(ASimd), bool>::type
+test_vop_ri2 (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...), string fname)
+{
+    using Element = typename Simd::scalar_t;
+    using ScalVect = vector<Element>;
+    using SimdVect = typename Simd::vect_t;
+    constexpr size_t SimdVectSize = Simd::vect_size;
+    constexpr size_t arity = sizeof...(AScal);
+
+    /* input vectors */
+    vector<ScalVect> inputs (arity, ScalVect(SimdVectSize));
+    for (auto &iv: inputs)
+        generate_random_vector (iv);
+
+    /* output vectors */
+    ScalVect out_scal(SimdVectSize), out_simd(SimdVectSize);
+
+    /* compute with scalar function */
+    function<RScal(AScal...)> fscal = FScal;
+    out_scal = fscal (inputs[0], inputs[1]);
+
+    /* compute with SIMD function */
+    array<SimdVect, arity> simd_in;
+    function<RSimd(ASimd...)> fsimd = FSimd;
+    for (size_t i = 0; i < arity; i++)
+        simd_in[i] = Simd::loadu (inputs[i].data());
+
+    SimdVect simd_out = eval_func_on_array (fsimd, simd_in);
+    Simd::storeu (out_simd.data(), simd_out);
+
+    /* comparison */
+    auto eq = check_eq<Element>;
+    bool res = equal (out_scal.begin(), out_scal.end(), out_simd.begin(), eq);
+
+    /* print result line */
+    cout << Simd::type_string() << "<" << TypeName<Element>() << ">::" << fname
+         << " " << string (60 - fname.size() - strlen(TypeName<Element>()), '.')
+         << " " << (res ? "success" : "failure") << endl;
+
+    /* in case of error, print all input and output values */
+    if(!res) {
+        cout << string (10, '-') << " debug data " << string (58, '-') << endl;
+        for (size_t i = 0; i < arity; i++) {
+            cout << "input_" << i << ": " << inputs[i] << endl;
+        }
+        cout << "out_scal: " << out_scal << endl;
+        cout << "out_simd: " << out_simd << endl;
+        cout << string (80, '-') << endl;
+    }
+    return res;
+}
+
 /******************************************************************************/
 /* Scalar functions for comparisons *******************************************/
 /******************************************************************************/
@@ -210,6 +263,7 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_floating_point<Element>::value>::type>
 {
+    using VectElement = vector<Element>;
     static Element zero () {
         return 0.0;
     }
@@ -307,6 +361,30 @@ struct ScalFunctions<Element,
     static Element eq (Element x1, Element x2) {
         return (x1==x2)?NAN:0;
     }
+    static VectElement unpacklo (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i % 2 ? b[i/2] : a[i/2]);
+        return r;
+    }
+    static VectElement unpackhi (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i % 2 ? b[(a.size()+i)/2] : a[(a.size()+i)/2]);
+        return r;
+    }
+    static VectElement pack_even (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i < a.size()/2 ? a[2*i] : b[2*i-a.size()]);
+        return r;
+    }
+    static VectElement pack_odd (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i < a.size()/2 ? a[1+2*i] : b[1+2*i-a.size()]);
+        return r;
+    }
 };
 
 /* for integral element */
@@ -314,6 +392,7 @@ template <class Element>
 struct ScalFunctions<Element,
                     typename enable_if<is_integral<Element>::value>::type>
 {
+    using VectElement = vector<Element>;
     static Element zero () {
         return 0;
     }
@@ -457,6 +536,30 @@ struct ScalFunctions<Element,
     static Element eq (Element x1, Element x2) {
         return (x1==x2)?-1:0;
     }
+    static VectElement unpacklo (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i % 2 ? b[i/2] : a[i/2]);
+        return r;
+    }
+    static VectElement unpackhi (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i % 2 ? b[(a.size()+i)/2] : a[(a.size()+i)/2]);
+        return r;
+    }
+    static VectElement pack_even (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i < a.size()/2 ? a[2*i] : b[2*i-a.size()]);
+        return r;
+    }
+    static VectElement pack_odd (VectElement a, VectElement b) {
+        VectElement r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = (i < a.size()/2 ? a[1+2*i] : b[1+2*i-a.size()]);
+        return r;
+    }
 };
 
 /******************************************************************************/
@@ -550,6 +653,8 @@ do_test_lesser_with_zero ()
 
 #define TEST_ONE_OP(name) \
     btest &= test_op<simd> (simd::name, Scal::name, #name);
+#define TEST_ONE_VOP_RI2(name) \
+    btest &= test_vop_ri2<simd> (simd::name, Scal::name, #name);
 
 /* for floating point element */
 template<class simd, class Element>
@@ -586,6 +691,10 @@ test_impl () {
     btest &= do_test_greater_with_zero<simd, Scal> ();
     TEST_ONE_OP (greater_eq);
     TEST_ONE_OP (eq);
+    TEST_ONE_VOP_RI2 (unpacklo);
+    TEST_ONE_VOP_RI2 (unpackhi);
+    TEST_ONE_VOP_RI2 (pack_even);
+    TEST_ONE_VOP_RI2 (pack_odd);
 
     return btest;
 }
@@ -636,6 +745,10 @@ test_impl () {
     TEST_ONE_OP (template srl<11>);
     TEST_ONE_OP (template sll<2>);
     TEST_ONE_OP (template sll<13>);
+    TEST_ONE_VOP_RI2 (unpacklo);
+    TEST_ONE_VOP_RI2 (unpackhi);
+    TEST_ONE_VOP_RI2 (pack_even);
+    TEST_ONE_VOP_RI2 (pack_odd);
 
     return btest;
 }

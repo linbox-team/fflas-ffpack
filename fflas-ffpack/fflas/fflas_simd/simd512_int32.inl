@@ -233,64 +233,129 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
                     conv.t[((s>>56) & 0x0000000F)], conv.t[((s>>56) & 0x000000F0)]);
     }
 
+    /*
+     * Unpack and interleave 32-bit integers from the low half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:	 [ a0, b0, a1, b1, a4, b4, a5, b5, ..., a12, b12, a13, b13 ]
+     */
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpacklo_epi32(a,b);
+    }
 
     /*
-     * Unpack and interleave 32-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, a1, b1, a4, b4, a5, b5] int32_t
+     * Unpack and interleave 32-bit integers from the high half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:	 [ a2, b2, a3, b3, a6, b6, a7, b7, ..., a14, b14, a15, b15 ]
      */
-    //static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi32(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpackhi_epi32(a,b);
+    }
 
     /*
-     * Unpack and interleave 32-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a2, b2, a3, b3, a6, b6, a7, b7] int32_t
+     * Unpack and interleave 32-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a0, b0, a1, b1, ..., a6, b7, a7, b7 ]
      */
-    //static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi32(a, b); }
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
+        vect_t s = loadu (permute_idx);
+        vect_t ta = _mm512_permutexvar_epi32 (s, a)
+        vect_t tb = _mm512_permutexvar_epi32 (s, b)
+        return _mm512_unpacklo_epi32 (ta, tb);
+    }
 
     /*
-     * Unpack and interleave 32-bit integers from the low half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, ..., a3, b3] int32_t
+     * Unpack and interleave 32-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a8, b8, a9, b9, ..., a14, b14, a15, b15 ]
      */
-    /*static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-      using Simd256_64 = Simd256<uint64_t>;
-      vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
-      vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-      return unpacklo_twice(a1, b1);
-      }
-      */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
+        vect_t s = loadu (permute_idx);
+        vect_t ta = _mm512_permutexvar_epi32 (s, a)
+        vect_t tb = _mm512_permutexvar_epi32 (s, b)
+        return _mm512_unpackhi_epi32 (ta, tb);
+    }
+
     /*
-     * Unpack and interleave 32-bit integers from the high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a4, b4, ..., a7, b7] int32_t
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return: lo = [ a0, b0, a1, b1, ..., a6, b7, a7, b7 ]
+     *         hi = [ a8, b8, a9, b9, ..., a14, b14, a15, b15 ]
      */
-    /*static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-      using Simd256_64 = Simd256<uint64_t>;
-      vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-      vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-      return unpackhi_twice(a1, b1);
-      }
-      */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 1, 8, 9, 2, 3, 10, 11, 4, 5, 12, 13, 6, 7, 14, 15  };
+        vect_t s = loadu (permute_idx);
+        vect_t ta = _mm512_permutexvar_epi32 (s, a)
+        vect_t tb = _mm512_permutexvar_epi32 (s, b)
+        lo = _mm512_unpacklo_epi32 (ta, tb);
+        hi = _mm512_unpackhi_epi32 (ta, tb);
+    }
+
     /*
-     * Unpack and interleave 32-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[a0, b0, ..., a3, b3] int32_t
-     *			[a4, b4, ..., a7, b7] int32_t
+     * Pack 32-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a0, a2, ..., a12, a14, b0, b2, ..., b12, b14 ]
      */
-    /*static INLINE CONST void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
-      using Simd256_64 = Simd256<uint64_t>;
-      vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-      vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-      s1 = unpacklo_twice(a1, b1);
-      s2 = unpackhi_twice(a1, b1);
-      }
-      */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        vect_t s = loadu (permute_idx);
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm512_shuffle_epi32 (a, 0xd8);
+        vect_t tb = _mm512_shuffle_epi32 (b, 0xd8);
+        vect_t lo = _mm512_unpacklo_epi32 (ta, tb);
+        return _mm512_permutexvar_epi32 (s, lo)
+    }
+
+    /*
+     * Pack 32-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return:   [ a1, a3, ..., a13, a15, b1, b3, ..., b13, b15 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        vect_t s = loadu (permute_idx);
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm512_shuffle_epi32 (a, 0xd8);
+        vect_t tb = _mm512_shuffle_epi32 (b, 0xd8);
+        vect_t hi = _mm512_unpackhi_epi32 (ta, tb);
+        return _mm512_permutexvar_epi32 (s, hi)
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, ..., a13, a14, a15 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, ..., b13, b14, b15 ]
+     * Return: even = [ a0, a2, ..., a12, a14, b0, b2, ..., b12, b14 ]
+     *         odd = [ a1, a3, ..., a13, a15, b1, b3, ..., b13, b15 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        int32_t permute_idx[16] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
+        vect_t s = loadu (permute_idx);
+        /* 0xd8 = 3120 base_4 */
+        vect_t ta = _mm512_shuffle_epi32 (a, 0xd8);
+        vect_t tb = _mm512_shuffle_epi32 (b, 0xd8);
+        vect_t lo = _mm512_unpacklo_epi32 (ta, tb);
+        vect_t hi = _mm512_unpackhi_epi32 (ta, tb);
+        even = _mm512_permutexvar_epi32 (s, lo)
+        odd = _mm512_permutexvar_epi32 (s, hi)
+    }
+
     /*TODO BLEND
      * Blend packed 32-bit integers from a and b using control mask imm8, and store the results in dst.
      * Args   :	[a0, ..., a7] int32_t
