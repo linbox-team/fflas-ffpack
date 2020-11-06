@@ -82,8 +82,9 @@ matrix:
       compiler: clang
       before_install:
       - brew update
-      - brew uninstall automake && brew install automake
-      - brew install autoconf libtool
+      - brew list automake &>/dev/null || brew install automake
+      - brew list autoconf &>/dev/null || brew install autoconf
+      - brew list libtool &>/dev/null || brew install libtool
 #      - brew install homebrew/science/openblas
 
 install:
