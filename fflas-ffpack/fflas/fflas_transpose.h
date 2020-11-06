@@ -40,36 +40,49 @@
 #include "fflas-ffpack/fflas/fflas_simd.h"
 
 namespace FFLAS {
+  
 
-
-
-
-  template <typename Field, typename Simd= Simd<typename Field::Element>>
-  class BlockTransposeSIMD {
-  protected:
+  template <typename Field, typename Simd= Simd<typename Field::Element>, typename Enable=void>
+  class BlockTransposeSIMD;
+  
+  template <typename Field, typename Simd>
+  class BlockTransposeSIMD<Field,Simd,
+			   typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value>::type>  {
+  public:
     using Element          = typename Field::Element;
-    using Element_ptr      = typename Field::ElementPtr;
-    using ConstElement_ptr = typename Field::ConstElementPtr;
+    using Element_ptr      = typename Field::Element_ptr;
+    using ConstElement_ptr = typename Field::ConstElement_ptr;
     using vect_t           = typename Simd::vect_t;
-    using vect_size        = typename Simd::vect_size;
     using unpacklohi       = typename Simd::unpacklohi;
+    using loadu            = typename Simd::loadu;
+    using storeu           = typename Simd::storeu;
 
+    
+    void transposein(Element_ptr A, size_t lda){
+      transpose(A,lda,A,lda);
+    }
 
-    void transposein( ElementPtr A, size_t lda){
-      simd_vect_t R[simd_size];
-      for (size_t i=0;i<simd_size;i++)
-	SIMD::loadu(Register[i], A+i*lda);
-
-      size_t w=vect_size>>1;
+    void transpose(ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb){
+      vect_t R[Simd::vect_size];
+      for (size_t i=0;i<Simd::vect_size;i++)
+	loadu(R[i], A+i*lda);
+      
+      size_t w=Simd::vect_size>>1;
       size_t f=1;
-      for (;w>0;, w>>=1, f<<1)
+      for (;w>0; w>>=1, f<<1)
 	for (size_t i = 0; i < f; i++)
 	  for (size_t j = 0; j < w; j)
 	    {
-	      unpacklohi(R[j],R[j+w],R[j],R[j+w]);	    
-	    }      
+	      unpacklohi(R[j+i*w],R[j+(i+1)*w],R[j+i*w],R[j+(i+1)*w]);
+	    }
+      
+      for (size_t i=0;i<Simd::vect_size;i++)
+	storeu(R[i], B+i*ldb);
     }
-  
+
+     const constexpr size_t size() const { return Simd::vect_size;}
+    
+    
 };
 
 
@@ -121,11 +134,38 @@ namespace FFLAS {
 	  for (size_t _i = i; _i < std::min(m, i+ls); _i++)
 	    for (size_t _j = j; _j < std::min(n, j+ls); _j++){
 	      *(B+_j*ldb+_i)=*(A+_i*lda+_j);
-	      //std::cerr<<"("<<_i<<","<<_j<<") : "<< _i*lda+_j<<" -> " <<_j*ldb+_i<<std::endl;
 	    }
       }
       return B;
     }
+
+
+  template<class Field, size_t BLOCK>
+  inline  typename Field::Element_ptr
+  ftranspose_impl_simd (const Field& F, const size_t m, const size_t n,
+			typename Field::ConstElement_ptr A, const size_t lda,
+			typename Field::Element_ptr B, const size_t ldb)
+    {
+      std::cerr<<"DEVELOPMENT: transpose with block SIMD\n";
+      BlockTransposeSIMD<Field> BTS;
+      if (m%BTS.size() ||  n %BTS.size() || BLOCK % BTS.size())
+	return ftranspose_impl<Field,BLOCK>(F,m,n,A,lda,B,ldb);
+      
+      // rk: m<=ldb
+      const size_t ls = BLOCK;
+      typename Field::Element tmp; F.init(tmp);
+      for (size_t i = 0; i < m; i+=ls){      
+	for (size_t j =0; j < n; j+=ls)
+	  for (size_t _i = i; _i < i+ls; _i+=BTS.size())
+	    for (size_t _j = j; _j < j+ls; _j+=BTS.size()){
+	      BTS.transpose(A+_i*lda+_j, lda, B+_j*ldb+_i, ldb);
+	    }
+      }
+      return B;
+    }
+
+
+  
   
   template<class Field>
   inline  typename Field::Element_ptr
@@ -143,7 +183,7 @@ namespace FFLAS {
 	      typename Field::Element_ptr B, const size_t ldb)
   {
     FFLASFFPACK_check(m<=ldb);
-    return ftranspose_impl<Field,FFLAS_TRANSPOSE_BLOCKSIZE> (F,m,n,A,lda,B,ldb);
+    return ftranspose_impl_simd<Field,FFLAS_TRANSPOSE_BLOCKSIZE> (F,m,n,A,lda,B,ldb);
   }
 
 
