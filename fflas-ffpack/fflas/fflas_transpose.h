@@ -53,20 +53,13 @@ namespace FFLAS {
     using ConstElement_ptr = typename Field::ConstElement_ptr;
     using Simd = NoSimd<typename Field::Element>;
        
-    void transposein(const Field&F, Element_ptr A, size_t lda){
-      transpose(F, A,lda,A,lda);
-    }
+    void transposein(const Field&F, Element_ptr A, size_t lda){transpose(F, A,lda,A,lda);}
+    
+    void transpose(const Field&F, ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb){*B=*A;}
 
-    void transpose(const Field&F, ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb){
-      *B=*A;
-    }
-
-     const constexpr size_t size() const { return 1;}
+    const constexpr size_t size() const { return 1;}
         
-    void info() const {
-      std::cerr<<"\n IN DEVELOPMENT: transpose with block SIMD: "<<typename NoSimd<typename Field::element>::type_string()<<" with vect_size="<<size()<<std::endl;
-    }
-
+    void info() const {std::cerr<<"\n IN DEVELOPMENT: transpose with block SIMD: "<<typename NoSimd<typename Field::element>::type_string()<<" with vect_size="<<size()<<std::endl;}    
 };
 
   template <typename Field, typename Simd, size_t>
@@ -74,140 +67,64 @@ namespace FFLAS {
     void operator()(const Field&F, typename Field::ConstElement_ptr A, size_t lda, typename Field::Element_ptr B, size_t ldb);
   };
   
+
+#define LD(i) R##i=Simd::loadu(A+lda*i)
+#define ST(i) Simd::storeu(B+ldb*i,R##i)
+#define PCK(i,j) Simd::unpacklohi(R##i,R##j,R##i,R##j);
   
   template <typename Field, typename Simd>
   struct transpose_simd<Field, Simd, 4> {
     inline void operator()(const Field&F, typename Field::ConstElement_ptr A, size_t lda, typename Field::Element_ptr B, size_t ldb){
       typename Simd::vect_t R0,R1,R2,R3;
-      R0= Simd::loadu(A);
-      R1= Simd::loadu(A+lda);
-      R2= Simd::loadu(A+(lda<<1));
-      R3= Simd::loadu(A+lda*3);
-      Simd::unpacklohi(R0,R2,R0,R2);
-      Simd::unpacklohi(R1,R3,R1,R3);
-      Simd::unpacklohi(R0,R1,R0,R1);
-      Simd::unpacklohi(R2,R3,R2,R3);
-      Simd::storeu(B       , R0);
-      Simd::storeu(B+ldb   , R1);
-      Simd::storeu(B+(ldb<<1), R2);
-      Simd::storeu(B+ldb*3 , R3);
+      LD(0);LD(1);LD(2);LD(3);
+      PCK(0,2); PCK(1,3);
+      PCK(0,1); PCK(2,3);
+      ST(0);ST(1);ST(2);ST(3);
     }
   };
-
   template <typename Field, typename Simd>
   struct transpose_simd<Field, Simd, 8> {
     inline void operator() (const Field&F, typename Field::ConstElement_ptr A, size_t lda, typename Field::Element_ptr B, size_t ldb){
-      typename Simd::vect_t R0,R1,R2,R3,R4,R5,R6,R7;
-      R0= Simd::loadu(A);
-      R1= Simd::loadu(A+lda);
-      R2= Simd::loadu(A+(lda<<1));
-      R3= Simd::loadu(A+lda*3);
-      R4= Simd::loadu(A+(lda<<2));
-      R5= Simd::loadu(A+lda*5);
-      R6= Simd::loadu(A+lda*6);
-      R7= Simd::loadu(A+lda*7);
-
-      Simd::unpacklohi(R0,R4,R0,R4);
-      Simd::unpacklohi(R1,R5,R1,R5);
-      Simd::unpacklohi(R2,R6,R2,R6);
-      Simd::unpacklohi(R3,R7,R3,R7);
-
-      Simd::unpacklohi(R0,R2,R0,R2);
-      Simd::unpacklohi(R1,R3,R1,R3);
-      Simd::unpacklohi(R4,R6,R4,R6);
-      Simd::unpacklohi(R5,R7,R5,R7);
-
-      Simd::unpacklohi(R0,R1,R0,R1);
-      Simd::unpacklohi(R2,R3,R2,R3);
-      Simd::unpacklohi(R4,R5,R4,R5);
-      Simd::unpacklohi(R6,R7,R6,R7);
-
-      Simd::storeu(B         , R0);
-      Simd::storeu(B+ldb     , R1);
-      Simd::storeu(B+(ldb<<1), R2);
-      Simd::storeu(B+ldb*3   , R3);
-      Simd::storeu(B+(ldb<<2), R4);
-      Simd::storeu(B+ldb*5   , R5);
-      Simd::storeu(B+ldb*6   , R6);
-      Simd::storeu(B+ldb*7   , R7);
+      typename Simd::vect_t R0,R1,R2,R3,R4,R5,R6,R7; 
+      LD(0);LD(1);LD(2);LD(3);LD(4);LD(5);LD(6);LD(7);
+      PCK(0,4); PCK(1,5); PCK(2,6); PCK(3,7);
+      PCK(0,2); PCK(1,3); PCK(4,6); PCK(5,7);
+      PCK(0,1); PCK(2,3); PCK(4,5); PCK(6,7);
+      ST(0);ST(1);ST(2);ST(3);ST(4);ST(5);ST(6);ST(7);
     }
   };
   template <typename Field, typename Simd>
   struct transpose_simd<Field, Simd, 16> {
     inline void operator()(const Field&F, typename Field::ConstElement_ptr A, size_t lda, typename Field::Element_ptr B, size_t ldb){
       typename Simd::vect_t R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15;
-      R0= Simd::loadu(A);
-      R1= Simd::loadu(A+lda);
-      R2= Simd::loadu(A+(lda<<1));
-      R3= Simd::loadu(A+lda*3);
-      R4= Simd::loadu(A+(lda<<2));
-      R5= Simd::loadu(A+lda*5);
-      R6= Simd::loadu(A+lda*6);
-      R7= Simd::loadu(A+lda*7);
-      R8= Simd::loadu(A+(lda<<3));
-      R9= Simd::loadu(A+lda*9);
-      R10= Simd::loadu(A+lda*10);
-      R11= Simd::loadu(A+lda*11);
-      R12= Simd::loadu(A+lda*12);
-      R13= Simd::loadu(A+lda*13);
-      R14= Simd::loadu(A+lda*14);
-      R15= Simd::loadu(A+lda*15);
-
-      Simd::unpacklohi(R0, R8,R0, R8);
-      Simd::unpacklohi(R1, R9,R1, R9);
-      Simd::unpacklohi(R2,R10,R2,R10);
-      Simd::unpacklohi(R3,R11,R3,R11);
-      Simd::unpacklohi(R4,R12,R4,R12);
-      Simd::unpacklohi(R5,R13,R5,R13);
-      Simd::unpacklohi(R6,R14,R6,R14);
-      Simd::unpacklohi(R7,R15,R7,R15);
-
-      Simd::unpacklohi(R0,  R4,R0,  R4);
-      Simd::unpacklohi(R1,  R5,R1,  R5);
-      Simd::unpacklohi(R2,  R6,R2,  R6);
-      Simd::unpacklohi(R3,  R7,R3,  R7);
-      Simd::unpacklohi(R8, R12,R8, R12);
-      Simd::unpacklohi(R9, R13,R9, R13);
-      Simd::unpacklohi(R10,R14,R10,R14);
-      Simd::unpacklohi(R11,R15,R11,R15);
-
-      Simd::unpacklohi(R0,  R2,R0,  R2);
-      Simd::unpacklohi(R1,  R3,R1,  R3);
-      Simd::unpacklohi(R4,  R6,R4,  R6);
-      Simd::unpacklohi(R5,  R7,R5,  R7);
-      Simd::unpacklohi(R8, R10,R8, R10);
-      Simd::unpacklohi(R9, R11,R9, R11);
-      Simd::unpacklohi(R12,R14,R12,R14);
-      Simd::unpacklohi(R13,R15,R13,R15);
-
-      Simd::unpacklohi(R0,  R1,R0,  R1);
-      Simd::unpacklohi(R2,  R3,R2,  R3);
-      Simd::unpacklohi(R4,  R5,R4,  R5);
-      Simd::unpacklohi(R6,  R7,R6,  R7);
-      Simd::unpacklohi(R8,  R9,R8,  R9);
-      Simd::unpacklohi(R10,R11,R10,R11);
-      Simd::unpacklohi(R12,R13,R12,R13);
-      Simd::unpacklohi(R14,R15,R14,R15);
-
-      Simd::storeu(B         , R0);
-      Simd::storeu(B+ldb     , R1);
-      Simd::storeu(B+(ldb<<1), R2);
-      Simd::storeu(B+ldb*3   , R3);
-      Simd::storeu(B+(ldb<<2), R4);
-      Simd::storeu(B+ldb*5   , R5);
-      Simd::storeu(B+ldb*6   , R6);
-      Simd::storeu(B+ldb*7   , R7);
-      Simd::storeu(B+(ldb<<3), R8);
-      Simd::storeu(B+ldb*9   , R9);
-      Simd::storeu(B+ldb*10  , R10);
-      Simd::storeu(B+ldb*11  , R11);
-      Simd::storeu(B+ldb*12  , R12);
-      Simd::storeu(B+ldb*13  , R13);
-      Simd::storeu(B+ldb*14  , R14);
-      Simd::storeu(B+ldb*15  , R15);
+      LD(0);LD(1);LD(2);LD(3);LD(4);LD(5);LD(6);LD(7);LD(8);LD(9);LD(10);LD(11);LD(12);LD(13);LD(14);LD(15);
+      PCK(0,8); PCK(1,9); PCK(2,10); PCK(3,11); PCK(4,12); PCK(5,13);  PCK(6,14);  PCK(7,15);
+      PCK(0,4); PCK(1,5); PCK(2,6);  PCK(3,7);  PCK(8,12); PCK(9,13);  PCK(10,14); PCK(11,15);
+      PCK(0,2); PCK(1,3); PCK(4,6);  PCK(5,7);  PCK(8,10); PCK(9,11);  PCK(12,14); PCK(13,15);
+      PCK(0,1); PCK(2,3); PCK(4,5);  PCK(6,7);  PCK(8,9);  PCK(10,11); PCK(12,13); PCK(14,15);  
+      ST(0);ST(1);ST(2);ST(3);ST(4);ST(5);ST(6);ST(7);ST(8);ST(9);ST(10);ST(11);ST(12);ST(13);ST(14);ST(15);
     }
   };
   
+    template <typename Field, typename Simd>
+  struct transpose_simd<Field, Simd, 32> {
+    inline void operator()(const Field&F, typename Field::ConstElement_ptr A, size_t lda, typename Field::Element_ptr B, size_t ldb){
+      typename Simd::vect_t R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31;
+      LD(0);LD(1);LD(2);LD(3);LD(4);LD(5);LD(6);LD(7);LD(8);LD(9);LD(10);LD(11);LD(12);LD(13);LD(14);LD(15);
+      LD(16);LD(17);LD(18);LD(19);LD(20);LD(21);LD(22);LD(23);LD(24);LD(25);LD(26);LD(27);LD(28);LD(29);LD(30);LD(31);
+      PCK(0,16); PCK(1,17); PCK(2,18); PCK(3,19); PCK(4,20); PCK(5,21);  PCK(6,22);  PCK(7,23);  PCK(8,24);  PCK(9,25);  PCK(10,26); PCK(11,27); PCK(12,28); PCK(13,29); PCK(14,30); PCK(15,31);
+      PCK(0,8);  PCK(1,9);  PCK(2,10); PCK(3,11); PCK(4,12); PCK(5,13);  PCK(6,14);  PCK(7,15);  PCK(16,24); PCK(17,25); PCK(18,26); PCK(19,27); PCK(20,28); PCK(21,29); PCK(22,30); PCK(23,31);
+      PCK(0,4);  PCK(1,5);  PCK(2,6);  PCK(3,7);  PCK(8,12); PCK(9,13);  PCK(10,14); PCK(11,15); PCK(16,20); PCK(17,21); PCK(18,22); PCK(19,23); PCK(24,28); PCK(25,29); PCK(26,30); PCK(27,31);
+      PCK(0,2);  PCK(1,3);  PCK(4,6);  PCK(5,7);  PCK(8,10); PCK(9,11);  PCK(12,14); PCK(13,15); PCK(16,18); PCK(17,19); PCK(20,22); PCK(21,23); PCK(24,26); PCK(25,27); PCK(28,30); PCK(29,31);
+      PCK(0,1);  PCK(2,3);  PCK(4,5);  PCK(6,7);  PCK(8,9);  PCK(10,11); PCK(12,13); PCK(14,15); PCK(16,17); PCK(18,19); PCK(20,21); PCK(22,23); PCK(24,25); PCK(26,27); PCK(28,29); PCK(30,31);
+      ST(0);ST(1);ST(2);ST(3);ST(4);ST(5);ST(6);ST(7);ST(8);ST(9);ST(10);ST(11);ST(12);ST(13);ST(14);ST(15);
+      ST(16);ST(17);ST(18);ST(19);ST(20);ST(21);ST(22);ST(23);ST(24);ST(25);ST(26);ST(27);ST(28);ST(29);ST(30);ST(31);
+    }
+    };
+  
+#undef LD
+#undef ST
+#undef PCK  
 
   template <typename Field, typename Simd>
   class BlockTransposeSIMD<Field,Simd,
@@ -218,22 +135,14 @@ namespace FFLAS {
     using ConstElement_ptr = typename Field::ConstElement_ptr;
     using vect_t           = typename Simd::vect_t;
     
-    void transposein(const Field&F, Element_ptr A, size_t lda)
-    {
-      transpose(F, A,lda,A,lda);
-    }
+    void transposein(const Field&F, Element_ptr A, size_t lda){transpose(F, A,lda,A,lda);}
 
-    void transpose(const Field&F, ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb)
-    {
-      transpose_simd<Field, Simd, Simd::vect_size>() (F,A,lda,B,ldb);
-    }
+    void transpose(const Field&F, ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb)  {transpose_simd<Field, Simd, Simd::vect_size>() (F,A,lda,B,ldb);}   
     
     void transposeLoop(const Field&F, ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb){
       vect_t R[Simd::vect_size];
       for (size_t i=0;i<Simd::vect_size;i++)
     	R[i] = Simd::loadu(A+i*lda);
-
-      //WriteMatrix (std::cerr,F,size(),size(),A,lda)<<std::endl<<"iiiiiiiiii\n";
       size_t w=Simd::vect_size>>1;
       size_t f=1;
       size_t idx0,idx1;
@@ -242,7 +151,6 @@ namespace FFLAS {
     	for (size_t i = 0; i < f; i++, idx0+=w,idx1+=w)
     	  for (size_t j = 0; j < w; j++, idx0++, idx1++)
     	    {
-    	      //std::cerr<< idx0 <<" <-> "<<idx1<<std::endl;
     	      Simd::unpacklohi(R[idx0],R[idx1],R[idx0],R[idx1]);
     	    }
       }      
@@ -252,9 +160,7 @@ namespace FFLAS {
 
      const constexpr size_t size() const { return Simd::vect_size;}
     
-    void info() const {
-      std::cerr<<"\n IN DEVELOPMENT: transpose with block SIMD: "<<Simd::type_string()<<" with vect_size="<<size()<<std::endl;
-    }
+    void info() const {std::cerr<<"\n IN DEVELOPMENT: transpose with block SIMD: "<<Simd::type_string()<<" with vect_size="<<size()<<std::endl;}
   };
 
  
@@ -348,12 +254,10 @@ namespace FFLAS {
 
     if (m%BTS.size() ||  n %BTS.size() || BLOCK % BTS.size())
       return ftransposein_impl<Field,BLOCK>(F,m,n,A,lda);
-
       
     const size_t ls = BLOCK;
     typename Field::Element TMP[ls*ls];
-    finit(F,ls,ls,TMP,ls);
-    
+    finit(F,ls,ls,TMP,ls);    
     for (size_t i = 0; i < m; i+=ls){
       // these two loops are for diagonal blocks [i..i+ls,i..i+ls]
       fassign(F, ls, ls, A+i*lda+i, lda, TMP, ls);       
@@ -363,8 +267,7 @@ namespace FFLAS {
 	  BTS.transpose(F, A+_j*lda+_i, lda, A+_i*lda+_j, lda);
 	  BTS.transpose(F, TMP+(_i-i)*ls+(_j-i), ls, A+_j*lda+_i, lda);
 	}
-      }
-      
+      }      
       for (size_t j =i+ls; j < n; j+=ls){
 	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]	
 	// copy only the first block
@@ -393,11 +296,15 @@ namespace FFLAS {
     const size_t ls = BLOCK;
     typename Field::Element TMP1[ls*ls], TMP2[ls*ls];
     finit(F,ls,ls,TMP1,ls);
-    finit(F,ls,ls,TMP2,ls);    
+    finit(F,ls,ls,TMP2,ls);
+
+    // This variant does not separate diagonal block ffrom the other ones.
+    // -> since each block are copied in TMP1 and TMP2, we put back their transposed at the right position in the result
+    // rk : diagonal blocks are transposed and written twice
     for (size_t i = 0; i < m; i+=ls){          
       for (size_t j =i; j < n; j+=ls){
 	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]	
-	// copy only the two blocks
+	// copy the two blocks
 	fassign(F, ls, ls, A+i*lda+j, lda, TMP1, ls);
 	fassign(F, ls, ls, A+j*lda+i, lda, TMP2, ls);       
 	for (size_t _i = i; _i < std::min(m, i+ls); _i+=BTS.size())
