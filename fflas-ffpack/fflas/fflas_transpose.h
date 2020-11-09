@@ -227,13 +227,13 @@ namespace FFLAS {
     {
       transpose_simd<Field, Simd, Simd::vect_size>() (F,A,lda,B,ldb);
     }
+    
     void transposeLoop(const Field&F, ConstElement_ptr A, size_t lda, Element_ptr B, size_t ldb){
       vect_t R[Simd::vect_size];
       for (size_t i=0;i<Simd::vect_size;i++)
     	R[i] = Simd::loadu(A+i*lda);
 
       //WriteMatrix (std::cerr,F,size(),size(),A,lda)<<std::endl<<"iiiiiiiiii\n";
-
       size_t w=Simd::vect_size>>1;
       size_t f=1;
       size_t idx0,idx1;
@@ -259,36 +259,7 @@ namespace FFLAS {
 
  
 
-  template<class Field, size_t BLOCK>
-  inline  typename Field::Element_ptr
-  ftransposein_impl (const Field& F, const size_t m, const size_t n,
-		     typename Field::Element_ptr A, const size_t lda)
-  {
-    // rk: m<=lda
-    const size_t ls = BLOCK;
-    typename Field::Element tmp; F.init(tmp);
-    for (size_t i = 0; i < m; i+=ls){
-      // these two loops are for diagonal blocks [i..i+ls,i..i+ls]
-      for (size_t _i = i; _i < std::min(m, i+ls); _i++)
-	for (size_t _j = _i+1; _j < std::min(n, i+ls); _j++){
-	  tmp= *(A+_i*lda+_j);
-	  *(A+_i*lda+_j)=*(A+_j*lda+_i);
-	  *(A+_j*lda+_i)=tmp;
-	}
-      // this loops is for off diagonal blocks
-      for (size_t j =i+ls; j < n; j+=ls)
-	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]
-	// it might be usefull to copy these two ls x ls blocks into contiugous memory
-	// -> this depends upon cache policy and mapping
-	for (size_t _i = i; _i < std::min(m, i+ls); _i++)
-	  for (size_t _j = j; _j < std::min(n, j+ls); _j++){
-	    tmp= *(A+_i*lda+_j);
-	    *(A+_i*lda+_j)=*(A+_j*lda+_i);
-	    *(A+_j*lda+_i)=tmp;
-	  }
-    }
-    return A;
-  }
+ 
 
 
   template<class Field, size_t BLOCK>
@@ -336,15 +307,117 @@ namespace FFLAS {
     }
 
 
+
+  template<class Field, size_t BLOCK>
+  inline  typename Field::Element_ptr
+  ftransposein_impl (const Field& F, const size_t m, const size_t n,
+		     typename Field::Element_ptr A, const size_t lda)
+  {    
+    // rk: m<=lda
+    const size_t ls = BLOCK;
+    typename Field::Element tmp; F.init(tmp);
+    for (size_t i = 0; i < m; i+=ls){
+      // these two loops are for diagonal blocks [i..i+ls,i..i+ls]
+      for (size_t _i = i; _i < std::min(m, i+ls); _i++)
+	for (size_t _j = _i+1; _j < std::min(n, i+ls); _j++){	
+	  tmp= *(A+_i*lda+_j);
+	  *(A+_i*lda+_j)=*(A+_j*lda+_i);
+	  *(A+_j*lda+_i)=tmp;
+	}
+      // this loops is for off diagonal blocks
+      for (size_t j =i+ls; j < n; j+=ls)
+	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]
+	// it might be usefull to copy these two ls x ls blocks into contiugous memory
+	// -> this depends upon cache policy and mapping
+	for (size_t _i = i; _i < std::min(m, i+ls); _i++)
+	  for (size_t _j = j; _j < std::min(n, j+ls); _j++){
+	    tmp= *(A+_i*lda+_j);
+	    *(A+_i*lda+_j)=*(A+_j*lda+_i);
+	    *(A+_j*lda+_i)=tmp;
+	  }
+    }
+    return A;
+  }
+  template<class Field, size_t BLOCK>
+  inline  typename Field::Element_ptr
+  ftransposein_impl_simd (const Field& F, const size_t m, const size_t n,
+			  typename Field::Element_ptr A, const size_t lda)
+  {
+    // rk: m<=lda
+    BlockTransposeSIMD<Field> BTS; //BTS.info();
+
+    if (m%BTS.size() ||  n %BTS.size() || BLOCK % BTS.size())
+      return ftransposein_impl<Field,BLOCK>(F,m,n,A,lda);
+
+      
+    const size_t ls = BLOCK;
+    typename Field::Element TMP[ls*ls];
+    finit(F,ls,ls,TMP,ls);
+    
+    for (size_t i = 0; i < m; i+=ls){
+      // these two loops are for diagonal blocks [i..i+ls,i..i+ls]
+      fassign(F, ls, ls, A+i*lda+i, lda, TMP, ls);       
+      for (size_t _i = i; _i < std::min(m, i+ls); _i+=BTS.size()){
+	BTS.transpose(F, A+_i*lda+_i, lda, A+_i*lda+_i, lda);
+	for (size_t _j = _i+BTS.size(); _j < std::min(n, i+ls); _j+=BTS.size()){
+	  BTS.transpose(F, A+_j*lda+_i, lda, A+_i*lda+_j, lda);
+	  BTS.transpose(F, TMP+(_i-i)*ls+(_j-i), ls, A+_j*lda+_i, lda);
+	}
+      }
+      
+      for (size_t j =i+ls; j < n; j+=ls){
+	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]	
+	// copy only the first block
+	fassign(F, ls, ls, A+i*lda+j, lda, TMP, ls);       
+	for (size_t _i = i; _i < std::min(m, i+ls); _i+=BTS.size())
+	  for (size_t _j = j; _j < std::min(n, j+ls); _j+=BTS.size()){
+	    BTS.transpose(F, A+_j*lda+_i, lda, A+_i*lda+_j, lda);
+	    BTS.transpose(F, TMP+(_i-i)*ls+(_j-j), ls, A+_j*lda+_i, lda);
+	  }
+      }
+    }
+    return A;
+  }
   
-  
+  template<class Field, size_t BLOCK>
+  inline  typename Field::Element_ptr
+  ftransposein_impl_simd_v2 (const Field& F, const size_t m, const size_t n,
+			  typename Field::Element_ptr A, const size_t lda)
+  {
+    // rk: m<=lda
+    BlockTransposeSIMD<Field> BTS; //BTS.info();
+
+    if (m%BTS.size() ||  n %BTS.size() || BLOCK % BTS.size())
+      return ftransposein_impl<Field,BLOCK>(F,m,n,A,lda);
+      
+    const size_t ls = BLOCK;
+    typename Field::Element TMP1[ls*ls], TMP2[ls*ls];
+    finit(F,ls,ls,TMP1,ls);
+    finit(F,ls,ls,TMP2,ls);    
+    for (size_t i = 0; i < m; i+=ls){          
+      for (size_t j =i; j < n; j+=ls){
+	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]	
+	// copy only the two blocks
+	fassign(F, ls, ls, A+i*lda+j, lda, TMP1, ls);
+	fassign(F, ls, ls, A+j*lda+i, lda, TMP2, ls);       
+	for (size_t _i = i; _i < std::min(m, i+ls); _i+=BTS.size())
+	  for (size_t _j = j; _j < std::min(n, j+ls); _j+=BTS.size()){
+	    BTS.transpose(F, TMP2+(_j-j)*ls+(_i-i), ls, A+_i*lda+_j, lda);
+	    BTS.transpose(F, TMP1+(_i-i)*ls+(_j-j), ls, A+_j*lda+_i, lda);
+	  }
+      }
+    }
+    return A;
+  }
+
   template<class Field>
   inline  typename Field::Element_ptr
   ftransposein (const Field& F, const size_t m, const size_t n,
 		typename Field::Element_ptr A, const size_t lda)
   {
     FFLASFFPACK_check(m<=lda);
-    return ftransposein_impl<Field,FFLAS_TRANSPOSE_BLOCKSIZE> (F,m,n,A,lda);
+    //return ftransposein_impl_simd_v2<Field,4> (F,m,n,A,lda);
+    return ftransposein_impl_simd<Field,FFLAS_TRANSPOSE_BLOCKSIZE> (F,m,n,A,lda);
   }
 
   template<class Field>
