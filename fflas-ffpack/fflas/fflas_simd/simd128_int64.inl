@@ -749,7 +749,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 
     static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { return sub(mulx(a, b), c); }
 
-    static INLINE CONST vect_t fmsubxin(vect_t c, const vect_t a, const vect_t b) { return c = fmsubx(c, a, b); }
+    static INLINE vect_t fmsubxin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsubx(c, a, b); }
 
     /*
      * Horizontally add 64-bits elements of a.
