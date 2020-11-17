@@ -268,24 +268,6 @@ public:
     using enable_if_t = typename enable_if<B, T>::type;
 
     /*** Constructor **********************************************************/
-    /* Constructor to test method such that
-     *  - Arguments of the Simd method are vect_t or any type built from vect_t
-     *      with const and references. If any, the arguments with references
-     *      must appear first.
-     *  - The return value of the Simd method is vect_t or void. [cf the
-     *      templated method evaluate_simd_method]
-     *  - For the scalar method, the supported types are
-     * Element (Element...)
-     * vectElt (vectElt...)
-     * void (vectElt...)
-     *  - Arguments of the scalar method are all of type Element (or resp.
-     *      vectElt) or any type built from Element (or resp. vectElt) with
-     *      const and references. If any, the arguments with references must
-     *      appear first.
-     *  - The return value of the scalar method is Element (if all arguments are
-     *  Elements) or vectElt or void (if all arguments are vectElt). [cf the
-     *      templated method evaluate_scalar_method]
-     */
     template <typename...AScal, typename RScal,
               typename...ASimd, typename RSimd,
               enable_if_t<sizeof...(AScal) == sizeof...(ASimd)>* = nullptr,
