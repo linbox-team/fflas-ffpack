@@ -356,17 +356,18 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
         odd = _mm512_permutexvar_epi32 (s, hi)
     }
 
-    /*TODO BLEND
-     * Blend packed 32-bit integers from a and b using control mask imm8, and store the results in dst.
-     * Args   :	[a0, ..., a7] int32_t
-     [b0, ..., b7] int32_t
-     * Return :	[s[0]?a0:b0,   , s[7]?a7:b7] int32_t
+    /*
+     * Blend 32-bit integers from a and b using control mask s.
+     * Args: a = [ a0, ..., a15 ]
+     *       b = [ b0, ..., b15 ]
+     *       s = a 16-bit mask
+     * Return: [ s[0] ? a0 : b0, ..., s[15] ? a15 : b15 ]
      */
-    /*template<uint8_t s>
-      static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
-      return _mm256_blend_epi32(a, b, s);
-      }
-      */
+    template<uint16_t s>
+    static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
+      return _mm512_mask_blend_epi32(s, a, b);
+    }
+
     /*
      * Add packed 32-bits integer in a and b, and store the results in vect_t.
      * Args   : [a0, ..., a15] 						int32_t

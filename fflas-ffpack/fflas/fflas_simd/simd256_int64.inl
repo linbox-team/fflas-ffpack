@@ -340,11 +340,21 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
      [b0, b1, b2, b3] int64_t
      * Return : [s[0]?a0:b0,   , s[3]?a3:b3] int64_t
      */
+    /*
+     * Blend 64-bit integers from a and b using control mask s.
+     * Args: a = [ a0, ..., a3 ]
+     *       b = [ b0, ..., b3 ]
+     *       s = a 4-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, ..., s[3] ? a3 : b3 ]
+     */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
-        // _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
-        // We have to transform s = [d3 d2 d1 d0]_base2 to s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
-        constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
+        /* We need to use _mm256_blend_epi32.
+         * We need to transform s = [d3 d2 d1 d0]_base2
+         * into s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
+         */
+        constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)
+                                + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
         return _mm256_blend_epi32(a, b, s1);
     }
 

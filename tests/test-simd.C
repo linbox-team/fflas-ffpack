@@ -702,6 +702,13 @@ struct ScalFunctions : public ScalFunctionsBase<Element>
         even = pack_even (a, b);
         odd = pack_odd (a, b);
     }
+    template <uint16_t s>
+    static vectElt blend (vectElt a, vectElt b) {
+        vectElt r(a.size());
+        for (size_t i = 0; i < a.size(); i++)
+            r[i] = ((s >> i) & 0x1) ? b[i] : a[i];
+        return r;
+    }
 };
 
 /******************************************************************************/
@@ -768,6 +775,7 @@ bool
 test_impl () {
     using Scal = ScalFunctions<Element>;
     bool btest = test_impl_base<Simd, Element>();
+    constexpr uint16_t blendmask = (0x1ul << Simd::vect_size) - 1;
 
     TEST_ONE_OP (zero);
     TEST_ONE_OP (vand);
@@ -802,6 +810,10 @@ test_impl () {
     TEST_ONE_OP (pack_even);
     TEST_ONE_OP (pack_odd);
     TEST_ONE_OP (pack);
+    TEST_ONE_OP (template blend<0x5555 & blendmask>);
+    TEST_ONE_OP (template blend<0x9999 & blendmask>);
+    TEST_ONE_OP (template blend<0xd7d7 & blendmask>);
+    TEST_ONE_OP (template blend<0xdead & blendmask>);
 
     return btest;
 }

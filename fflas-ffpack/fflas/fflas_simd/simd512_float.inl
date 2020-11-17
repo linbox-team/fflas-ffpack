@@ -279,14 +279,12 @@ template <> struct Simd512_impl<true, false, true, 4> {
     }
 
     /*
-     * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
-     * and store the results in dst.
-     * uint8_t became uint16_t
-     * Args   :	[a0, ..., a15] float
-     *			[b0, ..., b15] float
-     * Return :	[s[0]?a0:b0, ..., s[15]?a15:b15] float
-
-     A TESTER
+     * Blend packed single-precision (32-bit) floating-point elements from a and
+     * b using control mask s.
+     * Args: a = [ a0, ..., a15 ]
+     *       b = [ b0, ..., b15 ]
+     *       s = a 16-bit mask
+     * Return: [ s[0] ? a0 : b0, ..., s[15] ? a15 : b15 ]
      */
     template<uint16_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {

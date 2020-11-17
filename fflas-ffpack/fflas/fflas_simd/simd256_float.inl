@@ -338,11 +338,12 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
     }
 
     /*
-     * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
-     * and store the results in dst.
-     * Args   :	[a0, ..., a7] float
-     [b0, ..., b7] float
-     * Return :	[s[0]?a0:b0, ..., s[7]?a7:b7] float
+     * Blend packed single-precision (32-bit) floating-point elements from a and
+     * b using control mask s.
+     * Args: a = [ a0, ..., a7 ]
+     *       b = [ b0, ..., b7 ]
+     *       s = a 8-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, ..., s[7] ? a7 : b7 ]
      */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
