@@ -228,17 +228,6 @@ std::ostream& operator<< (std::ostream& o, const vector<E>& V)
 /******************************************************************************/
 /* Main test function *********************************************************/
 /******************************************************************************/
-class TestBaseDefault
-{
-public:
-    template <typename T>
-    static void genInputs (vector<vector<T>> &inputs) {
-        for (auto &iv: inputs)
-            generate_random_vector (iv);
-    }
-
-};
-
 /* Class to perform the test a given method from a Simd struct against a method
  * in the ScalFunctions struct. It can handle the following cases:
  *  - Arguments of the Simd method are vect_t or any type built from vect_t
@@ -254,15 +243,14 @@ public:
  *  Elements) or vectElt or void (if all arguments are vectElt). [cf the
  *      templated method evaluate_scalar_method]
  */
-template <typename Simd, typename Base = TestBaseDefault>
-class TestOneMethod : public Base
+template <typename Simd>
+class TestOneMethod
 {
 public:
     using Element = typename Simd::scalar_t;
     using vect_t = typename Simd::vect_t;
     using vectElt = vector<Element>;
     constexpr static size_t vect_size = Simd::vect_size;
-    using Base::genInputs;
 
     template <bool B, typename T = void>
     using enable_if_t = typename enable_if<B, T>::type;
@@ -274,8 +262,10 @@ public:
               enable_if_t<count_lvalue_reference<AScal...>::n == count_lvalue_reference<ASimd...>::n>* = nullptr,
               enable_if_t<is_all_same<AScal...>::value>* = nullptr,
               enable_if_t<is_all_same<vect_t, ASimd...>::value>* = nullptr>
-    TestOneMethod (RSimd (&FSimd) (ASimd...), RScal (&FScal) (AScal...),
-                                                string fname) : name(fname) {
+    TestOneMethod (function<RSimd(ASimd...)> fsimd,
+                   function<RScal(AScal...)> fscal,
+                   void (&genInputs) (vector<vectElt>&), string fname)
+                                                                : name(fname){
         /* Constants are computed with AScal, but could have been with ASimd */
         constexpr size_t arity = sizeof...(AScal);
         nb_lref = count_lvalue_reference<AScal...>::n;
@@ -288,12 +278,10 @@ public:
         genInputs (inputs);
 
         /* compute with scalar function */
-        function<RScal(AScal...)> fscal(FScal);
         evaluate_scalar_method (fscal);
 
         /* compute with SIMD function */
         array<vect_t, arity> simd_in;
-        function<RSimd(ASimd...)> fsimd(FSimd);
         /* convert input into vect_t */
         for (size_t i = 0; i < inputs.size(); i++)
             simd_in[i] = Simd::loadu (inputs[i].data());
@@ -430,17 +418,6 @@ protected:
     vector<vectElt> inputs;
     vector<vectElt> outputs_simd;
     vector<vectElt> outputs_scalar;
-};
-
-class TestBaseWithZero
-{
-public:
-    template <typename T>
-    static void genInputs (vector<vector<T>> &inputs) {
-        TestBaseDefault::genInputs (inputs);
-        for (auto &v: inputs[0])
-            v = 0;
-    }
 };
 
 /******************************************************************************/
@@ -582,6 +559,17 @@ struct ScalFunctions : public ScalFunctionsBase<Element>
     using ScalFunctionsBase<Element>::cmp_false;
     using ScalFunctionsBase<Element>::fma;
 
+    static void genInputs (vector<vectElt> &inputs) {
+        for (auto &iv: inputs)
+            generate_random_vector (iv);
+    }
+
+    static void genInputsWithZero (vector<vectElt> &inputs) {
+        genInputs (inputs);
+        for (auto &v: inputs[0])
+            v = 0;
+    }
+
     static Element zero () {
         return ScalFunctionsBase<Element>::_zero;
     }
@@ -717,17 +705,22 @@ struct ScalFunctions : public ScalFunctionsBase<Element>
 
 #define COMMA ,
 
-#define _TEST_ONE(K, f1, f2, n) do {    \
-        K T(f1, f2, n);                 \
-        bool b = T.writeResultLine();            \
-        if (b == false)     \
-            T.writeDebugData();         \
-        btest &= b;         \
+#define _TEST_ONE(K, f1, f2, r, n) do {     \
+        K T(f1, f2, r, n);                  \
+        bool b = T.writeResultLine();       \
+        if (b == false)                     \
+            T.writeDebugData();             \
+        btest &= b;                         \
     } while (0)
 
-#define TEST_ONE_OP(f) _TEST_ONE(TestOneMethod<Simd>, Simd::f, Scal::f, #f)
-#define TEST_ONE_OP_WZ(f) _TEST_ONE(TestOneMethod<Simd COMMA TestBaseWithZero>,\
-                                        Simd::f, Scal::f, #f " test with zero")
+#define TEST_ONE_OP(f) _TEST_ONE(TestOneMethod<Simd>, \
+                                 function<decltype(Simd::f)>(Simd::f), \
+                                 function<decltype(Scal::f)>(Scal::f), \
+                                 Scal::genInputs, #f)
+#define TEST_ONE_OP_WZ(f) _TEST_ONE(TestOneMethod<Simd>,\
+                                 function<decltype(Simd::f)>(Simd::f), \
+                                 function<decltype(Scal::f)>(Scal::f), \
+                                 Scal::genInputsWithZero, #f " test with zero")
 
 /* for floating point element */
 template<typename Simd, typename Element>
