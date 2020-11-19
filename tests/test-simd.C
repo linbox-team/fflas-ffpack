@@ -49,34 +49,15 @@ using std::string;
 using std::vector;
 using std::array;
 using std::function;
-using std::numeric_limits;
 using std::enable_if;
 using std::is_floating_point;
 using std::is_integral;
-using std::is_signed;
-using std::remove_reference;
+using std::decay;
+using std::uniform_real_distribution;
+using std::uniform_int_distribution;
 
-/******************************************************************************/
-/* Random generators **********************************************************/
-/******************************************************************************/
-
+/* Single source of entropy to use in all random generators */
 static std::mt19937 entropy_generator;
-
-template <typename Element, typename Alloc>
-typename enable_if<is_integral<Element>::value>::type
-generate_random_vector (vector<Element,Alloc> &a) {
-    typedef typename std::uniform_int_distribution<Element> RandGen;
-    RandGen G(numeric_limits<Element>::lowest(),numeric_limits<Element>::max());
-    std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
-}
-
-template <typename Element, typename Alloc>
-typename enable_if<is_floating_point<Element>::value>::type
-generate_random_vector (vector<Element,Alloc> &a) {
-    typedef typename std::uniform_real_distribution<Element> RandGen;
-    RandGen G(numeric_limits<Element>::min(),numeric_limits<Element>::max());
-    std::generate (a.begin(), a.end(), [&](){return G(entropy_generator);});
-}
 
 /******************************************************************************/
 /* Utils structs for enable_if ************************************************/
@@ -122,7 +103,7 @@ template <typename...Args>
 struct is_all_same;
 
 template <typename T, typename...Args>
-struct is_all_same<T, Args...> { static constexpr bool value = ALL<std::is_same< typename std::remove_cv<typename remove_reference<T>::type>::type, typename std::remove_cv<typename remove_reference<Args>::type>::type>::value...>::value; };
+struct is_all_same<T, Args...> { static constexpr bool value = ALL<std::is_same<typename decay<T>::type, typename decay<Args>::type>::value...>::value; };
 
 template <>
 struct is_all_same<> { static constexpr bool value = true; };
@@ -168,10 +149,10 @@ eval_func_on_array (function<Ret()> f, array<T, 0>& arr)
 template <typename T, typename...TArgs>
 void
 eval_func_on_array (function<void(T, TArgs...)> f,
-                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> &arr)
+                    array<typename decay<T>::type, sizeof...(TArgs)+1> &arr)
 {
     function<void(TArgs...)> newf = [&] (TArgs...args) -> void { return f(arr[0], args...);};
-    array<typename remove_reference<T>::type, sizeof...(TArgs)> newarr;
+    array<typename decay<T>::type, sizeof...(TArgs)> newarr;
     std::copy (std::next(arr.begin()), arr.end(), newarr.begin());
     eval_func_on_array (newf, newarr);
     std::copy (newarr.begin(), newarr.end(), std::next(arr.begin()));
@@ -180,10 +161,10 @@ eval_func_on_array (function<void(T, TArgs...)> f,
 template <typename Ret, typename T, typename...TArgs>
 Ret
 eval_func_on_array (function<Ret(T, TArgs...)> f,
-                    array<typename remove_reference<T>::type, sizeof...(TArgs)+1> &arr)
+                    array<typename decay<T>::type, sizeof...(TArgs)+1> &arr)
 {
     function<Ret(TArgs...)> newf = [&] (TArgs...args) -> Ret { return f(arr[0], args...);};
-    array<typename remove_reference<T>::type, sizeof...(TArgs)> newarr;
+    array<typename decay<T>::type, sizeof...(TArgs)> newarr;
     std::copy (std::next(arr.begin()), arr.end(), newarr.begin());
     Ret r = eval_func_on_array (newf, newarr);
     std::copy (newarr.begin(), newarr.end(), std::next(arr.begin()));
@@ -233,8 +214,8 @@ std::ostream& operator<< (std::ostream& o, const vector<E>& V)
  *  - Arguments of the Simd method are vect_t or any type built from vect_t
  *      with const and references. If any, the arguments with references
  *      must appear first.
- *  - The return value of the Simd method is vect_t or void. [cf the
- *      templated method evaluate_simd_method]
+ *  - The return value of the Simd method is either void or a type that can be
+ *      converted into vect_t. [cf the templated method evaluate_simd_method]
  *  - Arguments of the scalar method are all of type Element (or resp.
  *      vectElt) or any type built from Element (or resp. vectElt) with
  *      const and references. If any, the arguments with references must
@@ -264,7 +245,7 @@ public:
               enable_if_t<is_all_same<vect_t, ASimd...>::value>* = nullptr>
     TestOneMethod (function<RSimd(ASimd...)> fsimd,
                    function<RScal(AScal...)> fscal,
-                   void (&genInputs) (vector<vectElt>&), string fname)
+                   function<void(vector<vectElt> &)> genInputs, string fname)
                                                                 : name(fname){
         /* Constants are computed with AScal, but could have been with ASimd */
         constexpr size_t arity = sizeof...(AScal);
@@ -293,10 +274,11 @@ public:
     }
 
     /*** To evaluation scalar method ******************************************/
-    /* Element (Element...) */
-    template <typename...AScal>
-    enable_if_t<is_all_same<Element, AScal...>::value, void>
-    evaluate_scalar_method (function<Element(AScal...)> fscal) {
+    /* Ret (Element...), with Ret convertible to Element */
+    template <typename Ret, typename...AScal>
+    enable_if_t<is_all_same<Element, AScal...>::value
+                            && std::is_convertible<Ret, Element>::value, void>
+    evaluate_scalar_method (function<Ret(AScal...)> fscal) {
         array<Element, sizeof...(AScal)> scal_in;
         for(size_t i = 0 ; i < Simd::vect_size; i++) {
             for (size_t j = 0; j < inputs.size(); j++)
@@ -336,10 +318,11 @@ public:
     }
 
     /*** To evaluation Simd method ********************************************/
-    /* vect_t (vect_t...) */
-    template <typename...ASimd>
-    enable_if_t<is_all_same<vect_t, ASimd...>::value, void>
-    evaluate_simd_method (function<vect_t(ASimd...)> fsimd,
+    /* Rec (vect_t...), with Ret convertible to vect_t */
+    template <typename Ret, typename...ASimd>
+    enable_if_t<is_all_same<vect_t, ASimd...>::value
+                            && std::is_convertible<Ret, vect_t>::value, void>
+    evaluate_simd_method (function<Ret(ASimd...)> fsimd,
                                     array<vect_t, sizeof...(ASimd)>& simd_in) {
         vect_t simd_out = eval_func_on_array (fsimd, simd_in);
         /* store the results */
@@ -439,6 +422,12 @@ struct ScalFunctionsBase<Element,
     static constexpr Element cmp_true = NAN;
     static constexpr Element cmp_false = _zero;
 
+    static uniform_real_distribution<Element> get_default_random_generator () {
+        Element m = std::numeric_limits<Element>::lowest();
+        Element M = std::numeric_limits<Element>::max();
+        return uniform_real_distribution<Element>(m, M);
+    }
+
     static Element ceil (Element x) {
         return std::ceil(x);
     }
@@ -465,6 +454,12 @@ struct ScalFunctionsBase<Element,
      */
     static constexpr Element cmp_true = -1;
     static constexpr Element cmp_false = _zero;
+
+    static uniform_int_distribution<Element> get_default_random_generator () {
+        Element m = std::numeric_limits<Element>::lowest();
+        Element M = std::numeric_limits<Element>::max();
+        return uniform_int_distribution<Element>(m, M);
+    }
 
     static Element round (Element x) {
         return x;
@@ -522,22 +517,18 @@ struct ScalFunctionsBase<Element,
     }
 
     /* Shift */
-    template <int s, bool EnableTrue = true>
-    static
-    typename enable_if<!is_signed<Element>::value && EnableTrue, Element>::type
-    sra (Element x1) {
-        return x1 >> s; /* For unsigned type, simply use >> */
-    }
-
-    template <int s, bool EnableTrue = true>
-    static
-    typename enable_if<is_signed<Element>::value && EnableTrue, Element>::type
-    sra (Element x1) {
-        /* For signed type we need to do a sign extension, the code comes from
-         *   http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-         */
-        struct {Element x:sizeof(Element)*8-s;} r;
-        return r.x = (x1 >> s);
+    template <int s>
+    static Element sra (Element x1) {
+        if (std::is_signed<Element>::value) {
+            /* For signed type we need to do a sign extension, the code comes
+             * from http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+             */
+            struct {Element x:sizeof(Element)*8-s;} r;
+            return r.x = (x1 >> s);
+        }
+        else {
+            return x1 >> s; /* For unsigned type, simply use >> */
+        }
     }
 
     template <int s>
@@ -551,6 +542,7 @@ struct ScalFunctionsBase<Element,
     }
 };
 
+/* Struct with similar methods as the Simd structs */
 template <typename Element>
 struct ScalFunctions : public ScalFunctionsBase<Element>
 {
@@ -558,10 +550,13 @@ struct ScalFunctions : public ScalFunctionsBase<Element>
     using ScalFunctionsBase<Element>::cmp_true;
     using ScalFunctionsBase<Element>::cmp_false;
     using ScalFunctionsBase<Element>::fma;
+    using ScalFunctionsBase<Element>::get_default_random_generator;
 
     static void genInputs (vector<vectElt> &inputs) {
+        auto G = get_default_random_generator();
+        auto rand = [&](){return G(entropy_generator);};
         for (auto &iv: inputs)
-            generate_random_vector (iv);
+            std::generate (iv.begin(), iv.end(), rand);
     }
 
     static void genInputsWithZero (vector<vectElt> &inputs) {
@@ -713,14 +708,15 @@ struct ScalFunctions : public ScalFunctionsBase<Element>
         btest &= b;                         \
     } while (0)
 
-#define TEST_ONE_OP(f) _TEST_ONE(TestOneMethod<Simd>, \
-                                 function<decltype(Simd::f)>(Simd::f), \
-                                 function<decltype(Scal::f)>(Scal::f), \
-                                 Scal::genInputs, #f)
-#define TEST_ONE_OP_WZ(f) _TEST_ONE(TestOneMethod<Simd>,\
-                                 function<decltype(Simd::f)>(Simd::f), \
-                                 function<decltype(Scal::f)>(Scal::f), \
-                                 Scal::genInputsWithZero, #f " test with zero")
+#define TEST_ONE_OP(f) _TEST_ONE(TestOneMethod<Simd>,               \
+        function<decltype(Simd::f)>(Simd::f),                       \
+        function<decltype(Scal::f)>(Scal::f),                       \
+        function<decltype(Scal::genInputs)>(Scal::genInputs), #f)
+#define TEST_ONE_OP_WZ(f) _TEST_ONE(TestOneMethod<Simd>,                     \
+        function<decltype(Simd::f)>(Simd::f),                                \
+        function<decltype(Scal::f)>(Scal::f),                                \
+        function<decltype(Scal::genInputsWithZero)>(Scal::genInputsWithZero),\
+        #f " test with zero")
 
 /* for floating point element */
 template<typename Simd, typename Element>
