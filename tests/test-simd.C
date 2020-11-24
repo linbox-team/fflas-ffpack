@@ -422,10 +422,29 @@ struct ScalFunctionsBase<Element,
     static constexpr Element cmp_true = NAN;
     static constexpr Element cmp_false = _zero;
 
-    static uniform_real_distribution<Element> get_default_random_generator () {
-        Element m = std::numeric_limits<Element>::lowest();
-        Element M = std::numeric_limits<Element>::max();
-        return uniform_real_distribution<Element>(m, M);
+    class FloatingPointTestDistribution
+    {
+        public:
+            using IntType = typename make_unsigned_int<Element>::type;
+
+            FloatingPointTestDistribution () : intdist(std::numeric_limits<IntType>::lowest(), std::numeric_limits<IntType>::max()) {
+            }
+
+            template< class Generator >
+            Element operator()( Generator& g )
+            {
+                IntType tmp = intdist (g);
+                Element *fp_ptr = reinterpret_cast<Element *>(&tmp);
+                return *fp_ptr;
+            }
+
+        private:
+            uniform_int_distribution<IntType> intdist;
+
+    };
+
+    static FloatingPointTestDistribution get_default_random_generator () {
+        return FloatingPointTestDistribution();
     }
 
     static Element ceil (Element x) {
