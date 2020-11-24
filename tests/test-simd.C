@@ -77,21 +77,26 @@ struct ALL<> { static constexpr bool value = true; };
 
 /* Counting the number of lvalue reference in parameter pack */
 template <typename...T>
-struct count_lvalue_reference;
+struct count_nonconst_lvalue_reference;
 
 template <typename T, typename...O>
-struct count_lvalue_reference<T, O...> {
-    static constexpr size_t n = count_lvalue_reference<O...>::n;
+struct count_nonconst_lvalue_reference<T, O...> {
+    static constexpr size_t n = count_nonconst_lvalue_reference<O...>::n;
 };
 
 template <typename T, typename...O>
-struct count_lvalue_reference<T&, O...> {
+struct count_nonconst_lvalue_reference<T&, O...> {
     static constexpr size_t n = std::integral_constant<size_t, 1>::value
-                                            + count_lvalue_reference<O...>::n;
+                                    + count_nonconst_lvalue_reference<O...>::n;
+};
+
+template <typename T, typename...O>
+struct count_nonconst_lvalue_reference<const T&, O...> {
+    static constexpr size_t n = count_nonconst_lvalue_reference<O...>::n;
 };
 
 template <>
-struct count_lvalue_reference<> {
+struct count_nonconst_lvalue_reference<> {
     static constexpr size_t n = std::integral_constant<size_t, 0>::value;
 };
 
@@ -212,14 +217,14 @@ std::ostream& operator<< (std::ostream& o, const vector<E>& V)
 /* Class to perform the test a given method from a Simd struct against a method
  * in the ScalFunctions struct. It can handle the following cases:
  *  - Arguments of the Simd method are vect_t or any type built from vect_t
- *      with const and references. If any, the arguments with references
- *      must appear first.
+ *      with const and references. If any, the arguments with non constant
+ *      references must appear first.
  *  - The return value of the Simd method is either void or a type that can be
  *      converted into vect_t. [cf the templated method evaluate_simd_method]
  *  - Arguments of the scalar method are all of type Element (or resp.
  *      vectElt) or any type built from Element (or resp. vectElt) with
- *      const and references. If any, the arguments with references must
- *      appear first.
+ *      const and references. If any, the arguments with non constant references
+ *      must appear first.
  *  - The return value of the scalar method is Element (if all arguments are
  *  Elements) or vectElt or void (if all arguments are vectElt). [cf the
  *      templated method evaluate_scalar_method]
@@ -240,7 +245,7 @@ public:
     template <typename...AScal, typename RScal,
               typename...ASimd, typename RSimd,
               enable_if_t<sizeof...(AScal) == sizeof...(ASimd)>* = nullptr,
-              enable_if_t<count_lvalue_reference<AScal...>::n == count_lvalue_reference<ASimd...>::n>* = nullptr,
+              enable_if_t<count_nonconst_lvalue_reference<AScal...>::n == count_nonconst_lvalue_reference<ASimd...>::n>* = nullptr,
               enable_if_t<is_all_same<AScal...>::value>* = nullptr,
               enable_if_t<is_all_same<vect_t, ASimd...>::value>* = nullptr>
     TestOneMethod (function<RSimd(ASimd...)> fsimd,
@@ -249,7 +254,7 @@ public:
                                                                 : name(fname){
         /* Constants are computed with AScal, but could have been with ASimd */
         constexpr size_t arity = sizeof...(AScal);
-        nb_lref = count_lvalue_reference<AScal...>::n;
+        nb_lref = count_nonconst_lvalue_reference<AScal...>::n;
         constexpr bool is_return_void = std::is_same<RScal, void>::value;
 
         inputs.resize (arity, vectElt(vect_size));
