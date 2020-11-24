@@ -543,7 +543,7 @@ template <> struct Simd512_impl<true, false, true, 8> {
      * Return : [round(a0), round(a1), round(a2), round(a3), round(a4), round(a5), round(a6), round(a7)]
      */
     static INLINE CONST vect_t round(const vect_t a) {
-        return _mm512_roundscale_pd(a, 0);
+        return _mm512_roundscale_pd(a, _MM_FROUND_TO_NEAREST_INT);
     }
 
     /*

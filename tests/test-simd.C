@@ -459,7 +459,20 @@ struct ScalFunctionsBase<Element,
         return std::floor(x);
     }
     static Element round (Element x) {
-        return std::round(x);
+        /* SSE and AVX round to nearest even integer value. The round function
+         * from standard C++ library round to nearest with rounding up for half
+         * integer. So we need to do a bit more work on the case of half integer
+         * to completely emulate the behaviour of SSE and AVX.
+         */
+        Element r = std::round(x);
+        if (std::abs (x - r) == 0.5)
+        {
+            if (std::fmod (r, 2.) == 1.)
+                r -= 1.;
+            else if (std::fmod (r, 2.) == -1.)
+                r += 1.;
+        }
+        return r;
     }
     static Element blendv (Element a, Element b, Element mask) {
         using IntType = typename make_unsigned_int<Element>::type;
