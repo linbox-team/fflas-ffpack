@@ -284,11 +284,12 @@ template <> struct Simd128_impl<true, false, true, 4> {
     }
 
     /*
-     * Blend packed single-precision (32-bit) floating-point elements from a and b using mask, and store the results in dst.
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [mask[31]?a0:b0,   , mask[127]?a3:b3] float
+     * Blend packed single-precision (32-bit) floating-point elements from a and
+     * b using the vector mask as control.
+     * Args: a = [ a0, ..., a3 ]
+     *       b = [ b0, ..., b3 ]
+     *       mask
+     * Return: [ mask[31] ? a0 : b0, ..., mask[127] ? a3 : b3 ]
      */
     static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
         return _mm_blendv_ps(a, b, mask);

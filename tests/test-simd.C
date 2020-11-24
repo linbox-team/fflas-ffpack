@@ -461,6 +461,15 @@ struct ScalFunctionsBase<Element,
     static Element round (Element x) {
         return std::round(x);
     }
+    static Element blendv (Element a, Element b, Element mask) {
+        using IntType = typename make_unsigned_int<Element>::type;
+        IntType *ptr = (IntType *) &mask;
+        *ptr = *ptr >> (8*sizeof(Element)-1);
+        if (*ptr & 0x1)
+            return b;
+        else
+            return a;
+    }
 
     static Element fma (Element x, Element y, Element z) {
         return std::fma(x,y,z);
@@ -753,6 +762,7 @@ test_impl_base () {
     TEST_ONE_OP (floor);
     TEST_ONE_OP (mulin);
     TEST_ONE_OP (div);
+    TEST_ONE_OP (blendv);
 
     return btest;
 }

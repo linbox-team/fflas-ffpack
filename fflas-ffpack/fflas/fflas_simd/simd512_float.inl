@@ -292,33 +292,20 @@ template <> struct Simd512_impl<true, false, true, 4> {
     }
 
     /*
-     * Blend packed single-precision (32-bit) floating-point elements from a and b using mask,
-     * and store the results in dst.
-     * Args   :	[a0, ..., a15] float
-     [b0, ..., b15] float
-     * Return : [mask[31]?a0:b0, ..., mask[511]?a15:b15] float
-
-     A TESTER
+     * Blend packed single-precision (32-bit) floating-point elements from a and
+     * b using the vector mask as control.
+     * Args: a = [ a0, ..., a15 ]
+     *       b = [ b0, ..., b15 ]
+     *       mask
+     * Return: [ mask[31] ? a0 : b0, ..., mask[511] ? a15 : b15 ]
      */
-
     static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
-
-        __m256 lowa  = _mm512_castps512_ps256(a);
-        __m256 higha = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(a),1));
-
-        __m256 lowb  = _mm512_castps512_ps256(b);
-        __m256 highb = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(b),1));
-
-        __m256 lowmask  = _mm512_castps512_ps256(mask);
-        __m256 highmask = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(mask),1));
-
-        __m256 reslow = _mm256_blendv_ps(lowa, lowb, lowmask);
-        __m256 reshigh = _mm256_blendv_ps(higha, highb, highmask);
-
-        __m512 res = _mm512_castps256_ps512(reslow);
-        res = _mm512_insertf32x8(res, reshigh, 1);
-
-        return res;
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
+        __mmask16 k = _mm512_movepi32_mask (_mm512_castps_si512 (mask));
+#else
+        __mmask16 k = _mm512_cmplt_epi32_mask (_mm512_castps_si512 (mask), _mm512_setzero_si512());
+#endif
+        return _mm512_mask_blend_ps (k, a, b);
     }
 
     /*
