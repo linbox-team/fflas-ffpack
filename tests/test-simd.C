@@ -178,9 +178,9 @@ template <typename T>
 struct width { static constexpr size_t value = 2+2*sizeof(T); };
 
 template <>
-struct width<float> { static constexpr size_t value = 15; };
+struct width<float> { static constexpr size_t value = 16; };
 template <>
-struct width<double> { static constexpr size_t value = 23; };
+struct width<double> { static constexpr size_t value = 24; };
 
 /* pretty printing vectors */
 template <typename E>
