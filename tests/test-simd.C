@@ -731,8 +731,6 @@ struct ScalFunctions : public ScalFunctionsBase<Element>
 /* Test one SIMD implem *******************************************************/
 /******************************************************************************/
 
-#define COMMA ,
-
 #define _TEST_ONE(K, f1, f2, r, n) do {     \
         K T(f1, f2, r, n);                  \
         bool b = T.writeResultLine();       \
