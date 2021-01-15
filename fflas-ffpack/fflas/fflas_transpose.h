@@ -34,7 +34,7 @@
 #include "fflas-ffpack/fflas/fflas.h"
 
 #ifndef FFLAS_TRANSPOSE_BLOCKSIZE 
-#define FFLAS_TRANSPOSE_BLOCKSIZE 32
+#define FFLAS_TRANSPOSE_BLOCKSIZE 32 // MUST BE A POWER OF TWO
 #endif
 
 #include "fflas-ffpack/fflas/fflas_simd.h"
@@ -218,25 +218,29 @@ namespace FFLAS {
   inline  typename Field::Element_ptr
   ftransposein_impl (const Field& F, const size_t m, const size_t n,
 		     typename Field::Element_ptr A, const size_t lda)
-  {    
+  {
+    //std::cerr<<"\n transposein NOSIMD used\n";
     // rk: m<=lda
     const size_t ls = BLOCK;
     typename Field::Element tmp; F.init(tmp);
     for (size_t i = 0; i < m; i+=ls){
       // these two loops are for diagonal blocks [i..i+ls,i..i+ls]
       for (size_t _i = i; _i < std::min(m, i+ls); _i++)
-	for (size_t _j = _i+1; _j < std::min(n, i+ls); _j++){	
+	for (size_t _j = _i+1; _j < std::min(n, i+ls); _j++){
+	  //std::cerr<<"("<<_i<<","<<_j<<") : "<<_i*lda+_j<<" <--> "<<_j*lda+_i<<  std::endl;
 	  tmp= *(A+_i*lda+_j);
 	  *(A+_i*lda+_j)=*(A+_j*lda+_i);
 	  *(A+_j*lda+_i)=tmp;
 	}
+      //std::cerr<<"***********\n";
       // this loops is for off diagonal blocks
-      for (size_t j =i+ls; j < n; j+=ls)
+      for (size_t j =i+std::min(m,ls); j < n; j+=ls)
 	// these two loops are for off diagonal blocks [i..i+ls,j..i+ls] and [j..j+ls,i..i+ls]
 	// it might be usefull to copy these two ls x ls blocks into contiugous memory
 	// -> this depends upon cache policy and mapping
 	for (size_t _i = i; _i < std::min(m, i+ls); _i++)
 	  for (size_t _j = j; _j < std::min(n, j+ls); _j++){
+	    //std::cerr<<"("<<_i<<","<<_j<<") : "<<_i*lda+_j<<" <--> "<<_j*lda+_i<<  std::endl;
 	    tmp= *(A+_i*lda+_j);
 	    *(A+_i*lda+_j)=*(A+_j*lda+_i);
 	    *(A+_j*lda+_i)=tmp;
