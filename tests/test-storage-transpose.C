@@ -109,7 +109,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n,  size_t 
     std::cout<<oss.str();
     std::cout<<" ... ";
 
-	
+
     typename Field::RandIter R(*F,seed++);
 
     /////////////////////////////////////////////////////
@@ -151,18 +151,18 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n,  size_t 
     Element_ptr Amm  = fflas_new(*F,m,m);
     Element_ptr Ammt = fflas_new(*F,m,m);
     RandomMatrix(*F, m, m, Amm, m, R);
-    
-    ftranspose(*F,m,m,Amm,m,Ammt,m);				   
-    ftransposein(*F,m,m,Ammt,m);
+
+    ftranspose(*F,m,m,Amm,m,Ammt,m);
+    ftranspose(*F,m,m,Ammt,m,Ammt,m);
     ok&= check_equal(*F, m, m, Amm, m, Ammt,m);
 
-#if 0    
-    // with submatrix    
+#if 0
+    // with submatrix
     m1 = rand()% m;
     i1 = rand() %(m-m1);
     j1 = rand() %(m-m1);
     Abis=Amm+i1*m+j1;
-    ftranspose(*F,m1,m1,Abis,m,Ammt,m);				   
+    ftranspose(*F,m1,m1,Abis,m,Ammt,m);
     ftransposein(*F,m1,m1,Ammt,m);
     ok&= check_equal(*F, m1, m1, Abis, m, Ammt,m);
 
@@ -188,30 +188,30 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n,  size_t 
       std::cout << "PASSED "<<std::endl;
 
     if (bench){
-      const size_t B=32;
       Givaro::Timer chrono;
       chrono.clear(); chrono.start();
-      ftranspose_impl_simd<Field, B> (*F,m,n,A,n,At,m);
+      ftranspose<Field> (*F,m,n,A,n,At,m);
       chrono.stop();
       timeSIMD+=chrono.usertime();
       chrono.clear(); chrono.start();
-      ftranspose_impl<Field, B> (*F,m,n,A,n,At,m);
+      ftranspose<Field, NoSimd<typename Field::Element>> (*F,m,n,A,n,At,m);
       chrono.stop();
       timeNOSIMD+=chrono.usertime();
 
+      /* Naive implem */
       chrono.clear(); chrono.start();
       for(size_t i=0;i<m;i++)
-	for(size_t j=0;j<n;j++)
-	  At[j*m+i]=A[i*n+j];	
+        for(size_t j=0;j<n;j++)
+            At[j*m+i]=A[i*n+j];
       chrono.stop();
       timeNAIVE+=chrono.usertime();
 
+      /* inplace */
       chrono.clear(); chrono.start();
-      ftransposein_impl_simd<Field, B> (*F,m,m,Amm,m);
+      ftranspose<Field> (*F,m,m,Amm,m,Amm,m);
       chrono.stop();
       timeINPLACE+=chrono.usertime();
-      
-    }    
+    }
     delete F;
     fflas_delete(A);
     fflas_delete(At);
