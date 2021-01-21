@@ -1,7 +1,7 @@
 /*
  * Copyright (C) the FFLAS-FFPACK group
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
- *           
+ *
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -44,235 +44,256 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
+/******************************************************************************/
+template <typename Elt>
+class Test {
+    public:
+        using Field = Modular<Elt>;
+        using Elt_ptr = typename Field::Element_ptr;
+        using Residu = typename Field::Residu_t;
+        template <bool B, class T = void>
+        using enable_if_t = typename std::enable_if<B, T>::type;
+        template <typename Simd>
+        using is_same_element = typename Simd::template is_same_element<Field>;
+        template <typename E>
+        using enable_if_no_simd_t = enable_if_t<Simd<E>::vect_size == 1>;
+        template <typename E>
+        using enable_if_simd128_t = enable_if_t<sizeof(E)*Simd<E>::vect_size == 16>;
+        template <typename E>
+        using enable_if_simd256_t = enable_if_t<sizeof(E)*Simd<E>::vect_size == 32>;
+        template <typename E>
+        using enable_if_simd512_t = enable_if_t<sizeof(E)*Simd<E>::vect_size == 64>;
 
-template <class Field>
-bool check_transpose(const Field& F, size_t m, size_t n,
-		     const typename Field::Element_ptr A, size_t lda,
-		     const typename Field::Element_ptr At, size_t ldat)
-{
+        /* ctor */
+        Test () : F(cardinality()) {
+        }
 
-  // cerr<<"A="<<endl;
-  // WriteMatrix (cerr,F,m,n,A,lda);
-  // cerr<<"At="<<endl;
-  // WriteMatrix (cerr,F,n,m,At,ldat);
-  for (size_t i=0;i<m;i++)
-    for (size_t j=0;j<n;j++)
-      if (A[i*lda+j]!=At[j*ldat+i]) {
-	cerr<<"FFLAS::transpose matrix Error at ("<<i<<","<<j<<") -> "<<A[i*lda+j]<<" <> "<<At[j*ldat+i]<<endl;
-	cerr<<"A="<<endl;
-	WriteMatrix (cerr,F,m,n,A,lda);
-	cerr<<"At="<<endl;
-	WriteMatrix (cerr,F,n,m,At,ldat);
-	return false;
-      }
-  return true;
-}
-template <class Field>
-bool check_equal(const Field& F, size_t m, size_t n,
-		 const typename Field::Element_ptr A, size_t lda,
-		 const typename Field::Element_ptr At, size_t ldat)
-{
+        /* */
+        template <typename _E = Elt,
+                  enable_if_t<!is_same<_E, Givaro::Integer>::value>* = nullptr>
+        static Residu
+        cardinality () {
+            return Field::maxCardinality();
+        }
 
+        template <typename _E = Elt,
+                  enable_if_t<is_same<_E, Givaro::Integer>::value>* = nullptr>
+        static Residu
+        cardinality () {
+            return (1UL << 32);
+        }
 
-  for (size_t i=0;i<m;i++)
-    for (size_t j=0;j<n;j++)
-      if (A[i*lda+j]!=At[i*ldat+j]) {
-	cerr<<"FFLAS:: equal matrix Error at ("<<i<<","<<j<<") -> "<<A[i*lda+j]<<" <> "<<At[i*ldat+j]<<endl;
-	cerr<<"A="<<endl;
-	WriteMatrix (cerr,F,m,n,A,lda);
-	cerr<<"At="<<endl;
-	WriteMatrix (cerr,F,m,n,At,ldat);
-	return false;
-      }
-  return true;
-}
+        /* main test function */
+        template <typename Simd = NoSimd<Elt>,
+                  enable_if_t<is_same_element<Simd>::value>* = nullptr>
+        bool test_ftranspose (size_t m, size_t n, Elt_ptr A, size_t lda,
+                                                    Elt_ptr B, size_t ldb) {
+            Elt_ptr M, Mt;
+            if (A == B) {
+                M = fflas_new (F, ldb, lda);
+                finit (F, ldb, lda, M, lda);
+                fassign (F, m, n, A, lda, M, lda);
+                Mt = M;
+            }
+            else {
+                M = A;
+                Mt = B;
+            }
+            ftranspose<Field, Simd> (F, m, n, M, lda, Mt, ldb);
 
-template <class Field>
-bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n,  size_t iters, size_t seed, bool bench){
-  bool ok = true ;
+            bool ok = true;
+            for (size_t i = 0; i < m; i++)
+                for (size_t j = 0; j < n; j++)
+                    ok = ok && ((*(Mt+j*ldb+i)) == (*(A+i*lda+j)));
 
-  int nbit=(int)iters;
-  double timeSIMD=0.0, timeNOSIMD=0.0, timeNAIVE=0.0, timeINPLACE=0.0;
-  srand(seed);
-  while (ok &&  nbit){
-    typedef typename Field::Element_ptr Element_ptr;
-    // choose Field
-    Field* F= chooseField<Field>(q,b,seed);
-    if (F==nullptr)
-      return true;
+            if (!ok) {
+                cerr << "Error, with " << m << "x" << n << " matrix"
+                     << (lda == n ? "" : " with stride " + to_string(lda))
+                     << (A == B ? " (inplace variant)" : "") << " over "
+                     << F.type_string() << " using " << Simd::type_string()
+                     << endl;
+                for (size_t i = 0; i < m; i++)
+                    for (size_t j = 0; j < n; j++)
+                        if ((*(Mt+j*ldb+i)) != (*(A+i*lda+j))) {
+                            cerr << "   at index (" << j << ", " << i
+                                 << ") expected " << *(A+i*lda+j) << " got "
+                                 << *(Mt+j*ldb+i) << endl;
+                        }
+            }
 
-    std::ostringstream oss;
-    F->write(oss);
-    std::cout.fill('.');
-    std::cout<<"Checking ";
-    std::cout.width(50);
-    std::cout<<oss.str();
-    std::cout<<" ... ";
+            if (A == B) {
+                fflas_delete (M);
+            }
+            return ok;
+        }
 
+        /* perform the tests for all sizes and types of matrices */
+        template <typename Simd = NoSimd<Elt>,
+                  enable_if_t<is_same_element<Simd>::value>* = nullptr>
+        bool doTests () {
 
-    typename Field::RandIter R(*F,seed++);
+            /* square matrices */
+            bool ok_sq_not_inplace = true, ok_sq_inplace = true;
+            size_t nrows[] = { 3*FFLAS_TRANSPOSE_BLOCKSIZE,
+                               3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size,
+                               3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size+3 };
+            for (auto m: nrows) {
+                Elt_ptr M = fflas_new (F, m, m);
+                Elt_ptr Mt = fflas_new (F, m, m);
 
-    /////////////////////////////////////////////////////
-    // CHECKING TRANSPOSE (m can be different from n)) //
-    /////////////////////////////////////////////////////
-    Element_ptr A  = fflas_new(*F,m,n);
-    Element_ptr At = fflas_new(*F,m,n);
-    Element_ptr Att = fflas_new(*F,m,n);
-    RandomMatrix(*F, m, n, A,n, R);
+                finit (F, m, m, M, m);
+                for (size_t i = 0; i < m; i++)
+                    for (size_t j = 0; j < m; j++)
+                        F.assign (M[i*m+j], (i << 8) + j);
+                finit (F, m, m, Mt, m);
 
-    ftranspose(*F,m,n,A,n,At,m);
-    ok&= check_transpose(*F,m,n,A,n,At,m);
-    
-    ftranspose(*F,n,m,At,m,Att,n); 
-    ok&= check_transpose(*F,n,m,At,m,Att,n);
-    ok&= check_equal(*F, m, n, A, n, Att, n);
-   
-    // with submatrix    
-    size_t m1 = rand()% m;
-    size_t n1 = rand()% n;
-    size_t i1 = rand() %(m-m1);
-    size_t j1 = rand() %(n-n1);
-    /* cout<<"m1="<<m1<<" \nn1="<<n1<<endl; */
-    /* cout<<"i1="<<i1<<" \nj1="<<j1<<endl; */
-    Element_ptr Abis=A+i1*n+j1;
-    Element_ptr Attbis=Att+i1*n+j1;
+                /* not inplace full matrix */
+                bool b1 = test_ftranspose<Simd> (m, m, M, m, Mt, m);
 
-    ftranspose(*F,m1,n1,Abis,n,At,m1);
-    ok&= check_transpose(*F,m1,n1,Abis,n,At,m1);
+                /* not inplace submatrix */
+                size_t s = m - FFLAS_TRANSPOSE_BLOCKSIZE;
+                bool b2 = test_ftranspose<Simd> (s, s, M, m, Mt, m);
 
-    ftranspose(*F,n1,m1,At,m1,Attbis,n);
-    ok&= check_transpose(*F,n1,m1,At,m1,Attbis,n);
-    ok&= check_equal(*F, m1, n1, Abis, n, Attbis,n);
-   
-    /////////////////////////////////////////////////////
-    // CHECKING TRANSPOSEIN (m must equal n))          //
-    /////////////////////////////////////////////////////
-    
-    Element_ptr Amm  = fflas_new(*F,m,m);
-    Element_ptr Ammt = fflas_new(*F,m,m);
-    RandomMatrix(*F, m, m, Amm, m, R);
+                ok_sq_not_inplace = ok_sq_not_inplace && b1 && b2;
 
-    ftranspose(*F,m,m,Amm,m,Ammt,m);
-    ftranspose(*F,m,m,Ammt,m,Ammt,m);
-    ok&= check_equal(*F, m, m, Amm, m, Ammt,m);
+                /* inplace full matrix */
+                bool b3 = test_ftranspose<Simd> (m, m, M, m, M, m);
 
-#if 0
-    // with submatrix
-    m1 = rand()% m;
-    i1 = rand() %(m-m1);
-    j1 = rand() %(m-m1);
-    Abis=Amm+i1*m+j1;
-    ftranspose(*F,m1,m1,Abis,m,Ammt,m);
-    ftransposein(*F,m1,m1,Ammt,m);
-    ok&= check_equal(*F, m1, m1, Abis, m, Ammt,m);
+                /* inplace submatrix */
+                s = m - Simd::vect_size;
+                bool b4 = test_ftranspose<Simd> (s, s, M, m, M, m);
 
+                ok_sq_inplace = ok_sq_inplace && b3 && b4;
 
-    m1 = rand()% m;
-    n1=  rand()% m;
-    i1 = rand() %(m-m1);
-    j1 = rand() %(m-m1);
-    cout<<endl<<"m1="<<m1<<" \nn1="<<n1<<endl;
-    cout<<"i1="<<i1<<" \nj1="<<j1<<endl;
+                fflas_delete (M);
+                fflas_delete (Mt);
+            }
 
-    Abis=Amm+i1*m+j1;
-    ftranspose(*F,m1,n1,Abis,m,Ammt,m);
-    WriteMatrix (cerr,*F,n1,m1,Ammt,m);
-    ftransposein(*F,n1,m1,Ammt,m);
-    ok&= check_equal(*F, m1, n1, Abis, m, Ammt,m);
+            /* non square matrices */
+            bool ok_nsq_not_inplace = true, ok_nsq_inplace = true;
+            size_t ncols[] = { 2*FFLAS_TRANSPOSE_BLOCKSIZE,
+                               4*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size,
+                               3*FFLAS_TRANSPOSE_BLOCKSIZE+2*Simd::vect_size+1};
+            for (size_t i = 0; i < 3; i++) {
+                size_t m = nrows[i];
+                size_t n = ncols[i];
+
+                Elt_ptr M = fflas_new (F, m, n);
+                Elt_ptr Mt = fflas_new (F, n, m);
+
+                finit (F, m, n, M, n);
+                for (size_t i = 0; i < m; i++)
+                    for (size_t j = 0; j < n; j++)
+                        F.assign (M[i*n+j], (i << 8) + j);
+                finit (F, n, m, Mt, m);
+
+                /* not inplace full matrix */
+                bool b1 = test_ftranspose<Simd> (m, n, M, n, Mt, m);
+
+                /* not inplace submatrix */
+                size_t s = m - Simd::vect_size;
+                size_t t = n - 2*Simd::vect_size+1;
+                bool b2 = test_ftranspose<Simd> (s, t, M, n, Mt, m);
+
+                ok_nsq_not_inplace = ok_nsq_not_inplace && b1 && b2;
+
+                /* inplace full matrix */
+                bool b3 = test_ftranspose<Simd> (m, n, M, n, M, m);
+
+                ok_nsq_inplace = ok_nsq_not_inplace && b3;
+
+                fflas_delete (M);
+                fflas_delete (Mt);
+            }
+
+            /* print results */
+            bool ok = ok_sq_not_inplace && ok_sq_inplace
+                        && ok_nsq_not_inplace && ok_nsq_inplace;
+            std::cout << F.type_string()
+                      << string (36-F.type_string().size(), '.') << " "
+                      << Simd::type_string()
+                      << string (36-Simd::type_string().size(), '.') << " "
+                      << (ok ? "PASSED" : "FAILED")
+                      << endl;
+
+            return ok;
+        }
+
+        /* run tests: call doTests for all available Simd structs */
+        template <typename _E = Elt,
+                  enable_if_t<is_same<_E, Elt>::value>* = nullptr,
+                  enable_if_no_simd_t<_E>* = nullptr>
+        bool run () {
+            doTests ();
+            return true;
+        }
+
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
+        template <typename _E = Elt,
+                  enable_if_t<is_same<_E, Elt>::value>* = nullptr,
+                  enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
+                  enable_if_simd128_t<_E>* = nullptr>
+        bool run () {
+            doTests ();
+            doTests<Simd128<Elt>> ();
+            return true;
+        }
 #endif
-      
-    nbit--;
-    if ( !ok )
-      {std::cout << "FAILED "<<std::endl; return false;}
-    else
-      std::cout << "PASSED "<<std::endl;
 
-    if (bench){
-      Givaro::Timer chrono;
-      chrono.clear(); chrono.start();
-      ftranspose<Field> (*F,m,n,A,n,At,m);
-      chrono.stop();
-      timeSIMD+=chrono.usertime();
-      chrono.clear(); chrono.start();
-      ftranspose<Field, NoSimd<typename Field::Element>> (*F,m,n,A,n,At,m);
-      chrono.stop();
-      timeNOSIMD+=chrono.usertime();
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
+        template <typename _E = Elt,
+                  enable_if_t<is_same<_E, Elt>::value>* = nullptr,
+                  enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
+                  enable_if_simd256_t<_E>* = nullptr>
+        bool run () {
+            doTests ();
+            doTests<Simd128<Elt>> ();
+            doTests<Simd256<Elt>> ();
+            return true;
+        }
+#endif
 
-      /* Naive implem */
-      chrono.clear(); chrono.start();
-      for(size_t i=0;i<m;i++)
-        for(size_t j=0;j<n;j++)
-            At[j*m+i]=A[i*n+j];
-      chrono.stop();
-      timeNAIVE+=chrono.usertime();
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
+        template <typename _E = Elt,
+                  enable_if_t<is_same<_E, Elt>::value>* = nullptr,
+                  enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
+                  enable_if_simd512_t<_E>* = nullptr>
+        bool run () {
+            doTests ();
+            doTests<Simd128<Elt>> ();
+            doTests<Simd256<Elt>> ();
+            doTests<Simd512<Elt>> ();
+            return true;
+        }
+#endif
 
-      /* inplace */
-      chrono.clear(); chrono.start();
-      ftranspose<Field> (*F,m,m,Amm,m,Amm,m);
-      chrono.stop();
-      timeINPLACE+=chrono.usertime();
-    }
-    delete F;
-    fflas_delete(A);
-    fflas_delete(At);
-    fflas_delete(Att);
-    fflas_delete(Amm);
-    fflas_delete(Ammt);
-  }
+    protected:
+        Field F;
+};
 
-  if (bench){
-    std::cerr<<std::setprecision(4)<<" running time  naive: "<<timeNAIVE<<std::endl;
-    std::cerr<<std::setprecision(4)<<" running time NOSIMD: "<<timeNOSIMD<<std::endl;
-    std::cerr<<std::setprecision(4)<<" running time   SIMD: "<<timeSIMD<<std::endl;
-    std::cerr<<std::setprecision(4)<<" running time inplace: "<<timeINPLACE<<std::endl;
-  }
-    
-  return ok;   
-}
-
-
-
+/******************************************************************************/
 int main(int argc, char** argv)
 {
-  std::cout<<std::setprecision(17);
-  std::cerr<<std::setprecision(17);
-  uint64_t seed = getSeed();
-  size_t iters = 3 ;
-  Givaro::Integer q = -1 ;
-  uint64_t b = 0 ;
-  size_t m = 50 ;
-  size_t n = 50 ;
-  bool loop = false;
-  bool time= false;
-  Argument as[] = {
-		   { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-		   { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
-		   { 'm', "-m M", "Set the row dimension of the matrix.",      TYPE_INT , &m },
-		   { 'n', "-n N", "Set the column dimension of the matrix.",      TYPE_INT , &n },
-		   { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		   { 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		   { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
-		   { 't', "-t Y/N", "run the test and monitor timing ", TYPE_BOOL, &time },
-		   END_OF_ARGUMENTS
-  };
+    std::cout << std::setprecision(17);
+    std::cerr << std::setprecision(17);
 
-  FFLAS::parseArguments(argc,argv,as);
-  bool ok = true;
-  do{
-    ok = ok && run_with_field<Modular<double> >(q,b,m,n,iters, seed, time);
-    ok = ok && run_with_field<Modular<float> >(q,b,m,n,iters, seed, time);
-    ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,iters, seed, time);
-    ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,iters, seed, time);
-    ok = ok && run_with_field<Modular<int16_t> >(q,b,m,n,iters, seed, time);    
-    // ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,iters, seed, time);
-    // ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,iters, seed, time);
-    // ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,iters, seed, time);
-    /* ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,iters,seed, time); */
-    /* ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,iters,seed, time); */
+    bool ok = true;
 
-    seed++;
-  } while (loop && ok);
+    ok = ok && Test<float>().run();
+    ok = ok && Test<double>().run();
+    ok = ok && Test<uint64_t>().run();
+    ok = ok && Test<int64_t>().run();
+    ok = ok && Test<uint32_t>().run();
+    ok = ok && Test<int32_t>().run();
+    ok = ok && Test<uint16_t>().run();
+    ok = ok && Test<int16_t>().run();
+    ok = ok && Test<Givaro::Integer>().run();
+    ok = ok && Test<RecInt::rint<6>>().run();
+    ok = ok && Test<RecInt::ruint<6>>().run();
+    ok = ok && Test<RecInt::rint<7>>().run();
+    ok = ok && Test<RecInt::ruint<7>>().run();
+    ok = ok && Test<RecInt::rint<8>>().run();
+    ok = ok && Test<RecInt::ruint<8>>().run();
 
-  return !ok ;
-
+    return !ok;
 }
