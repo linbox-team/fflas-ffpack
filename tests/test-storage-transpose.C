@@ -132,9 +132,9 @@ class Test {
         template <typename Simd = NoSimd<Elt>,
                   enable_if_t<is_same_element<Simd>::value>* = nullptr>
         bool doTests () {
+            bool ok = true;
 
             /* square matrices */
-            bool ok_sq_not_inplace = true, ok_sq_inplace = true;
             size_t nrows[] = { 3*FFLAS_TRANSPOSE_BLOCKSIZE,
                                3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size,
                                3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size+3 };
@@ -149,29 +149,24 @@ class Test {
                 finit (F, m, m, Mt, m);
 
                 /* not inplace full matrix */
-                bool b1 = test_ftranspose<Simd> (m, m, M, m, Mt, m);
+                ok &= test_ftranspose<Simd> (m, m, M, m, Mt, m);
 
                 /* not inplace submatrix */
                 size_t s = m - FFLAS_TRANSPOSE_BLOCKSIZE;
-                bool b2 = test_ftranspose<Simd> (s, s, M, m, Mt, m);
-
-                ok_sq_not_inplace = ok_sq_not_inplace && b1 && b2;
+                ok &= test_ftranspose<Simd> (s, s, M, m, Mt, m);
 
                 /* inplace full matrix */
-                bool b3 = test_ftranspose<Simd> (m, m, M, m, M, m);
+                ok &= test_ftranspose<Simd> (m, m, M, m, M, m);
 
                 /* inplace submatrix */
                 s = m - Simd::vect_size;
-                bool b4 = test_ftranspose<Simd> (s, s, M, m, M, m);
-
-                ok_sq_inplace = ok_sq_inplace && b3 && b4;
+                ok &= test_ftranspose<Simd> (s, s, M, m, M, m);
 
                 fflas_delete (M);
                 fflas_delete (Mt);
             }
 
             /* non square matrices */
-            bool ok_nsq_not_inplace = true, ok_nsq_inplace = true;
             size_t ncols[] = { 2*FFLAS_TRANSPOSE_BLOCKSIZE,
                                4*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size,
                                3*FFLAS_TRANSPOSE_BLOCKSIZE+2*Simd::vect_size+1};
@@ -189,27 +184,21 @@ class Test {
                 finit (F, n, m, Mt, m);
 
                 /* not inplace full matrix */
-                bool b1 = test_ftranspose<Simd> (m, n, M, n, Mt, m);
+                ok &= test_ftranspose<Simd> (m, n, M, n, Mt, m);
 
                 /* not inplace submatrix */
                 size_t s = m - Simd::vect_size;
                 size_t t = n - 2*Simd::vect_size+1;
-                bool b2 = test_ftranspose<Simd> (s, t, M, n, Mt, m);
-
-                ok_nsq_not_inplace = ok_nsq_not_inplace && b1 && b2;
+                ok &= test_ftranspose<Simd> (s, t, M, n, Mt, m);
 
                 /* inplace full matrix */
-                bool b3 = test_ftranspose<Simd> (m, n, M, n, M, m);
-
-                ok_nsq_inplace = ok_nsq_not_inplace && b3;
+                ok &= test_ftranspose<Simd> (m, n, M, n, M, m);
 
                 fflas_delete (M);
                 fflas_delete (Mt);
             }
 
             /* print results */
-            bool ok = ok_sq_not_inplace && ok_sq_inplace
-                        && ok_nsq_not_inplace && ok_nsq_inplace;
             std::cout << F.type_string()
                       << string (36-F.type_string().size(), '.') << " "
                       << Simd::type_string()
@@ -225,8 +214,7 @@ class Test {
                   enable_if_t<is_same<_E, Elt>::value>* = nullptr,
                   enable_if_no_simd_t<_E>* = nullptr>
         bool run () {
-            doTests ();
-            return true;
+            return doTests();
         }
 
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -235,9 +223,7 @@ class Test {
                   enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
                   enable_if_simd128_t<_E>* = nullptr>
         bool run () {
-            doTests ();
-            doTests<Simd128<Elt>> ();
-            return true;
+            return doTests() & doTests<Simd128<Elt>>();
         }
 #endif
 
@@ -247,10 +233,8 @@ class Test {
                   enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
                   enable_if_simd256_t<_E>* = nullptr>
         bool run () {
-            doTests ();
-            doTests<Simd128<Elt>> ();
-            doTests<Simd256<Elt>> ();
-            return true;
+            return doTests() & doTests<Simd128<Elt>>()
+                    & doTests<Simd256<Elt>>();
         }
 #endif
 
@@ -260,11 +244,8 @@ class Test {
                   enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
                   enable_if_simd512_t<_E>* = nullptr>
         bool run () {
-            doTests ();
-            doTests<Simd128<Elt>> ();
-            doTests<Simd256<Elt>> ();
-            doTests<Simd512<Elt>> ();
-            return true;
+            return doTests() & doTests<Simd128<Elt>>()
+                    & doTests<Simd256<Elt>>() & doTests<Simd512<Elt>>();
         }
 #endif
 
@@ -280,21 +261,21 @@ int main(int argc, char** argv)
 
     bool ok = true;
 
-    ok = ok && Test<float>().run();
-    ok = ok && Test<double>().run();
-    ok = ok && Test<uint64_t>().run();
-    ok = ok && Test<int64_t>().run();
-    ok = ok && Test<uint32_t>().run();
-    ok = ok && Test<int32_t>().run();
-    ok = ok && Test<uint16_t>().run();
-    ok = ok && Test<int16_t>().run();
-    ok = ok && Test<Givaro::Integer>().run();
-    ok = ok && Test<RecInt::rint<6>>().run();
-    ok = ok && Test<RecInt::ruint<6>>().run();
-    ok = ok && Test<RecInt::rint<7>>().run();
-    ok = ok && Test<RecInt::ruint<7>>().run();
-    ok = ok && Test<RecInt::rint<8>>().run();
-    ok = ok && Test<RecInt::ruint<8>>().run();
+    ok &= Test<float>().run();
+    ok &= Test<double>().run();
+    ok &= Test<uint64_t>().run();
+    ok &= Test<int64_t>().run();
+    ok &= Test<uint32_t>().run();
+    ok &= Test<int32_t>().run();
+    ok &= Test<uint16_t>().run();
+    ok &= Test<int16_t>().run();
+    ok &= Test<Givaro::Integer>().run();
+    ok &= Test<RecInt::rint<6>>().run();
+    ok &= Test<RecInt::ruint<6>>().run();
+    ok &= Test<RecInt::rint<7>>().run();
+    ok &= Test<RecInt::ruint<7>>().run();
+    ok &= Test<RecInt::rint<8>>().run();
+    ok &= Test<RecInt::ruint<8>>().run();
 
     return !ok;
 }
