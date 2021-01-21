@@ -80,7 +80,8 @@ class Test {
                   enable_if_t<is_same<_E, Givaro::Integer>::value>* = nullptr>
         static Residu
         cardinality () {
-            return (1UL << 32);
+            /* Test Givaro::Integer with a large (=more than a word) modulus */
+            return Givaro::Integer ("0x100000000000000000000000000000000");
         }
 
         /* main test function */
