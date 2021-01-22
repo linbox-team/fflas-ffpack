@@ -145,7 +145,7 @@ class Test {
                 finit (F, m, m, M, m);
                 for (size_t i = 0; i < m; i++)
                     for (size_t j = 0; j < m; j++)
-                        F.assign (M[i*m+j], (i << 8) + j);
+		      F.assign (M[i*m+j], (uint64_t)(i << 8) + j);
                 finit (F, m, m, Mt, m);
 
                 /* not inplace full matrix */
@@ -180,7 +180,7 @@ class Test {
                 finit (F, m, n, M, n);
                 for (size_t i = 0; i < m; i++)
                     for (size_t j = 0; j < n; j++)
-                        F.assign (M[i*n+j], (i << 8) + j);
+		      F.assign (M[i*n+j], (uint64_t)(i << 8) + j);
                 finit (F, n, m, Mt, m);
 
                 /* not inplace full matrix */
