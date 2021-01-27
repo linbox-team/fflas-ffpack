@@ -105,7 +105,7 @@ class Bench {
             finit (F, m, n, A, lda);
             for (size_t i = 0; i < m; i++)
                 for (size_t j = 0; j < n; j++)
-                    F.assign (A[i*lda+j], (i << 16) + j);
+		  F.assign (A[i*lda+j], (uint64_t) (i << 16) + j);
 
             Givaro::Timer chrono;
             chrono.clear(); chrono.start();
