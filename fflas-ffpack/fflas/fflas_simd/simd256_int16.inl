@@ -356,6 +356,93 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
     }
 
     /*
+     * Transpose the 16x16 matrix formed by the 16 rows of 16-bit integers in
+     * r0, r1, r2, r3, ..., r14 and r15, and store the transposed matrix in
+     * these vectors.
+     * Args: r0 = [ r00, r01, r02, r03, r04, r05, r06, r07, ... ]
+     *       r1 = [ r10, r11, r12, r13, r14, r15, r16, r17, ... ]
+     *       ...                                            ...
+     * Return: r0 = [ r00, r10, r20, r30, r40, r50, r60, r70, ... ]
+     *         r1 = [ r01, r11, r21, r31, r41, r51, r61, r71, ... ]
+     *         ...                                            ...
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3, vect_t& r4,
+               vect_t& r5, vect_t& r6, vect_t& r7, vect_t& r8, vect_t& r9,
+               vect_t& r10, vect_t& r11, vect_t& r12, vect_t& r13, vect_t& r14,
+               vect_t& r15) {
+        vect_t t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11,t12,t13,t14,t15;
+        vect_t v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,v12,v13,v14,v15;
+        t0 = unpacklo_intrinsic (r0, r4);
+        t1 = unpacklo_intrinsic (r1, r5);
+        t2 = unpacklo_intrinsic (r2, r6);
+        t3 = unpacklo_intrinsic (r3, r7);
+        t8 = unpacklo_intrinsic (r8, r12);
+        t9 = unpacklo_intrinsic (r9, r13);
+        t10 = unpacklo_intrinsic (r10, r14);
+        t11 = unpacklo_intrinsic (r11, r15);
+        t4 = unpackhi_intrinsic (r0, r4);
+        t5 = unpackhi_intrinsic (r1, r5);
+        t6 = unpackhi_intrinsic (r2, r6);
+        t7 = unpackhi_intrinsic (r3, r7);
+        t12 = unpackhi_intrinsic (r8, r12);
+        t13 = unpackhi_intrinsic (r9, r13);
+        t14 = unpackhi_intrinsic (r10, r14);
+        t15 = unpackhi_intrinsic (r11, r15);
+
+        v0 = unpacklo_intrinsic (t0, t2);
+        v1 = unpacklo_intrinsic (t1, t3);
+        v4 = unpacklo_intrinsic (t4, t6);
+        v5 = unpacklo_intrinsic (t5, t7);
+        v8 = unpacklo_intrinsic (t8, t10);
+        v9 = unpacklo_intrinsic (t9, t11);
+        v12 = unpacklo_intrinsic (t12, t14);
+        v13 = unpacklo_intrinsic (t13, t15);
+        v2 = unpackhi_intrinsic (t0, t2);
+        v3 = unpackhi_intrinsic (t1, t3);
+        v6 = unpackhi_intrinsic (t4, t6);
+        v7 = unpackhi_intrinsic (t5, t7);
+        v10 = unpackhi_intrinsic (t8, t10);
+        v11 = unpackhi_intrinsic (t9, t11);
+        v14 = unpackhi_intrinsic (t12, t14);
+        v15 = unpackhi_intrinsic (t13, t15);
+
+        t0 = unpacklo_intrinsic (v0, v1);
+        t2 = unpacklo_intrinsic (v2, v3);
+        t4 = unpacklo_intrinsic (v4, v5);
+        t6 = unpacklo_intrinsic (v6, v7);
+        t8 = unpacklo_intrinsic (v8, v9);
+        t10 = unpacklo_intrinsic (v10, v11);
+        t12 = unpacklo_intrinsic (v12, v13);
+        t14 = unpacklo_intrinsic (v14, v15);
+        t1 = unpackhi_intrinsic (v0, v1);
+        t3 = unpackhi_intrinsic (v2, v3);
+        t5 = unpackhi_intrinsic (v4, v5);
+        t7 = unpackhi_intrinsic (v6, v7);
+        t9 = unpackhi_intrinsic (v8, v9);
+        t11 = unpackhi_intrinsic (v10, v11);
+        t13 = unpackhi_intrinsic (v12, v13);
+        t15 = unpackhi_intrinsic (v14, v15);
+
+        r0 = _mm256_permute2x128_si256 (t0, t8, 0x20);
+        r1 = _mm256_permute2x128_si256 (t1, t9, 0x20);
+        r2 = _mm256_permute2x128_si256 (t2, t10, 0x20);
+        r3 = _mm256_permute2x128_si256 (t3, t11, 0x20);
+        r4 = _mm256_permute2x128_si256 (t4, t12, 0x20);
+        r5 = _mm256_permute2x128_si256 (t5, t13, 0x20);
+        r6 = _mm256_permute2x128_si256 (t6, t14, 0x20);
+        r7 = _mm256_permute2x128_si256 (t7, t15, 0x20);
+        r8 = _mm256_permute2x128_si256 (t0, t8, 0x31);
+        r9 = _mm256_permute2x128_si256 (t1, t9, 0x31);
+        r10 = _mm256_permute2x128_si256 (t2, t10, 0x31);
+        r11 = _mm256_permute2x128_si256 (t3, t11, 0x31);
+        r12 = _mm256_permute2x128_si256 (t4, t12, 0x31);
+        r13 = _mm256_permute2x128_si256 (t5, t13, 0x31);
+        r14 = _mm256_permute2x128_si256 (t6, t14, 0x31);
+        r15 = _mm256_permute2x128_si256 (t7, t15, 0x31);
+    }
+
+    /*
      * Blend packed 16-bit integers from a and b in each 128 lane using control mask imm8, and store the results in dst.
      * Args   :	[a0, ..., a15] int16_t
      [b0, ..., b15] int16_t

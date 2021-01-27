@@ -307,6 +307,19 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
     }
 
     /*
+     * Transpose the 2x2 matrix formed by the 2 rows of 64-bit integers in r0
+     * and r1, and store the transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01 ]
+     *       r1 = [ r10, r11 ]
+     * Return: r0 = [ r00, r10 ]
+     *         r1 = [ r01, r11 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1) {
+        unpacklohi (r0, r1, r0, r1);
+    }
+
+    /*
      * Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
      * Args   : [a0, a1] int64_t
      [b0, b1] int64_t

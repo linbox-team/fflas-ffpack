@@ -76,7 +76,6 @@ namespace FFLAS {
 
 #define LD(i) R##i=Simd::loadu(A+lda*i)
 #define ST(i) Simd::storeu(B+ldb*i,R##i)
-#define PCK(i,j) Simd::unpacklohi(R##i,R##j,R##i,R##j);
 
         /* transpose for vect_size == 2 */
         template <size_t _s = Simd::vect_size, IsSimdSize<_s, 2>* = nullptr>
@@ -84,7 +83,7 @@ namespace FFLAS {
                                             Element_ptr B, size_t ldb) const {
             vect_t R0,R1;
             LD(0);LD(1);
-            PCK(0,1);
+            Simd::transpose (R0, R1);
             ST(0);ST(1);
         }
 
@@ -94,8 +93,7 @@ namespace FFLAS {
                                             Element_ptr B, size_t ldb) const {
             vect_t R0,R1,R2,R3;
             LD(0);LD(1);LD(2);LD(3);
-            PCK(0,2); PCK(1,3);
-            PCK(0,1); PCK(2,3);
+            Simd::transpose (R0, R1, R2, R3);
             ST(0);ST(1);ST(2);ST(3);
         }
 
@@ -105,9 +103,7 @@ namespace FFLAS {
                                             Element_ptr B, size_t ldb) const {
             vect_t R0,R1,R2,R3,R4,R5,R6,R7;
             LD(0);LD(1);LD(2);LD(3);LD(4);LD(5);LD(6);LD(7);
-            PCK(0,4); PCK(1,5); PCK(2,6); PCK(3,7);
-            PCK(0,2); PCK(1,3); PCK(4,6); PCK(5,7);
-            PCK(0,1); PCK(2,3); PCK(4,5); PCK(6,7);
+            Simd::transpose (R0, R1, R2, R3, R4, R5, R6, R7);
             ST(0);ST(1);ST(2);ST(3);ST(4);ST(5);ST(6);ST(7);
         }
 
@@ -117,32 +113,13 @@ namespace FFLAS {
                                             Element_ptr B, size_t ldb) const {
             vect_t R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15;
             LD(0);LD(1);LD(2);LD(3);LD(4);LD(5);LD(6);LD(7);LD(8);LD(9);LD(10);LD(11);LD(12);LD(13);LD(14);LD(15);
-            PCK(0,8); PCK(1,9); PCK(2,10); PCK(3,11); PCK(4,12); PCK(5,13);  PCK(6,14);  PCK(7,15);
-            PCK(0,4); PCK(1,5); PCK(2,6);  PCK(3,7);  PCK(8,12); PCK(9,13);  PCK(10,14); PCK(11,15);
-            PCK(0,2); PCK(1,3); PCK(4,6);  PCK(5,7);  PCK(8,10); PCK(9,11);  PCK(12,14); PCK(13,15);
-            PCK(0,1); PCK(2,3); PCK(4,5);  PCK(6,7);  PCK(8,9);  PCK(10,11); PCK(12,13); PCK(14,15);
+            Simd::transpose (R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11,
+                             R12, R13, R14, R15);
             ST(0);ST(1);ST(2);ST(3);ST(4);ST(5);ST(6);ST(7);ST(8);ST(9);ST(10);ST(11);ST(12);ST(13);ST(14);ST(15);
-        }
-
-        /* transpose for vect_size == 32 */
-        template <size_t _s = Simd::vect_size, IsSimdSize<_s, 32>* = nullptr>
-        void transpose (const Field& F, ConstElement_ptr A, size_t lda,
-                                            Element_ptr B, size_t ldb) const {
-            vect_t R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31;
-            LD(0);LD(1);LD(2);LD(3);LD(4);LD(5);LD(6);LD(7);LD(8);LD(9);LD(10);LD(11);LD(12);LD(13);LD(14);LD(15);
-            LD(16);LD(17);LD(18);LD(19);LD(20);LD(21);LD(22);LD(23);LD(24);LD(25);LD(26);LD(27);LD(28);LD(29);LD(30);LD(31);
-            PCK(0,16); PCK(1,17); PCK(2,18); PCK(3,19); PCK(4,20); PCK(5,21);  PCK(6,22);  PCK(7,23);  PCK(8,24);  PCK(9,25);  PCK(10,26); PCK(11,27); PCK(12,28); PCK(13,29); PCK(14,30); PCK(15,31);
-            PCK(0,8);  PCK(1,9);  PCK(2,10); PCK(3,11); PCK(4,12); PCK(5,13);  PCK(6,14);  PCK(7,15);  PCK(16,24); PCK(17,25); PCK(18,26); PCK(19,27); PCK(20,28); PCK(21,29); PCK(22,30); PCK(23,31);
-            PCK(0,4);  PCK(1,5);  PCK(2,6);  PCK(3,7);  PCK(8,12); PCK(9,13);  PCK(10,14); PCK(11,15); PCK(16,20); PCK(17,21); PCK(18,22); PCK(19,23); PCK(24,28); PCK(25,29); PCK(26,30); PCK(27,31);
-            PCK(0,2);  PCK(1,3);  PCK(4,6);  PCK(5,7);  PCK(8,10); PCK(9,11);  PCK(12,14); PCK(13,15); PCK(16,18); PCK(17,19); PCK(20,22); PCK(21,23); PCK(24,26); PCK(25,27); PCK(28,30); PCK(29,31);
-            PCK(0,1);  PCK(2,3);  PCK(4,5);  PCK(6,7);  PCK(8,9);  PCK(10,11); PCK(12,13); PCK(14,15); PCK(16,17); PCK(18,19); PCK(20,21); PCK(22,23); PCK(24,25); PCK(26,27); PCK(28,29); PCK(30,31);
-            ST(0);ST(1);ST(2);ST(3);ST(4);ST(5);ST(6);ST(7);ST(8);ST(9);ST(10);ST(11);ST(12);ST(13);ST(14);ST(15);
-            ST(16);ST(17);ST(18);ST(19);ST(20);ST(21);ST(22);ST(23);ST(24);ST(25);ST(26);ST(27);ST(28);ST(29);ST(30);ST(31);
         }
 
 #undef LD
 #undef ST
-#undef PCK
     };
 
 

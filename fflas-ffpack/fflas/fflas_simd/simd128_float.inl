@@ -271,6 +271,33 @@ template <> struct Simd128_impl<true, false, true, 4> {
     }
 
     /*
+     * Transpose the 4x4 matrix formed by the 4 rows of single-precision
+     * (32-bit) floating-point elements in r0, r1, r2 and r3, and store the
+     * transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01, r02, r03 ]
+     *       r1 = [ r10, r11, r12, r13 ]
+     *       r2 = [ r20, r21, r22, r23 ]
+     *       r3 = [ r30, r31, r32, r33 ]
+     * Return: r0 = [ r00, r10, r20, r30 ]
+     *         r1 = [ r01, r11, r21, r31 ]
+     *         r2 = [ r02, r12, r22, r32 ]
+     *         r3 = [ r03, r13, r23, r33 ]
+     * Note: taken from https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=transpose&expand=5961
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3) {
+        vect_t t0, t1, t2, t3;
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        r0 = _mm_movelh_ps (t0, t2);
+        r1 = _mm_movehl_ps (t2, t0);
+        r2 = _mm_movelh_ps (t1, t3);
+        r3 = _mm_movehl_ps (t3, t1);
+    }
+
+    /*
      * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
      * and store the results in dst.
      * Args   : [a0, a1, a2, a3] float

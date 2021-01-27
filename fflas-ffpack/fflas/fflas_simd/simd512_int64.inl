@@ -340,6 +340,64 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     }
 
     /*
+     * Transpose the 8x8 matrix formed by the 8 rows of 64-bit integers in r0,
+     * r1, r2, r3, r4, r5, r6 and r7, and store the transposed matrix in these
+     * vectors.
+     * Args: r0 = [ r00, r01, r02, r03, r04, r05, r06, r07 ]
+     *       r1 = [ r10, r11, r12, r13, r14, r15, r16, r17 ]
+     *       ...                   ...                   ...
+     *       r6 = [ r60, r61, r62, r63, r64, r65, r66, r67 ]
+     *       r7 = [ r70, r71, r72, r73, r74, r75, r76, r77 ]
+     * Return: r0 = [ r00, r10, r20, r30, r40, r50, r60, r70 ]
+     *         r1 = [ r01, r11, r21, r31, r41, r51, r61, r71 ]
+     *         ...                   ...                   ...
+     *         r6 = [ r06, r16, r26, r36, r46, r56, r66, r76 ]
+     *         r7 = [ r07, r17, r27, r37, r47, r57, r67, r77 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3, vect_t& r4,
+               vect_t& r5, vect_t& r6, vect_t& r7) {
+        vect_t t0, t1, t2, t3, t4, t5, t6, t7;
+        vect_t v0, v1, v2, v3, v4, v5, v6, v7;
+
+        int64_t permute_idx1[8] = { 0x0, 0x1, 0x8, 0x9, 0x4, 0x5, 0xc, 0xd };
+        int64_t permute_idx2[8] = { 0x2, 0x3, 0xa, 0xb, 0x6, 0x7, 0xe, 0xf };
+        int64_t permute_idx3[8] = { 0x0, 0x1, 0x2, 0x3, 0x8, 0x9, 0xa, 0xb };
+        int64_t permute_idx4[8] = { 0x4, 0x5, 0x6, 0x7, 0xc, 0xd, 0xe, 0xf };
+
+        vect_t i1 = loadu (permute_idx1);
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t4 = unpacklo_intrinsic (r4, r5);
+        t6 = unpacklo_intrinsic (r6, r7);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        t5 = unpackhi_intrinsic (r4, r5);
+        t7 = unpackhi_intrinsic (r6, r7);
+
+        vect_t i2 = loadu (permute_idx2);
+        v0 = _mm512_permutex2var_epi64 (t0, i1, t2)
+        v1 = _mm512_permutex2var_epi64 (t1, i1, t3)
+        v4 = _mm512_permutex2var_epi64 (t4, i1, t6)
+        v5 = _mm512_permutex2var_epi64 (t5, i1, t7)
+        vect_t i3 = loadu (permute_idx3);
+        v0 = _mm512_permutex2var_epi64 (t0, i2, t2)
+        v1 = _mm512_permutex2var_epi64 (t1, i2, t3)
+        v4 = _mm512_permutex2var_epi64 (t4, i2, t6)
+        v5 = _mm512_permutex2var_epi64 (t5, i2, t7)
+
+        vect_t i4 = loadu (permute_idx4);
+        r0 = _mm512_permutex2var_epi64 (v0, i3, v4)
+        r1 = _mm512_permutex2var_epi64 (v1, i3, v5)
+        r2 = _mm512_permutex2var_epi64 (v2, i3, v6)
+        r3 = _mm512_permutex2var_epi64 (v3, i3, v7)
+        r4 = _mm512_permutex2var_epi64 (v0, i4, v4)
+        r5 = _mm512_permutex2var_epi64 (v1, i4, v5)
+        r6 = _mm512_permutex2var_epi64 (v2, i4, v6)
+        r7 = _mm512_permutex2var_epi64 (v3, i4, v7)
+    }
+
+    /*
      * Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
      [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
