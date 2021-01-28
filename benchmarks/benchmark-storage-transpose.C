@@ -65,8 +65,8 @@ class Bench {
         using enable_if_simd512_t = enable_if_t<sizeof(E)*Simd<E>::vect_size == 64>;
 
         /* ctor */
-        Bench (size_t m, size_t n, size_t iters)
-            : F(cardinality()), m(m), n(n), iters(iters) {
+        Bench (size_t m, size_t n, size_t iters, bool inplace)
+            : F(cardinality()), m(m), n(n), iters(iters), inplace(inplace) {
         }
 
         /* */
@@ -88,7 +88,7 @@ class Bench {
         /* main test function */
         template <typename Simd = NoSimd<Elt>,
                   enable_if_t<is_same_element<Simd>::value>* = nullptr>
-        void bench_ftranspose (bool inplace) {
+        void doBenchs () {
             Elt_ptr A = nullptr, B = nullptr;
             const size_t lda = n;
             const size_t ldb = m;
@@ -130,22 +130,13 @@ class Bench {
                       << 1000*time / ((double) iters) << "ms" << endl;
         }
 
-        /* perform the tests for all sizes and types of matrices */
-        template <typename Simd = NoSimd<Elt>,
-                  enable_if_t<is_same_element<Simd>::value>* = nullptr>
-        void doBenchs () {
-
-            /* bench not inplace */
-            bench_ftranspose<Simd> (false);
-            /* bench inplace */
-            bench_ftranspose<Simd> (true);
-        }
-
-        /* run tests: call doBenchs for all available Simd structs */
+        /* run tests: call doBenchs for best Simd structs or all available Simd
+         * structs, depending on parameter.
+         */
         template <typename _E = Elt,
                   enable_if_t<is_same<_E, Elt>::value>* = nullptr,
                   enable_if_no_simd_t<_E>* = nullptr>
-        void run () {
+        void run (bool allsimd) {
             doBenchs ();
         }
 
@@ -154,8 +145,10 @@ class Bench {
                   enable_if_t<is_same<_E, Elt>::value>* = nullptr,
                   enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
                   enable_if_simd128_t<_E>* = nullptr>
-        void run () {
-            doBenchs ();
+        void run (bool allsimd) {
+            if (allsimd) {
+                doBenchs ();
+            }
             doBenchs<Simd128<Elt>> ();
         }
 #endif
@@ -165,9 +158,11 @@ class Bench {
                   enable_if_t<is_same<_E, Elt>::value>* = nullptr,
                   enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
                   enable_if_simd256_t<_E>* = nullptr>
-        void run () {
-            doBenchs ();
-            doBenchs<Simd128<Elt>> ();
+        void run (bool allsimd) {
+            if (allsimd) {
+                doBenchs ();
+                doBenchs<Simd128<Elt>> ();
+            }
             doBenchs<Simd256<Elt>> ();
         }
 #endif
@@ -177,10 +172,12 @@ class Bench {
                   enable_if_t<is_same<_E, Elt>::value>* = nullptr,
                   enable_if_t<Simd<_E>::vect_size != 1>* = nullptr,
                   enable_if_simd512_t<_E>* = nullptr>
-        void run () {
-            doBenchs ();
-            doBenchs<Simd128<Elt>> ();
-            doBenchs<Simd256<Elt>> ();
+        void run (bool allsimd) {
+            if (allsimd) {
+                doBenchs ();
+                doBenchs<Simd128<Elt>> ();
+                doBenchs<Simd256<Elt>> ();
+            }
             doBenchs<Simd512<Elt>> ();
         }
 #endif
@@ -190,43 +187,52 @@ class Bench {
         const size_t m;
         const size_t n;
         const size_t iters;
+        const bool inplace;
 };
 
 /******************************************************************************/
 int main(int argc, char** argv)
 {
-    size_t iters = 10;
-    size_t m = 5000;
-    size_t n = 4000;
+    size_t iters = 20;
+    size_t m = 6144;
+    size_t n = 4096;
+    bool allsimd = false;
     Argument as[] = {
         { 'm', "-m M", "Set the row dimension of the matrix.",
                                                                 TYPE_INT, &m },
         { 'n', "-n N", "Set the column dimension of the matrix.",
                                                                 TYPE_INT, &n },
         { 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iters },
+        { 'a', "-a Y/N", "benchmarks all Simd structs (default: no).",
+                                                        TYPE_BOOL, &allsimd },
+
         END_OF_ARGUMENTS
     };
 
     /* parse command-line */
     FFLAS::parseArguments (argc, argv, as);
     cout << "# To rerun this bench: " << argv[0] << " -m " << m << " -n " << n
-         << " -i " << iters << endl;
+         << " -i " << iters << (allsimd ? " -a" : "") <<endl;
 
-    Bench<float>(m,n,iters).run();
-    Bench<double>(m,n,iters).run();
-    Bench<uint64_t>(m,n,iters).run();
-    Bench<int64_t>(m,n,iters).run();
-    Bench<uint32_t>(m,n,iters).run();
-    Bench<int32_t>(m,n,iters).run();
-    Bench<uint16_t>(m,n,iters).run();
-    Bench<int16_t>(m,n,iters).run();
-    Bench<Givaro::Integer>(m,n,iters).run();
-    Bench<RecInt::rint<6>>(m,n,iters).run();
-    Bench<RecInt::ruint<6>>(m,n,iters).run();
-    Bench<RecInt::rint<7>>(m,n,iters).run();
-    Bench<RecInt::ruint<7>>(m,n,iters).run();
-    Bench<RecInt::rint<8>>(m,n,iters).run();
-    Bench<RecInt::ruint<8>>(m,n,iters).run();
+    bool inplace = true;
+    do {
+        inplace = not inplace;
+        cout << endl << "Benchmarking transpose on matrices of size " << m
+             << "x" << n << (inplace ? " [inplace variant]" : "") << ":"
+             << endl;
+
+        Bench<double>(m,n,iters,inplace).run(allsimd);
+        Bench<uint64_t>(m,n,iters,inplace).run(allsimd);
+        Bench<float>(m,n,iters,inplace).run(allsimd);
+        Bench<uint32_t>(m,n,iters,inplace).run(allsimd);
+        Bench<uint16_t>(m,n,iters,inplace).run(allsimd);
+
+        Bench<Givaro::Integer>(m,n,iters,inplace).run(allsimd);
+        Bench<RecInt::ruint<6>>(m,n,iters,inplace).run(allsimd);
+        Bench<RecInt::ruint<7>>(m,n,iters,inplace).run(allsimd);
+        Bench<RecInt::ruint<8>>(m,n,iters,inplace).run(allsimd);
+    }
+    while (not inplace) ;
 
     return 0;
 }
