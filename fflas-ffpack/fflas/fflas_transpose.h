@@ -206,18 +206,14 @@ namespace FFLAS {
 	                    }
                         /* remaining cols that cannot be handled with Simd */
                         for (size_t j = jv; j < jbend; j++) {
-                            for (size_t i = iv; i < iv+vs; i++) {
-                                F.assign(*(A+i*lda+j),*(TMP2+(j-jb)*bs+(i-ib)));
-                                F.assign(*(A+j*lda+i),*(TMP1+(i-ib)*bs+(j-jb)));
-                            }
+                            fassign (F, vs, TMP2+(j-jb)*bs+(iv-ib), 1, A+iv*lda+j, lda);
+                            fassign (F, vs, TMP1+(iv-ib)*bs+(j-jb), bs, A+j*lda+iv, 1);
                         }
                     }
                     /* remaining rows that cannot be handled with Simd */
                     for (size_t i = iv; i < ibend; i++) {
-                        for (size_t j = i+1; j < jbend; j++) {
-                            F.assign(*(A+i*lda+j),*(TMP2+(j-jb)*bs+(i-ib)));
-                            F.assign(*(A+j*lda+i),*(TMP1+(i-ib)*bs+(j-jb)));
-                        }
+                        size_t j = iv;
+                        fassign (F, jbend-j, TMP2+(j-jb)*bs+(i-ib), bs, A+i*lda+j, 1);
                     }
                 }
             }
