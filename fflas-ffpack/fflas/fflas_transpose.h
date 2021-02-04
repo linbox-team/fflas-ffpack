@@ -169,88 +169,13 @@ namespace FFLAS {
 
         /* m is the number of rows and cols (A is a square matrice)
          * lda must be >= m
-         */
-        template <size_t bs, typename Field, typename BTSimd>
-        void square_inplace_v1 (const Field& F, const BTSimd& BTS,
-                                const size_t m, typename Field::Element_ptr A,
-                                const size_t lda) {
-            const size_t n = m;
-            const size_t vs = BTS.size();
-
-            typename Field::Element TMP[bs*bs];
-            finit (F, bs, bs, TMP, bs);
-
-            for (size_t ib = 0; ib < m; ib+=bs) {
-                /* First, we tranpose diagonal blocks [ib..ib+bs, ib..ib+bs] */
-                const size_t l = std::min (bs, m-ib);
-                const size_t ibend = std::min (m, ib+bs);
-                size_t iv;
-
-                fassign(F, l, l, A+ib*lda+ib, lda, TMP, bs);
-
-                for (iv = ib; iv+vs <= ibend; iv+=vs) {
-                    const size_t ivend = std::min (m, iv+vs);
-                    size_t jv;
-
-                    BTS.transpose(F, A+iv*lda+iv, lda, A+iv*lda+iv, lda);
-
-                    for (jv = iv+vs; jv+vs <= ibend; jv+=vs){
-                        BTS.transpose(F, A+jv*lda+iv, lda, A+iv*lda+jv, lda);
-                        BTS.transpose(F, TMP+(iv-ib)*bs+(jv-ib), bs, A+jv*lda+iv, lda);
-                    }
-                    /* remaining cols that cannot be handled with Simd */
-                    for (size_t i = iv; i < ivend; i++) {
-                        for (size_t j = jv; j < ibend; j++) {
-                            F.assign (*(A+i*lda+j), *(A+j*lda+i));
-                            F.assign (*(A+j*lda+i), *(TMP+(i-ib)*bs+(j-ib)));
-                        }
-                    }
-                }
-                /* remaining rows that cannot be handled with Simd */
-                for (size_t i = iv; i < ibend; i++) {
-                    for (size_t j = i+1; j < ibend; j++){
-                        F.assign (*(A+i*lda+j), *(A+j*lda+i));
-                        F.assign (*(A+j*lda+i), *(TMP+(i-ib)*bs+(j-ib)));
-                    }
-                }
-                
-                /* Then, we transpose and swap diagonal blocks
-                 * [i..i+bs, j..j+bs] and [j..j+bs,i..i+bs]
-                 */
-                for (size_t jb = ib+bs; jb < n; jb+=bs) {
-                    const size_t jbend = std::min (n, jb+bs);
-
-                    /* copy only the first block */
-                    fassign(F, bs, std::min (bs, n-jb), A+ib*lda+jb, lda, TMP, bs);
-                    for (size_t iv = ib; iv+vs <= ibend; iv+=vs) {
-                        const size_t ivend = std::min (m, iv+vs);
-                        size_t jv;
-                        for (jv = jb; jv+vs <= jbend; jv+=vs) {
-                            BTS.transpose(F, A+jv*lda+iv, lda, A+iv*lda+jv, lda);
-                            BTS.transpose(F, TMP+(iv-ib)*bs+(jv-jb), bs, A+jv*lda+iv, lda);
-                        }
-                        /* remaining cols that cannot be handled with Simd */
-                        for (size_t i = iv; i < ivend; i++) {
-                            for (size_t j = jv; j < jbend; j++) {
-                                F.assign (*(A+i*lda+j), *(A+j*lda+i));
-                                F.assign (*(A+j*lda+i), *(TMP+(i-ib)*bs+(j-jb)));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /* m is the number of rows and cols (A is a square matrice)
-         * lda must be >= m
          *
          * This variant does not separate diagonal block ffrom the other ones.
          * remark: diagonal blocks are transposed and written twice
          */
         template <size_t bs, typename Field, typename BTSimd>
-        void square_inplace_v2 (const Field& F, const BTSimd& BTS,
-                                const size_t m, typename Field::Element_ptr A,
-                                const size_t lda) {
+        void square_inplace (const Field& F, const BTSimd& BTS, const size_t m,
+                             typename Field::Element_ptr A, const size_t lda) {
             const size_t n = m;
             const size_t vs = BTS.size();
 
@@ -412,8 +337,7 @@ namespace FFLAS {
             /* both strides must be identical */
             FFLASFFPACK_check (lda == ldb);
 
-            _ftranspose_impl::square_inplace_v1<bs> (F, BTS, m, B, ldb);
-            //_ftranspose_impl::square_inplace_v2<bs> (F, BTS, m, B, ldb);
+            _ftranspose_impl::square_inplace<bs> (F, BTS, m, B, ldb);
         }
         else { /* in place with non square matrices */
             /* no strides are allowed in this case */
