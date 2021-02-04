@@ -148,26 +148,22 @@ namespace FFLAS {
                 const size_t ibend = std::min (m, ib+bs);
                 for (size_t jb = 0; jb < n; jb+=bs) {
                     const size_t jbend = std::min (n, jb+bs);
-                    size_t iv;
-                    for (iv = ib; iv+vs <= ibend; iv+=vs) {
-                        size_t jv;
-                        for (jv = jb; jv+vs <= jbend; jv+=vs) {
+                    for (size_t iv = ib; iv+vs <= ibend; iv+=vs) {
+                        for (size_t jv = jb; jv+vs <= jbend; jv+=vs) {
                             BTS.transpose(F, A+iv*lda+jv, lda, B+jv*ldb+iv, ldb);
-                        }
-                        /* remaining cols that cannot be handled with Simd */
-                        for (size_t j = jv; j < jbend; j++) {
-                            for (size_t i = iv; i < iv+vs; i++) {
-                                F.assign (*(B+j*ldb+i), *(A+i*lda+j));
-                            }
-                        }
-                    }
-                    /* remaining rows that cannot be handled with Simd */
-                    for (size_t i = iv; i < ibend; i++) {
-                        for (size_t j = jb; j < jbend; j++) {
-                            F.assign (*(B+j*ldb+i), *(A+i*lda+j));
                         }
                     }
                 }
+            }
+
+            size_t last_i = (m / vs) * vs;
+            /* remaining cols that cannot be handled with Simd */
+            for (size_t j = (n / vs) * vs; j < n; j++) {
+                fassign (F, last_i, A+j, lda, B+j*ldb, 1);
+            }
+            /* remaining rows that cannot be handled with Simd */
+            for (size_t i = last_i; i < m; i++) {
+                fassign (F, n, A+i*lda, 1, B+i, ldb);
             }
         }
 
@@ -406,8 +402,8 @@ namespace FFLAS {
         //std::cout << "ftranspose: " << BTS.info() << std::endl;
 
         if (A != B) { /* not in place */
-            /* Memory area must not overlap (not easy to check with
-             * standard-compliant code, see https://stackoverflow.com/questions/51699331/how-to-check-that-two-arbitrary-memory-ranges-are-not-overlapped-in-c-c)
+            /* Memory area must not overlap: not easy to check with
+             * standard-compliant code, see https://stackoverflow.com/questions/51699331/how-to-check-that-two-arbitrary-memory-ranges-are-not-overlapped-in-c-c
              */
 
             _ftranspose_impl::not_inplace<bs> (F, BTS, m, n, A, lda, B, ldb);
