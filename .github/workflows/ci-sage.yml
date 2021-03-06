@@ -47,13 +47,13 @@ on: [push, pull_request]
 ##       - '*'
 
 env:
-  # Ubuntu packages to install so that the project's "make dist" can succeed
-  DIST_PREREQ:      libtool libgivaro-dev libopenblas-dev
+  # Ubuntu packages to install so that the projects' "make dist" can succeed
+  DIST_PREREQ:      libtool libgivaro-dev libopenblas-dev fflas-ffpack
   # Name of this project in the Sage distribution
   SPKG:             fflas_ffpack
   # Sage distribution packages to build
   TARGETS_PRE:      build/make/Makefile
-  TARGETS:          SAGE_CHECK=yes fflas_ffpack sagemath_linbox
+  TARGETS:          SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes fflas_ffpack sagemath_linbox
   TARGETS_OPTIONAL: build/make/Makefile
   # Standard setting: Test the current beta release of Sage:
   SAGE_REPO:        sagemath/sage
@@ -63,25 +63,43 @@ env:
   SAGE_TRAC_COMMAND: try
   SAGE_TICKET:      31444
   REMOVE_PATCHES:   "*"
+  EXTRA_CONFIGURE_ARGS: --without-system-givaro --without-system-fflas_ffpack --without-system-linbox
 
 jobs:
 
   dist:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out givaro
+        uses: actions/checkout@v2
+        with:
+          path: build/pkgs/givaro/src
+          repository: linbox-team/givaro
       - name: Check out ${{ env.SPKG }}
         uses: actions/checkout@v2
         with:
           path: build/pkgs/${{ env.SPKG }}/src
+      - name: Check out linbox
+        uses: actions/checkout@v2
+        with:
+          path: build/pkgs/linbox/src
+          repository: linbox-team/linbox
       - name: Install prerequisites
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
       - name: Run make dist, prepare upstream artifact
         run: |
-          (cd build/pkgs/${{ env.SPKG }}/src && autoreconf -fi && ./configure && make dist) \
+          (cd build/pkgs/givaro/src && autoreconf -fi && ./configure && make dist) \
+          && mkdir -p upstream && cp build/pkgs/givaro/src/*.tar.gz upstream/givaro-git.tar.gz \
+          && echo "sage-package create givaro --version git --tarball givaro-git.tar.gz --type=standard" > upstream/update-pkgs.sh \
+          && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/givaro/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
+          && (cd build/pkgs/${{ env.SPKG }}/src && autoreconf -fi && ./configure && make dist) \
           && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/*.tar.gz upstream/${{ env.SPKG }}-git.tar.gz \
-          && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=standard" > upstream/update-pkgs.sh \
+          && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=standard" >> upstream/update-pkgs.sh \
+          && (cd build/pkgs/linbox/src && autoreconf -fi && ./configure && make dist) \
+          && mkdir -p upstream && cp build/pkgs/linbox/src/*.tar.gz upstream/linbox-git.tar.gz \
+          && echo "sage-package create linbox --version git --tarball linbox-git.tar.gz --type=standard" >> upstream/update-pkgs.sh \
           && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
           && ls -l upstream/
       - uses: actions/upload-artifact@v2
