@@ -136,7 +136,7 @@ FF_MISC
 
 
 # Looking for Givaro. We get the flags for GMP at the same time
-PKG_CHECK_MODULES([GIVARO],[givaro >= 4.1.1])
+PKG_CHECK_MODULES([GIVARO],[givaro >= 4.1.2])
 FF_CHECK_GIVARO_USABILITY()
 
 AS_ECHO([---------------------------------------])
