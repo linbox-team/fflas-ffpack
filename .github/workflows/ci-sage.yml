@@ -90,7 +90,8 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
       - name: Run make dist, prepare upstream artifact
         run: |
-          (cd build/pkgs/givaro/src && autoreconf -fi && ./configure && make dist) \
+          (cd build/pkgs/givaro/src && autoreconf -fi && ./configure --prefix=/tmp/build && make -j3 && make install && make dist) \
+          && export PKG_CONFIG_PATH="/tmp/build/lib/pkgconfig:$PKG_CONFIG_PATH" \
           && mkdir -p upstream && cp build/pkgs/givaro/src/*.tar.gz upstream/givaro-git.tar.gz \
           && echo "sage-package create givaro --version git --tarball givaro-git.tar.gz --type=standard" > upstream/update-pkgs.sh \
           && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/givaro/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
