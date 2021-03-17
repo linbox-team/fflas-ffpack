@@ -447,8 +447,8 @@ namespace FFLAS {
         file.write((char*) &magic     , sizeof(int64_t)) ;
         file.write((char*) &field_desc, sizeof(int64_t)) ;
         file.write((char*) &data_type , sizeof(int64_t)) ;
-        file.write((char*) &rowdim , sizeof(int64_t)) ;
-        file.write((char*) &coldim , sizeof(int64_t)) ;
+        file.write((const char*) &rowdim , sizeof(int64_t)) ;
+        file.write((const char*) &coldim , sizeof(int64_t)) ;
         // writeMachineType(F,A, modulo, file,rowdim,coldim,lda,field_desc,data_type);
 
     }
