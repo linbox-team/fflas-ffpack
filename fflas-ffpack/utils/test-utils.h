@@ -75,7 +75,7 @@ namespace FFPACK {
                     Givaro::Integer::random_exact_2exp (_p, b);
                 }
                 IPD.prevprime(p, _p+1);
-            } while (p < 2 && p > maxV);
+            } while (p <FFLAS::minCardinality<Field>() || (maxV>0 && p > maxV));
         } else { // modulus specified
             p=q;
         }

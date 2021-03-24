@@ -359,6 +359,9 @@ namespace FFLAS { /* MaxCadinality */
         // floor(2^15.5) such that ab+c fits in int32_t with abs(a,b,c) <= (p-1)
         return UINT32_C(46341);
     }
+    template <class Field>
+    inline typename Field::Residu_t minCardinality() {return Field::minCardinality();}
+
 } // FFLAS
 
 #endif // __FFLASFFPACK_field_field_traits_H
