@@ -24,7 +24,7 @@
 AC_PREREQ([2.67])
 
 
-AC_INIT([FFLAS-FFPACK], [2.4.3],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.5.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
 
@@ -51,7 +51,7 @@ AM_PROG_AR
 
 # Libtool
 AC_PROG_LIBTOOL
-LT_PREREQ([2.4.3])
+LT_PREREQ([2.5.0])
 LT_INIT
 
 # Look for headers
