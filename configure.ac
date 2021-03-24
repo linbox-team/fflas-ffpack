@@ -51,7 +51,7 @@ AM_PROG_AR
 
 # Libtool
 AC_PROG_LIBTOOL
-LT_PREREQ([2.5.0])
+LT_PREREQ([2.4.3])
 LT_INIT
 
 # Look for headers
