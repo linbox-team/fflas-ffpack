@@ -7,15 +7,15 @@ matrix:
       sudo: required
       dist: xenial
       compiler: gcc
-      env: GCC_VERSION=4.9
+      env: GCC_VERSION=5
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
-          - g++-4.9
+          - g++-5
           - binutils
-          - gfortran-4.9
+          - gfortran-5
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
@@ -26,34 +26,15 @@ matrix:
       sudo: required
       dist: bionic
       compiler: gcc
-      env: GCC_VERSION=7
+      env: GCC_VERSION=10
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
-          - g++-7
+          - g++-10
           - binutils
-          - gfortran-7
-          - libgmp-dev
-          - libgmpxx4ldbl
-          - libtool
-          - autoconf
-          - libopenblas-dev
-
-    - os: linux
-      sudo: required
-      dist: bionic
-      compiler: gcc
-      env: GCC_VERSION=8
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - g++-8
-          - binutils
-          - gfortran-8
+          - gfortran-10
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
