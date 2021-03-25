@@ -403,21 +403,21 @@ namespace FFLAS { namespace details { /*  kernels */
         vect_t R0;
         R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
         for(k=0;k<depth;k++){
-            vect_t A0;
-            vect_t B0;
-            B0 = simd::load(blB);
+            vect_t A_0;
+            vect_t B_0;
+            B_0 = simd::load(blB);
             if (K == number_kind::one) {
-                A0 = simd::set1(blA[0]);
-                simd::fmaddxin(R0, A0, B0);
+                A_0 = simd::set1(blA[0]);
+                simd::fmaddxin(R0, A_0, B_0);
             }
             if (K == number_kind::mone) {
-                A0 = simd::set1(blA[0]);
-                simd::subin(R0,simd::mulx(A0, B0));
+                A_0 = simd::set1(blA[0]);
+                simd::subin(R0,simd::mulx(A_0, B_0));
             }
             if (K == number_kind::other) {
                 int64_t abla = alpha*blA[0];
-                A0 = simd::set1(abla);
-                simd::fmaddxin(R0, A0, B0);
+                A_0 = simd::set1(abla);
+                simd::fmaddxin(R0, A_0, B_0);
             }
 
             blA++;
@@ -432,28 +432,28 @@ namespace FFLAS { namespace details { /*  kernels */
         R0 = simd::set(r0[0], r1[0]);
         R1 = simd::set(r2[0], r3[0]);
         for(k=0;k<depth;k++){
-            vect_t A0,A1;
-            vect_t B0,B1;
-            B0 = simd::load(blB+0*StepB);
-            B1 = simd::load(blB+1*StepB);
+            vect_t A_0,A_1;
+            vect_t B_0,B_1;
+            B_0 = simd::load(blB+0*StepB);
+            B_1 = simd::load(blB+1*StepB);
             if (K == number_kind::one) {
-                A0 = simd::set1(blA[0]);
-                A1 = simd::set1(blA[0]);
-                simd::fmaddxin(R0, A0, B0);
-                simd::fmaddxin(R1, A1, B1);
+                A_0 = simd::set1(blA[0]);
+                A_1 = simd::set1(blA[0]);
+                simd::fmaddxin(R0, A_0, B_0);
+                simd::fmaddxin(R1, A_1, B_1);
             }
             if (K == number_kind::mone) {
-                A0 = simd::set1(blA[0]);
-                A1 = simd::set1(blA[0]);
-                simd::subin(R0,simd::mulx(A0, B0));
-                simd::subin(R1,simd::mulx(A1, B1));
+                A_0 = simd::set1(blA[0]);
+                A_1 = simd::set1(blA[0]);
+                simd::subin(R0,simd::mulx(A_0, B_0));
+                simd::subin(R1,simd::mulx(A_1, B_1));
             }
             if (K == number_kind::other) {
                 int64_t abla = alpha*blA[0];
-                A0 = simd::set1(abla);
-                A1 = simd::set1(abla);
-                simd::fmaddxin(R0, A0, B0);
-                simd::fmaddxin(R1, A1, B1);
+                A_0 = simd::set1(abla);
+                A_1 = simd::set1(abla);
+                simd::fmaddxin(R0, A_0, B_0);
+                simd::fmaddxin(R1, A_1, B_1);
             }
 
             blA++;

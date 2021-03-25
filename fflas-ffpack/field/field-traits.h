@@ -169,6 +169,7 @@ namespace FFLAS { /*  Traits */
 
     template <typename Element, typename Compute>
     struct ModeTraits<Givaro::Modular<Element,Compute> >{typedef typename ModeCategories::DelayedTag value;};
+    template<> struct ModeTraits<Givaro::Modular<int64_t,uint64_t> > {typedef typename ModeCategories::DefaultTag value;};
 
     template<typename Compute> struct ModeTraits<Givaro::Modular<int8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
     template<typename Compute> struct ModeTraits<Givaro::Modular<int16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
@@ -340,6 +341,26 @@ namespace FFLAS { /* associatedDelayedField */
         typedef FFPACK::RNSInteger<RNS> field;
         typedef FFPACK::RNSInteger<RNS> type;
     };
+
+} // FFLAS
+
+namespace FFLAS { /* MaxCadinality */
+    template <class Field>
+    inline typename Field::Residu_t maxCardinality() {return Field::maxCardinality();}
+
+// Need to override Givaro's default, as Compute_t (uint64_t) is larger than Storage_t
+    template<>
+    inline uint64_t maxCardinality <Givaro::Modular<int64_t> >(){
+        // floor(2^31.5) such that ab+c fits in int64_t with abs(a,b,c) <= (p-1)
+        return UINT64_C(3037000500);
+    }
+    template<>
+    inline uint32_t maxCardinality<Givaro::Modular<int32_t> >(){
+        // floor(2^15.5) such that ab+c fits in int32_t with abs(a,b,c) <= (p-1)
+        return UINT32_C(46341);
+    }
+    template <class Field>
+    inline typename Field::Residu_t minCardinality() {return Field::minCardinality();}
 
 } // FFLAS
 

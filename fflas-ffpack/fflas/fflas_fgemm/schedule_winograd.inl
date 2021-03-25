@@ -423,7 +423,6 @@ namespace FFLAS { namespace BLAS3 {
 
         // P5 = alpha . S1*T1 in C22
         MMH_t H5(F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0, 0);
-
         fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
         // T2 = B22 - T1 in X2

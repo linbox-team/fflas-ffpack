@@ -184,6 +184,21 @@ namespace FFLAS { namespace details {
            typename  Field::ConstElement_ptr X, const size_t incX,
            typename Field::Element_ptr Y, const size_t incY, FieldCategories::ModularTag)
     {
+        if (F.isOne(a)) {
+            fassign(F,N,X,incX,Y,incY);
+            return ;
+        }
+
+        if (F.areEqual(a,F.mOne)){
+            fneg(F,N,X,incX,Y,incY);
+            return;
+        }
+
+        if (F.isZero(a)){
+            fzero(F,N,Y,incY);
+            return;
+        }
+
         if(incX == 1 && incY==1) {
             vectorised::scalp(F,Y,a,X,N);
         }
@@ -238,8 +253,6 @@ namespace FFLAS { namespace details {
             return ;
         }
 
-        typename Field::ConstElement_ptr Xi = X;
-        typename Field::Element_ptr Yi = Y;
         if (F.areEqual(a,F.mOne)){
             fneg(F,N,X,incX,Y,incY);
             return;
@@ -250,6 +263,8 @@ namespace FFLAS { namespace details {
             return;
         }
 
+        typename Field::ConstElement_ptr Xi = X;
+        typename Field::Element_ptr Yi = Y;
         if (incX == 1 && incY == 1)
             for (size_t i = 0 ; i < N ; ++i)
                 F.mul( Y[i], a, X[i] );

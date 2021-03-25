@@ -96,7 +96,26 @@ int main(int argc, char** argv) {
                 fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
                 break;
             case 2: // fsyrk with diagonal scaling and 2x2 diagonal blocks
-                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, twoBlocks, F.one, C, ldc, threshold);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, D, 1, twoBlocks, F.zero, C, ldc, threshold);
+                break;
+            case 3: // fsyrk with Strassen and no diagonal scaling
+            {
+                size_t reclevel = 0;
+                size_t dim = n;
+                while(dim > threshold) {reclevel++; dim>>=1;}
+                MMHelper<Field, MMHelperAlgo::Winograd> H(F,reclevel);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
+                break;
+            }
+            case 4: // cblas_dsyrk
+                cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) uplo, (CBLAS_TRANSPOSE) FflasNoTrans, n, k, 1.0, A, lda, 0.0, C, ldc);
+                break;
+            case 5: // fsyrk with the classic Divide and conquer algorithm
+                size_t reclevel = 0;
+                size_t dim = n;
+                while(dim > threshold) {reclevel++; dim>>=1;}
+                MMHelper<Field, MMHelperAlgo::DivideAndConquer> H(F,reclevel);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
                 break;
         }
         if (i) chrono.stop();
