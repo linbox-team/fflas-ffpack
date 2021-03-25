@@ -48,7 +48,7 @@ on: [push, pull_request]
 
 env:
   # Ubuntu packages to install so that the projects' "make dist" can succeed
-  DIST_PREREQ:      libtool libgivaro-dev libopenblas-dev fflas-ffpack
+  DIST_PREREQ:      libtool libopenblas-dev libgmp-dev
   # Name of this project in the Sage distribution
   SPKG:             fflas_ffpack
   # Sage distribution packages to build
