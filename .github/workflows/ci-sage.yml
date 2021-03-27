@@ -53,7 +53,7 @@ env:
   SPKG:             fflas_ffpack
   # Sage distribution packages to build
   TARGETS_PRE:      build/make/Makefile
-  TARGETS:          SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes fflas_ffpack sagemath_linbox
+  TARGETS:          SAGE_CHECK=no SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes fflas_ffpack sagemath_linbox
   TARGETS_OPTIONAL: build/make/Makefile
   # Standard setting: Test the current beta release of Sage:
   SAGE_REPO:        sagemath/sage
