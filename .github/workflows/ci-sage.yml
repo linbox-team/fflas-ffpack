@@ -53,14 +53,13 @@ env:
   SPKG:             fflas_ffpack
   # Sage distribution packages to build
   TARGETS_PRE:      build/make/Makefile
-  TARGETS:          SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes fflas_ffpack sagemath_linbox
+  TARGETS:          SAGE_CHECK=no SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes fflas_ffpack sagemath_linbox
   TARGETS_OPTIONAL: build/make/Makefile
   # Standard setting: Test the current beta release of Sage:
   SAGE_REPO:        sagemath/sage
   SAGE_REF:         develop
-  # Test on the branch from sage ticket 31444 (provides modularized package sagemath-linbox, updated cygwin workflow)
-  SAGE_TRAC_GIT:    git://trac.sagemath.org/sage.git
-  SAGE_TRAC_COMMAND: try
+  # Test with the branch from sage ticket 31444 merged (provides modularized package sagemath-linbox)
+  SAGE_TRAC_GIT:    https://github.com/sagemath/sagetrac-mirror.git
   SAGE_TICKET:      31444
   REMOVE_PATCHES:   "*"
   EXTRA_CONFIGURE_ARGS: --without-system-givaro --without-system-fflas_ffpack --without-system-linbox
@@ -100,10 +99,11 @@ jobs:
           && (cd build/pkgs/${{ env.SPKG }}/src && autoreconf -fi && ./configure --prefix=${{ env.PREFIX }} && make -j3 && make install && make dist) \
           && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/*.tar.gz upstream/${{ env.SPKG }}-git.tar.gz \
           && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=standard" >> upstream/update-pkgs.sh \
+          && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
           && (cd build/pkgs/linbox/src && autoreconf -fi && ./configure --prefix=${{ env.PREFIX }} && make dist) \
           && mkdir -p upstream && cp build/pkgs/linbox/src/*.tar.gz upstream/linbox-git.tar.gz \
           && echo "sage-package create linbox --version git --tarball linbox-git.tar.gz --type=standard" >> upstream/update-pkgs.sh \
-          && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
+          && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/linbox/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
           && ls -l upstream/
       - uses: actions/upload-artifact@v2
         with:
@@ -146,6 +146,7 @@ jobs:
       with:
         repository: ${{ env.SAGE_REPO }}
         ref: ${{ env.SAGE_REF }}
+        fetch-depth: 2000
       if: env.SAGE_REPO != ''
     - name: Check out git-trac-command
       uses: actions/checkout@v2
@@ -157,7 +158,9 @@ jobs:
       shell: bash {0}
       # Random sleep and retry to limit the load on trac.sagemath.org
       run: |
-        if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac ${{ env.SAGE_TRAC_COMMAND }} $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+        git config --global user.email "ci-sage@example.com"
+        git config --global user.name "ci-sage workflow"
+        if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac fetch $SAGE_TICKET; then git merge FETCH_HEAD || echo "(ignored)"; exit 0; fi; sleep 40; done; exit 1
       if: env.SAGE_TRAC_GIT != ''
     - uses: actions/download-artifact@v2
       with:
@@ -214,7 +217,7 @@ jobs:
       fail-fast: false
       max-parallel: 32
       matrix:
-        tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-focal, ubuntu-groovy, ubuntu-hirsute, debian-jessie, debian-stretch, debian-buster, debian-bullseye, debian-sid, linuxmint-17, linuxmint-18, linuxmint-19, linuxmint-19.3, linuxmint-20.1, fedora-26, fedora-27, fedora-28, fedora-29, fedora-30, fedora-31, fedora-32, fedora-33, fedora-34, centos-7, centos-8, gentoo, archlinux-latest, slackware-14.2, conda-forge, ubuntu-bionic-i386, ubuntu-focal-i386, debian-buster-i386, centos-7-i386, raspbian-buster-armhf]
+        tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-focal, ubuntu-groovy, ubuntu-hirsute, debian-jessie, debian-stretch, debian-buster, debian-bullseye, debian-sid, linuxmint-17, linuxmint-18, linuxmint-19, linuxmint-19.3, linuxmint-20.1, fedora-26, fedora-27, fedora-28, fedora-29, fedora-30, fedora-31, fedora-32, fedora-33, fedora-34, centos-7, centos-8, gentoo, archlinux-latest, slackware-14.2, conda-forge, ubuntu-bionic-i386, debian-buster-i386, centos-7-i386, raspbian-buster-armhf]
         tox_packages_factor: [minimal, standard]
     env:
       TOX_ENV: docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
@@ -226,6 +229,7 @@ jobs:
         with:
           repository: ${{ env.SAGE_REPO }}
           ref: ${{ env.SAGE_REF }}
+          fetch-depth: 2000
         if: env.SAGE_REPO != ''
       - name: Check out git-trac-command
         uses: actions/checkout@v2
@@ -236,7 +240,9 @@ jobs:
       - name: Check out SageMath from trac.sagemath.org
         shell: bash {0}
         run: |
-          if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac ${{ env.SAGE_TRAC_COMMAND }} $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+          git config --global user.email "ci-sage@example.com"
+          git config --global user.name "ci-sage workflow"
+          if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac fetch $SAGE_TICKET; then git merge FETCH_HEAD || echo "(ignored)"; exit 0; fi; sleep 40; done; exit 1
         if: env.SAGE_TRAC_GIT != ''
       - uses: actions/download-artifact@v2
         with:
@@ -293,10 +299,36 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        os: [ macos-10.15, macos-11.0 ]
-        tox_system_factor: [homebrew-macos, homebrew-macos-python3_xcode, homebrew-macos-python3_xcode-nokegonly, conda-forge-macos]
+        tox_system_factor: [homebrew-macos, conda-forge-macos]
         tox_packages_factor: [minimal, standard]
-        xcode_version_factor: [11.7, default, 12.3]
+        # As of 2021-03, default xcode is 12.4
+        # https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md#xcode
+        xcode_version_factor: [default]
+        os: [ macos-10.15, macos-11.0 ]
+        include:
+          # Test xcode 11.7 only on macos-10.15
+          - tox_system_factor: homebrew-macos
+            tox_packages_factor: minimal
+            xcode_version_factor: 11.7
+            os: macos-10.15
+          - tox_system_factor: homebrew-macos
+            tox_packages_factor: standard
+            xcode_version_factor: 11.7
+            os: macos-10.15
+          # python3_xcode is only accepted if enough packages are available from the system
+          # --> to test "minimal", we will need https://trac.sagemath.org/ticket/30949
+          - tox_system_factor: homebrew-macos-python3_xcode
+            tox_packages_factor: standard
+            xcode_version_factor: 11.7
+            os: macos-10.15
+          - tox_system_factor: homebrew-macos-python3_xcode
+            tox_packages_factor: standard
+            xcode_version_factor: default
+            os: macos-10.15
+          - tox_system_factor: homebrew-macos-python3_xcode
+            tox_packages_factor: standard
+            xcode_version_factor: default
+            os: macos-11.0
 
     needs: [dist]
 
@@ -315,6 +347,7 @@ jobs:
         with:
           repository: ${{ env.SAGE_REPO }}
           ref: ${{ env.SAGE_REF }}
+          fetch-depth: 2000
         if: env.SAGE_REPO != ''
       - name: Check out git-trac-command
         uses: actions/checkout@v2
@@ -325,7 +358,9 @@ jobs:
       - name: Check out SageMath from trac.sagemath.org
         shell: bash {0}
         run: |
-          if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac ${{ env.SAGE_TRAC_COMMAND }} $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+          git config --global user.email "ci-sage@example.com"
+          git config --global user.name "ci-sage workflow"
+          if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac fetch $SAGE_TICKET; then git merge FETCH_HEAD || echo "(ignored)"; exit 0; fi; sleep 40; done; exit 1
         if: env.SAGE_TRAC_GIT != ''
       - uses: actions/download-artifact@v2
         with:
