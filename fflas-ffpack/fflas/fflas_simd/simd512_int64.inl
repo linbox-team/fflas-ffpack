@@ -32,6 +32,7 @@
 #error "You need AVX512 instructions to perform 512bits operations on int64_t"
 #endif
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -65,6 +66,14 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 8;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
@@ -217,90 +226,128 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
-     [b0, b1, b2, b3, a4, a5, a6, a7] int64_t
-     * Return : [a0, b0, a2, b2, a4, b4, a6, b6] int64_t
+     * Unpack and interleave 64-bit integers from the low half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a2, b2, a4, b4, a6, b6 ]
      */
-    static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) {
-        //std::cerr<<"unpacklo_twice simd512_int64"<<std::endl;
-        return _mm512_unpacklo_epi64(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpacklo_epi64(a, b);
+    }
 
     /*
-     * Unpack and interleave 64-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
-     [b0, b1, b2, b3, a4, a5, a6, a7] int64_t
-     * Return : [a0, b0, a2, b2, a4, b4, a6, b6] int64_t
+     * Unpack and interleave 64-bit integers from the high half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a1, b1, a3, b3, a5, b5, a7, b7 ]
      */
-    static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) {
-        //std::cerr<<"unpackhi_twice simd512_int64"<<std::endl;
-        return _mm512_unpackhi_epi64(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm512_unpackhi_epi64(a, b);
+    }
 
     /*
-     * Unpack and interleave 64-bit integers from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
-     [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
-     * Return : [a0, b0, a1, b1, a2, b2, a3, b3] int64_t
+     * Unpack and interleave 64-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a1, b1, a2, b2, a3, b3 ]
      */
-
     static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-        //std::cerr<<"unpacklo simd512_int64"<<std::endl;
-        __m256i a1 = _mm512_castsi512_si256(a); // a1 = [a0, a1, a2, a3]
-        __m256i b1 = _mm512_castsi512_si256(b); // b1 = [b0, b1, b2, b3]
-        __m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a0, a2, a1, a3] (0xD8 a1 <-> a2)
-        __m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b0, b2, b1, b3] (0xD8 b1 <-> b2)
-        __m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
-        __m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
-        __m512i res = _mm512_castsi256_si512(low);
-        res = _mm512_inserti64x4(res, high, 1);
-        return res;
+        int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
+        vect_t s = loadu (permute_idx);
+        vect_t ta = _mm512_permutexvar_epi64 (s, a);
+        vect_t tb = _mm512_permutexvar_epi64 (s, b);
+        return _mm512_unpacklo_epi64 (ta, tb);
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
-     [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
-     * Return : [a4, b4, a5, b5, a6, b6, a7, b7] int64_t
+     * Unpack and interleave 64-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a4, b4, a5, b5, a6, b6, a7, b7 ]
      */
-
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-        //std::cerr<<"unpackhi simd512_int64"<<std::endl;
-        __m256i a1 = _mm512_extracti64x4_epi64(a,1); // a1 = [a4, a5, a6, a7]
-        __m256i b1 = _mm512_extracti64x4_epi64(b,1); // b1 = [b4, b5, b6, b7]
-        __m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a4, a6, a5, a7] (0xD8 a5 <-> a6)
-        __m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b4, b6, b5, b7] (0xD8 b5 <-> b6)
-        __m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
-        __m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
-        __m512i res = _mm512_castsi256_si512(low);
-        res = _mm512_inserti64x4(res, high, 1);
-        return res;
+        int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
+        vect_t s = loadu (permute_idx);
+        vect_t ta = _mm512_permutexvar_epi64 (s, a);
+        vect_t tb = _mm512_permutexvar_epi64 (s, b);
+        return _mm512_unpackhi_epi64 (ta, tb);
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
-     [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
-     * Return : [a0, b0, a1, b1, a2, b2, a3, b3] int64_t
-     *		   [a4, b4, a5, b5, a6, b6, a7, b7] int64_t
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: lo = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         hi = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
      */
-
-    static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
-        l = unpacklo(a, b);
-        h = unpackhi(a, b);
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
+        vect_t s = loadu (permute_idx);
+        vect_t ta = _mm512_permutexvar_epi64 (s, a);
+        vect_t tb = _mm512_permutexvar_epi64 (s, b);
+        lo = _mm512_unpacklo_epi64 (ta, tb);
+        hi = _mm512_unpackhi_epi64 (ta, tb);
     }
 
     /*
-     * Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
-     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
-     [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
-     * Return : [s[0]?a0:b0,   , s[7]?a7:b7] int64_t
+     * Pack 64-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        vect_t s = loadu (permute_idx);
+        vect_t lo = _mm512_unpacklo_epi64 (a, b);
+        return _mm512_permutexvar_epi64 (s, lo);
+    }
+
+    /*
+     * Pack 64-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        vect_t s = loadu (permute_idx);
+        vect_t hi = _mm512_unpackhi_epi64 (a, b);
+        return _mm512_permutexvar_epi64 (s, hi);
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: even = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         odd = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        int64_t permute_idx[8] = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        vect_t s = loadu (permute_idx);
+        vect_t lo = _mm512_unpacklo_epi64 (a, b);
+        vect_t hi = _mm512_unpackhi_epi64 (a, b);
+        even = _mm512_permutexvar_epi64 (s, lo);
+        odd  = _mm512_permutexvar_epi64 (s, hi);
+    }
+
+    /*
+     * Blend 64-bit integers from a and b using control mask s.
+     * Args: a = [ a0, ..., a7 ]
+     *       b = [ b0, ..., b7 ]
+     *       s = a 8-bit mask
+     * Return: [ s[0] ? a0 : b0, ..., s[7] ? a7 : b7 ]
      */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
-        // _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
-        // We have to transform s = [d3 d2 d1 d0]_base2 to s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
-        //constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
-        //std::cerr<<"blend simd512_int64"<<std::endl;
         return _mm512_mask_blend_epi64(s, a, b);
     }
 
@@ -564,6 +611,14 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
      */
     using scalar_t = uint64_t;
 
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
@@ -669,27 +724,13 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
     static INLINE CONST vect_t sra(const vect_t a) { return _mm512_srli_epi64(a, s); }
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-
-        int64_t i = 0xFFFFFFFFFFFFFFFF;
-        __m512i c = _mm512_set1_epi64(i);
-        __m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
-        return d;
+        __m512i c = _mm512_set1_epi64(0xFFFFFFFFFFFFFFFFLL);
+        return _mm512_maskz_expand_epi64(_mm512_cmpgt_epu64_mask(a, b), c);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-
-        int64_t i = 0xFFFFFFFFFFFFFFFF;
-        __m512i c = _mm512_set1_epi64(i);
-        __m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
-        return d;
+        __m512i c = _mm512_set1_epi64(0xFFFFFFFFFFFFFFFFLL);
+        return _mm512_maskz_expand_epi64(_mm512_cmplt_epu64_mask(a, b), c);
     }
 
     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }

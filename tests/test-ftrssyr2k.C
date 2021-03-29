@@ -83,7 +83,7 @@ bool check_ftrssyr2k (const Field &F, size_t n, FFLAS::FFLAS_UPLO uplo, FFLAS::F
     time+=t.usertime();
 
     fzero(F, n,n, D,ldd);
-    // cleaning up the lower triangular part of B
+        // cleaning up the unused triangular part of B
     if (uplo == FflasUpper)
         for (size_t i=1; i<n; i++){
             fzero(F, i, B+i*ldb,1);
@@ -94,15 +94,28 @@ bool check_ftrssyr2k (const Field &F, size_t n, FFLAS::FFLAS_UPLO uplo, FFLAS::F
             fzero(F, i, B+i,ldb);
             fzero(F, i, B2+i,ldb);
         }
+
     FFLAS::fsyr2k (F, uplo, (uplo==FflasUpper?FflasTrans:FflasNoTrans), n, n, F.one, A, lda, B,ldb, F.zero, D, ldd);
-    bool ok = true;
-    if (FFLAS::fequal (F, n, n, B2, ldb, D, ldd)){
+
+        // cleaning up the unused triangular part of D
+    if (uplo == FflasUpper)
+        for (size_t i=1; i<n; i++){
+            fzero(F, i, D+i*ldd,1);
+        }
+    else
+        for (size_t i=1; i<n; i++){
+            fzero(F, i, D+i,ldd);
+        }
+
+    bool ok = FFLAS::fequal (F, n, n, B2, ldb, D, ldd);
+
+
+    if (ok){
         cout << "PASSED ("<<time<<")"<<endl;
     } else{
         cout << "FAILED ("<<time<<")"<<endl;
         WriteMatrix(std::cerr<<"B2 = "<<std::endl,F,n,n,B2,ldb);
         WriteMatrix(std::cerr<<"D = "<<std::endl,F,n,n,D,ldd);
-        ok=false;
     }
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(B);
@@ -116,7 +129,7 @@ bool run_with_field (Givaro::Integer q, size_t b,  size_t n, size_t iters, uint6
     int nbit=(int)iters;
 
     while (ok &&  nbit){
-        // choose Field
+            // choose Field
         Field* F= chooseField<Field>(q,b,seed);
         typename Field::RandIter G(*F,seed++);
         if (F==nullptr)

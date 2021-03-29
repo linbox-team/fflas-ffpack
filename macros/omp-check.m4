@@ -36,7 +36,6 @@ AC_DEFUN([FF_CHECK_OMP],
 	  AS_IF([ test "x$avec_omp" != "xno" ],
 		[
 		BACKUP_CXXFLAGS=${CXXFLAGS}
-		OMPFLAGS="-fopenmp"
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${OMPFLAGS}"
 		AC_TRY_RUN([
 #include <omp.h>

@@ -7,54 +7,40 @@ matrix:
       sudo: required
       dist: xenial
       compiler: gcc
-      env: GCC_VERSION=4.9
+      env: GCC_VERSION=5
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
-          - g++-4.9
-          - gfortran-4.9
+          - g++-5
+          - binutils
+          - gfortran-5
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
           - autoconf
           - libopenblas-dev
+
     - os: linux
       sudo: required
-      dist: xenial
+      dist: bionic
       compiler: gcc
-      env: GCC_VERSION=7
+      env: GCC_VERSION=10
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
-          - g++-7
-          - gfortran-7
+          - g++-10
+          - binutils
+          - gfortran-10
           - libgmp-dev
           - libgmpxx4ldbl
           - libtool
           - autoconf
           - libopenblas-dev
-    - os: linux
-      sudo: required
-      dist: xenial
-      compiler: gcc
-      env: GCC_VERSION=8
-      # BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - g++-8
-          - gfortran-8
-          - libgmp-dev
-          - libgmpxx4ldbl
-          - libtool
-          - autoconf
-          - libopenblas-dev
+
     # - os: linux
     #   sudo: required
     #   dist: trusty
@@ -76,9 +62,10 @@ matrix:
     - os: osx
       compiler: clang
       before_install:
-      - brew update
-      - brew uninstall automake && brew install automake
-      - brew install autoconf libtool
+      - brew update > brew-update.log 2>&1 || cat brew-update.log
+      - brew list automake &>/dev/null || brew install automake
+      - brew list autoconf &>/dev/null || brew install autoconf
+      - brew list libtool &>/dev/null || brew install libtool
 #      - brew install homebrew/science/openblas
 
 install:
@@ -94,7 +81,7 @@ before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
   - git clone --depth=1 https://github.com/xianyi/OpenBLAS.git  && cd OpenBLAS && make && sudo make PREFIX="/usr/local" install && cd ..
   - export LD_LIBRARY_PATH=/usr/local/lib
-  - ./autogen.sh #$BLAS_LIBS
+  - ./autogen.sh
 
 script:
   - make

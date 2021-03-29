@@ -79,9 +79,8 @@ bool check_fger(const Field                   & F,
     //         WriteMatrix(std::cerr <<"X:=",F, m, 1, x,incx, FflasMaple) << ';' << std::endl;
     //         WriteMatrix(std::cerr <<"Y:=Transpose(", F, n, 1, y, incy, FflasMaple) << ");" << std::endl;
     //         WriteMatrix(std::cerr <<"A:=",F, m, n, Cd, ldc, FflasMaple) << ';' << std::endl;
-    // 	F.write(std::cerr << "a:=", alpha) << ';' << std::endl;
+    //         F.write(std::cerr << "a:=", alpha) << ';' << std::endl;
     // 	std::cerr << "q:=" << F.characteristic() << ';' << std::endl;
-
     Element_ptr D  = fflas_new (F,m,n);
     fassign(F,m,n,Cd,n,D,n);
     for(size_t i=0; i<m; ++i) {
@@ -298,6 +297,8 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
     } while (loop && ok);
+
+    if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
 
     return !ok ;
 }

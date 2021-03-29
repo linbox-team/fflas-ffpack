@@ -24,7 +24,13 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CXXFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
+AM_CXXFLAGS = $(FFLASFFPACK_CXXFLAGS) $(GIVARO_CFLAGS) $(BLAS_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS) -g
+AM_CPPFLAGS = -I$(top_srcdir)
+LDADD = $(GIVARO_LIBS) $(BLAS_LIBS) $(PARLIBS)
+if FFLASFFPACK_PRECOMPILED
+LDADD += $(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
+LDADD += $(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+endif
 
 PERFPUBLISHERFILE=tests-report.xml
 
@@ -48,6 +54,7 @@ BASIC_TESTS =               \
 		test-rpm   \
 		test-compressQ      \
 		test-lu             \
+		test-quasisep       \
 		test-pluq-check     \
 		test-fsyrk          \
 		test-fsyr2k          \
@@ -71,18 +78,12 @@ BASIC_TESTS =               \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
-
 INTERFACE_TESTS= test-interfaces-c
-test_interfaces_c_CFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
+#test_interfaces_c_CFLAGS = $(AM_CXXFLAGS)
 test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
 	-lm -lstdc++
-else
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 
 NOT_A_TEST =  \
@@ -111,6 +112,7 @@ test_permutations_SOURCES         = test-permutations.C
 test_rpm_SOURCES         = test-rpm.C
 
 test_lu_SOURCES              = test-lu.C
+test_quasisep_SOURCES              = test-quasisep.C
 test_det_SOURCES               = test-det.C
 test_pluq_check_SOURCES = test-pluq-check.C
 test_det_check_SOURCES = test-det-check.C
@@ -164,9 +166,6 @@ test_simd_SOURCES = test-simd.C
 test_fgemv_SOURCES = test-fgemv.C
 #test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
 
-
-dense_generator: dense_generator.C
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher:

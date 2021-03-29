@@ -611,7 +611,8 @@ namespace FFLAS {
         F.cardinality(mA);
         mB=mA;
         size_t logA,logB;
-        logA=logB=1<<K1;
+        //logA=logB=1<<K1;
+	logA=logB=mA.bitsize();
 
         mC = 2*uint64_t(k)*mA*mB*abs(Givaro::Integer(alpha)); // need to use 2x bound to reach both positive and negative
         // std::cout<<"mA= "<<mA<< "  ("<<mA.bitsize()<<")\n";

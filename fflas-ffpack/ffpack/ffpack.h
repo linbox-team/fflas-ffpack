@@ -1806,6 +1806,125 @@ namespace FFPACK { /* Solutions */
 } // FFPACK
 // #include "ffpack.inl"
 
+
+namespace FFPACK { /* Quasi-separable matrices*/
+        // TODO add signatures of ffpack_bruhat.inl
+    /** LTBruhatGen
+     * Suppose A is Left Triangular Matrix
+     * This procedure computes the Bruhat Representation of A and return the rank of A
+     * @param Fi base Field
+     * @param diag
+     * @param N size of A
+     * @param A the matrix we search the Bruhat representation
+     * @param lda the leading dimension of A
+     * @param P a permutation matrix
+     * @param Q a permutation matrix
+     */
+  template<class Field>
+  size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
+                             const size_t N,
+                             typename Field::Element_ptr A, const size_t lda,
+                             size_t * P, size_t * Q);
+    /** GetLTBruhatGen
+     * This procedure Computes the Rank Revealing Matrix based on the Bruhta representation of a Matrix
+     * @param Fi base Field
+     * @param N size of the matrix
+     * @param r the rank of the matrix
+     * @param P a permutation matrix
+     * @param Q a permutation matrix
+     * @param R the matrix that will contain the rank revealing matrix
+     * @param ldr the leading fimension of R
+     */
+  template<class Field>
+  void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr);
+    /** GetLTBruhatGen
+     * This procedure computes the matrix L or U f the Bruhat Representation
+     * Suppose that A is the bruhat representation of a matrix
+     * @param Fi base Field
+     * @param Uplo choose if the procedure return L or U
+     * @param diag 
+     * @param N size of A
+     * @param r rank of A
+     * @param P permutaion matrix
+     * @param Q permutation matrix
+     * @param A a bruhat representation
+     * @param lda leading dimension of A
+     * @param T matrix that will contains L or U
+     * @param ldt leading dimension of T
+     */
+  template<class Field>
+   void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt);
+
+    /** LTQSorder
+     * This procedure computes the order of quasiseparability of a matrix
+     * @param N size of the matrix
+     * @param r rank of the matrix
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     */
+  size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q);
+
+    /**CompressToBlockBiDiagonal
+     * This procedure compress a compact representation of a row echelon form or column echelon form
+     * @param Fi base Field
+     * @param Uplo chosse if the procedure is based on row or column
+     * @param N size of the matrix
+     * @param s order of qausiseparability
+     * @param r rank
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     * @param A the matrix to compact
+     * @param lda leading dimension of A
+     * @param X matrix that will stock the representation
+     * @param ldx leading dimension of X
+     * @param K stock the position of the blocks in A
+     * @param M permutation matrix
+     * @param T stock the operation done in the procedure
+     */
+  template<class Field>
+  size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size_t *T);
+
+  /**ExpandBlockBiDiagonal
+     * This procedure expand a compact representation of a row echelon form or column echelon form
+     * @param Fi base Field
+     * @param Uplo chosse if the procedure is based on row or column
+     * @param N size of the matrix
+     * @param s order of qausiseparability
+     * @param r rank
+     * @param A the matrix that will sotck the expanded representation
+     * @param lda leading dimension of A
+     * @param X matrix to expand
+     * @param ldx leading dimension of X
+     * @param K stock the position of the blocks in A
+     * @param M permutation matrix
+     * @param T stock the operation done in the procedure
+     */
+  template<class Field>
+  void ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T);
+
+   /**Bruhat2EchelonPermutation (N,R,P,Q)
+    * Compute M such that LM or MU is in echelon form where L or U are factors of the Bruhat Rpresentation
+    * @param[in] N size of the matrix
+    * @param[in] R rank
+    * @param[in] P permutation Matrix
+    * @param[in] Q permutation Matrix
+    * @param[out] M output permutation matrix
+    */
+    void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t * M);
+
+
+  size_t * TInverter (size_t * T, size_t r);
+
+  template<class Field>
+  void ComputeRPermutation (const Field&Fi, size_t N, size_t r, const size_t * P, const size_t * Q, size_t * R,size_t * MU, size_t * ML);
+  /**productBruhatxTS
+   *Comput the product between the CRE compact representation of a matrix A and B a tall matrix
+   */
+
+  template<class Field>
+  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu, size_t * MU,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t * Tl, size_t * ML,typename Field::Element_ptr B,size_t t, size_t ldb, typename Field::Element_ptr C, size_t ldc);
+}
+
 namespace FFPACK { /* not used */
 
     /** LQUPtoInverseOfFullRankMinor.
@@ -1868,6 +1987,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack_det_mp.inl"
+#include "ffpack_bruhatgen.inl"
 #include "ffpack.inl"
 
 #endif // __FFLASFFPACK_ffpack_H

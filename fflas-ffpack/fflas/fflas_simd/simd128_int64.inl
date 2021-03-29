@@ -34,6 +34,7 @@
 #error "You need SSE instructions to perform 128 bits operations on int64"
 #endif
 
+#include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <type_traits>
@@ -57,6 +58,14 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
      *  number of scalar_t in a simd register
      */
     static const constexpr size_t vect_size = 2;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
@@ -208,33 +217,119 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1] int64_t
-     [b0, b1] int64_t
-     * Return : [a0, b0] int64_t
+     * Unpack and interleave 64-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a0, b0 ]
      */
-    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_epi64(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpacklo_epi64(a, b);
+    }
 
     /*
-     * Unpack and interleave 64-bit integers from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1] int64_t
-     [b0, b1] int64_t
-     * Return : [a1, b1] int64_t
+     * Unpack and interleave 64-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a1, b1 ]
      */
-    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi64(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpackhi_epi64(a, b);
+    }
 
     /*
-     * Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
-     * Args   : [a0, a1] int64_t
-     [b0, b1] int64_t
-     * Return : [s[0]?a0:b0, s[1]?a1:b1] int64_t
+     * Unpack and interleave 64-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a0, b0 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        return unpacklo_intrinsic(a, b);
+    }
+
+    /*
+     * Unpack and interleave 64-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a1, b1 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        return unpackhi_intrinsic(a, b);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1  ]
+     *       b = [ b0, b1  ]
+     * Return: lo = [ a0, b0 ]
+     *         hi = [ a1, b1 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        lo = unpacklo (a, b);
+        hi = unpackhi (a, b);
+    }
+
+    /*
+     * Pack 64-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a0, b0 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        return unpacklo (a, b); /* same as unpacklo for vect_size = 2 */
+    }
+
+    /*
+     * Pack 64-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return:   [ a1, b1 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        return unpackhi (a, b); /* same as unpackhi for vect_size = 2 */
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     * Return: even = [ a0, b0 ]
+     *         odd  = [ a1, b1 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        even = pack_even (a, b);
+        odd = pack_odd (a, b);
+    }
+
+    /*
+     * Blend 64-bit integers from a and b using control mask s.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     *       s = a 2-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, s[1] ? a1 : b1 ]
      */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
-        // _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
-        // We have to transform s = [d1 d0]_base2 to s1 = [d1 d1 d1 d1 d0 d0 d0 d0]_base2
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+        /* If we have AVX2, we can use _mm_blend_epi32, which is faster.
+         * We need to transform s = [d1 d0]_base2
+         * into s1 = [d1 d1 d0 d0]_base2
+         */
+        constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3);
+        return _mm_blend_epi32(a, b, s1);
+#else
+        /* If we only have SSE4.1, we need to use _mm_blend_epi16.
+         * We need to transform s = [d1 d0]_base2
+         * into s1 = [d1 d1 d1 d1 d0 d0 d0 d0]_base2
+         */
         constexpr uint8_t s1 = (s & 0x1) * 15 + ((s & 0x2) << 3) * 15;
         return _mm_blend_epi16(a, b, s1);
+#endif
     }
 
     /*
@@ -481,6 +576,14 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
      */
     using scalar_t = uint64_t;
 
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
     using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
     using aligned_vector = std::vector<scalar_t, aligned_allocator>;
 
@@ -573,10 +676,10 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 #ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
         vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(b, a);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
+        return _mm_cmpgt_epi64 (a, b);
 #else
         //#pragma warning "The simd greater function is emulated, it may impact the performances."
         Converter ca, cb;
@@ -589,10 +692,10 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
 #ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
         vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(a, b);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
+        return _mm_cmpgt_epi64 (b, a);
 #else
         //#pragma warning "The simd greater function is emulated, it may impact the performances."
         Converter ca, cb;
@@ -658,7 +761,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 
     static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { return sub(mulx(a, b), c); }
 
-    static INLINE CONST vect_t fmsubxin(vect_t c, const vect_t a, const vect_t b) { return c = fmsubx(c, a, b); }
+    static INLINE vect_t fmsubxin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsubx(c, a, b); }
 
     /*
      * Horizontally add 64-bits elements of a.
