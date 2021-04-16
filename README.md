@@ -25,7 +25,8 @@ FFLAS-FFPACK is distributed unded the terms of the GNU LGPL v2.1 or later (see L
 ## INSTALLATION
 
 In brief:
-```./configure <options> && make && make install```
+- if you are compiling a released tar.gz archive, use ```./configure <options> && make && make install```
+- if you are compiling the upstream git master branch, juste replace `configure` by `autogen.sh` in the above command: the configure script will be auto-generated and run with the arguments passed to `autogen.sh`
 
 The most commonly used option include:
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
