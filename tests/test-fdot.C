@@ -22,6 +22,7 @@
  * ========LICENCE========
  *.
  */
+#define INTEGER_NO_RNS 1
 
 #define ENABLE_ALL_CHECKINGS 1
 
