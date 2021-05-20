@@ -68,7 +68,10 @@ namespace FFLAS {
         const DFElt MaxStorableValue = limits<typename DelayedField::Element>::max();
         const DFElt AbsMax = std::max(-F.minElement(), F.maxElement());
         const DFElt r = (MaxStorableValue / AbsMax) / AbsMax;
-        size_t delayedDim = FFLAS::Protected::min_types<DFElt>(r);
+//        size_t delayedDim = FFLAS::Protected::min_types<DFElt>(r);
+        MMHelper<Field,MMHelperAlgo::Classic,ModeCategories::DelayedTag> MMH(F,0);
+        size_t delayedDim = MMH.MaxDelayedDim(DFElt(0));
+        FFLAS::Protected::min_types<DFElt>(r);
         if (!delayedDim){
             ModeCategories::DefaultTag DT;
             return fdot(F, N, x, incx, y, incy, DT);
