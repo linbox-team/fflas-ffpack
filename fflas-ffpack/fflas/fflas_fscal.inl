@@ -103,7 +103,6 @@ namespace FFLAS { namespace vectorised { namespace unswitch {
         }
     }
 
-
     template<class Field>
     inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
     scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX, HelperMod<Field> &H)
@@ -113,6 +112,19 @@ namespace FFLAS { namespace vectorised { namespace unswitch {
         for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
         {
             T[i]=reduce(alpha*(*Xi),H);
+        }
+    }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n,
+          const size_t & incX, const size_t & incY, HelperMod<Field> &H)
+    {
+        typename Field::ConstElement_ptr Xi = U;
+        typename Field::Element_ptr Yi = T;
+        for (; Xi < U+n*incX ; Xi+=incX,Yi+=incY)
+        {
+            *Yi = reduce(alpha*(*Xi),H);
         }
     }
 
@@ -141,6 +153,16 @@ namespace FFLAS { namespace vectorised {
         unswitch::scalp(F,T,alpha,U,n,incX,H);
     }
 
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX, const size_t & incY)
+    {
+        HelperMod<Field> H(F);
+
+        unswitch::scalp(F,T,alpha,U,n,incX,incY,H);
+    }
+
+
 } // vectorised
 } // FFLAS
 
@@ -162,7 +184,7 @@ namespace FFLAS { namespace details {
         }
         else
         {
-            if (N < FFLASFFPACK_COPY_REDUCE)
+            if (N < FFLASFFPACK_COPY_REDUCE) // defined in fflas_freduce.inl
             {
                 vectorised::scalp(F,X,a,X,N,incX);
             }
@@ -170,7 +192,7 @@ namespace FFLAS { namespace details {
             {
                 typename Field::Element_ptr Xc = fflas_new (F,N) ;
                 fassign (F,N,X,incX,Xc,1);
-                fscalin (F,N,a,Xc,1,FieldCategories::ModularTag());
+                vectorised::scalp(F,Xc,a,Xc,N);
                 fassign (F,N,Xc,1,X,incX);
                 fflas_delete (Xc);
             }
@@ -202,11 +224,47 @@ namespace FFLAS { namespace details {
         if(incX == 1 && incY==1) {
             vectorised::scalp(F,Y,a,X,N);
         }
-        else {
-            typename Field::ConstElement_ptr Xi = X ;
-            typename Field::Element_ptr Yi = Y ;
-            for (; Xi < X+N*incX; Xi+=incX,Yi+=incY )
-                F.mul(*Yi, *Xi , a);
+        else
+        {
+            if (N < FFLASFFPACK_COPY_REDUCE)
+            {
+                vectorised::scalp(F,Y,a,X,N,incX,incY);
+            }
+            else
+            {
+                typename Field::Element_ptr Xc;
+                typename Field::Element_ptr Yc;
+                if (incX != 1)
+                {
+                    Xc = fflas_new (F,N);
+                    fassign(F,N,X,incX,Xc,1);
+                }
+                else
+                {
+                    Xc = const_cast<typename Field::Element_ptr>(X); // Oh the horror
+                }
+                if (incY != 1)
+                {
+                    Yc = fflas_new (F,N);
+                    fassign(F,N,Y,incY,Yc,1);
+                }
+                else
+                {
+                    Yc = Y;
+                }
+
+                vectorised::scalp(F,Yc,a,Xc,N);
+
+                if (incY != 1)
+                {
+                    fassign(F,N,Yc,1,Y,incY);
+                    fflas_delete(Yc);
+                }
+                if (incX != 1)
+                {
+                    fflas_delete(Xc);
+                }
+            }
         }
     }
 
