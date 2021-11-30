@@ -87,60 +87,119 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
   */
 
   /* Block division */
-      size_t kf = N/s;  // Nb of full slices of dimension s
-      size_t rs = N%s; //size of the last block
-      size_t k = kf;
-      if (rs) k++; // Total number of blocks
+  size_t kf = N/s;  // Nb of full slices of dimension s
+  size_t rs = N%s; //size of the last block
+  size_t k = kf;
+  if (rs) k++; // Total number of blocks
 
-      TempU = fflas_new (Fi, N, s); // Initialise a temporary N x s matrix
-      TempL = fflas_new (Fi, N, s);
+  /* Diagonal Blocks :
+   * C <- beta * C + alpha D B */
+  for (size_t block = 0; block < kf; block++) // Full blocks
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	   s, s, t, alpha, D + block * s * ldd, //s x s by s x t, alpha DB + beta C
+	   ldd, B + block * s * ldb, ldb, beta, // D_block is block * s lines under D
+	   C + block * s * ldc, ldc);
 
-      for (size_t block = 0; block < kf; block++) // Full blocks
+  if (rs) // Last block
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	   rs, rs, t, alpha, D + kf * s * ldd, //rs x rs by s x t, alpha DB + beta C
+	   ldd, B + kf * s * ldb, ldb, beta, // D_block is block * s lines under D
+	   C + kf * s * ldc, ldc);
+
+  /* Lower */
+  typename Field::ConstElement_ptr Temp1 = fflas_new(Fi, s, s);
+  typename Field::ConstElement_ptr Temp2 = fflas_new(Fi, s, s);
+
+  /* Temp1 <- alpha * Q_1 * B_1 */
+  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+	 s, s, t, alpha, Q,          
+	 ldq, B, ldb, Fi.zero,       // No addition
+	 Temp1, s);                                    // Leading dimension s
+  
+  /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
+  for (size_t block = 0; (block + 2) < kf; block+=2)
+    {
+      /* C_{block + 1} += P_{block + 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	     s, s, t, Fi.one, P + (block + 1) * s * ldp,   //s x s by s x t, alpha VB 
+	     ldp, Temp1, s, Fi.one,                        // No mult
+	     C + (block + 1) * s * ldc, ldc);
+      /* Temp2 <- alpha * Q_{block + 1} * B_{block + 1} */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, s, t, alpha, Q + (block + 1) * s * ldq,          
+	     ldq, B + (block + 1) * s * ldb, ldb, Fi.zero,       // No addition
+	     Temp2, s);                                    // Leading dimension s
+      /* Temp2 += R_{block + 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, s, t, Fi.one, R + (block + 1) * s * ldr,          
+	     ldr, Temp1, s, Fi.one,    
+	     Temp2, s);                                    // Leading dimension s
+
+      /* C_{block + 2} += P_{block + 2} * Temp2 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, s, t, Fi.one, P + (block + 2) * s * ldp,   
+	     ldp, Temp2, s, Fi.one,                        
+	     C + (block + 2) * s * ldc, ldc);
+      /* Only needs to be done if the results is useful :
+       * - Not last loop
+       * - Odd amount of blocks
+       * - Partial blocks */
+      if (((block + 4) < kf)||((kf%2)||rs))
 	{
-	  /* Diagonal Blocks */
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 s, s, t, alpha, D + block * s * ldd, //s x s by s x t, alpha DB + beta C
-		 ldd, B + block * s * ldb, ldb, beta, // D_block is block * s lines under D
-		 C + block * s * ldc, ldc);
-	  /* Right */
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 s, s, t, alpha, V + block * s * ldv, //s x s by s x t, alpha VB 
-		 ldv, B + block * s * ldb, ldb, Fi.zero, // No addition
-		 TempU + block * s * s, s); // Leading dimension s
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 s, s, t, alpha, Q + block * s * ldq, //s x s by s x t, alpha VB 
-		 ldq, B + block * s * ldb, ldb, Fi.zero, // No addition
-		 TempL + block * s * s, s); // Leading dimension s
+	  /* Temp1 <- alpha * Q_{block + 2} * B_{block + 2} */
+	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+		 s, s, t, alpha, Q + (block + 2) * s * ldq,          
+		 ldq, B + (block + 2) * s * ldb, ldb, Fi.zero,       // No addition
+		 Temp1, s);                                    // Leading dimension s
+	  /* Temp1 += R_{block + 2} * Temp2 /!\ */
+	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+		 s, s, t, Fi.one, R + (block + 2) * s * ldr,          
+		 ldr, Temp2, s, Fi.one,    
+		 Temp1, s);                                    // Leading dimension s
 	}
-      if (rs)
-	{
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 rs, rs, t, alpha, D + kf * s * ldd, //rs x rs by s x t, alpha DB + beta C
-		 ldd, B + kf * s * ldb, ldb, beta, // D_block is block * s lines under D
-		 C + kf * s * ldc, ldc);
-	  
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 rs, rs, t, alpha, V + kf * s * ldv, //rs x rs by s x t, alpha DB + beta C
-		 ldv, B + kf * s * ldb, ldb, Fi.zero, // D_block is block * s lines under D
-		 TempU + kf * s * s, s);
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 rs, rs, t, alpha, Q + kf * s * ldq, //rs x rs by s x t, alpha DB + beta C
-		 ldq, B + kf * s * ldb, ldb, Fi.zero, // D_block is block * s lines under D
-		 Templ + kf * s * s, s);
-	}
-      /* At this point:
-       * C <- beta * C + alpha D B
-       * TempU <- alpha * diag(V) * B
-       * TempL <- alpha * diag(Q) * B
+    }
 
-       /* R and W */
-      for (size_t block = 0; block < kf; block++) // Full blocks
+  /* Remaining blocks */
+  /* CHECK WHICH INSTRUCTIONS NEED TO BE DONE */
+  if (kf%2 == 0)
+    {
+       /* C_{kf - 1} += P_{kf - 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	     s, s, t, Fi.one, P + (kf - 1) * s * ldp,   //s x s by s x t, alpha VB 
+	     ldp, Temp1, s, Fi.one,                        // No mult
+	     C + (kf - 1) * s * ldc, ldc);
+      if (rs) // Last small block
 	{
-	  // C_{block + 1} += P_{block + 1} * TempL_{block}
-	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-		 s, s, t, Fi.one, P + (block + 1) * s * ldp, //s x s by s x t, alpha VB 
-		 ldp, TempL + block * s * s, s, Fi.one, // No mult
-		 C + (block + 1) * s * ldc, ldc);
-	  // TempL_{block} *= R_{block + 1}
-	  /* Needs to be written */
+      /* Temp2 <- alpha * Q_{kf - 1} * B_{kf - 1} */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, s, t, alpha, Q + (kf - 1) * s * ldq,          
+	     ldq, B + (kf - 1) * s * ldb, ldb, Fi.zero,       // No addition
+	     Temp2, s);                                    // Leading dimension s
+      /* Temp2 += R_{kf - 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, s, t, Fi.one, R + (kf - 1) * s * ldr,          
+	     ldr, Temp1, s, Fi.one,    
+	     Temp2, s);                                    // Leading dimension s
+
+	  /* C_{kf} += P_{kf} * Temp2 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     rs, s, t, Fi.one, P + (kf) * s * ldp,   
+	     ldp, Temp2, s, Fi.one,                        
+	     C + (kf) * s * ldc, ldc);
+	}
+    }
+  
+  else
+    if (rs)
+      {
+	/* C_{kf} += P_{kf} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	     rs, s, t, Fi.one, P + (kf) * s * ldp,   //s x s by s x t, alpha VB 
+	     ldp, Temp1, s, Fi.one,                        // No mult
+	     C + (kf) * s * ldc, ldc);
+      }
+
+  /* Upper */
+  /* Probably a copy, maybe the other way */
+  
 }
