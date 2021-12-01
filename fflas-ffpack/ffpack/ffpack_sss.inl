@@ -1,5 +1,5 @@
 /* ffpack/ffpack_bruhatgen.inl
- * Copyright (C) 2020 Quentin Houssier
+ * Copyright (C) 2021 Hippolyte Signargout
  *
  * Written by Hippolyte Signargout <hippolyte.signargout@ens-lyon.fr>
  *
@@ -31,7 +31,7 @@
 namespace FFPACK{
 
 /**
- * @brief Compute the product of a lower-triangular quasi-separable matrix A, represented by a sequentially semi-separable generator, 
+ * @brief Compute the product of a quasi-separable matrix A, represented by a sequentially semi-separable generator, 
  * with a dense rectangular matrix B:  \f$ C \gets A \times B + beta C \f$
  *
  * @param F the base field
@@ -39,17 +39,17 @@ namespace FFPACK{
  * @param s the order of quasiseparability of \p A
  * @param D an \f$ N \times s\f$ dense matrix
  * @param ldp leading dimension of \p D
- * @param P an \f$ N \times s\f$ dense matrix
+ * @param P an \f$ (N - s) \times s\f$ dense matrix
  * @param ldp leading dimension of \p P
- * @param R an \f$ N \times s\f$ dense matrix
+ * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
  * @param ldr leading dimension of \p R
- * @param Q an \f$ N \times s\f$ dense matrix
+ * @param Q an \f$ (N - ls) \times s\f$ dense matrix
  * @param ldq leading dimension of \p Q
- * @param U an \f$ N \times s\f$ dense matrix
+ * @param U an \f$ (N - ls) \times s\f$ dense matrix
  * @param ldu leading dimension of \p U
- * @param V an \f$ N \times s\f$ dense matrix
+ * @param V an \f$ (N - s) \times s\f$ dense matrix
  * @param ldv leading dimension of \p V
- * @param W an \f$ N \times s\f$ dense matrix
+ * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
  * @param ldw leading dimension of \p W
  * @param t the number of columns of \p B
  * @param B an \f$ N \times t\f$ dense matrix
@@ -83,36 +83,46 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
 	 +--------+------+------+--------+---  +--+         +--+
 	 |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   |     |B4|         |C4|
 	 +--------+------+------+--------+---  +--+         +--+
-	 |        |      |      |       |      |  |         |  |
+	 |        |      |      |        |     |  |         |  |
   */
+  /*   First            Last
+   * D.0 -> D_1,   D.((n - ls) * ldd)  
+   * P.0 -> P_2,   P.((n - s - ls) * ldp)  
+   * Q.0 -> Q_1,   Q.((n - s - ls) * ldq)  
+   * R.0 -> R_1,   R.((n - 2s - ls) * ldr)  
+   * U.0 -> U_1,   U.((n - s - ls) * ldu)  
+   * V.0 -> V_2,   V.((n - s - ls) * ldv)  
+   * W.0 -> W_1,   W.((n - 2s - ls) * ldw)   */
 
   /* Block division */
   size_t kf = N/s;  // Nb of full slices of dimension s
-  size_t rs = N%s; //size of the last block
+  size_t rs = N%s; //size of the partial block
   size_t k = kf;
   if (rs) k++; // Total number of blocks
-
+  // In the preceeding, ls is the size of the last block:
+  //size_t ls = (rs)? rs: s;
+  
   /* Diagonal Blocks :
    * C <- beta * C + alpha D B */
   for (size_t block = 0; block < kf; block++) // Full blocks
     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-	   s, s, t, alpha, D + block * s * ldd, //s x s by s x t, alpha DB + beta C
+	   s, t, s, alpha, D + block * s * ldd, //s x s by s x t, alpha DB + beta C
 	   ldd, B + block * s * ldb, ldb, beta, // D_block is block * s lines under D
 	   C + block * s * ldc, ldc);
 
   if (rs) // Last block
     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-	   rs, rs, t, alpha, D + kf * s * ldd, //rs x rs by s x t, alpha DB + beta C
+	   rs, t, rs, alpha, D + kf * s * ldd, //rs x rs by s x t, alpha DB + beta C
 	   ldd, B + kf * s * ldb, ldb, beta, // D_block is block * s lines under D
 	   C + kf * s * ldc, ldc);
 
   /* Lower */
-  typename Field::ConstElement_ptr Temp1 = fflas_new(Fi, s, s);
-  typename Field::ConstElement_ptr Temp2 = fflas_new(Fi, s, s);
+  typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, s);
+  typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, s);
 
   /* Temp1 <- alpha * Q_1 * B_1 */
   fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-	 s, s, t, alpha, Q,          
+	 s, t, s, alpha, Q,          
 	 ldq, B, ldb, Fi.zero,       // No addition
 	 Temp1, s);                                    // Leading dimension s
   
@@ -121,39 +131,39 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
     {
       /* C_{block + 1} += P_{block + 1} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-	     s, s, t, Fi.one, P + (block + 1) * s * ldp,   //s x s by s x t, alpha VB 
+	     s, t, s, Fi.one, P + (block) * s * ldp,   //s x s by s x t, alpha VB 
 	     ldp, Temp1, s, Fi.one,                        // No mult
 	     C + (block + 1) * s * ldc, ldc);
       /* Temp2 <- alpha * Q_{block + 1} * B_{block + 1} */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, s, t, alpha, Q + (block + 1) * s * ldq,          
+	     s, t, s, alpha, Q + (block + 1) * s * ldq,          
 	     ldq, B + (block + 1) * s * ldb, ldb, Fi.zero,       // No addition
 	     Temp2, s);                                    // Leading dimension s
       /* Temp2 += R_{block + 1} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, s, t, Fi.one, R + (block + 1) * s * ldr,          
+	     s, t, s, Fi.one, R + (block + 1) * s * ldr,          
 	     ldr, Temp1, s, Fi.one,    
 	     Temp2, s);                                    // Leading dimension s
 
       /* C_{block + 2} += P_{block + 2} * Temp2 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, s, t, Fi.one, P + (block + 2) * s * ldp,   
+	     s, t, s, Fi.one, P + (block + 1) * s * ldp,   
 	     ldp, Temp2, s, Fi.one,                        
 	     C + (block + 2) * s * ldc, ldc);
       /* Only needs to be done if the results is useful :
        * - Not last loop
-       * - Odd amount of blocks
+       * - Even amount of blocks (why?)
        * - Partial blocks */
-      if (((block + 4) < kf)||((kf%2)||rs))
+      if (((block + 4) < kf)||((kf%2 == 0)||rs))
 	{
 	  /* Temp1 <- alpha * Q_{block + 2} * B_{block + 2} */
 	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-		 s, s, t, alpha, Q + (block + 2) * s * ldq,          
+		 s, t, s, alpha, Q + (block + 2) * s * ldq,          
 		 ldq, B + (block + 2) * s * ldb, ldb, Fi.zero,       // No addition
 		 Temp1, s);                                    // Leading dimension s
 	  /* Temp1 += R_{block + 2} * Temp2 /!\ */
 	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-		 s, s, t, Fi.one, R + (block + 2) * s * ldr,          
+		 s, t, s, Fi.one, R + (block + 2) * s * ldr,          
 		 ldr, Temp2, s, Fi.one,    
 		 Temp1, s);                                    // Leading dimension s
 	}
@@ -161,29 +171,29 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
 
   /* Remaining blocks */
   /* CHECK WHICH INSTRUCTIONS NEED TO BE DONE */
-  if (kf%2 == 0)
+  if (kf%2 == 0) // Even amount of full blocks (why?)
     {
        /* C_{kf - 1} += P_{kf - 1} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-	     s, s, t, Fi.one, P + (kf - 1) * s * ldp,   //s x s by s x t, alpha VB 
+	     s, t, s, Fi.one, P + (kf - 2) * s * ldp,   //s x s by s x t, alpha VB 
 	     ldp, Temp1, s, Fi.one,                        // No mult
 	     C + (kf - 1) * s * ldc, ldc);
       if (rs) // Last small block
 	{
       /* Temp2 <- alpha * Q_{kf - 1} * B_{kf - 1} */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, s, t, alpha, Q + (kf - 1) * s * ldq,          
+	     s, t, s, alpha, Q + (kf - 1) * s * ldq,          
 	     ldq, B + (kf - 1) * s * ldb, ldb, Fi.zero,       // No addition
 	     Temp2, s);                                    // Leading dimension s
       /* Temp2 += R_{kf - 1} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, s, t, Fi.one, R + (kf - 1) * s * ldr,          
+	     s, t, s, Fi.one, R + (kf - 1) * s * ldr,          
 	     ldr, Temp1, s, Fi.one,    
 	     Temp2, s);                                    // Leading dimension s
 
 	  /* C_{kf} += P_{kf} * Temp2 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     rs, s, t, Fi.one, P + (kf) * s * ldp,   
+	     rs, t, s, Fi.one, P + (kf - 1) * s * ldp,   
 	     ldp, Temp2, s, Fi.one,                        
 	     C + (kf) * s * ldc, ldc);
 	}
@@ -194,12 +204,18 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
       {
 	/* C_{kf} += P_{kf} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-	     rs, s, t, Fi.one, P + (kf) * s * ldp,   //s x s by s x t, alpha VB 
+	     rs, t, s, Fi.one, P + (kf - 1) * s * ldp,   //s x s by s x t, alpha VB 
 	     ldp, Temp1, s, Fi.one,                        // No mult
 	     C + (kf) * s * ldc, ldc);
       }
 
   /* Upper */
   /* Probably a copy, maybe the other way */
-  
+
+  /* Free memory */
+  FFLAS::fflas_delete(Temp1);
+  FFLAS::fflas_delete(Temp2);
 }
+}
+
+#endif
