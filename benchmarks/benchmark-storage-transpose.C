@@ -121,13 +121,17 @@ class Bench {
             }
 
             /* print results */
+            /* mul by 2: 1 read + 1 write per element of the matrix */
+            double throughput = (2*iters*m*n*sizeof(Elt)) / (time * (1 << 30));
             std::cout << F.type_string()
-                      << string (30-F.type_string().size(), '.')
+                      << string (27-F.type_string().size(), '.')
                       << Simd::type_string()
-                      << string (30-Simd::type_string().size(), '.')
-                      << (inplace ? "inplace.. " : "......... ")
+                      << string (26-Simd::type_string().size(), '.')
+                      << (inplace ? "inplace " : "....... ")
                       << setw (7) << fixed << setprecision(2)
-                      << 1000*time / ((double) iters) << "ms" << endl;
+                      << 1000*time / ((double) iters) << "ms "
+                      << setw (5) << fixed << setprecision(2)
+                      << throughput << "GB/s" << endl;
         }
 
         /* run tests: call doBenchs for best Simd structs or all available Simd
