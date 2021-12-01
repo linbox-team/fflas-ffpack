@@ -351,16 +351,17 @@ namespace FFLAS { /* MaxCadinality */
 // Need to override Givaro's default, as Compute_t (uint64_t) is larger than Storage_t
     template<>
     inline uint64_t maxCardinality <Givaro::Modular<int64_t> >(){
-        // floor(2^31.5) such that ab+c fits in int64_t with abs(a,b,c) <= (p-1)
+        // ceil(2^31.5) such that ab+cd fits in uint64_t with int64_t a,b,c,d and  abs(a,b,c,d) <= (p-1)
         return UINT64_C(3037000500);
     }
     template<>
     inline uint32_t maxCardinality<Givaro::Modular<int32_t> >(){
-        // floor(2^15.5) such that ab+c fits in int32_t with abs(a,b,c) <= (p-1)
+        // ceil(2^15.5) such that ab+cd fits in uint32_t with a,b,c,d int32_t and abs(a,b,c,d) <= (p-1)
         return UINT32_C(46341);
     }
     template<class Field, typename std::enable_if<is_rint<typename Field::Element>::value || is_ruint<typename Field::Element>::value, typename Field::Element>::type>
     typename Field::Residu_t maxCardinality (){
+            // such that ab+cd fits in Field::Element with a,b,c,d Field::Element and abs(a,b,c,d) <= (p-1)
         return typename Field::Element::maxFFLAS();
     }
 
