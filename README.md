@@ -38,23 +38,23 @@ You may need to set the `PKG_CONFIG_PATH` environment variable to `<givaro-prefi
 
 For example on a x86_64 architecture:
 - Using OpenBLAS in Fedora:
- - install the package `openblas-devel.x86_64`,
- - run `./configure --with-blas-libs="-lopenblas"`
+   - install the package `openblas-devel.x86_64`,
+   - run `./configure --with-blas-libs="-lopenblas"`
 - Using OpenBLAS in Debian, Ubuntu, Mint, and all debian based distribution:
- - avoid using the distribution's package, as it is threaded by default. You need to
+   - avoid using the distribution's package, as it is threaded by default. You need to
    compile openblas yourself on these systems,
- - run `./configure --with-blas-libs="-L/pathtolocalopenblas/lib -lopenblas" --with-blas-cflags="-I/pathtolocalopenblas/include"`
+   - run `./configure --with-blas-libs="-L/pathtolocalopenblas/lib -lopenblas" --with-blas-cflags="-I/pathtolocalopenblas/include"`
 - Using ATLAS in Debian, Ubuntu, Mint:
- - install the package `libatlas-dev`,
- - run `./configure --with-blas-libs="-latlas -lcblas"`
+   - install the package `libatlas-dev`,
+   - run `./configure --with-blas-libs="-latlas -lcblas"`
 - Using ATLAS in Fedora:
- - install the package `atlas-devel.x86_64`,
- - run `./configure --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
+   - install the package `atlas-devel.x86_64`,
+   - run `./configure --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
 - Using Accelerate Framework on OS-X:
- - run `./configure --with-blas-libs="-framework Accelerate"`.
+   - run `./configure --with-blas-libs="-framework Accelerate"`.
 - Using BLIS
- - Configure BLIS with, say, `./configure --enable-cblas auto`.
- - run fflas/ffpack's `./configure --with-blas-libs="-lblis -lpthread"`.
+   - Configure BLIS with, say, `./configure --enable-cblas auto`.
+   - run fflas/ffpack's `./configure --with-blas-libs="-lblis -lpthread"`.
 
 
 Then, simply run `make; make autotune; make install; make check`
