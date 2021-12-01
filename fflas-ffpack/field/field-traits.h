@@ -345,7 +345,7 @@ namespace FFLAS { /* associatedDelayedField */
 } // FFLAS
 
 namespace FFLAS { /* MaxCadinality */
-    template <class Field>
+    template <class Field, class enable=void>
     inline typename Field::Residu_t maxCardinality() {return Field::maxCardinality();}
 
 // Need to override Givaro's default, as Compute_t (uint64_t) is larger than Storage_t
@@ -359,6 +359,11 @@ namespace FFLAS { /* MaxCadinality */
         // floor(2^15.5) such that ab+c fits in int32_t with abs(a,b,c) <= (p-1)
         return UINT32_C(46341);
     }
+    template<class Field, typename std::enable_if<is_rint<typename Field::Element>::value || is_ruint<typename Field::Element>::value, typename Field::Element>::type>
+    typename Field::Residu_t maxCardinality (){
+        return typename Field::Element::maxFFLAS();
+    }
+
     template <class Field>
     inline typename Field::Residu_t minCardinality() {return Field::minCardinality();}
 
