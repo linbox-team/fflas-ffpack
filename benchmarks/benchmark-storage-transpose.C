@@ -227,10 +227,10 @@ int main(int argc, char** argv)
         Bench<uint32_t>(m,n,iters,inplace).run(allsimd);
         Bench<uint16_t>(m,n,iters,inplace).run(allsimd);
 
-        Bench<Givaro::Integer>(m,n,iters,inplace).run(allsimd);
-        Bench<RecInt::ruint<6>>(m,n,iters,inplace).run(allsimd);
-        Bench<RecInt::ruint<7>>(m,n,iters,inplace).run(allsimd);
-        Bench<RecInt::ruint<8>>(m,n,iters,inplace).run(allsimd);
+        /* Bench<Givaro::Integer>(m,n,iters,inplace).run(allsimd); */
+        /* Bench<RecInt::ruint<6>>(m,n,iters,inplace).run(allsimd); */
+        /* Bench<RecInt::ruint<7>>(m,n,iters,inplace).run(allsimd); */
+        /* Bench<RecInt::ruint<8>>(m,n,iters,inplace).run(allsimd); */
     }
     while (not inplace) ;
 
