@@ -47,7 +47,7 @@ namespace FFPACK{
  * @param ldq leading dimension of \p Q
  * @param U an \f$ (N - ls) \times s\f$ dense matrix
  * @param ldu leading dimension of \p U
- * @param V an \f$ (N - s) \times s\f$ dense matrix
+ * @param V an \f$ (N - ls) \times s\f$ dense matrix
  * @param ldv leading dimension of \p V
  * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
  * @param ldw leading dimension of \p W
@@ -83,8 +83,8 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
 	 +--------+------+------+--------+---  +--+         +--+
 	 |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   |     |B4|         |C4|
 	 +--------+------+------+--------+---  +--+         +--+
-	 |        |      |      |        |     |  |         |  |
-  */
+	 |        |      |      |        |     |  |         |  | */
+  
   /*   First            Last
    * D.0 -> D_1,   D.((n - ls) * ldd)  
    * P.0 -> P_2,   P.((n - s - ls) * ldp)  
@@ -94,13 +94,22 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
    * V.0 -> V_2,   V.((n - s - ls) * ldv)  
    * W.0 -> W_1,   W.((n - 2s - ls) * ldw)   */
 
+  /* Unused space:
+   *
+   * |       |  |       |
+   * +---+---+  +---+---+
+   * | D |   |  |   |   |
+   * +---+   |  | V | * |
+   * |     * |  |   |   |
+   * +---+---+  +---+---+ */
+  
   /* Block division */
   size_t kf = N/s;  // Nb of full slices of dimension s
   size_t rs = N%s; //size of the partial block
   size_t k = kf;
   if (rs) k++; // Total number of blocks
   // In the preceeding, ls is the size of the last block:
-  //size_t ls = (rs)? rs: s;
+  size_t ls = (rs)? rs: s;
   
   /* Diagonal Blocks :
    * C <- beta * C + alpha D B */
@@ -141,7 +150,7 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
 	     Temp2, s);                                    // Leading dimension s
       /* Temp2 += R_{block + 1} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, t, s, Fi.one, R + (block + 1) * s * ldr,          
+	     s, t, s, Fi.one, R + (block) * s * ldr,          
 	     ldr, Temp1, s, Fi.one,    
 	     Temp2, s);                                    // Leading dimension s
 
@@ -163,7 +172,7 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
 		 Temp1, s);                                    // Leading dimension s
 	  /* Temp1 += R_{block + 2} * Temp2 /!\ */
 	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-		 s, t, s, Fi.one, R + (block + 2) * s * ldr,          
+		 s, t, s, Fi.one, R + (block + 1) * s * ldr,          
 		 ldr, Temp2, s, Fi.one,    
 		 Temp1, s);                                    // Leading dimension s
 	}
@@ -187,7 +196,7 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
 	     Temp2, s);                                    // Leading dimension s
       /* Temp2 += R_{kf - 1} * Temp1 */
       fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-	     s, t, s, Fi.one, R + (kf - 1) * s * ldr,          
+	     s, t, s, Fi.one, R + (kf - 2) * s * ldr,          
 	     ldr, Temp1, s, Fi.one,    
 	     Temp2, s);                                    // Leading dimension s
 
@@ -212,6 +221,117 @@ inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
   /* Upper */
   /* Probably a copy, maybe the other way */
 
+  /* Temp1 <- alpha * V_last * B_last 
+   * C_{last'} += U_{last'} * Temp1 
+   * last' = last - 1 */
+  if (rs)
+    {
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, rs, alpha,// s x rs by rs x t
+	   V + (kf - 1) * s * ldv, ldv, B, ldb, Fi.zero,    // Last block is full in height 
+	 Temp1, s);
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, // s x s by s x t
+	   Fi.one, U + (kf - 1) * s * ldu, ldu, Temp1, s,  // last' of U is not same as V
+	   Fi.one, C + (kf - 1) * s * ldc, ldc);
+    }
+  else
+    {
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, alpha,// s x s by s x t
+	   V + (kf - 1) * s * ldv, ldv, B, ldb, Fi.zero,    // Last block is same as above 
+	 Temp1, s);
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, // s x s by s x t
+	   Fi.one, U + (kf - 2) * s * ldu, ldu, Temp1, s,  // last' of U is not same as V
+	   Fi.one, C + (kf - 2) * s * ldc, ldc);
+    }
+  
+  /* I STOPPED MODIFYING CODE HERE */
+  #if 0
+  /* Sarting block: n - ls - s */
+  for (size_t block = 0; (block + 2) < kf; block+=2) // Block increases but index decreases
+    {
+
+      /* Temp2 <- alpha * V_{block + 1} * B_{block + 1} */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, t, s, alpha, V + (block + 1) * s * ldv,          
+	     ldv, B + (block + 1) * s * ldb, ldb, Fi.zero,       // No addition
+	     Temp2, s);                                    // Leading dimension s
+      /* Temp2 += W_{block + 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, t, s, Fi.one, W + (block) * s * ldw,          
+	     ldw, Temp1, s, Fi.one,    
+	     Temp2, s);                                    // Leading dimension s
+
+      /* C_{block + 2} += U_{block + 2} * Temp2 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, t, s, Fi.one, U + (block + 1) * s * ldu,   
+	     ldu, Temp2, s, Fi.one,                        
+	     C + (block + 2) * s * ldc, ldc);
+      /* Only needs to be done if the results is useful :
+       * - Not last loop
+       * - Even amount of blocks (why?)
+       * - Partial blocks */
+      if (((block + 4) < kf)||((kf%2 == 0)||rs))
+	{
+	  /* Temp1 <- alpha * V_{block + 2} * B_{block + 2} */
+	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+		 s, t, s, alpha, V + (block + 2) * s * ldv,          
+		 ldv, B + (block + 2) * s * ldb, ldb, Fi.zero,       // No addition
+		 Temp1, s);                                    // Leading dimension s
+	  /* Temp1 += W_{block + 2} * Temp2 /!\ */
+	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+		 s, t, s, Fi.one, W + (block + 1) * s * ldw,          
+		 ldw, Temp2, s, Fi.one,    
+		 Temp1, s);                                    // Leading dimension s
+	}
+      /* No idea whether this should be here */
+            /* C_{block + 1} += U_{block + 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	     s, t, s, Fi.one, U + (block) * s * ldu,   //s x s by s x t, alpha VB 
+	     ldu, Temp1, s, Fi.one,                        // No mult
+	     C + (block + 1) * s * ldc, ldc);
+    }
+
+  /* Remaining blocks: There should be none of size rs */
+  /* CHECK WHICH INSTRUCTIONS NEED TO BE DONE */
+  if (kf%2 == 0) // Even amount of full blocks (why?)
+    {
+       /* C_{kf - 1} += U_{kf - 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	     s, t, s, Fi.one, U + (kf - 2) * s * ldu,   //s x s by s x t, alpha VB 
+	     ldu, Temp1, s, Fi.one,                        // No mult
+	     C + (kf - 1) * s * ldc, ldc);
+      /* So not this */
+      if (rs) // Last small block
+	{
+      /* Temp2 <- alpha * V_{kf - 1} * B_{kf - 1} */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, t, s, alpha, V + (kf - 1) * s * ldv,          
+	     ldv, B + (kf - 1) * s * ldb, ldb, Fi.zero,       // No addition
+	     Temp2, s);                                    // Leading dimension s
+      /* Temp2 += W_{kf - 1} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     s, t, s, Fi.one, W + (kf - 2) * s * ldw,          
+	     ldw, Temp1, s, Fi.one,    
+	     Temp2, s);                                    // Leading dimension s
+
+	  /* C_{kf} += U_{kf} * Temp2 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+	     rs, t, s, Fi.one, U + (kf - 1) * s * ldu,   
+	     ldu, Temp2, s, Fi.one,                        
+	     C + (kf) * s * ldc, ldc);
+	}
+    }
+  /* And not this */
+  else
+    if (rs)
+      {
+	/* C_{kf} += U_{kf} * Temp1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
+	     rs, t, s, Fi.one, U + (kf - 1) * s * ldu,   //s x s by s x t, alpha VB 
+	     ldu, Temp1, s, Fi.one,                        // No mult
+	     C + (kf) * s * ldc, ldc);
+      }
+#endif
+  
   /* Free memory */
   FFLAS::fflas_delete(Temp1);
   FFLAS::fflas_delete(Temp2);

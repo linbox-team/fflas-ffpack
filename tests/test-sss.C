@@ -224,7 +224,7 @@ int main(int argc, char** argv)
     /* A bit less easy */
     size_t s = 2;
     size_t t = 2;
-    size_t n = 9;
+    size_t n = 11;
 
     uint64_t b = 1;
 
