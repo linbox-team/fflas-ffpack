@@ -1,6 +1,6 @@
 /*
  * Copyright (C) FFLAS-FFPACK
- * Written by Clément Pernet and Quentin Houssier
+ * Written by Hippolyte Signargout
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -28,6 +28,8 @@
 //      Test suite for the Quasi-Separable matrices in SSS format
 //-------------------------------------------------------------------------
 
+/* Structure taken from test-quasisep.C */
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
 #include <iostream>
@@ -47,14 +49,16 @@ using namespace FFLAS;
 
 template<class Field>
 bool test_diag_product (const Field & F, size_t n, size_t s, size_t t,
-			typename Field::ConstElement_ptr D, size_t ldd,typename Field::Element_ptr TS, size_t ldt)
+			typename Field::ConstElement_ptr D, size_t ldd,
+			typename Field::Element_ptr TS, size_t ldt)
 {
     typedef typename Field::Element_ptr Element_ptr ;
     Element_ptr null = fflas_new (F, n, s);
     fzero (F, n, s, null, s);
     Element_ptr C = fflas_new (F, n, t);
     
-    productSSSxTS (F, n, s, null, s, null, s, null, s, null, s, null, s, null, s, D, ldd, t, F.one, TS, ldt, F.zero, C, t);
+    productSSSxTS (F, n, t, s, F.one, null, s, null, s, null, s, null, s, null, s, null, s,
+		   D, ldd, t, TS, ldt, F.zero, C, t);
 
     std::cout<<"D:"<<std::endl;
     for (size_t line = 0; line < n; line++)
@@ -101,7 +105,8 @@ bool test_LT_product (const Field & F, size_t n, size_t s, size_t t,
     fzero (F, n, s, null, s);
     Element_ptr C = fflas_new (F, n, t);
     
-    productSSSxTS (F, n, s, P, ldp, Q, ldq, R, ldr, null, s, null, s, null, s, null, s, t, F.one, TS, ldt, F.zero, C, t);
+    productSSSxTS (F, n, t, s, F.one, P, ldp, Q, ldq, R, ldr, null, s, null, s, null, s,
+		   null, s, TS, ldt, F.zero, C, t);
 
     std::cout<<"P:"<<std::endl;
     for (size_t line = 0; line < n - s; line++)
@@ -156,6 +161,78 @@ bool test_LT_product (const Field & F, size_t n, size_t s, size_t t,
     return true;
 }
 
+/* @brief Tests SSSxTS product on an upper triangular matrix */
+template<class Field>
+bool test_UT_product (const Field & F, size_t n, size_t s, size_t t,
+		      typename Field::ConstElement_ptr P, size_t ldp,
+		      typename Field::ConstElement_ptr Q, size_t ldq,
+		      typename Field::ConstElement_ptr R, size_t ldr,
+		      typename Field::Element_ptr TS, size_t ldt)
+{
+    typedef typename Field::Element_ptr Element_ptr ;
+    Element_ptr null = fflas_new (F, n, s);
+    fzero (F, n, s, null, s);
+    Element_ptr C = fflas_new (F, n, t);
+
+    for (int dec = 0; dec < 4; dec++)
+      {
+	productSSSxTS (F, n - dec, t, s, F.one, null, s, null, s, null, s, P, ldp, Q, ldq, R, ldr, 
+		       null, s, TS, ldt, F.zero, C, t);
+
+	std::cout<<"U:"<<std::endl;
+	for (size_t line = 0; line < n - dec- s; line++)
+	  {
+	    for (size_t column = 0; column < s; column++)
+	      {
+		std::cout<<P[column + line*ldp]<<" ";
+	      }
+	    std::cout<<std::endl;
+	  }
+	std::cout<<"V:"<<std::endl;
+	for (size_t line = 0; line < n - dec - s; line++)
+	  {
+	    for (size_t column = 0; column < s; column++)
+	      {
+		std::cout<<Q[column + line*ldq]<<" ";
+	      }
+	    std::cout<<std::endl;
+	  }
+	std::cout<<"W:"<<std::endl;
+	for (size_t line = 0; (line < n - dec - 2*s) && (2*s <= n - dec); line++)
+	  {
+	    for (size_t column = 0; column < s; column++)
+	      {
+		std::cout<<R[column + line*ldq]<<" ";
+	      }
+	    std::cout<<std::endl;
+	  }
+	
+	std::cout<<"B:"<<std::endl;
+	for (size_t line = 0; line < n - dec; line++)
+	  {
+	    for (size_t column = 0; column < t; column++)
+	      {
+		std::cout<<TS[column + line*ldt]<<" ";
+	      }
+	    std::cout<<std::endl;
+	  }
+	std::cout<<"C:"<<std::endl;
+	for (size_t line = 0; line < n - dec; line++)
+	  {
+	    for (size_t column = 0; column < t; column++)
+	      {
+		std::cout<<C[column + line*t]<<" ";
+	      }
+	    std::cout<<std::endl;
+	  }
+      }
+    
+    /* Free memory and return */
+    FFLAS::fflas_delete(null);
+    FFLAS::fflas_delete(C);
+    return true;
+}
+
 template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, uint64_t seed){
   bool ok = true ;
@@ -165,9 +242,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
     return true;
   
   Element_ptr D = fflas_new (*F, n, s);
-  Element_ptr P = fflas_new (*F, n - s, s);
-  Element_ptr Q = fflas_new (*F, n, s);
-  Element_ptr R = fflas_new (*F, n - s, s);
+  Element_ptr P = fflas_new (*F, n, s);     // Could be n - s but used as U (n - rs) too
+  Element_ptr Q = fflas_new (*F, n, s);     // Could be n - rs
+  Element_ptr R = fflas_new (*F, n - s, s); // Could be n - s - rs
   Element_ptr B = fflas_new (*F, n, t);
   
   for (size_t line = 0; line < n; line++)
@@ -175,10 +252,10 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
 	for (size_t column = 0; column < s; column++)
 	  {
 	    D[column + line*s] = line;
+	    P[column + line * s] = 1;
 	    Q[column + line * s] = 1;
 	    if (line < n - s)
 	      {
-		P[column + line * s] = 1;
 		R[column + line * s] = 2;
 	      }
 	  }
@@ -190,8 +267,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
   /* Test with only Diagonal blocks */
   //  ok = ok && test_diag_product (*F, n, s, t, D, s, B, t);
   /* Test with only lower-triangular part */
-  ok = ok && test_LT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
-
+  //  ok = ok && test_LT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
+  /* Test with only lower-triangular part */
+  ok = ok && test_UT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
   if ( !ok )
     std::cout << "FAILED "<<std::endl;
   else
@@ -216,7 +294,7 @@ int main(int argc, char** argv)
     
     
     /* Very easy */
-#if 0
+    #if 0
     size_t n = 5;
     size_t s = 1;
     size_t t = 1;
@@ -224,7 +302,7 @@ int main(int argc, char** argv)
     /* A bit less easy */
     size_t s = 2;
     size_t t = 2;
-    size_t n = 11;
+    size_t n = 12;
 
     uint64_t b = 1;
 
