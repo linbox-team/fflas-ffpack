@@ -1,4 +1,4 @@
-2021-03-29 v2.5.0
+2021-12-02 v2.5.0
 	Improvements:
 	* fix many bugs
 	* replace micro-architecture detection by march=native by default or user provided flags
