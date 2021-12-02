@@ -381,10 +381,10 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         v4 = _mm512_permutex2var_epi64 (t4, i1, t6);
         v5 = _mm512_permutex2var_epi64 (t5, i1, t7);
         vect_t i3 = loadu (permute_idx3);
-        v0 = _mm512_permutex2var_epi64 (t0, i2, t2);
-        v1 = _mm512_permutex2var_epi64 (t1, i2, t3);
-        v4 = _mm512_permutex2var_epi64 (t4, i2, t6);
-        v5 = _mm512_permutex2var_epi64 (t5, i2, t7);
+        v2 = _mm512_permutex2var_epi64 (t0, i2, t2);
+        v3 = _mm512_permutex2var_epi64 (t1, i2, t3);
+        v6 = _mm512_permutex2var_epi64 (t4, i2, t6);
+        v7 = _mm512_permutex2var_epi64 (t5, i2, t7);
 
         vect_t i4 = loadu (permute_idx4);
         r0 = _mm512_permutex2var_epi64 (v0, i3, v4);
