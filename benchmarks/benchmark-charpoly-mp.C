@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
         }
         else{
             A = FFLAS::fflas_new<Element>(n*n);
-            typename Field::Residu_t samplesize(1); samplesize <<= size;
-            Field::RandIter G(F,seed,samplesize);
+//            typename Field::Residu_t samplesize(1); samplesize <<= size;
+            Field::RandIter G(F,seed,size);
             for (size_t j=0; j< (size_t)n*n; ++j)
                 G.random(*(A+j));
         }

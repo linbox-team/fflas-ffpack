@@ -49,8 +49,6 @@ inline size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
         LAPACKPerm2MathPerm (Q, Q1, N2);
         typename Field::Element_ptr A2 = A + N2;
         typename Field::Element_ptr A3 = A + (N-N2)*lda;
-        typename Field::Element_ptr F = A2 + r1*lda;
-        typename Field::Element_ptr G = A3 + r1;
         // [ B1 ] <- P1^T A2
         // [ B2 ]
         applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), N-N2, A2, lda, P1);
@@ -203,8 +201,6 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
   typename Field::Element_ptr S;
   FFLAS::FFLAS_SIDE Side;
   FFLAS::FFLAS_TRANSPOSE Trans;
-  FFLAS::FFLAS_SIDE OppSide;
-  FFLAS::FFLAS_TRANSPOSE OppTrans;
   const size_t * outer;
   const size_t * inner;
   size_t * Inv = FFLAS::fflas_new<size_t>(N);
@@ -214,9 +210,6 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
     inner = P;
     Side = FFLAS::FflasLeft;
     Trans = FFLAS::FflasTrans;
-    OppSide = FFLAS::FflasRight;
-    OppTrans = FFLAS::FflasNoTrans;
-      
   }
   else{
     S = X+s;
@@ -224,8 +217,6 @@ inline size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO 
     inner = Q;
     Side = FFLAS::FflasRight;
     Trans = FFLAS::FflasNoTrans;
-    OppSide = FFLAS::FflasLeft;
-    OppTrans = FFLAS::FflasTrans;
   }
 
    for (size_t i=0; i<r; i++){

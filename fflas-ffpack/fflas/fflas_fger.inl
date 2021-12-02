@@ -56,7 +56,7 @@ namespace FFLAS { namespace Protected {
         Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
         FloatElement alphaf;
         F.convert (alphaf, alpha);
-
+        G.reduce(alphaf);
         FloatElement* Af = fflas_new (G,M,N);
         FloatElement* Xf = fflas_new (G,M);
         FloatElement* Yf = fflas_new (G,N);
@@ -67,7 +67,6 @@ namespace FFLAS { namespace Protected {
         freduce(G, M, Xf, 1);
         fconvert(F, N, Yf, 1, y, incy);
         freduce(G, N, Yf, 1);
-
         fger (G, M, N, alphaf, Xf, 1, Yf, 1, Af, N);
 
         finit (F, M, N, Af, N, A, lda);
@@ -253,7 +252,6 @@ namespace FFLAS{
         }
         Hfp.Outmin = Hfp.FieldMin;
         Hfp.Outmax = Hfp.FieldMax;
-
         if (F.isOne(alpha) || F.isMOne(alpha)){
             DFElt alphadf;
             if (F.isMOne( alpha)) alphadf = -F.one;

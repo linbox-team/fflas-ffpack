@@ -105,6 +105,7 @@
 
 #define THREAD_INDEX 0
 #define NUM_THREADS 1
+#define SET_THREADS(num_threads) {}
 #define MAX_THREADS 1
 
 #define READ(Args...)
@@ -301,6 +302,8 @@ PRAGMA_OMP_IMPL(omp single)
 # define THREAD_INDEX omp_get_thread_num()
 // get the number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
+// set the number of threads in the parallel region
+# define SET_THREADS(numthreads) omp_set_num_threads(numthreads)
 // get the number of threads specified with the global variable OMP_NUM_THREADS
 # define MAX_THREADS omp_get_max_threads()
 
@@ -402,6 +405,7 @@ PRAGMA_OMP_IMPL(omp single)
 
 #define THREAD_INDEX tbb::this_task_arena::current_thread_index()
 #define NUM_THREADS tbb::task_scheduler_init::default_num_threads()
+#define SET_THREADS(numthreads) tbb::task_scheduler_init::initialize(numthreads)
 #define MAX_THREADS tbb::task_scheduler_init::default_num_threads()
 #define READ(Args...)
 #define WRITE(Args...)
@@ -510,7 +514,7 @@ PARFORBLOCK2D(_internal_iterator, m, n, Helper,                     \
 
 // Number of threads
 #  define NUM_THREADS kaapi_getconcurrency_cpu()
-
+#  define SET_THREADS(numthreads) {}
 #  define MAX_THREADS kaapi_getconcurrency_cpu()
 
 // Begin parallel main

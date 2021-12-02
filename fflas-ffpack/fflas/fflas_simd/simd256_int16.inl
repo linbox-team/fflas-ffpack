@@ -443,14 +443,30 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
     }
 
     /*
-     * Blend packed 16-bit integers from a and b in each 128 lane using control mask imm8, and store the results in dst.
-     * Args   :	[a0, ..., a15] int16_t
-     [b0, ..., b15] int16_t
-     * Return :	[s[0]?a0:b0,   , s[15]?a15:b15] int16_t
+     * Blend 16-bit integers from a and b using control mask s.
+     * Args: a = [ a0, ..., a15 ]
+     *       b = [ b0, ..., b15 ]
+     *       s = a 16-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, ..., s[15] ? a15 : b15 ]
      */
-    template<uint8_t s>
-    static INLINE CONST vect_t blend_twice(const vect_t a, const vect_t b) {
-        return _mm256_blend_epi16(a, b, s);
+    template<uint16_t s,
+             typename std::enable_if<(s & 0x00ff) == (s >> 8)>::type* = nullptr>
+    static INLINE vect_t blend (const vect_t a, const vect_t b) {
+        /* If the 8-bit low part of s is equal to the 8-bit high part of s, we
+         * can use the _mm256_blend_epi16 intrinsic directly.
+         */
+        return _mm256_blend_epi16(a, b, s & 0x00ff);
+    }
+    template<uint16_t s,
+             typename std::enable_if<(s & 0x00ff) != (s >> 8)>::type* = nullptr>
+    static INLINE vect_t blend (const vect_t a, const vect_t b) {
+        /* If the 8-bit low part of s is different from the 8-bit high part of
+         * s, we need to do the blend on each 128-bit lane separately and
+         * combine them to obtain the result.
+         */
+        vect_t lo = _mm256_blend_epi16(a, b, s & 0xff);
+        vect_t hi = _mm256_blend_epi16(a, b, s >> 8);
+        return _mm256_permute2x128_si256 (lo, hi, 0x30);
     }
 
     /*

@@ -524,7 +524,7 @@ namespace FFLAS { namespace details {
             {
                 typename Field::Element_ptr Ac = fflas_new (F,m) ;
                 fassign (F,m,A,incX,Ac,1);
-                freduce (F,m,Ac,1,FieldCategories::ModularTag());
+                vectorised::modp(F,Ac,m,Ac);
                 fassign (F,m,Ac,1,A,incX);
                 fflas_delete (Ac);
             }
@@ -544,10 +544,49 @@ namespace FFLAS { namespace details {
         }
         else
         {
-            typename Field::Element_ptr Xi = A ;
-            typename Field::ConstElement_ptr Yi = B ;
-            for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-                F.reduce (*Xi , *Yi);
+            if (m < FFLASFFPACK_COPY_REDUCE)
+            {
+                // TODO also write a ``fast'' modp that handles an incY
+                typename Field::Element_ptr Xi = A ;
+                typename Field::ConstElement_ptr Yi = B ;
+                for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+                    F.reduce (*Xi , *Yi);
+            }
+            else
+            {
+                typename Field::Element_ptr Ac;
+                typename Field::Element_ptr Bc;
+                if (incX != 1)
+                {
+                    Ac = fflas_new (F,m);
+                    fassign(F,m,A,incX,Ac,1);
+                }
+                else
+                {
+                    Ac = A;
+                }
+                if (incY != 1)
+                {
+                    Bc = fflas_new (F,m);
+                    fassign(F,m,B,incY,Bc,1);
+                }
+                else
+                {
+                    Bc = const_cast<typename Field::Element_ptr>(B); // Oh the horror
+                }
+
+                vectorised::modp(F,Bc,m,Ac);
+
+                if (incX != 1)
+                {
+                    fassign(F,m,Ac,1,A,incX);
+                    fflas_delete(Ac);
+                }
+                if (incY != 1)
+                {
+                    fflas_delete(Bc);
+                }
+            }
         }
     }
 

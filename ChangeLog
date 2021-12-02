@@ -1,3 +1,13 @@
+2021-03-29 v2.5.0
+	Improvements:
+	* fix many bugs
+	* replace micro-architecture detection by march=native by default or user provided flags
+	* dump support of gcc-4.9.2 -> minversion is now gcc-5
+	* improved SIMD's
+	* autotools refactorization/uniformization with Givaro/LinBox
+	New Features:
+	* first support for quasiseparable matrices (Compact Bruhat generators)
+	* full featured sub-cubic fsyrk (C <- a. A x A^T + b C)
 2019-06-07 v2.4.1
 	Minor updates:
 	* fix setnumthreads in pDet

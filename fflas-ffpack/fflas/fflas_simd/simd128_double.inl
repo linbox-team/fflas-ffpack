@@ -267,11 +267,12 @@ template <> struct Simd128_impl<true, false, true, 8> {
     }
 
     /*
-     * Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
-     * and store the results in dst.
-     * Args   : [a0, a1] double
-     [b0, b1] double
-     * Return : [s[0]?a0:b0, s[1]?a1:b1] double
+     * Blend packed double-precision (64-bit) floating-point elements from a and
+     * b using control mask s.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, a1 ]
+     *       s = a 2-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, s[1] ? a1 : b1 ]
      */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
@@ -279,11 +280,12 @@ template <> struct Simd128_impl<true, false, true, 8> {
     }
 
     /*
-     * Blend packed double-precision (64-bit) floating-point elements from a and b using mask,
-     * and store the results in dst.
-     * Args   : [a0, a1] double
-     [b0, b1] double
-     * Return : [mask[63]?a0:b0, mask[127]?a1:b1] double
+     * Blend packed double-precision (64-bit) floating-point elements from a and
+     * b using the vector mask as control.
+     * Args: a = [ a0, a1 ]
+     *       b = [ b0, b1 ]
+     *       mask
+     * Return: [ mask[63] ? a0 : b0, mask[127] ? a1 : b1 ]
      */
     static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
         return _mm_blendv_pd(a, b, mask);

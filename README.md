@@ -18,14 +18,15 @@ It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the 
 FFLAS-FFPACK is distributed unded the terms of the GNU LGPL v2.1 or later (see LICENSE).
 
 ## REQUIREMENTS:
-- a C++ compiler supporting C++11 standard. This means g++ v4.7 or greater, clang++ v3.4 or greater, icpc v16 or greater (earlier versions of clang and icpc might also work but have not been tested)
+- a C++ compiler supporting C++11 standard. More precisely g++ v5 or greater, clang++ v3.4 or greater, icpc v16 or greater (earlier versions of clang and icpc might also work but have not been tested)
 - A BLAS library conforming to either the C or Fortran BLAS standard: OpenBLAS (recommended), or ATLAS. Make sure to use a single threaded version of the BLAS library.
-- [Givaro](https://github.com/linbox-team/givaro) version at least 4.1.1, providing the implementations of the coefficient fields/rings.
+- [Givaro](https://github.com/linbox-team/givaro) version at least 4.1.2, providing the implementations of the coefficient fields/rings.
 
 ## INSTALLATION
 
 In brief:
-```./configure <options> && make && make install```
+- if you are compiling a released tar.gz archive, use ```./configure <options> && make && make install```
+- if you are compiling the upstream git master branch, juste replace `configure` by `autogen.sh` in the above command: the configure script will be auto-generated and run with the arguments passed to `autogen.sh`
 
 The most commonly used option include:
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
