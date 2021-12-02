@@ -376,25 +376,25 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         t7 = unpackhi_intrinsic (r6, r7);
 
         vect_t i2 = loadu (permute_idx2);
-        v0 = _mm512_permutex2var_epi64 (t0, i1, t2)
-        v1 = _mm512_permutex2var_epi64 (t1, i1, t3)
-        v4 = _mm512_permutex2var_epi64 (t4, i1, t6)
-        v5 = _mm512_permutex2var_epi64 (t5, i1, t7)
+        v0 = _mm512_permutex2var_epi64 (t0, i1, t2);
+        v1 = _mm512_permutex2var_epi64 (t1, i1, t3);
+        v4 = _mm512_permutex2var_epi64 (t4, i1, t6);
+        v5 = _mm512_permutex2var_epi64 (t5, i1, t7);
         vect_t i3 = loadu (permute_idx3);
-        v0 = _mm512_permutex2var_epi64 (t0, i2, t2)
-        v1 = _mm512_permutex2var_epi64 (t1, i2, t3)
-        v4 = _mm512_permutex2var_epi64 (t4, i2, t6)
-        v5 = _mm512_permutex2var_epi64 (t5, i2, t7)
+        v0 = _mm512_permutex2var_epi64 (t0, i2, t2);
+        v1 = _mm512_permutex2var_epi64 (t1, i2, t3);
+        v4 = _mm512_permutex2var_epi64 (t4, i2, t6);
+        v5 = _mm512_permutex2var_epi64 (t5, i2, t7);
 
         vect_t i4 = loadu (permute_idx4);
-        r0 = _mm512_permutex2var_epi64 (v0, i3, v4)
-        r1 = _mm512_permutex2var_epi64 (v1, i3, v5)
-        r2 = _mm512_permutex2var_epi64 (v2, i3, v6)
-        r3 = _mm512_permutex2var_epi64 (v3, i3, v7)
-        r4 = _mm512_permutex2var_epi64 (v0, i4, v4)
-        r5 = _mm512_permutex2var_epi64 (v1, i4, v5)
-        r6 = _mm512_permutex2var_epi64 (v2, i4, v6)
-        r7 = _mm512_permutex2var_epi64 (v3, i4, v7)
+        r0 = _mm512_permutex2var_epi64 (v0, i3, v4);
+        r1 = _mm512_permutex2var_epi64 (v1, i3, v5);
+        r2 = _mm512_permutex2var_epi64 (v2, i3, v6);
+        r3 = _mm512_permutex2var_epi64 (v3, i3, v7);
+        r4 = _mm512_permutex2var_epi64 (v0, i4, v4);
+        r5 = _mm512_permutex2var_epi64 (v1, i4, v5);
+        r6 = _mm512_permutex2var_epi64 (v2, i4, v6);
+        r7 = _mm512_permutex2var_epi64 (v3, i4, v7);
     }
 
     /*

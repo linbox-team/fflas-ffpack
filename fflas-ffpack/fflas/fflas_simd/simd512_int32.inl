@@ -430,41 +430,41 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
 
 
         vect_t i2 = loadu (permute_idx2);
-        v0 = _mm512_permutex2var_epi32 (t0, i1, t4)
-        v1 = _mm512_permutex2var_epi32 (t1, i1, t5)
-        v2 = _mm512_permutex2var_epi32 (t2, i1, t6)
-        v3 = _mm512_permutex2var_epi32 (t3, i1, t7)
-        v8 = _mm512_permutex2var_epi32 (t8, i1, t12)
-        v9 = _mm512_permutex2var_epi32 (t9, i1, t13)
-        v10 = _mm512_permutex2var_epi32 (t10, i1, t14)
-        v11 = _mm512_permutex2var_epi32 (t11, i1, t15)
+        v0 = _mm512_permutex2var_epi32 (t0, i1, t4);
+        v1 = _mm512_permutex2var_epi32 (t1, i1, t5);
+        v2 = _mm512_permutex2var_epi32 (t2, i1, t6);
+        v3 = _mm512_permutex2var_epi32 (t3, i1, t7);
+        v8 = _mm512_permutex2var_epi32 (t8, i1, t12);
+        v9 = _mm512_permutex2var_epi32 (t9, i1, t13);
+        v10 = _mm512_permutex2var_epi32 (t10, i1, t14);
+        v11 = _mm512_permutex2var_epi32 (t11, i1, t15);
         vect_t i3 = loadu (permute_idx3);
-        v4 = _mm512_permutex2var_epi32 (t0, i2, t4)
-        v5 = _mm512_permutex2var_epi32 (t1, i2, t5)
-        v6 = _mm512_permutex2var_epi32 (t2, i2, t6)
-        v7 = _mm512_permutex2var_epi32 (t3, i2, t7)
-        v12 = _mm512_permutex2var_epi32 (t8, i2, t12)
-        v13 = _mm512_permutex2var_epi32 (t9, i2, t13)
-        v14 = _mm512_permutex2var_epi32 (t10, i2, t14)
-        v15 = _mm512_permutex2var_epi32 (t11, i2, t15)
+        v4 = _mm512_permutex2var_epi32 (t0, i2, t4);
+        v5 = _mm512_permutex2var_epi32 (t1, i2, t5);
+        v6 = _mm512_permutex2var_epi32 (t2, i2, t6);
+        v7 = _mm512_permutex2var_epi32 (t3, i2, t7);
+        v12 = _mm512_permutex2var_epi32 (t8, i2, t12);
+        v13 = _mm512_permutex2var_epi32 (t9, i2, t13);
+        v14 = _mm512_permutex2var_epi32 (t10, i2, t14);
+        v15 = _mm512_permutex2var_epi32 (t11, i2, t15);
 
         vect_t i4 = loadu (permute_idx4);
-        r0 = _mm512_permutex2var_epi32 (v0, i3, v8)
-        r1 = _mm512_permutex2var_epi32 (v1, i3, v9)
-        r2 = _mm512_permutex2var_epi32 (v2, i3, v10)
-        r3 = _mm512_permutex2var_epi32 (v3, i3, v11)
-        r4 = _mm512_permutex2var_epi32 (v4, i3, v12)
-        r5 = _mm512_permutex2var_epi32 (v5, i3, v13)
-        r6 = _mm512_permutex2var_epi32 (v6, i3, v14)
-        r7 = _mm512_permutex2var_epi32 (v7, i3, v15)
-        r8 = _mm512_permutex2var_epi32 (v0, i4, v8)
-        r9 = _mm512_permutex2var_epi32 (v1, i4, v9)
-        r10 = _mm512_permutex2var_epi32 (v2, i4, v10)
-        r11 = _mm512_permutex2var_epi32 (v3, i4, v11)
-        r12 = _mm512_permutex2var_epi32 (v4, i4, v12)
-        r13 = _mm512_permutex2var_epi32 (v5, i4, v13)
-        r14 = _mm512_permutex2var_epi32 (v6, i4, v14)
-        r15 = _mm512_permutex2var_epi32 (v7, i4, v15)
+        r0 = _mm512_permutex2var_epi32 (v0, i3, v8);
+        r1 = _mm512_permutex2var_epi32 (v1, i3, v9);
+        r2 = _mm512_permutex2var_epi32 (v2, i3, v10);
+        r3 = _mm512_permutex2var_epi32 (v3, i3, v11);
+        r4 = _mm512_permutex2var_epi32 (v4, i3, v12);
+        r5 = _mm512_permutex2var_epi32 (v5, i3, v13);
+        r6 = _mm512_permutex2var_epi32 (v6, i3, v14);
+        r7 = _mm512_permutex2var_epi32 (v7, i3, v15);
+        r8 = _mm512_permutex2var_epi32 (v0, i4, v8);
+        r9 = _mm512_permutex2var_epi32 (v1, i4, v9);
+        r10 = _mm512_permutex2var_epi32 (v2, i4, v10);
+        r11 = _mm512_permutex2var_epi32 (v3, i4, v11);
+        r12 = _mm512_permutex2var_epi32 (v4, i4, v12);
+        r13 = _mm512_permutex2var_epi32 (v5, i4, v13);
+        r14 = _mm512_permutex2var_epi32 (v6, i4, v14);
+        r15 = _mm512_permutex2var_epi32 (v7, i4, v15);
     }
 
     /*

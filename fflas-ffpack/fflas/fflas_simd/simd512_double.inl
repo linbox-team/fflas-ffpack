@@ -319,25 +319,25 @@ template <> struct Simd512_impl<true, false, true, 8> {
         t7 = unpackhi_intrinsic (r6, r7);
 
         __m512i i2 = _mm512_loadu_si512 (permute_idx2);
-        v0 = _mm512_permutex2var_pd (t0, i1, t2)
-        v1 = _mm512_permutex2var_pd (t1, i1, t3)
-        v4 = _mm512_permutex2var_pd (t4, i1, t6)
-        v5 = _mm512_permutex2var_pd (t5, i1, t7)
+        v0 = _mm512_permutex2var_pd (t0, i1, t2);
+        v1 = _mm512_permutex2var_pd (t1, i1, t3);
+        v4 = _mm512_permutex2var_pd (t4, i1, t6);
+        v5 = _mm512_permutex2var_pd (t5, i1, t7);
         __m512i i3 = _mm512_loadu_si512 (permute_idx3);
-        v0 = _mm512_permutex2var_pd (t0, i2, t2)
-        v1 = _mm512_permutex2var_pd (t1, i2, t3)
-        v4 = _mm512_permutex2var_pd (t4, i2, t6)
-        v5 = _mm512_permutex2var_pd (t5, i2, t7)
+        v0 = _mm512_permutex2var_pd (t0, i2, t2);
+        v1 = _mm512_permutex2var_pd (t1, i2, t3);
+        v4 = _mm512_permutex2var_pd (t4, i2, t6);
+        v5 = _mm512_permutex2var_pd (t5, i2, t7);
 
         __m512i i4 = _mm512_loadu_si512 (permute_idx4);
-        r0 = _mm512_permutex2var_pd (v0, i3, v4)
-        r1 = _mm512_permutex2var_pd (v1, i3, v5)
-        r2 = _mm512_permutex2var_pd (v2, i3, v6)
-        r3 = _mm512_permutex2var_pd (v3, i3, v7)
-        r4 = _mm512_permutex2var_pd (v0, i4, v4)
-        r5 = _mm512_permutex2var_pd (v1, i4, v5)
-        r6 = _mm512_permutex2var_pd (v2, i4, v6)
-        r7 = _mm512_permutex2var_pd (v3, i4, v7)
+        r0 = _mm512_permutex2var_pd (v0, i3, v4);
+        r1 = _mm512_permutex2var_pd (v1, i3, v5);
+        r2 = _mm512_permutex2var_pd (v2, i3, v6);
+        r3 = _mm512_permutex2var_pd (v3, i3, v7);
+        r4 = _mm512_permutex2var_pd (v0, i4, v4);
+        r5 = _mm512_permutex2var_pd (v1, i4, v5);
+        r6 = _mm512_permutex2var_pd (v2, i4, v6);
+        r7 = _mm512_permutex2var_pd (v3, i4, v7);
     }
 
     /*
