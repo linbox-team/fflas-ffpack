@@ -247,6 +247,18 @@ class Test {
             return doTests() & doTests<Simd128<Elt>>()
                     & doTests<Simd256<Elt>>() & doTests<Simd512<Elt>>();
         }
+
+        /* Workaround for Simd512<(u)int32/16_t> which does not exist */
+        template <typename _E = Elt,
+                  enable_if_t<is_same<_E, uint32_t>::value
+                              || is_same<_E, int32_t>::value
+                              || is_same<_E, uint16_t>::value
+                              || is_same<_E, int16_t>::value
+                             >* = nullptr>
+        bool run () {
+            return doTests() & doTests<Simd128<Elt>>()
+                    & doTests<Simd256<Elt>>();
+        }
 #endif
 
     protected:
