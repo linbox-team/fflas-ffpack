@@ -485,11 +485,7 @@ struct ScalFunctionsBase<Element,
     }
 
     static Element fma (Element x, Element y, Element z) {
-#ifdef __FMA__
         return std::fma(x,y,z);
-#else
-        return (x*y) + z;
-#endif
     }
 };
 

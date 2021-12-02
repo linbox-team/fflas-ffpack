@@ -73,6 +73,11 @@ template <> struct Simd128_impl<true, false, true, 4> {
     template <class Field>
     using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
+    union Converter {
+        vect_t v;
+        scalar_t t[vect_size];
+    };
+
     /*
      * Check if the pointer p is a multiple of alignemnt
      */
@@ -341,7 +346,15 @@ template <> struct Simd128_impl<true, false, true, 4> {
 #ifdef __FMA__
         return _mm_fmadd_ps(a, b, c);
 #else
-        return add(c, mul(a, b));
+	Converter ca, cb, cc;
+        ca.v = a;
+        cb.v = b;
+        cc.v = c;
+        return set(std::fma (ca.t[0], cb.t[0], cc.t[0]),
+                   std::fma (ca.t[1], cb.t[1], cc.t[1]),
+                   std::fma (ca.t[2], cb.t[2], cc.t[2]),
+                   std::fma (ca.t[3], cb.t[3], cc.t[3]) );
+
 #endif
     }
 
@@ -357,7 +370,7 @@ template <> struct Simd128_impl<true, false, true, 4> {
 #ifdef __FMA__
         return _mm_fnmadd_ps(a, b, c);
 #else
-        return sub(c, mul(a, b));
+	return fmadd (c, sub (zero(), a), b);
 #endif
     }
 
@@ -373,7 +386,7 @@ template <> struct Simd128_impl<true, false, true, 4> {
 #ifdef __FMA__
         return _mm_fmsub_ps(a, b, c);
 #else
-        return sub(mul(a, b), c);
+	return fmadd (sub (zero(), c), a, b);
 #endif
     }
 
