@@ -65,7 +65,7 @@ class Test {
         using enable_if_simd512_t = enable_if_t<sizeof(E)*Simd<E>::vect_size == 64>;
 
         /* ctor */
-        Test () : F(cardinality()) {
+    Test (size_t mm, size_t nn) : F(cardinality()), _mm(mm), _nn(nn) {
         }
 
         /* */
@@ -137,7 +137,8 @@ class Test {
             /* square matrices */
             size_t nrows[] = { 3*FFLAS_TRANSPOSE_BLOCKSIZE,
                                3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size,
-                               3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size+3 };
+                               3*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size+3,
+                               _mm};
             for (auto m: nrows) {
                 Elt_ptr M = fflas_new (F, m, m);
                 Elt_ptr Mt = fflas_new (F, m, m);
@@ -169,7 +170,8 @@ class Test {
             /* non square matrices */
             size_t ncols[] = { 2*FFLAS_TRANSPOSE_BLOCKSIZE,
                                4*FFLAS_TRANSPOSE_BLOCKSIZE+Simd::vect_size,
-                               3*FFLAS_TRANSPOSE_BLOCKSIZE+2*Simd::vect_size+1};
+                               3*FFLAS_TRANSPOSE_BLOCKSIZE+2*Simd::vect_size+1,
+                               _nn};
             for (size_t i = 0; i < 3; i++) {
                 size_t m = nrows[i];
                 size_t n = ncols[i];
@@ -261,8 +263,9 @@ class Test {
         }
 #endif
 
-    protected:
-        Field F;
+protected:
+    Field F;
+    size_t _mm,_nn;
 };
 
 /******************************************************************************/
@@ -271,23 +274,35 @@ int main(int argc, char** argv)
     std::cout << std::setprecision(17);
     std::cerr << std::setprecision(17);
 
+    size_t m = 1000;
+    size_t n = 2000;
+    
+    Argument as[] = {
+        { 'm', "-m M", "Set the dimension m",         TYPE_INT , &m },
+        { 'n', "-n N", "Set the dimension n",         TYPE_INT , &n },
+        END_OF_ARGUMENTS
+    };
+
+    parseArguments(argc,argv,as);
     bool ok = true;
 
-    ok &= Test<float>().run();
-    ok &= Test<double>().run();
-    ok &= Test<uint64_t>().run();
-    ok &= Test<int64_t>().run();
-    ok &= Test<uint32_t>().run();
-    ok &= Test<int32_t>().run();
-    ok &= Test<uint16_t>().run();
-    ok &= Test<int16_t>().run();
-    ok &= Test<Givaro::Integer>().run();
-    ok &= Test<RecInt::rint<6>>().run();
-    ok &= Test<RecInt::ruint<6>>().run();
-    ok &= Test<RecInt::rint<7>>().run();
-    ok &= Test<RecInt::ruint<7>>().run();
-    ok &= Test<RecInt::rint<8>>().run();
-    ok &= Test<RecInt::ruint<8>>().run();
+    ok &= Test<float>(m,n).run();
+    ok &= Test<double>(m,n).run();
+    ok &= Test<uint64_t>(m,n).run();
+    ok &= Test<int64_t>(m,n).run();
+    ok &= Test<uint32_t>(m,n).run();
+    ok &= Test<int32_t>(m,n).run();
+    ok &= Test<uint16_t>(m,n).run();
+    ok &= Test<int16_t>(m,n).run();
+    ok &= Test<Givaro::Integer>(m,n).run();
+    ok &= Test<RecInt::rint<6>>(m,n).run();
+    ok &= Test<RecInt::ruint<6>>(m,n).run();
+    ok &= Test<RecInt::rint<7>>(m,n).run();
+    ok &= Test<RecInt::ruint<7>>(m,n).run();
+    ok &= Test<RecInt::rint<8>>(m,n).run();
+    ok &= Test<RecInt::ruint<8>>(m,n).run();
 
     return !ok;
 }
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
