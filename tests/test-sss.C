@@ -234,6 +234,37 @@ bool test_UT_product (const Field & F, size_t n, size_t s, size_t t,
 }
 
 template<class Field>
+bool hand_test_reconstruction (const Field & F, size_t n, size_t s, 
+			   typename Field::ConstElement_ptr P, size_t ldp,
+			   typename Field::ConstElement_ptr Q, size_t ldq,
+			   typename Field::ConstElement_ptr R, size_t ldr,
+			   typename Field::ConstElement_ptr U, size_t ldu,
+			   typename Field::ConstElement_ptr V, size_t ldv,
+			   typename Field::ConstElement_ptr W, size_t ldw,
+			       typename Field::ConstElement_ptr D, size_t ldd)
+{
+    typedef typename Field::Element_ptr Element_ptr ;
+    Element_ptr C = fflas_new (F, n, n);
+   
+        for (int dec = 0; dec < 4; dec++)
+      {
+    sssToDense (F, n - dec, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+		   D, ldd, C, n - dec);
+    std::cout<<"A:"<<std::endl;
+    for (size_t line = 0; line < n - dec; line++)
+      {
+	for (size_t column = 0; column < n - dec; column++)
+	  {
+	    std::cout<<C[column + line*(n - dec)]<<"\t";
+	  }
+	std::cout<<std::endl;
+      }
+      }
+    FFLAS::fflas_delete(C);
+    return true;
+}
+
+template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, uint64_t seed){
   bool ok = true ;
   typedef typename Field::Element_ptr Element_ptr ;
@@ -269,7 +300,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
   /* Test with only lower-triangular part */
   //  ok = ok && test_LT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
   /* Test with only lower-triangular part */
-  ok = ok && test_UT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
+  //  ok = ok && test_UT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
+  /* Test reconstruction */
+  ok = ok && hand_test_reconstruction (*F, n, s, P, s, Q, s, R, s, P, s, Q, s, R, s, D, s);
   if ( !ok )
     std::cout << "FAILED "<<std::endl;
   else
@@ -300,7 +333,7 @@ int main(int argc, char** argv)
     size_t t = 1;
 #endif
     /* A bit less easy */
-    size_t s = 1;
+    size_t s = 2;
     size_t t = 2;
     size_t n = 12;
 

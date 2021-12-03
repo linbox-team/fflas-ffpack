@@ -369,9 +369,9 @@ namespace FFPACK{
      * A <- diag (D) */
     for (size_t block = 0; block < kf; block++) // Full blocks
       /* Diagonal block 'block' starts on row s*block, column s*block */
-      fassign(Fi, s, s, D + block * s * ldd, ldd, A + block * s * (lda + 1), lda); 
+      FFLAS::fassign(Fi, s, s, D + block * s * ldd, ldd, A + block * s * (lda + 1), lda); 
     if (rs) // Last block
-      fassign(Fi, rs, rs, D + kf * s * ldd, ldd, A + kf * s * (lda + 1), lda); // Last rs x rs block
+      FFLAS::fassign(Fi, rs, rs, D + kf * s * ldd, ldd, A + kf * s * (lda + 1), lda); // Last rs x rs block
 
     /* Lower */
     /* Blocks are computed line by line, by successively applying the R and Q to the P(RRR...) */
