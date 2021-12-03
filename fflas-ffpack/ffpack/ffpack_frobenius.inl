@@ -34,94 +34,99 @@
 //
 namespace FFPACK { namespace Protected {
     template <class Field>
-    void CompressRows (Field& F, const size_t M,
+    inline void CompressRows (Field& F, const size_t M,
                        typename Field::Element_ptr A, const size_t lda,
                        typename Field::Element_ptr tmp, const size_t ldtmp,
                        const size_t * d, const size_t nb_blocs);
 
     template <class Field>
-    void CompressRowsQK (Field& F, const size_t M,
+    inline void CompressRowsQK (Field& F, const size_t M,
                          typename Field::Element_ptr A, const size_t lda,
                          typename Field::Element_ptr tmp, const size_t ldtmp,
                          const size_t * d,const size_t deg, const size_t nb_blocs);
 
     template <class Field>
-    void DeCompressRows (Field& F, const size_t M, const size_t N,
+    inline void DeCompressRows (Field& F, const size_t M, const size_t N,
                          typename Field::Element_ptr A, const size_t lda,
                          typename Field::Element_ptr tmp, const size_t ldtmp,
                          const size_t * d, const size_t nb_blocs);
 
     template <class Field>
-    void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
+    inline void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            typename Field::Element_ptr tmp, const size_t ldtmp,
                            const size_t * d, const size_t deg, const size_t nb_blocs);
 
     template <class Field>
-    void CompressRowsQA (Field& F, const size_t M,
+    inline void CompressRowsQA (Field& F, const size_t M,
                          typename Field::Element_ptr A, const size_t lda,
                          typename Field::Element_ptr tmp, const size_t ldtmp,
                          const size_t * d, const size_t nb_blocs);
 
     template <class Field>
-    void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
+    inline void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
                            typename Field::Element_ptr tmp, const size_t ldtmp,
                            const size_t * d, const size_t nb_blocs);
 
+
     template <class PolRing>
-    std::list<typename PolRing::Element>&
-    CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
-                       const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                       typename PolRing::Domain_t::RandIter& g,
-                       const size_t block_size)
+    inline void
+    RandomKrylovPrecond (const PolRing& PR, std::list<typename PolRing::Element>& completedFactors, const size_t N,
+                         typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                         size_t & Nb, typename PolRing::Domain_t::Element_ptr& B, size_t& ldb,
+                         typename PolRing::Domain_t::RandIter& g, const size_t degree)
     {
         typedef typename PolRing::Domain_t Field;
         typedef typename PolRing::Element Polynomial;
         const Field& F = PR.getdomain();
 
-        FFLASFFPACK_check(block_size);
-        size_t c = block_size;
-        size_t * rp = FFLAS::fflas_new<size_t>(2*N);
-        size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
-        size_t Nnoc = N*noc;
-
+        FFLASFFPACK_check(degree);
+        size_t noc = (N-1)/degree + 1;
         // Building the workplace matrix
-        typename Field::Element_ptr K  = FFLAS::fflas_new (F, Nnoc, c);
-        typename Field::Element_ptr K2 = FFLAS::fflas_new (F, Nnoc, c);
-        // for (size_t i = 0 ; i < Nnoc*c ; ++i)
-        // K[i] = F.zero;
+        typename Field::Element_ptr K  = FFLAS::fflas_new (F, degree*noc, N);
+        typename Field::Element_ptr K2 = FFLAS::fflas_new (F, degree*noc, N);
         size_t ldk = N;
+//        size_t bk_stride = noc*ldk;
 
         size_t *dA = FFLAS::fflas_new<size_t>(N); //PA
-        size_t *dK = FFLAS::fflas_new<size_t>(noc*c);
+        size_t *dK = FFLAS::fflas_new<size_t>(noc*degree);
         for (size_t i=0; i<noc; ++i)
             dK[i]=0;
 
-        // Picking a random noc x N block vector U^T
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        Givaro::Timer timkrylov, timelim, timsimilar, timrest;
+        timkrylov.start();
+#endif
+            // Picking a random noc x N block vector U^T
         Givaro::GeneralRingNonZeroRandIter<Field> nzg (g);
-        NonZeroRandomMatrix (F, noc, N, K, ldk, g);
-
+        RandomMatrix (F, noc, N, K, ldk*degree, g);
         for (size_t i = 0; i < noc; ++i)
-            nzg.random (*(K + i*ldk +i));
+            nzg.random (*(K + i*(degree*ldk+1)));
 
-        // Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
-        for (size_t i = 1; i<c; ++i){
-            // #warning "leaks here"
+        // Computing the bloc Krylov matrix [u1 Au1 .. A^(c-1) u1 u2 Au2 ...]^T
+        for (size_t i = 1; i<degree; ++i){
             fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N,F.one,
-                   K+(i-1)*Nnoc, ldk, A, lda, F.zero, K+i*Nnoc, ldk);
+                   K+(i-1)*ldk, degree*ldk, A, lda, F.zero, K+i*ldk, degree*ldk);
         }
         // K2 <- K (re-ordering)
         //! @todo swap to save space ??
-        size_t w_idx = 0;
-        for (size_t i=0; i<noc; ++i)
-            for (size_t j=0; j<c; ++j, w_idx++)
-                FFLAS::fassign(F, N, (K+(i+j*noc)*ldk), 1, (K2+(w_idx)*ldk), 1);
+        //! @todo don't assing K2 c*noc x N but only mas (c,noc) x N and store each one after the other 
+        // size_t w_idx = 0;
+        // for (size_t i=0; i<noc; ++i)
+        //     for (size_t j=0; j<degree; ++j, w_idx++)
+        //         FFLAS::fassign(F, N, (K+(i+j*noc)*ldk), 1, (K2+(w_idx)*ldk), 1);
 
-        // Copying K <- K2
-        for (size_t i=0; i<noc*c; ++i)
-            FFLAS::fassign (F, N, K2+i*ldk, 1, (K+i*ldk), 1);
+        // Copying K2 <- K
+//        for (size_t i=0; i<noc*degree; ++i)
+        FFLAS::fassign (F, noc*degree, N, K, ldk, K2, ldk);
 
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        timkrylov.stop();
+         std::cerr<<"Random Krylov Preconditionning:"<<std::endl
+                 <<"  Krylov basis computation : "<<timkrylov.usertime()<<std::endl;
+        timelim.start();
+#endif
         size_t * Pk = FFLAS::fflas_new<size_t>(N);
         size_t * Qk = FFLAS::fflas_new<size_t>(N);
         for (size_t i=0; i<N; ++i)
@@ -129,35 +134,36 @@ namespace FFPACK { namespace Protected {
         for (size_t i=0; i<N; ++i)
             Pk[i] = 0;
 
+            // @todo: replace by PLUQ
         size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk);
         size_t row_idx = 0;
         size_t ii=0;
-        size_t dold = c;
+        size_t dold = degree;
         size_t nb_full_blocks = 0;
         size_t Mk = 0;
         // Determining the degree sequence dK
         for (size_t k = 0; k<noc; ++k){
             size_t d = 0;
-            while ( (d<c) && (row_idx<R) && (Qk[row_idx] == ii)) {ii++; row_idx++; d++;}
+            while ( (d<degree) && (row_idx<R) && (Qk[row_idx] == ii)) {ii++; row_idx++; d++;}
             if (d > dold){
                 // std::cerr << "FAIL in preconditionning phase:"
                 //           << " degree sequence is not monotonically not increasing"
                 // 	     << std::endl;
-                FFLAS::fflas_delete( rp);
-                FFLAS::fflas_delete (K);
-                FFLAS::fflas_delete( Pk);
-                FFLAS::fflas_delete( Qk);
-                FFLAS::fflas_delete(dA);
-                FFLAS::fflas_delete( dK);
+                FFLAS::fflas_delete (K, Pk, Qk, dA, dK);
                 throw CharpolyFailed();
             }
             dK[k] = dold = d;
             Mk++;
-            if (d == c)
+            if (d == degree)
                 nb_full_blocks++;
             if (row_idx < N)
                 ii = Qk[row_idx];
         }
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        timelim.stop();
+        std::cerr <<"  LU (Krylov)              : "<<timelim.usertime()<<std::endl;
+        timsimilar.start();
+#endif
 
         // Selection of the last iterate of each block
 
@@ -166,7 +172,7 @@ namespace FFPACK { namespace Protected {
         size_t bk_idx = 0;
         for (size_t i = 0; i < Mk; ++i){
             FFLAS::fassign (F, N, (K2 + (bk_idx + dK[i]-1)*ldk), 1, (K3+i*ldk), 1);
-            bk_idx += c;
+            bk_idx += degree;
         }
         FFLAS::fflas_delete (K2);
 
@@ -174,22 +180,19 @@ namespace FFPACK { namespace Protected {
         fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N,F.one,  K3, ldk, A, lda, F.zero, K4, ldk);
 
         // K <- K P^T
-        applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                Mk, 0,(int) R, K4, ldk, Pk);
+        applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Mk, 0,(int) R, K4, ldk, Pk);
 
         // K <- K U^-1
         ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, R,F.one, K, ldk, K4, ldk);
 
         // L <-  Q^T L
-        applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-               N, 0,(int) R, K, ldk, Qk);
+        applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0,(int) R, K, ldk, Qk);
 
         // K <- K L^-1
         ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, R,F.one, K, ldk, K4, ldk);
 
         //undoing permutation on L
-        applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-               N, 0,(int) R, K, ldk, Qk);
+        applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0,(int) R, K, ldk, Qk);
 
         // Recovery of the completed invariant factors
         size_t Ma = Mk;
@@ -200,21 +203,14 @@ namespace FFPACK { namespace Protected {
                 for (size_t j = offset+1; j<R; ++j)
                     if (!F.isZero(*(K4 + i*ldk + j))){
                         //std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
-                        FFLAS::fflas_delete (K3);
-                        FFLAS::fflas_delete (K4);
-                        FFLAS::fflas_delete (K);
-                        FFLAS::fflas_delete( Pk);
-                        FFLAS::fflas_delete(Qk);
-                        FFLAS::fflas_delete( rp);
-                        FFLAS::fflas_delete( dA);
-                        FFLAS::fflas_delete( dK);
+                        FFLAS::fflas_delete (K,K3,K4,Pk,Qk,dA,dK);
                         throw CharpolyFailed();
                     }
                 Polynomial P (dK [i]+1);
                 F.assign(P[dK[i]],F.one);
                 for (size_t j=0; j < dK [i]; ++j)
                     F.neg (P [dK [i]-j-1], *(K4 + i*ldk + (offset-j)));
-                frobeniusForm.push_front(P);
+                completedFactors.push_front(P);
                 offset -= dK [i];
                 Ncurr -= dK [i];
                 Ma--;
@@ -222,29 +218,26 @@ namespace FFPACK { namespace Protected {
         }
         Mk = Ma;
 
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        timsimilar.stop();
+        std::cerr <<"  Similarity)              : "<<timsimilar.usertime()<<std::endl;
+        timrest.start();
+#endif
         if (R<N){
-            for (size_t i=0; i<nb_full_blocks + 1; ++i)
-                for (size_t j=R; j<N; ++j){
-                    if (!F.isZero( *(K4+i*ldk+j) )){
-                        FFLAS::fflas_delete (K3);
-                        FFLAS::fflas_delete (K4);
-                        FFLAS::fflas_delete (K);
-                        FFLAS::fflas_delete( Pk);
-                        FFLAS::fflas_delete( Qk);
-                        FFLAS::fflas_delete( rp);
-                        FFLAS::fflas_delete( dA);
-                        FFLAS::fflas_delete( dK);
+                // The Krylov basis did not span the whole space
+                // Recurse on the complementary subspace
+            if (! FFLAS::fiszero (F, nb_full_blocks+1, N-R, K4+R, ldk)){
+                
+            // for (size_t i=0; i<nb_full_blocks + 1; ++i)
+            //     for (size_t j=R; j<N; ++j){
+            //         if (!F.isZero( *(K4+i*ldk+j) )){
+                        FFLAS::fflas_delete (K3, K4, K, Pk, Qk, dA, dK);
                         throw CharpolyFailed();
-                    }
-                }
+            }
 
-            //std::cerr<<"Preconditionning failed; missing rank = "<<N-R
-            //	 <<" completing the Krylov matrix"
-            //	 <<std::endl;
             size_t Nrest = N-R;
             typename Field::Element_ptr K21 = K + R*ldk;
             typename Field::Element_ptr K22 = K21 + R;
-            typename Field::Element_ptr Ki, Ai;
 
             //  Compute the n-k last rows of A' = P A^T P^T in K2_
             // A = A . P^t
@@ -252,66 +245,99 @@ namespace FFPACK { namespace Protected {
                     N, 0,(int) R, A, lda, Pk);
 
             // Copy K2_ = (A'_2)^t
-            for (Ki = K21, Ai = A+R; Ki != K21 + Nrest*ldk; Ai++, Ki+=ldk-N)
-                for ( size_t j=0; j<N*lda; j+=lda )
-                    *(Ki++) = *(Ai+j);
-
+            for (size_t i=0; i<Nrest; i++)
+                FFLAS::fassign (F, N, A+R+i, lda, K21+i*ldk, 1);
+            
             // A = A . P : Undo the permutation on A
-            applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                    N, 0,(int) R, A, lda, Pk);
+            applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, 0,(int) R, A, lda, Pk);
 
             // K2_ = K2_ . P^t (=  ( P A^t P^t )2_ )
-            applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
-                    Nrest, 0,(int) R, K21, ldk, Pk);
+            applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0,(int) R, K21, ldk, Pk);
 
             // K21 = K21 . S1^-1
-            ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Nrest, R,
-                   F.one, K, ldk, K21, ldk);
+            ftrsm (F, FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, Nrest, R, F.one, K, ldk, K21, ldk);
 
             typename Field::Element_ptr Arec = FFLAS::fflas_new (F, Nrest, Nrest);
             size_t ldarec = Nrest;
 
             // Creation of the matrix A2 for recursive call
-            for (Ki = K22,  Ai = Arec;
-                 Ki != K22 + Nrest*ldk;
-                 Ki += (ldk-Nrest) )
-                for ( size_t j=0; j<Nrest; ++j )
-                    *(Ai++) = *(Ki++);
-            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mOne,
-                   K21, ldk, K+R, ldk,F.one, Arec, ldarec);
+            FFLAS::fassign (F, Nrest, Nrest, K22, ldk, Arec, ldarec);
+
+            fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mOne, K21, ldk, K+R, ldk,F.one, Arec, ldarec);
 
             std::list<Polynomial> polyList;
             polyList.clear();
 
             // Recursive call on the complementary subspace
-            CharpolyArithProg (PR, polyList, Nrest, Arec, ldarec,g,c);
+            CharPoly (PR, polyList, Nrest, Arec, ldarec, g, FfpackArithProgKrylovPrecond);
             FFLAS::fflas_delete (Arec);
-            frobeniusForm.merge(polyList);
+            completedFactors.merge(polyList);
         }
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+            timrest.stop();
+            std::cerr<<"  left-over                : "<<timrest.usertime()<<std::endl;
+#endif
 
-        FFLAS::fflas_delete( Pk);
-        FFLAS::fflas_delete( Qk);
-        size_t deg = c+1;
+        FFLAS::fflas_delete (K, K3, Pk, Qk);
         for (size_t i=0; i<Mk; ++i)
             dA[i] = dK[i];
         bk_idx = 0;
 
+        ldb = Ma;
+        Nb = Ncurr;
+        B = FFLAS::fflas_new (F, Ncurr, ldb);
+
+        for (size_t j=0; j<Ma; ++j)
+            FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, B+j, ldb);
+        FFLAS::fflas_delete (dA, dK, K4);
+
+    }
+
+    template <class PolRing>
+    inline std::list<typename PolRing::Element>&
+    ArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+               const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+               const size_t degree)
+    {
+
+        typedef typename PolRing::Domain_t Field;
+        typedef typename PolRing::Element Polynomial;
+        const Field& F = PR.getdomain();
+
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        Givaro::Timer tim;
+        tim.start();
+#endif
+	size_t nb_full_blocks, Mk, Ma;
+	Mk = Ma = nb_full_blocks = (N-1)/degree +1;
+	typename Field::Element_ptr K, K3, Ac;
+	size_t ldk=Ma;
+	size_t ldac = Ma;
+	K = FFLAS::fflas_new(F, N, ldk);
+	Ac = FFLAS::fflas_new(F, N, ldac);
+
+	FFLAS::fassign(F, N, Ma, A, lda, Ac, ldac);
+	FFLAS::fassign(F, N, Ma, Ac, ldac, K, ldk);
+
+        size_t Ncurr=N;
+
+        size_t * dA = FFLAS::fflas_new<size_t>(Ma);
+	size_t * dK = FFLAS::fflas_new<size_t>(Mk);
+	for (size_t i=0; i<Ma; i++){
+		dK[i] = dA[i] = degree;
+	}
+	size_t rdeg = N % degree;
+	if (rdeg)
+		dK[Mk-1] = dA[Ma-1] = rdeg;
+
         typename Field::Element_ptr Arp = FFLAS::fflas_new (F, Ncurr, Ma);
-        typename Field::Element_ptr Ac = FFLAS::fflas_new (F, Ncurr, Ma);
-        size_t ldac = Ma;
         size_t ldarp = Ncurr;
-
-        for (size_t i=0; i < Ncurr; ++i)
-            for (size_t j=0; j<Ma; ++j)
-                *(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
-        FFLAS::fflas_delete (K4);
-
-
-        // Main loop of the arithmetic progession
+        size_t deg = degree+1;
+        size_t * rp=NULL;
+            // Main loop of the arithmetic progession
         while ((nb_full_blocks >= 1) && (Mk > 1)) {
             size_t block_idx, it_idx, rp_val;
             FFLAS::fflas_delete (K);
-            FFLAS::fflas_delete (K3);
             K = FFLAS::fflas_new (F, Ncurr, Ma);
             K3 = FFLAS::fflas_new (F, Ncurr, Ma);
             ldk = Ma;
@@ -320,30 +346,19 @@ namespace FFPACK { namespace Protected {
             for (size_t i=0; i < Ncurr; ++i)
                 for (size_t j=0; j < Ma; ++j)
                     *(Arp + j*ldarp + Ncurr-i-1) = *(Ac + i*ldac + j);
+            rp = FFLAS::fflas_new<size_t>(2*Ncurr);
             for (size_t i=0; i<2*Ncurr; ++i)
                 rp[i] = 0;
             size_t RR;
             try{
                 RR = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
             } catch (CharpolyFailed){
-                FFLAS::fflas_delete (Arp);
-                FFLAS::fflas_delete (Ac);
-                FFLAS::fflas_delete (K);
-                FFLAS::fflas_delete (K3);
-                FFLAS::fflas_delete( rp);
-                FFLAS::fflas_delete( dA);
-                FFLAS::fflas_delete( dK);
+                FFLAS::fflas_delete (Arp, Ac, K, K3, rp, dA, dK);
                 throw CharpolyFailed();
             }
             if (RR < Ncurr){
                 //std::cerr<<"FAIL RR<Ncurr"<<std::endl;
-                FFLAS::fflas_delete (Arp);
-                FFLAS::fflas_delete (Ac);
-                FFLAS::fflas_delete (K);
-                FFLAS::fflas_delete (K3);
-                FFLAS::fflas_delete( rp);
-                FFLAS::fflas_delete( dA);
-                FFLAS::fflas_delete( dK);
+                FFLAS::fflas_delete (Arp, Ac, K, K3, rp, dA, dK);
                 throw CharpolyFailed();
             }
 
@@ -358,13 +373,7 @@ namespace FFPACK { namespace Protected {
                 do {gg++; rp_val++; it_idx++;}
                 while ( /*(gg<Ncurr ) &&*/ (rp[gg] == rp_val) && (it_idx < deg ));
                 if ((block_idx)&&(it_idx > dK[block_idx-1])){
-                    FFLAS::fflas_delete (Arp);
-                    FFLAS::fflas_delete (Ac);
-                    FFLAS::fflas_delete (K);
-                    FFLAS::fflas_delete (K3);
-                    FFLAS::fflas_delete( rp);
-                    FFLAS::fflas_delete( dA);
-                    FFLAS::fflas_delete(dK);
+                    FFLAS::fflas_delete (Arp, Ac, K, K3, rp, dA, dK);
                     throw CharpolyFailed();
                     //std::cerr<<"FAIL d non decreasing"<<std::endl;
                     //exit(-1);
@@ -414,7 +423,7 @@ namespace FFPACK { namespace Protected {
                 FFLAS::fassign(F, nb_full_blocks, Arp+i*ldarp, 1, K+(Ncurr-Ma+i)*ldk, 1);
 
             // Copying the last rows of A times K
-            offset = (deg-2)*nb_full_blocks;
+            size_t offset = (deg-2)*nb_full_blocks;
             for (size_t i = nb_full_blocks; i < Mk; ++i) {
                 for (size_t j=0; j<Ncurr; ++j)
                     F.assign(*(K+i+j*ldk), F.zero);
@@ -481,13 +490,7 @@ namespace FFPACK { namespace Protected {
                 for (size_t j=0; j<nb_full_blocks+1; ++j){
                     if (!F.isZero( *(K+i*ldk+j) )){
                         //std::cerr<<"FAIL C != 0"<<std::endl;
-                        FFLAS::fflas_delete( rp);
-                        FFLAS::fflas_delete (Arp);
-                        FFLAS::fflas_delete (Ac);
-                        FFLAS::fflas_delete (K);
-                        FFLAS::fflas_delete (K3);
-                        FFLAS::fflas_delete( dA);
-                        FFLAS::fflas_delete( dK);
+                        FFLAS::fflas_delete (rp, Arp, Ac, K, K3, dA, dK);
                         throw CharpolyFailed();
                     }
                 }
@@ -503,7 +506,7 @@ namespace FFPACK { namespace Protected {
                 FFLAS::fassign (F, Mk, K + i*ldk, 1, Ac + i*ldac, 1);
 
             deg++;
-
+            FFLAS::fflas_delete (K3, rp);
         }
 
         // Recovery of the first invariant factor
@@ -512,13 +515,11 @@ namespace FFPACK { namespace Protected {
         for (size_t j=0; j < dK[0]; ++j)
             F.neg( Pl[j], *(K  + j*ldk));
         frobeniusForm.push_front(Pl);
-        FFLAS::fflas_delete( rp);
-        FFLAS::fflas_delete (Arp);
-        FFLAS::fflas_delete (Ac);
-        FFLAS::fflas_delete (K);
-        FFLAS::fflas_delete (K3);
-        FFLAS::fflas_delete( dA);
-        FFLAS::fflas_delete( dK);
+        FFLAS::fflas_delete (Arp, Ac, K, dA, dK);
+#ifdef __FFLASFFPACK_ARITHPROG_PROFILING
+        tim.stop();
+        std::cerr<<"Arith Prog                 : "<<tim.usertime()<<std::endl;
+#endif
         return frobeniusForm;
     }
 

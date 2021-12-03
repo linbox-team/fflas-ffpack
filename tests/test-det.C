@@ -50,20 +50,50 @@ bool test_det(Field &F, size_t n, int iter, RandIter& G)
     typedef typename Field::Element Element;
     //! @todo test with stride
     Element * A = fflas_new (F, n, n);
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH;
+    FFLAS::ParSeqHelper::Sequential seqH;
 
     bool pass = true;
     Element d,dt;
     F.init(d); F.init(dt);
+    PAR_BLOCK{
+        for(int i = 0;i<iter;++i){
+            G.random(dt);
+            FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+            FFPACK::Det (F, d, n, A, n);
+            if (!F.areEqual(dt,d)) {
+                pass = false;
+                break;
+            }
+
+            FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+            FFPACK::Det(F,d,n,A,n,seqH);
+            if (!F.areEqual(dt,d)) {
+                pass = false;
+                break;
+            }
+            FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+            parH.set_numthreads(NUM_THREADS);
+            FFPACK::Det(F,d,n,A,n,parH);
+            if (!F.areEqual(dt,d)) {
+                pass = false;
+                break;
+            }
+
+            ++dt;
+        }
+    }
+
+    //test the wrapped Det without the need of using a PAR_BLOCK macro to label the desired parallel region
     for(int i = 0;i<iter;++i){
-        G.random(dt);
         FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
-        F.assign(d, FFPACK::Det (F, n, n, A, n));
+        FFPACK::pDet(F,d,n,A,n);
         if (!F.areEqual(dt,d)) {
             pass = false;
             break;
         }
-        ++dt;
     }
+
     fflas_delete( A);
     return pass;
 }
@@ -88,8 +118,12 @@ int main(int argc, char** argv)
     bool pass = true ;
     typedef Givaro::ModularBalanced<double> Field;
     Field F(p);
-    Field::RandIter G(F,0,seed);
+    Field::RandIter G(F,seed);
+    Givaro::ZRing<Givaro::Integer> ZZ;
+    Givaro::ZRing<Givaro::Integer>::RandIter GZZ(ZZ,seed);
+
     pass = pass && test_det(F,n,iters,G);
+        // pass = pass && test_det(ZZ,n,iters,GZZ); @fixme: need a specific random matrix generator over ZZ
 
     return ((pass==true)?0:1);
 }

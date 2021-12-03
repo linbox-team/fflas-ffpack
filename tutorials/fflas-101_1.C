@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     typedef Givaro::Modular<float> Float_Field;
     Float_Field F(101);
     uint64_t seed = time(NULL);
-    typename Float_Field::RandIter G(F,0,seed);
+    typename Float_Field::RandIter G(F,seed);
 
     // Let p and q be naturals
     const size_t p = 7, q = 11, lda = q;

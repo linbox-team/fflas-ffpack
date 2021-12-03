@@ -22,7 +22,7 @@
  * ========LICENCE========
  *.
  */
-#define  __FFLASFFPACK_SEQUENTIAL
+//#define  __FFLASFFPACK_SEQUENTIAL
 
 //#define ENABLE_ALL_CHECKINGS 1
 
@@ -46,9 +46,8 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
-
 template<typename Field, class RandIter>
-bool check_solve(const Field &F, size_t m, RandIter& Rand){
+bool check_solve(const Field &F, size_t m, RandIter& Rand, bool isParallel){
 
     typename Field::Element_ptr A, A2, B, B2, x;
 
@@ -71,28 +70,33 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 #ifdef DEBUG
     FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
 #endif
+
     FFLAS::Timer t; t.clear();
     double time=0.0;
     t.clear();
     t.start();
+    if(isParallel){
+        FFPACK::pSolve(F, m, A, lda, x, incx, B, incb);
+    }else{
+        FFPACK::Solve(F, m, A, lda, x, incx, B, incb);
+    }
 
-    FFPACK::Solve(F, m, A, lda, x, incx, B, incb);
     t.stop();
-    time+=t.usertime();
+    time+=t.realtime();
 
     FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A2, lda, x, incx, F.zero, B, incb);
 
     bool ok = true;
     if (FFLAS::fequal (F, m, 1, B2, incb, B, incb)){
 
-        cout << "PASSED ("<<time<<")"<<endl;
+        cout << " PASSED ("<<time<<")";
 
     } else{
 #ifdef DEBUG
         FFLAS::WriteMatrix(std::cout<<"A*x:="<<std::endl,F,m,1,B2,incb)<<std::endl;
         FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
 #endif
-        cout << "FAILED ("<<time<<")"<<endl;
+        cout << " FAILED ("<<time<<")";
         ok=false;
 
     }
@@ -104,6 +108,7 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
     FFLAS::fflas_delete(x);
     return ok;
 }
+
 template <class Field>
 bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64_t seed){
     bool ok = true ;
@@ -113,7 +118,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
         //typedef typename Field::Element Element ;
         // choose Field
         Field* F= chooseField<Field>(q,b,seed);
-        typename Field::RandIter G(*F,0,seed++);
+        typename Field::RandIter G(*F,seed++);
         if (F==nullptr)
             return true;
 
@@ -125,8 +130,15 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
         std::cout<<oss.str();
         std::cout<<" ... ";
 
-        ok = ok && check_solve(*F,m,G);
+            // testing a sequential run
+        std::cout<<" seq: ";
+        ok = ok && check_solve(*F,m,G,false);
 
+            // testing a parallel run
+        std::cout<<" par: ";
+        ok = ok && check_solve(*F,m,G,true);
+
+        std::cout<<std::endl;
         nbit--;
         delete F;
 
@@ -140,16 +152,15 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t m=300;
+    size_t m=600;
 
-    size_t iters=30;
+    size_t iters=4;
     bool loop=false;
     uint64_t seed = getSeed();
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
         { 'm', "-m M", "Set the dimension of unknown square matrix.",      TYPE_INT , &m },
-
         { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
         { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
         { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },

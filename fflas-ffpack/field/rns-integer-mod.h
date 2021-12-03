@@ -75,7 +75,7 @@ namespace FFPACK {
             const RNSIntegerMod<RNS> & _F;
             uint64_t _seed;
         public:
-            RandIter(const RNSIntegerMod<RNS> &F, size_t size=0, uint64_t seed=0) :rnsRandIter<RNS>(*F._rns,size,seed), _F(F), _seed(seed) {}
+            RandIter(const RNSIntegerMod<RNS> &F, uint64_t seed=0) :rnsRandIter<RNS>(*F._rns,seed), _F(F), _seed(seed) {}
 
             typename RNS::Element& random(typename RNS::Element& elt) const {
                 integer::seeding(_seed);
@@ -172,9 +172,16 @@ namespace FFPACK {
             return iszero || (t1==integer(0));
         }
 
-        integer characteristic(integer &p) const { return p=_p;}
+        integer& characteristic(integer &p) const { return p=_p;}
+        integer characteristic() const { return _p;}
 
-        integer cardinality(integer &p) const { return p=_p;}
+        integer& cardinality(integer &p) const { return p=_p;}
+        integer cardinality() const { return _p;}
+
+            // just to test <0 in fflas_io
+        integer minElement() const { return integer(0); }
+            // just for bitsize
+        integer maxElement() const { return _p-1; }
 
         Element& init(Element& x) const{
             if (x._ptr == NULL){

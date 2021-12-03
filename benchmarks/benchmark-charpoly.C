@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
+//#define __FFLASFFPACK_ARITHPROG_PROFILING
+
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -26,6 +29,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -35,7 +39,7 @@ using namespace std;
 using namespace FFPACK;
 
 template<class Field>
-void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file, int variant){
+void run_with_field(int q, uint64_t bits, size_t n, size_t d, size_t iter, std::string file, int variant, uint64_t seed){
     Field F(q);
     typedef typename Field::Element Element;
     FFPACK::FFPACK_CHARPOLY_TAG CT;
@@ -43,11 +47,12 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
     case 0: CT = FfpackAuto; break;
     case 1: CT = FfpackDanilevski; break;
     case 2: CT = FfpackLUK; break;
-    case 3: CT = FfpackArithProg; break;
-    case 4: CT = FfpackKG; break;
-    case 5: CT = FfpackKGFast; break;
-    case 6: CT = FfpackHybrid; break;
-    case 7: CT = FfpackKGFastG; break;
+    case 3: CT = FfpackArithProgKrylovPrecond; break;
+    case 4: CT = FfpackArithProg; break;
+    case 5: CT = FfpackKG; break;
+    case 6: CT = FfpackKGFast; break;
+    case 7: CT = FfpackHybrid; break;
+    case 8: CT = FfpackKGFastG; break;
     default: CT = FfpackAuto; break;
     }
     FFLAS::Timer chrono;
@@ -59,14 +64,15 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
         }
         else{
             A = FFLAS::fflas_new (F, n, n);
-            typename Field::RandIter G (F, bits);
+            Givaro::Integer samplesize(1); samplesize <<= bits;
+            typename Field::RandIter G (F, seed, samplesize);
             FFPACK::RandomMatrix (F, n, n, A, n, G);
         }
         typename Givaro::Poly1Dom<Field>::Element cpol(n+1);
         typename Givaro::Poly1Dom<Field> R(F);
         chrono.clear();
         chrono.start();
-        FFPACK::CharPoly (R, cpol, n, A, n, CT);
+        FFPACK::CharPoly (R, cpol, n, A, n, CT, d);
         chrono.stop();
 
         time_charp+=chrono.usertime();
@@ -82,21 +88,28 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 
 int main(int argc, char** argv) {
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+
     size_t iter = 1;
     int    q    = 131071;
-    size_t bits = 10;
+    uint64_t bits = 10;
     size_t    n    = 1000;
+    size_t    d    = __FFLASFFPACK_ARITHPROG_THRESHOLD;
     std::string file = "";
+    uint64_t seed = FFLAS::getSeed();
     int variant = 0;
 
     Argument as[] = {
         { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",  TYPE_INT , &q },
         { 'b', "-b B", "Set the bitsize of the random elements.",         TYPE_INT , &bits},
         { 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+        { 'd', "-d D", "Set the degree of the preconditionner (for ArithProg variant).",  TYPE_INT , &d },
         { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
         { 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
-
+        { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
         END_OF_ARGUMENTS
     };
 
@@ -104,9 +117,9 @@ int main(int argc, char** argv) {
 
     if (q > 0){
         bits = Givaro::Integer(q).bitsize();
-        run_with_field<Givaro::ModularBalanced<double> >(q, bits, n , iter, file, variant);
+        run_with_field<Givaro::ModularBalanced<double> >(q, bits, n , d, iter, file, variant,seed);
     } else
-        run_with_field<Givaro::ZRing<Givaro::Integer> > (q, bits, n , iter, file, variant);
+        run_with_field<Givaro::ZRing<Givaro::Integer> > (q, bits, n , d, iter, file, variant,seed);
 
     FFLAS::writeCommandString(std::cout, as) << std::endl;
     return 0;

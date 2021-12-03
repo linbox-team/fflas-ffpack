@@ -79,6 +79,38 @@ namespace FFLAS {
                 fzero(F,n,A+i*lda,1);
         }
     }
+    /** \brief fzero : \f$A \gets 0 \f$ for a triangular matrix.
+     * @param F field
+     * @param shape shape of the triangular matrix
+     * @param m number of rows to zero
+     * @param n number of cols to zero
+     * \param A matrix in \p F
+     * \param lda stride of \p A
+     * @warning may be buggy if Element is larger than int
+     */
+
+    template<class Field>
+    void
+    fzero (const Field& F, const FFLAS_UPLO shape, const FFLAS_DIAG diag,
+           const size_t n, typename Field::Element_ptr A, const size_t lda)
+    {
+        ptrdiff_t inc_row;
+        typename Field::Element_ptr Ai;
+        size_t size = n;
+        switch (shape){
+            case FflasUpper:{inc_row = lda+1; Ai = A; break;}
+            case FflasLower:{inc_row = -lda; Ai = A+(n-1)*lda; break;}
+            case FflasLeftTri:{inc_row = lda; Ai = A; break;}
+            case FflasRightTri:{inc_row = -lda+1; Ai = A+(n-1)*lda; break;}
+        }
+        if (diag == FflasUnit){
+            size--;
+            if (shape == FflasUpper || shape == FflasRightTri) Ai++;
+        }
+        for (; size > 0; Ai += inc_row, size--)
+            fzero (F, size, Ai, 1);
+    }
+
     /** \brief frand : \f$A \gets random \f$.
      * @param F field
      * @param G randomiterator
@@ -177,6 +209,12 @@ namespace FFLAS {
     freduce (const Field& F, const size_t m , const size_t n,
              typename Field::Element_ptr A, const size_t lda);
 
+        //! freduce for square symmetric matrices
+    template<class Field>
+    void
+    freduce (const Field& F,  const FFLAS_UPLO uplo, const size_t N,
+             typename Field::Element_ptr A, const size_t lda);
+
     /** freduce
      * \f$A \gets  B mod F\f$.
      * @param F field
@@ -209,6 +247,20 @@ namespace FFLAS {
     void
     finit (const Field& F, const size_t m , const size_t n,
            const OtherElement_ptr B, const size_t ldb,
+           typename Field::Element_ptr A, const size_t lda);
+
+    /** finit
+     * Initializes \p A in \p F$.
+     * @param F field
+     * @param m number of rows
+     * @param n number of cols
+     * \param A matrix in \p F
+     * \param lda stride of \p A
+     * @internal
+     */
+    template<class Field, class OtherElement_ptr>
+    void
+    finit (const Field& F, const size_t m , const size_t n,
            typename Field::Element_ptr A, const size_t lda);
 
     /** fconvert
@@ -442,6 +494,15 @@ namespace FFLAS {
             typename Field::ConstElement_ptr B, const size_t ldb,
             typename Field::Element_ptr C, const size_t ldc);
 
+    //! fadding for symmetric matrices
+    template <class Field>
+    void
+    faddin (const Field& F,
+            const FFLAS_UPLO uplo,
+            const size_t N,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            typename Field::Element_ptr C, const size_t ldc);
+
 
     /**  @brief finite prime Field GEneral Matrix Vector multiplication.
      *
@@ -522,7 +583,7 @@ namespace FFLAS {
      * @param lda leading dimension of \p A
      */
     template<class Field>
-    inline size_t bitsize(const Field& F, size_t M, size_t N, const typename Field::Element* A, size_t lda){
+    inline size_t bitsize(const Field& F, size_t M, size_t N, const typename Field::ConstElement_ptr A, size_t lda){
         Givaro::Integer min = F.minElement() ,max = F.maxElement();
         return std::max(max,-min).bitsize();
     }

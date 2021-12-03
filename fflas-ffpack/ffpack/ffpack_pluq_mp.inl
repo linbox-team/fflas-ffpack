@@ -38,13 +38,13 @@
 #include "givaro/modular-integer.h"
 namespace FFPACK {
 
-    template <>
+    template <class Cut, class Param>
     inline size_t
     PLUQ (const Givaro::Modular<Givaro::Integer>& F,
           const FFLAS::FFLAS_DIAG Diag,
           const size_t M, const size_t N,
           typename Givaro::Integer* A, const size_t lda,
-          size_t*P, size_t *Q, size_t BCThreshold)
+          size_t*P, size_t *Q, size_t BCThreshold, FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSHelper)
     {
 
         const size_t K = std::max(M,N);
@@ -87,7 +87,7 @@ namespace FFPACK {
         chrono.clear();chrono.start();
 #endif
         // call lqup in rns
-        size_t R=FFPACK::PLUQ(Zp, Diag, M, N, Ap, N, P, Q, BCThreshold);
+        size_t R=FFPACK::PLUQ(Zp, Diag, M, N, Ap, N, P, Q, BCThreshold, PSHelper);
 #ifdef BENCH_PERF_LQUP_MP
         chrono.stop();
         t_lqup+=chrono.usertime();

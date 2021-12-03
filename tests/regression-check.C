@@ -60,7 +60,8 @@ bool check3()
 {
     Modular<double> F(2);
     double * A = NULL ;
-    double d = Det(F,0,0,A,0);
+    double d;
+    Det(F,d,0,A,0);
     return F.areEqual(d,F.one);
 
 }

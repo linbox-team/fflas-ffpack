@@ -19,6 +19,10 @@
  * ========LICENCE========
  */
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -33,10 +37,15 @@ using namespace FFLAS;
 using namespace FFPACK;
 int main(int argc, char** argv) {
 
+ #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+
     size_t iter = 3;
-    int    q    = 131071;
+    size_t    q    = 131071;
     size_t    n    = 1000;
     size_t    k    = 1000;
+    size_t algo    = 0;
     size_t threshold = 64;
     bool up =true;
     std::string file = "";
@@ -47,6 +56,7 @@ int main(int argc, char** argv) {
         { 'k', "-k K", "Set the other dimension of the matrix A.",               TYPE_INT , &k },
         { 'u', "-u yes/no", "Updates an upper/lower triangular matrix.",  TYPE_BOOL , &up },
         { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+        { 'a', "-a A", "Set algorithmic variant.",                     TYPE_INT , &algo },    
         { 't', "-t T", "Set the threshold to the base case.",                     TYPE_INT , &threshold },
         END_OF_ARGUMENTS
     };
@@ -73,11 +83,41 @@ int main(int argc, char** argv) {
         RandomTriangularMatrix (F, n,n,uplo, FflasNonUnit, true, C, ldc, G);
         Field::Element_ptr D = FFLAS::fflas_new(F,k,1);
         Givaro::GeneralRingNonZeroRandIter<Field,Field::RandIter> nzG (G);
+        std::vector<bool> twoBlocks(k);
         for (size_t i=0; i<k; i++)
             nzG.random(D[i]);
         chrono.clear();
         if (i) chrono.start();
-        fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
+        switch (algo){
+            case 0: // fsyrk with no diagonal scaling
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, F.one, C, ldc);
+                break;
+            case 1: // fsyrk with diagonal scaling
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
+                break;
+            case 2: // fsyrk with diagonal scaling and 2x2 diagonal blocks
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, D, 1, twoBlocks, F.zero, C, ldc, threshold);
+                break;
+            case 3: // fsyrk with Strassen and no diagonal scaling
+            {
+                size_t reclevel = 0;
+                size_t dim = n;
+                while(dim > threshold) {reclevel++; dim>>=1;}
+                MMHelper<Field, MMHelperAlgo::Winograd> H(F,reclevel);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
+                break;
+            }
+            case 4: // cblas_dsyrk
+                cblas_dsyrk (CblasRowMajor, (CBLAS_UPLO) uplo, (CBLAS_TRANSPOSE) FflasNoTrans, n, k, 1.0, A, lda, 0.0, C, ldc);
+                break;
+            case 5: // fsyrk with the classic Divide and conquer algorithm
+                size_t reclevel = 0;
+                size_t dim = n;
+                while(dim > threshold) {reclevel++; dim>>=1;}
+                MMHelper<Field, MMHelperAlgo::DivideAndConquer> H(F,reclevel);
+                fsyrk (F, uplo, FflasNoTrans, n, k, F.one, A, lda, F.zero, C, ldc, H);
+                break;
+        }
         if (i) chrono.stop();
 
         time+=chrono.usertime();
@@ -88,9 +128,8 @@ int main(int argc, char** argv) {
 
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
-#define CUBE(x) ((x)*(x)*(x))
     std::cout << "Time: " << time / double(iter)
-    << " Gfops: " << CUBE(double(n)/1000.)/ time * double(iter);
+              << " Gfops: " << (double(n)/1000.)*(double(n)/1000.)*(double(k)/1000.)/ time * double(iter);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
     return 0;
 }

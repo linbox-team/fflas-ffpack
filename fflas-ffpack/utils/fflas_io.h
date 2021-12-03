@@ -258,9 +258,7 @@ namespace FFLAS{
                          }
         default:{ // format == FflasMath
                     size_t char_width = ceil(FFLAS::bitsize (F,m,n,A,lda)*0.301029995663982);
-                    Givaro::Integer p;
-                    F.characteristic(p);
-                    if (p==0 || F.minElement()<0) char_width++; // minus sign
+                    if (F.characteristic()==0 || F.minElement()<0) char_width++; // minus sign
                     c.fill(' ');
                     for (size_t i = 0; i<m; ++i){
                         for (size_t j=0; j<n;++j){

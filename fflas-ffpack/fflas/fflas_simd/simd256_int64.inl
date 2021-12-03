@@ -4,6 +4,7 @@
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
  * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * Romain Lebreton <romain.lebreton@lirmm.fr>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -33,7 +34,11 @@
 #error "You need AVX2 instructions to perform 256bits operations on int64_t"
 #endif
 
+#include "givaro/givtypestring.h"
+#include "fflas-ffpack/utils/align-allocator.h"
 #include "fflas-ffpack/utils/bit_manipulation.h"
+#include <vector>
+#include <type_traits>
 
 /*
  * Simd256 specialized for int64_t
@@ -66,9 +71,23 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     static const constexpr size_t vect_size = 4;
 
     /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
+    /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
      */
     static const constexpr size_t alignment = 32;
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt
@@ -106,8 +125,6 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
         return _mm256_set_epi64x(x3, x2, x1, x0);
     }
 
-    //TODO use the real gather? (e.g. with _mm256_i64gather_epi64)
-    //But cannot with this signature...
     /*
      *  Gather 64-bit integer elements with indexes idx[0], ..., idx[3] from the address p in vect_t.
      *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]] int64_t
@@ -211,57 +228,111 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int64_t
-     [b0, b1, b2, b3] int64_t
-     * Return : [a0, b0, a2, b2] int64_t
+     * Unpack and interleave 64-bit integers from the low half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a2, b2 ]
      */
-    static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi64(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm256_unpacklo_epi64(a, b);
+    }
 
     /*
-     * Unpack and interleave 64-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int64_t
-     [b0, b1, b2, b3] int64_t
-     * Return : [a1, b1, a3, b3] int64_t
+     * Unpack and interleave 64-bit integers from the high half of each 128-bit
+     * lane in a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, b1, a3, b3 ]
      */
-    static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi64(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm256_unpackhi_epi64(a, b);
+    }
 
     /*
-     * Unpack and interleave 64-bit integers from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int64_t
-     [b0, b1, b2, b3] int64_t
-     * Return : [a0, b0, a1, b1] int64_t
+     * Unpack and interleave 64-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
      */
     static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-        vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
-        vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        return unpacklo_twice(a1, b1);
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        return _mm256_unpacklo_epi64 (t1, t2);
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the high half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int64_t
-     [b0, b1, b2, b3] int64_t
-     * Return : [a2, b2, a3, b3] int64_t
+     * Unpack and interleave 64-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
      */
     static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-        vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-        vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        return unpackhi_twice(a1, b1);
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        return _mm256_unpackhi_epi64 (t1, t2);
     }
 
     /*
-     * Unpack and interleave 64-bit integers from the low then high half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] int64_t
-     [b0, b1, b2, b3] int64_t
-     * Return : [a0, b0, a1, b1] int64_t
-     *		   [a2, b2, a3, b3] int64_t
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: lo = [ a0, b0, a1, b1 ]
+     *         hi = [ a2, b2, a3, b3 ]
      */
-    static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
-        vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
-        vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-        l = unpacklo_twice(a1, b1);
-        h = unpackhi_twice(a1, b1);
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        vect_t t1 = _mm256_permute4x64_epi64 (a, 0xd8);
+        vect_t t2 = _mm256_permute4x64_epi64 (b, 0xd8);
+        lo = _mm256_unpacklo_epi64 (t1, t2);
+        hi = _mm256_unpackhi_epi64 (t1, t2);
+    }
+
+    /*
+     * Pack 64-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, a2, b0, b2 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        vect_t t1 = _mm256_unpacklo_epi64 (a, b);
+        /* 0xd8 = 3120 base_4 */
+        return _mm256_permute4x64_epi64 (t1, 0xd8);
+    }
+
+    /*
+     * Pack 64-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, a3, b1, b3 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        vect_t t2 = _mm256_unpackhi_epi64 (a, b);
+        /* 0xd8 = 3120 base_4 */
+        return _mm256_permute4x64_epi64 (t2, 0xd8);
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: even = [ a0, a2, b0, b2 ]
+     *         odd  = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        vect_t t1 = _mm256_unpacklo_epi64 (a, b);
+        vect_t t2 = _mm256_unpackhi_epi64 (a, b);
+        /* 0xd8 = 3120 base_4 */
+        even = _mm256_permute4x64_epi64 (t1, 0xd8);
+        odd = _mm256_permute4x64_epi64 (t2, 0xd8);
     }
 
     /*
@@ -270,11 +341,21 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
      [b0, b1, b2, b3] int64_t
      * Return : [s[0]?a0:b0,   , s[3]?a3:b3] int64_t
      */
+    /*
+     * Blend 64-bit integers from a and b using control mask s.
+     * Args: a = [ a0, ..., a3 ]
+     *       b = [ b0, ..., b3 ]
+     *       s = a 4-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, ..., s[3] ? a3 : b3 ]
+     */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
-        // _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
-        // We have to transform s = [d3 d2 d1 d0]_base2 to s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
-        constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
+        /* We need to use _mm256_blend_epi32.
+         * We need to transform s = [d3 d2 d1 d0]_base2
+         * into s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
+         */
+        constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)
+                                + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
         return _mm256_blend_epi32(a, b, s1);
     }
 
@@ -488,9 +569,8 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 
     static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
-    template <bool overflow, bool poweroftwo, int8_t shifter>
-    static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                             const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+    static INLINE vect_t mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
+                             const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T);
 
 protected:
     /* return the sign where vect_t is seen as eight int32_t */
@@ -509,6 +589,21 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
      * define the scalar type corresponding to the specialization
      */
     using scalar_t = uint64_t;
+
+    /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Simd128 for scalar_t, to deal half_t
@@ -601,18 +696,18 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
         vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm256_cmpgt_epi64(b,a);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
+        return _mm256_cmpgt_epi64(a, b);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
         vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm256_cmpgt_epi64(a, b);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
+        return _mm256_cmpgt_epi64(b, a);
     }
 
     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }
@@ -715,36 +810,44 @@ INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
     return x1;
 }
 
-template <bool overflow, bool poweroftwo, int8_t shifter>
-INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const vect_t &magic, const vect_t &NEGP,
-                                                     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
-#ifdef __INTEL_COMPILER
-    // Works fine with ICC 15.0.1 - A.B.
-    C = _mm256_rem_epi64(C, P);
+// FIXME why cannot use Simd256<double>::vect_t in the declaration instead of __m256d?
+// --**~~~~ Only suitable for use with Modular<int64_t> or ModularBalanced<int64_t>, so p <= max_cardinality < 2**33 ~~~~~**--
+INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const __m256d &P, const __m256d &INVP, const __m256d &NEGP, const vect_t &POW50REM,
+                                                     const __m256d &MIN, const __m256d &MAX, __m256d &Q, __m256d &T) {
+    vect_t Cq50, Cr50, Ceq;
+    __m256d nCmod;
+
+    // nothing so special with 50; could be something else
+
+    Cq50 = sra<50>(C);                      // Cq50[i] < 2**14
+    Cr50 = set1(0x3FFFFFFFFFFFFLL);
+    Cr50 = vand(C, Cr50);                   // Cr50[i] < 2**50
+
+    Ceq = fmadd(Cr50, Cq50, POW50REM);      // Ceq[i] < 2**47 + 2**50 < 2**51; Ceq[i] ~ C[i] mod p
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    nCmod = _mm256_cvtepi64_pd(Ceq);
 #else
-    if (poweroftwo) {
-        Q = srl<63>(C);
-        vect_t un = set1(1);
-        T = sub(sll<shifter>(un), un);
-        Q = add(C, vand(Q, T));
-        Q = sll<shifter>(srl<shifter>(Q));
-        C = sub(C, Q);
-        Q = vand(greater(zero(), Q), P);
-        C = add(C, Q);
-    } else {
-        Q = mulhi_fast(C, magic);
-        if (overflow) {
-            Q = add(Q, C);
-        }
-        Q = sra<shifter>(Q);
-        vect_t q1 = Simd256_impl<true, true, false, 8>::mulx(Q, P);
-        vect_t q2 = sll<32>(Simd256_impl<true, true, false, 8>::mulx(srl<32>(Q), P));
-        C = sub(C, add(q1, q2));
-        T = greater_eq(C, P);
-        C = sub(C, vand(T, P));
-    }
+    // ><
+    Converter cC;
+    cC.v = Ceq;
+    nCmod = _mm256_set_pd(static_cast<double>(cC.t[3]),static_cast<double>(cC.t[2]),static_cast<double>(cC.t[1]),static_cast<double>(cC.t[0]));
 #endif
-    NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+
+    nCmod = Simd256<double>::mod(nCmod, P, INVP, NEGP, MIN, MAX, Q, T);
+
+#if defined(__FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS) and defined(__FFLASFFPACK_HAVE_AVX512VL_INSTRUCTIONS)
+    C = _mm256_cvtpd_epi64(nCmod);
+#else
+    // If we could guarantee that p < 2**31 one could vectorise the conversion as below
+    // right now it's not the case
+//    __m128i Cp = _mm256_cvttpd_epi32(nCmod);
+//    C = _mm256_cvtepi32_epi64(Cp);
+    double r[4];
+    _mm256_storeu_pd(r, nCmod); // could be changed to store if guaranteed to be aligned
+    C = set(static_cast<int64_t>(r[0]),static_cast<int64_t>(r[1]),static_cast<int64_t>(r[2]),static_cast<int64_t>(r[3]));
+#endif
+
     return C;
 }
 

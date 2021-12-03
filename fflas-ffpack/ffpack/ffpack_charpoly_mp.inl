@@ -40,7 +40,7 @@ namespace FFPACK {
                      typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr charp,
                      const size_t N,
                      typename FFPACK::RNSInteger<FFPACK::rns_double>::Element_ptr A, const size_t lda,
-                     Givaro::ZRing<Givaro::Integer>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+                     Givaro::ZRing<Givaro::Integer>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag, size_t degree){
         //std::cerr<<"Using "<<F.size()<<" moduli";
         Givaro::Timer t;
         for(size_t i=0;i<F.size();i++){
@@ -50,7 +50,7 @@ namespace FFPACK {
             PolRing::Element cp(N+1);
             Field::RandIter Gp(F.rns()._field_rns[i]); //TODO set the seed from G's seed
             PolRing R(F.rns()._field_rns[i]);
-            FFPACK::CharPoly (R, cp, N, A._ptr+i*A._stride, lda, Gp, CharpTag);
+            FFPACK::CharPoly (R, cp, N, A._ptr+i*A._stride, lda, Gp, CharpTag, degree);
             FFLAS::fassign(Givaro::ZRing<double>(), N+1,  &(cp[0]),1, charp._ptr+i*charp._stride, 1);
             t.stop();
             //std::cerr<<"Iteration "<<i<<" --> "<<t.realtime()<<std::endl;
@@ -63,7 +63,7 @@ namespace FFPACK {
     CharPoly(const Givaro::Poly1Dom<Givaro::ZRing<Givaro::Integer> >& R,
              Givaro::Poly1Dom<Givaro::ZRing<Givaro::Integer> >::Element& charp,
              const size_t N,  Givaro::Integer * A, const size_t lda,
-             Givaro::ZRing<Givaro::Integer>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+             Givaro::ZRing<Givaro::Integer>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag, size_t degree){
 
         const Givaro::ZRing<Givaro::Integer>& F = R.getdomain();
         size_t Abs = FFLAS::bitsize(F,N,N,A,lda);
@@ -83,7 +83,7 @@ namespace FFPACK {
         //std::cerr<<"...done"<<std::endl;
 
         //std::cerr<<"charpoly...";
-        CharPoly(Zrns, CPrns, N, Arns, N, G, CharpTag);
+        CharPoly(Zrns, CPrns, N, Arns, N, G, CharpTag, degree);
         //std::cerr<<"...done"<<std::endl;
 
         //std::cerr<<"fconvert...";

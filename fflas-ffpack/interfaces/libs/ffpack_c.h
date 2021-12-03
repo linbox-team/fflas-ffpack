@@ -242,14 +242,11 @@ extern "C" {
 
     /* PLUQ */
 
-
     size_t
     PLUQ_modular_double (const double p, const enum FFLAS_C_DIAG Diag,
-                         const size_t M, const size_t N,
-                         double * A, const size_t lda,
-                         size_t*P, size_t *Q
-                         , bool positive );
-
+                     const size_t M, const size_t N,
+                     double * A, const size_t lda,
+                     size_t*P, size_t *Q, bool positive);
 
 
     size_t
@@ -501,7 +498,7 @@ extern "C" {
 
 
     double
-    Det_modular_double( const double p, const size_t M, const size_t N,
+    Det_modular_double( const double p, const size_t N,
                         double * A, const size_t lda
                         , bool positive );
 

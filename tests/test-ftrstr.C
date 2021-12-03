@@ -104,7 +104,7 @@ bool run_with_field (Givaro::Integer q, size_t b,  size_t n, size_t iters, uint6
     while (ok &&  nbit){
         // choose Field
         Field* F= chooseField<Field>(q,b,seed);
-        typename Field::RandIter G(*F,0,seed++);
+        typename Field::RandIter G(*F,seed++);
         if (F==nullptr)
             return true;
 
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=123;
+    size_t n=83;
     size_t iters=1;
     bool loop=false;
     uint64_t seed = getSeed();

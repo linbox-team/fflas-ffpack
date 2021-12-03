@@ -119,7 +119,7 @@ bool run_with_field (Givaro::Integer q, size_t BS, size_t n, size_t iters, uint6
 
     while (ok &&  nbit){
         Field* F= FFPACK::chooseField<Field>(q,BS,seed);
-        typename Field::RandIter G(*F,0,seed++);
+        typename Field::RandIter G(*F,seed++);
         if (F==nullptr)
             return true;
 
@@ -153,7 +153,8 @@ bool run_with_Integer (size_t BS, size_t n, size_t iters, uint64_t seed){
     Givaro::IntegerDom IPD;
     typedef Givaro::ZRing<Givaro::Integer> Field;
     Field F;
-    Field::RandIter G(F,BS,seed);
+    Field::RandIter G(F,seed);
+    G.setBitsize(BS);
 
     while (ok &&  nbit){
 
@@ -185,7 +186,7 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     int n=2578;
-    size_t iters=5;
+    size_t iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
     Argument as[] = {

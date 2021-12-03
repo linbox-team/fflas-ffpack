@@ -78,11 +78,12 @@ namespace FFPACK  { /* tags */
         FfpackAuto = 0,
         FfpackDanilevski = 1,
         FfpackLUK = 2,
-        FfpackArithProg = 3,
-        FfpackKG = 4,
-        FfpackKGFast = 5,
-        FfpackHybrid = 6,
-        FfpackKGFastG = 7
+        FfpackArithProgKrylovPrecond = 3,
+        FfpackArithProg = 4,
+        FfpackKG = 5,
+        FfpackKGFast = 6,
+        FfpackHybrid = 7,
+        FfpackKGFastG = 8
     };
     /* \endcond */
     class CharpolyFailed{};
@@ -116,6 +117,20 @@ namespace FFPACK { /* Permutations */
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
 
+    template <class Field>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t M2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
+
     template <class Element>
     void PermApplyS (Element* A, const size_t lda, const size_t width,
                      const size_t M2,
@@ -127,6 +142,20 @@ namespace FFPACK { /* Permutations */
                        const size_t N2,
                        const size_t R1, const size_t R2,
                        const size_t R3, const size_t R4);
+
+    template <class Field>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Sequential seq);
+
+    template <class Field, class Cut, class Param>
+    void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
+                       const size_t width, const size_t N2,
+                       const size_t R1, const size_t R2,
+                       const size_t R3, const size_t R4,
+                       const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     template <class Element>
     void PermApplyT (Element* A, const size_t lda, const size_t width,
@@ -193,16 +222,31 @@ namespace FFPACK { /* Permutations */
      * @param A input matrix
      * @param lda leading dimension of A
      * @param P permutation in LAPACK format
+     * @param psh (optional): a sequential or parallel helper, to choose between sequential or parallel execution
      * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
      */
     template<class Field>
-    void
-    applyP( const Field& F,
-            const FFLAS::FFLAS_SIDE Side,
-            const FFLAS::FFLAS_TRANSPOSE Trans,
-            const size_t M, const size_t ibeg, const size_t iend,
-            typename Field::Element_ptr A, const size_t lda, const size_t * P );
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t M, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
+    template<class Field>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Sequential seq);
+
+    template<class Field, class Cut, class Param>
+    void applyP( const Field& F,
+                 const FFLAS::FFLAS_SIDE Side,
+                 const FFLAS::FFLAS_TRANSPOSE Trans,
+                 const size_t m, const size_t ibeg, const size_t iend,
+                 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+                 const FFLAS::ParSeqHelper::Parallel<Cut, Param> par);
 
     /** Apply a R-monotonically increasing permutation P, to the matrix A.
      * The permutation represented by P is defined as follows:
@@ -256,49 +300,14 @@ namespace FFPACK { /* Permutations */
                      const size_t rowstomove, const std::vector<bool> &ispiv);
     /* \endcond */
 
-    //! Parallel applyP with OPENMP tasks
-    template<class Field>
-    void
-    papplyP( const Field& F,
-             const FFLAS::FFLAS_SIDE Side,
-             const FFLAS::FFLAS_TRANSPOSE Trans,
-             const size_t m, const size_t ibeg, const size_t iend,
-             typename Field::Element_ptr A, const size_t lda, const size_t * P );
-
-    //! Parallel applyT with OPENMP tasks
-    /* \cond */
-    template <class Field>
-    void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    //! Parallel applyS tasks with OPENMP tasks
-    template <class Field>
-    void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-    template<class Field>
-    size_t
-    pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-          const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda,
-          size_t* P, size_t* Q, int nt);
-    /* \endcond */
-
-    //#endif
-
 } // FFPACK permutations
 // #include "ffpack_permutation.inl"
 
 namespace FFPACK { /* fgetrs, fgesv */
 
     /** Solve the system \f$A X = B\f$ or \f$X A = B\f$.
-     * Solving using the \c LQUP decomposition of \p A
-     * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Solving using the \c PLUQ decomposition of \p A
+     * already computed inplace with \c PLUQ (FFLAS::FflasNonUnit).
      * Version for A square.
      * If A is rank deficient, a solution is returned if the system is consistent,
      * Otherwise an info is 1
@@ -310,8 +319,8 @@ namespace FFPACK { /* fgetrs, fgesv */
      * @param R rank of \p A
      * @param A input matrix
      * @param lda leading dimension of \p A
-     * @param P column permutation of the \c LQUP decomposition of \p A
-     * @param Q column permutation of the \c LQUP decomposition of \p A
+     * @param P row permutation of the \c PLUQ decomposition of \p A
+     * @param Q column permutation of the \c PLUQ decomposition of \p A
      * @param B Right/Left hand side matrix. Initially stores \p B, finally stores the solution \p X.
      * @param ldb leading dimension of \p B
      * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
@@ -327,8 +336,8 @@ namespace FFPACK { /* fgetrs, fgesv */
             int * info);
 
     /** Solve the system A X = B or X A = B.
-     * Solving using the LQUP decomposition of A
-     * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
+     * Solving using the PLUQ decomposition of A
+     * already computed inplace with PLUQ(FFLAS::FflasNonUnit).
      * Version for A rectangular.
      * If A is rank deficient, a solution is returned if the system is consistent,
      * Otherwise an info is 1
@@ -341,8 +350,8 @@ namespace FFPACK { /* fgetrs, fgesv */
      * @param R rank of A
      * @param A input matrix
      * @param lda leading dimension of A
-     * @param P column permutation of the LQUP decomposition of A
-     * @param Q column permutation of the LQUP decomposition of A
+     * @param P row permutation of the PLUQ decomposition of A
+     * @param Q column permutation of the PLUQ decomposition of A
      * @param X solution matrix
      * @param ldx leading dimension of X
      * @param B Right/Left hand side matrix.
@@ -415,28 +424,11 @@ namespace FFPACK { /* fgetrs, fgesv */
            typename Field::Element_ptr X, const size_t ldx,
            typename Field::ConstElement_ptr B, const size_t ldb,
            int * info);
-
-    /**  Solve the system Ax=b.
-     * Solving using LQUP factorization and
-     * two triangular system resolutions.
-     * The input matrix is modified.
-     * @param F The computation domain
-     * @param M row dimension of the matrix
-     * @param A input matrix
-     * @param lda leading dimension of A
-     * @param x solution vector
-     * @param incx increment of x
-     * @param b right hand side vector
-     * @param incb increment of b
-     */
-
 } // FFPACK fgesv, fgetrs
 // #include "ffpack_fgesv.inl"
 // #include "ffpack_fgetrs.inl"
 
 namespace FFPACK { /* ftrtr */
-
-
 
     /** Compute the inverse of a triangular matrix.
      * @param F base field
@@ -595,11 +587,29 @@ namespace FFPACK {
      * .
      */
     template<class Field>
-    size_t
-    PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
-          const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda,
-          size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
+    size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                 const size_t M, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 size_t*P, size_t *Q);
+
+    template<class Field>
+    size_t pPLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                 const size_t M, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 size_t*P, size_t *Q);
+
+    template<class Field>
+    size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                 const size_t M, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 size_t*P, size_t *Q, const FFLAS::ParSeqHelper::Sequential& PSHelper,
+                 size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
+
+    template<class Field, class Cut, class Param>
+    size_t PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
+                 const size_t M, const size_t N,
+                 typename Field::Element_ptr A, const size_t lda,
+                 size_t*P, size_t *Q, const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSHelper);
 
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"
@@ -727,8 +737,24 @@ namespace FFPACK { /* echelon */
     size_t
     ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
                        typename Field::Element_ptr A, const size_t lda,
-                       size_t* P, size_t* Qt, bool transform = false,
+                       size_t* P, size_t* Qt, bool transform=false,
                        const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field>
+    size_t
+    pColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                        typename Field::Element_ptr A, const size_t lda,
+                        size_t* P, size_t* Qt, bool transform=false,
+                        size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+
+    template <class Field, class PSHelper>
+    size_t
+    ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* P, size_t* Qt, const bool transform,
+                              const FFPACK_LU_TAG LuTag, const PSHelper& psH);
+
+
 
     /**  Compute the Row Echelon form of the input matrix in-place.
      *
@@ -754,8 +780,23 @@ namespace FFPACK { /* echelon */
     size_t
     RowEchelonForm (const Field& F, const size_t M, const size_t N,
                     typename Field::Element_ptr A, const size_t lda,
-                    size_t* P, size_t* Qt, const bool transform = false,
+                    size_t* P, size_t* Qt, const bool transform=false,
                     const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field>
+    size_t
+    pRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                     typename Field::Element_ptr A, const size_t lda,
+                     size_t* P, size_t* Qt, const bool transform=false,
+                     size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+
+    template <class Field, class PSHelper>
+    size_t
+    RowEchelonForm (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* P, size_t* Qt, const bool transform,
+                           const FFPACK_LU_TAG LuTag, const PSHelper& psH);
+
 
     /** Compute the Reduced Column Echelon form of the input matrix in-place.
      *
@@ -783,6 +824,22 @@ namespace FFPACK { /* echelon */
                               size_t* P, size_t* Qt, const bool transform = false,
                               const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field>
+    size_t
+    pReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                               typename Field::Element_ptr A, const size_t lda,
+                               size_t* P, size_t* Qt, const bool transform = false,
+                               size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+
+    template <class Field, class PSHelper>
+    size_t
+    ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* P, size_t* Qt, const bool transform,
+                              const FFPACK_LU_TAG LuTag, const PSHelper& psH);
+
+
+
     /** Compute the Reduced Row Echelon form of the input matrix in-place.
      *
      * After the computation A = [ V1 M ] such that X A = R is a reduced row echelon
@@ -807,6 +864,23 @@ namespace FFPACK { /* echelon */
                            typename Field::Element_ptr A, const size_t lda,
                            size_t* P, size_t* Qt, const bool transform = false,
                            const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field>
+    size_t
+    pReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* P, size_t* Qt, const bool transform = false,
+                           size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+
+    template <class Field, class PSHelper>
+    size_t
+    ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* P, size_t* Qt, const bool transform,
+                           const FFPACK_LU_TAG LuTag, const PSHelper& psH);
+
+
+
 
     namespace Protected {
         /**  @brief Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
@@ -925,11 +999,12 @@ namespace FFPACK { /* charpoly */
      * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
      */
     template <class PolRing>
-    std::list<typename PolRing::Element>&
+    inline std::list<typename PolRing::Element>&
     CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
               typename PolRing::Domain_t::RandIter& G,
-              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto,
+              const size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD);
 
     /**
      * @brief Compute the characteristic polynomial of the matrix A.
@@ -942,11 +1017,12 @@ namespace FFPACK { /* charpoly */
      * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
      */
     template <class PolRing>
-    typename PolRing::Element&
+    inline typename PolRing::Element&
     CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
               typename PolRing::Domain_t::RandIter& G,
-              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto,
+              const size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD);
 
     /**
      * @brief Compute the characteristic polynomial of the matrix A.
@@ -958,12 +1034,13 @@ namespace FFPACK { /* charpoly */
      * @param CharpTag the algorithmic variant
      */
     template <class PolRing>
-    typename PolRing::Element&
+    inline typename PolRing::Element&
     CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
               typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto){
+              const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto,
+              const size_t degree = __FFLASFFPACK_ARITHPROG_THRESHOLD){
         typename PolRing::Domain_t::RandIter G(R.getdomain());
-        return CharPoly (R, charp, N, A, lda, G, CharpTag);
+        return CharPoly (R, charp, N, A, lda, G, CharpTag, degree);
     }
 
 
@@ -1005,15 +1082,19 @@ namespace FFPACK { /* charpoly */
         Danilevski (const Field& F, std::list<Polynomial>& charp,
                     const size_t N, typename Field::Element_ptr A, const size_t lda);
 
-        template <class PolRing>
-        std::list<typename PolRing::Element>&
-        CharpolyArithProg (const PolRing& R,
-                           std::list<typename PolRing::Element>& frobeniusForm,
-                           const size_t N,
-                           typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-                           typename PolRing::Domain_t::RandIter& G,
-                           const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
 
+        template <class PolRing>
+        inline void
+        RandomKrylovPrecond (const PolRing& PR, std::list<typename PolRing::Element>& completedFactors, const size_t N,
+                             typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                             size_t& Nb, typename PolRing::Domain_t::Element_ptr& B, size_t& ldb,
+                             typename PolRing::Domain_t::RandIter& g, const size_t degree=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+        
+        template <class PolRing>
+        inline std::list<typename PolRing::Element>&
+        ArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+                   const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+                   const size_t degree);
 
         template <class Field, class Polynomial>
         std::list<Polynomial>&
@@ -1132,18 +1213,31 @@ namespace FFPACK { /* Solutions */
 
 
 
-    /** Computes the rank of the given matrix using a LQUP factorization.
+    /** Computes the rank of the given matrix using a PLUQ factorization.
      * The input matrix is modified.
      * @param F base field
      * @param M row dimension of the matrix
      * @param N column dimension of the matrix
      * @param [in] A input matrix
      * @param lda leading dimension of A
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
      */
+
     template <class Field>
     size_t
     Rank( const Field& F, const size_t M, const size_t N,
-          typename Field::Element_ptr A, const size_t lda) ;
+          typename Field::Element_ptr A, const size_t lda);
+
+    template <class Field>
+    size_t
+    pRank (const Field& F, const size_t M, const size_t N,
+           typename Field::Element_ptr A, const size_t lda, size_t numthreads = 0);
+
+    template <class Field, class PSHelper>
+    size_t
+    Rank( const Field& F, const size_t M, const size_t N,
+          typename Field::Element_ptr A, const size_t lda, const PSHelper& psH) ;
+
 
     /********/
     /* DET  */
@@ -1169,51 +1263,36 @@ namespace FFPACK { /* Solutions */
     IsSingular( const Field& F, const size_t M, const size_t N,
                 typename Field::Element_ptr A, const size_t lda);
 
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
+    /** @brief Returns the determinant of the given square matrix.
+     * @details The method is a block elimination
+     * using PLUQ factorization. The input matrix A is overwritten.
      * @warning The input matrix is modified.
      * @param F base field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
+     * @param [out] det the determinant of A
+     * @param N the order of the square matrix A.
      * @param [in,out] A input matrix
      * @param lda leading dimension of A
-     * @param P the row permutation
-     * @param Q the column permutation
+     * @param psH (optional) a ParSeqHelper to choose between sequential and parallel execution
+     * @param P,Q (optional) row and column permutations to be used by the PLUQ factorization. randomized checkers (see cherckes/checker_det.inl) need them for certification
      */
+
     template <class Field>
     typename Field::Element&
-    Det( typename Field::Element& det,
-         const Field& F, const size_t M, const size_t N,
+    Det (const Field& F, typename Field::Element& det, const size_t N,
          typename Field::Element_ptr A, const size_t lda,
-         size_t* P, size_t* Q,
-         const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
-
-    /** @brief Returns the determinant of the given matrix.
-     * @details The method is a block elimination with early termination
-     * using LQUP factorization  with early termination. The input matrix A is overwritten.
-     * If <code>M != N</code>,
-     * then the matrix is virtually padded with zeros to make it square and
-     * it's determinant is zero.
-     * @warning The input matrix is modified.
-     * @param F field
-     * @param M row dimension of the matrix
-     * @param N column dimension of the matrix.
-     * @param [in,out] A input matrix
-     * @param lda leading dimension of A
-     */
-    template <class Field>
-    typename Field::Element
-    Det( const Field& F, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
+         size_t * P = NULL, size_t * Q = NULL);
 
     template <class Field>
     typename Field::Element&
-    Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
-         typename Field::Element_ptr A, const size_t lda);
+    pDet (const Field& F, typename Field::Element& det, const size_t N,
+          typename Field::Element_ptr A, const size_t lda,
+          size_t numthreads = 0, size_t * P = NULL, size_t * Q = NULL);
+
+    template <class Field, class PSHelper>
+    typename Field::Element&
+    Det(const Field& F, typename Field::Element& det, const size_t N,
+        typename Field::Element_ptr A, const size_t lda, const PSHelper& psH,
+        size_t * P = NULL, size_t * Q = NULL);
 
     /*********/
     /* SOLVE */
@@ -1221,7 +1300,7 @@ namespace FFPACK { /* Solutions */
 
 
     /**
-     * @brief Solves a linear system AX = b using LQUP factorization.
+     * @brief Solves a linear system AX = b using PLUQ factorization.
      * @oaram F base field
      * @oaram M matrix order
      * @param [in] A input matrix
@@ -1238,6 +1317,19 @@ namespace FFPACK { /* Solutions */
            typename Field::Element_ptr x, const int incx,
            typename Field::ConstElement_ptr b, const int incb );
 
+    template <class Field, class PSHelper>
+    typename Field::Element_ptr
+    Solve( const Field& F, const size_t M,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::Element_ptr x, const int incx,
+           typename Field::ConstElement_ptr b, const int incb, PSHelper& psH);
+
+    template <class Field>
+    typename Field::Element_ptr
+    pSolve (const Field& F, const size_t M,
+            typename Field::Element_ptr A, const size_t lda,
+            typename Field::Element_ptr x, const int incx,
+            typename Field::ConstElement_ptr b, const int incb, size_t numthreads = 0);
 
     //! Solve L X = B or X L = B in place.
     //! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
@@ -1328,9 +1420,17 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
                            typename Field::Element_ptr A, const size_t lda,
-                           size_t* &rkprofile,
-                           const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                           size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+    template <class Field>
+    size_t pRowRankProfile (const Field& F, const size_t M, const size_t N,
+                           typename Field::Element_ptr A, const size_t lda,
+                           size_t* &rkprofile, size_t numthreads = 0, const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+
+    template <class Field, class PSHelper>
+    size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+                                  typename Field::Element_ptr A, const size_t lda,
+                                  size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
 
     /**  @brief Computes the column rank profile of A.
      *
@@ -1349,8 +1449,19 @@ namespace FFPACK { /* Solutions */
     template <class Field>
     size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
                               typename Field::Element_ptr A, const size_t lda,
-                              size_t* &rkprofile,
-                              const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+    template <class Field>
+    size_t pColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                               typename Field::Element_ptr A, const size_t lda,
+                               size_t* &rkprofile, size_t numthreads = 0,
+                               const FFPACK_LU_TAG LuTag=FfpackTileRecursive);
+
+    template <class Field, class PSHelper>
+    size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+                              typename Field::Element_ptr A, const size_t lda,
+                              size_t* &rkprofile, const FFPACK_LU_TAG LuTag, PSHelper& psH);
+
 
     /**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
      *
@@ -1695,6 +1806,125 @@ namespace FFPACK { /* Solutions */
 } // FFPACK
 // #include "ffpack.inl"
 
+
+namespace FFPACK { /* Quasi-separable matrices*/
+        // TODO add signatures of ffpack_bruhat.inl
+    /** LTBruhatGen
+     * Suppose A is Left Triangular Matrix
+     * This procedure computes the Bruhat Representation of A and return the rank of A
+     * @param Fi base Field
+     * @param diag
+     * @param N size of A
+     * @param A the matrix we search the Bruhat representation
+     * @param lda the leading dimension of A
+     * @param P a permutation matrix
+     * @param Q a permutation matrix
+     */
+  template<class Field>
+  size_t LTBruhatGen (const Field& Fi, const FFLAS::FFLAS_DIAG diag,
+                             const size_t N,
+                             typename Field::Element_ptr A, const size_t lda,
+                             size_t * P, size_t * Q);
+    /** GetLTBruhatGen
+     * This procedure Computes the Rank Revealing Matrix based on the Bruhta representation of a Matrix
+     * @param Fi base Field
+     * @param N size of the matrix
+     * @param r the rank of the matrix
+     * @param P a permutation matrix
+     * @param Q a permutation matrix
+     * @param R the matrix that will contain the rank revealing matrix
+     * @param ldr the leading fimension of R
+     */
+  template<class Field>
+  void getLTBruhatGen(const Field& Fi, const size_t N, const size_t r,const size_t * P, const size_t * Q, typename Field::Element_ptr R, const size_t ldr);
+    /** GetLTBruhatGen
+     * This procedure computes the matrix L or U f the Bruhat Representation
+     * Suppose that A is the bruhat representation of a matrix
+     * @param Fi base Field
+     * @param Uplo choose if the procedure return L or U
+     * @param diag 
+     * @param N size of A
+     * @param r rank of A
+     * @param P permutaion matrix
+     * @param Q permutation matrix
+     * @param A a bruhat representation
+     * @param lda leading dimension of A
+     * @param T matrix that will contains L or U
+     * @param ldt leading dimension of T
+     */
+  template<class Field>
+   void getLTBruhatGen(const Field& Fi, const FFLAS::FFLAS_UPLO Uplo,const FFLAS::FFLAS_DIAG diag ,const size_t N, const size_t r, const size_t *P, const size_t * Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt);
+
+    /** LTQSorder
+     * This procedure computes the order of quasiseparability of a matrix
+     * @param N size of the matrix
+     * @param r rank of the matrix
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     */
+  size_t LTQSorder(const size_t N, const size_t r,const size_t * P, const size_t * Q);
+
+    /**CompressToBlockBiDiagonal
+     * This procedure compress a compact representation of a row echelon form or column echelon form
+     * @param Fi base Field
+     * @param Uplo chosse if the procedure is based on row or column
+     * @param N size of the matrix
+     * @param s order of qausiseparability
+     * @param r rank
+     * @param P permutation matrix
+     * @param Q permutation matrix
+     * @param A the matrix to compact
+     * @param lda leading dimension of A
+     * @param X matrix that will stock the representation
+     * @param ldx leading dimension of X
+     * @param K stock the position of the blocks in A
+     * @param M permutation matrix
+     * @param T stock the operation done in the procedure
+     */
+  template<class Field>
+  size_t CompressToBlockBiDiagonal(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx, size_t *K, size_t *M, size_t *T);
+
+  /**ExpandBlockBiDiagonal
+     * This procedure expand a compact representation of a row echelon form or column echelon form
+     * @param Fi base Field
+     * @param Uplo chosse if the procedure is based on row or column
+     * @param N size of the matrix
+     * @param s order of qausiseparability
+     * @param r rank
+     * @param A the matrix that will sotck the expanded representation
+     * @param lda leading dimension of A
+     * @param X matrix to expand
+     * @param ldx leading dimension of X
+     * @param K stock the position of the blocks in A
+     * @param M permutation matrix
+     * @param T stock the operation done in the procedure
+     */
+  template<class Field>
+  void ExpandBlockBiDiagonalToBruhat(const Field&Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx,size_t NbBlocks,size_t *K, size_t *M, size_t *T);
+
+   /**Bruhat2EchelonPermutation (N,R,P,Q)
+    * Compute M such that LM or MU is in echelon form where L or U are factors of the Bruhat Rpresentation
+    * @param[in] N size of the matrix
+    * @param[in] R rank
+    * @param[in] P permutation Matrix
+    * @param[in] Q permutation Matrix
+    * @param[out] M output permutation matrix
+    */
+    void Bruhat2EchelonPermutation (size_t N,size_t R, const size_t* P,const size_t *Q, size_t * M);
+
+
+  size_t * TInverter (size_t * T, size_t r);
+
+  template<class Field>
+  void ComputeRPermutation (const Field&Fi, size_t N, size_t r, const size_t * P, const size_t * Q, size_t * R,size_t * MU, size_t * ML);
+  /**productBruhatxTS
+   *Comput the product between the CRE compact representation of a matrix A and B a tall matrix
+   */
+
+  template<class Field>
+  void productBruhatxTS (const Field&Fi, size_t N, size_t s, size_t r, const size_t *P, const size_t *Q,  const typename Field::Element_ptr Xu,size_t ldu, size_t NbBlocksU, size_t * Ku, size_t *Tu, size_t * MU,const typename Field::Element_ptr Xl, size_t ldl, size_t NbBlocksL,size_t *Kl, size_t * Tl, size_t * ML,typename Field::Element_ptr B,size_t t, size_t ldb, typename Field::Element_ptr C, size_t ldc);
+}
+
 namespace FFPACK { /* not used */
 
     /** LQUPtoInverseOfFullRankMinor.
@@ -1757,9 +1987,11 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack_det_mp.inl"
+#include "ffpack_bruhatgen.inl"
 #include "ffpack.inl"
 
 #endif // __FFLASFFPACK_ffpack_H
 
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

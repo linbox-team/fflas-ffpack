@@ -68,12 +68,11 @@ int main(int argc, char** argv) {
     typedef Givaro::Modular<double> Field;
     Field F(q);
 
-    Field::RandIter Rand(F,0,seed);
+    Field::RandIter Rand(F,seed);
     srandom(seed);
 
     size_t pass = 0;	// number of tests that have successfully passed
 
-    FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
     for(size_t it=0; it<iter; ++it) {
 #ifdef TIME_CHECKER_Det
         FFLAS::Timer init;init.start();
@@ -98,20 +97,19 @@ int main(int argc, char** argv) {
         try {
             FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
             Givaro::Timer chrono; chrono.start();
-            FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
+            FFPACK::Det(F,det,n,A,n,P,Q);
             chrono.stop();
-            checker.check(det,A,n,Diag,P,Q);
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
+            checker.check(det,A,n,P,Q);
+            F.write(std::cerr << n << 'x' << n << ' ' << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
             std::cerr << "Det COMPT: " << chrono << std::endl;
 #endif
             pass++;
         } catch(FailureDetCheck &e) {
-            F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
+            F.write(std::cerr << n << 'x' << n << ' ' << '(', det) << ')' << " Det verification FAILED!\n";
         }
 
         FFLAS::fflas_delete(A,P,Q);
-        Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
     }
 
     std::cerr << pass << "/" << iter << " tests SUCCESSFUL.\n";
@@ -120,3 +118,4 @@ int main(int argc, char** argv) {
 }
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

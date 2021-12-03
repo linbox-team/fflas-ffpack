@@ -41,12 +41,22 @@ namespace FFLAS {
     struct support_simd_mod<float> : public std::true_type {} ;
     template<>
     struct support_simd_mod<double> : public std::true_type {} ;
-#ifdef SIMD_INT
+#ifdef __x86_64__
     template<>
     struct support_simd_mod<int64_t> : public std::true_type {} ;
-#endif  // SIMD_INT
+#endif  // __x86_64__
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
+
+    /* Note that support_simd_mod => support_fast_mod */
+    template<class T>
+    struct support_fast_mod  : public std::false_type {} ;
+    template<>
+    struct support_fast_mod<float> : public std::true_type {} ;
+    template<>
+    struct support_fast_mod<double> : public std::true_type {} ;
+    template<>
+    struct support_fast_mod<int64_t> : public std::true_type {} ;
 
 } // FFLAS
 
@@ -105,6 +115,23 @@ namespace FFLAS {
     }
 
 
+    template<class Field>
+    void
+    finit (const Field& F, const size_t n,
+           typename Field::Element_ptr X, const size_t incX)
+    {
+        typename Field::Element_ptr Xi = X ;
+
+        if (incX == 1)
+            for (; Xi < X + n ; ++Xi) {
+                F.init(*Xi);
+            }
+        else
+            for (; Xi < X+n*incX; Xi+=incX ) {
+                F.init(*Xi);
+            }
+    }
+
     /***************************/
     /*         LEVEL 2         */
     /***************************/
@@ -120,6 +147,21 @@ namespace FFLAS {
         else
             for (size_t i = 0 ; i < m ; ++i)
                 freduce (F, n, A+i*lda, 1);
+        return;
+    }
+    template<class Field>
+    void
+    freduce (const Field& F, const FFLAS_UPLO UpLo, const size_t N,
+             typename Field::Element_ptr A, const size_t lda)
+    {
+        typename Field::Element_ptr Ai = A;
+        if (UpLo == FflasUpper){
+            for (size_t i = N ; i > 0 ; --i, Ai+=lda+1)
+                freduce (F, i, Ai, 1);
+        } else { // Lower
+            for (size_t i = 1 ; i <= N ; ++i, Ai+=lda)
+                freduce (F, i, Ai, 1);
+        }
         return;
     }
     template<class Field>
@@ -171,6 +213,19 @@ namespace FFLAS {
         else
             for (size_t i = 0 ; i < m ; ++i)
                 finit (F, n, B + i*ldb, 1, A + i*lda, 1);
+        return;
+    }
+
+    template<class Field>
+    void
+    finit (const Field& F, const size_t m , const size_t n,
+           typename Field::Element_ptr A, const size_t lda)
+    {
+        if (n == lda)
+            finit (F, n*m, A, 1);
+        else
+            for (size_t i = 0 ; i < m ; ++i)
+                finit (F, n, A + i*lda, 1);
         return;
     }
 

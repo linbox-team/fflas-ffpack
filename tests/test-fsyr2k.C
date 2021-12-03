@@ -105,6 +105,7 @@ bool check_fsyr2k (const Field &F, size_t n, size_t k,
     }
 
     FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C2);
     FFLAS::fflas_delete(C);
     return ok;
@@ -119,7 +120,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int
         //typedef typename Field::Element Element ;
         // choose Field
         Field* F= FFPACK::chooseField<Field>(q,b,seed);
-        typename Field::RandIter G(*F,0,seed++);
+        typename Field::RandIter G(*F,seed++);
         if (F==nullptr)
             return true;
 
@@ -149,8 +150,8 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    int k=75;
-    int n=179;
+    int k=55;
+    int n=109;
     int a=-1;
     int c=1;
     size_t iters=3;
@@ -175,13 +176,13 @@ int main(int argc, char** argv)
     bool ok = true;
     do{
         ok = ok && run_with_field<Modular<double> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,a,c,iters,seed);
+        if (q!=2) ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,a,c,iters,seed);
+        if (q!=2) ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<Modular<int32_t> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
+        if (q!=2) ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
-        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
+        if (q!=2) ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
         ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
     } while (loop && ok);

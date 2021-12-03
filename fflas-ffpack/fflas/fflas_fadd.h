@@ -39,7 +39,7 @@ namespace FFLAS {
     struct support_simd_add<float> : public std::true_type {} ;
     template<>
     struct support_simd_add<double> : public std::true_type {} ;
-#ifdef SIMD_INT
+#ifdef SIMD_INT // why? PK - 2019/12
     template<>
     struct support_simd_add<int32_t> : public std::true_type {} ;
     template<>
@@ -253,6 +253,26 @@ namespace FFLAS {
         for (; Bi < B+M*ldb;  Bi+=ldb, Ci+=ldc)
             faddin(F,N,Bi,1,Ci,1);
     }
+
+    template <class Field>
+    void
+    faddin (const Field& F,
+            const FFLAS_UPLO uplo,
+            const size_t N,
+            typename Field::ConstElement_ptr B, const size_t ldb,
+            typename Field::Element_ptr C, const size_t ldc)
+    {
+        const typename Field::Element  *Bi = B;
+        typename Field::Element_ptr Ci = C;
+        if (uplo == FflasUpper){
+            for (size_t i=N; i>0; --i,  Bi+=ldb+1, Ci+=ldc+1)
+                faddin(F,i,Bi,1,Ci,1);
+        } else {
+            for (size_t i=1; i <= N; ++i, Bi+=ldb, Ci+=ldc)
+                faddin(F,i,Bi,1,Ci,1);
+        }
+    }
+
 
     template <class Field>
     void

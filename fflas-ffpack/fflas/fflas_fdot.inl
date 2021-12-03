@@ -67,9 +67,12 @@ namespace FFLAS {
 
         const DFElt MaxStorableValue = limits<typename DelayedField::Element>::max();
         const DFElt AbsMax = std::max(-F.minElement(), F.maxElement());
-        const DFElt r = MaxStorableValue / (AbsMax*AbsMax);
+        const DFElt r = (MaxStorableValue / AbsMax) / AbsMax;
         size_t delayedDim = FFLAS::Protected::min_types<DFElt>(r);
-
+        if (!delayedDim){
+            ModeCategories::DefaultTag DT;
+            return fdot(F, N, x, incx, y, incy, DT);
+        }
         typename Field::Element d;
         F.init (d);
         F.assign (d, F.zero);
@@ -94,7 +97,7 @@ namespace FFLAS {
           ModeCategories::DefaultTag& MT)
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         return cblas_ddot( (int)N, x, (int)incx, y, (int)incy );
@@ -108,7 +111,7 @@ namespace FFLAS {
           ModeCategories::DefaultTag& MT)
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );

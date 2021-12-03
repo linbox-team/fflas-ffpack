@@ -24,6 +24,10 @@
  *.
  */
 
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
+
 #if not defined(MG_DEFAULT)
 #define MG_DEFAULT MG_ACTIVE
 #endif
@@ -150,7 +154,8 @@ int tmain(){
         // RNS MUL_LA
         chrono.clear();chrono.start();
         {
-            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc);
+            FFLAS::ParSeqHelper::Sequential seqH;
+            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
         }
         chrono.stop();
         time+=chrono.realtime();
@@ -174,6 +179,11 @@ int tmain(){
 
 
 int main(int argc, char** argv){
+
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+
     FFLAS::parseArguments(argc,argv,as);
 
     int r1 = tmain<Givaro::Integer>();

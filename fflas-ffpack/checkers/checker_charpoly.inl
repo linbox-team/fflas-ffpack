@@ -94,6 +94,7 @@ namespace FFPACK {
             G.random(lambda);
 
             typename Field::Element_ptr Ac = FFLAS::fflas_new(F,n,n);
+            FFLAS::finit(F,n*n,Ac,1);
 
             // Ac <- A - lambda.I
             FFLAS::fassign(F,n,n,A,lda,Ac,n);
@@ -114,6 +115,7 @@ namespace FFPACK {
                 inittime.stop(); _time = inittime;
                 Givaro::Timer pluqtime; pluqtime.start();
 #endif
+
 #ifndef ENABLE_CHECKER_PLUQ
                 size_t R =
 #endif
@@ -154,6 +156,24 @@ namespace FFPACK {
         }
     };
 
+
+    template <class Polynomial>
+    class CheckerImplem_charpoly<Givaro::ZRing<Givaro::Integer>,Polynomial> {
+            // Charpoly check over theintegers is not yet implemented
+            // A possibility is to map to a field
+    public:
+        typedef Givaro::ZRing<Givaro::Integer> Ring;
+        CheckerImplem_charpoly(const Ring& F_, const size_t n_, typename Ring::ConstElement_ptr A, size_t lda_) {}
+
+        CheckerImplem_charpoly(typename Ring::RandIter &G, const size_t n_, typename Ring::ConstElement_ptr A, size_t lda_) {}
+
+        ~CheckerImplem_charpoly() {}
+
+        inline bool check(Polynomial &g) {
+            std::clog << "Warning: charpoly over ZRing<Integer> not checked." << std::endl;
+            return true;
+        }
+    };
 }
 
 #endif // __FFLASFFPACK_checker_charpoly_INL

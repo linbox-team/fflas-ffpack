@@ -28,18 +28,6 @@
 
 namespace FFPACK {
 
-    template INST_OR_DECL
-    void MatrixApplyS (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda, const size_t width,
-                       const size_t M2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4);
-
-    template INST_OR_DECL
-    void MatrixApplyT (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda, const size_t width,
-                       const size_t N2,
-                       const size_t R1, const size_t R2,
-                       const size_t R3, const size_t R4);
-
     void composePermutationsLLM (size_t * MathP,
                                  const size_t * P1,
                                  const size_t * P2,
@@ -68,33 +56,6 @@ namespace FFPACK {
                  const FFLAS::FFLAS_TRANSPOSE Trans,
                  const size_t M, const size_t ibeg, const size_t iend,
                  FFLAS_ELT* A, const size_t lda, const size_t * P );
-
-
-    template INST_OR_DECL
-    void papplyP( const FFLAS_FIELD<FFLAS_ELT>& F,
-                  const FFLAS::FFLAS_SIDE Side,
-                  const FFLAS::FFLAS_TRANSPOSE Trans,
-                  const size_t m, const size_t ibeg, const size_t iend,
-                  FFLAS_ELT* A, const size_t lda, const size_t * P );
-
-    template INST_OR_DECL
-    void pMatrixApplyT (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda,
-                        const size_t width, const size_t N2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-
-    template INST_OR_DECL
-    void pMatrixApplyS (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda,
-                        const size_t width, const size_t M2,
-                        const size_t R1, const size_t R2,
-                        const size_t R3, const size_t R4) ;
-
-    template INST_OR_DECL
-    size_t pPLUQ(const FFLAS_FIELD<FFLAS_ELT>& Fi, const FFLAS::FFLAS_DIAG Diag,
-                 const size_t M, const size_t N,
-                 FFLAS_ELT* A, const size_t lda,
-                 size_t* P, size_t* Q, int nt);
 
     template INST_OR_DECL
     void fgetrs (const FFLAS_FIELD<FFLAS_ELT>& F,
@@ -148,7 +109,7 @@ namespace FFPACK {
     size_t PLUQ (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,
                  const size_t M, const size_t N,
                  FFLAS_ELT* A, const size_t lda,
-                 size_t*P, size_t *Q, size_t BCThreshold);
+                 size_t*P, size_t *Q);
 
     template INST_OR_DECL
     size_t LUdivine (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
@@ -216,10 +177,9 @@ namespace FFPACK {
     std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element>&
     CharPoly (const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
               std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> & charp,
-              const size_t N,
-              FFLAS_ELT* A, const size_t lda,
+              const size_t N, FFLAS_ELT* A, const size_t lda,
               FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
-              const FFPACK_CHARPOLY_TAG CharpTag);
+              const FFPACK_CHARPOLY_TAG CharpTag, const size_t degree);
 
     // template INST_OR_DECL
     // std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> &
@@ -234,14 +194,14 @@ namespace FFPACK {
     CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
              Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
              const size_t N, FFLAS_ELT* A, const size_t lda,
-             FFLAS_FIELD<FFLAS_ELT>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag);
+             FFLAS_FIELD<FFLAS_ELT>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag, const size_t degree);
 
     template INST_OR_DECL
     Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element&
     CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
              Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
              const size_t N, FFLAS_ELT* A, const size_t lda,
-             const FFPACK_CHARPOLY_TAG CharpTag);
+             const FFPACK_CHARPOLY_TAG CharpTag, const size_t degree);
 
     template INST_OR_DECL
     std::vector<FFLAS_ELT>& MinPoly( const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP, const size_t N,
@@ -273,8 +233,12 @@ namespace FFPACK {
     bool IsSingular (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
                      FFLAS_ELT* A, const size_t lda);
     template INST_OR_DECL
-    FFLAS_ELT Det (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
-                   FFLAS_ELT* A, const size_t lda);
+    FFLAS_ELT& Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
+                   FFLAS_ELT* A, const size_t lda, size_t *P, size_t *Q);
+    template INST_OR_DECL
+    FFLAS_ELT& Det (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT& det, const size_t N,
+                   FFLAS_ELT* A, const size_t lda,
+                   const FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads>& parH, size_t *P, size_t *Q);
 
     template INST_OR_DECL
     FFLAS_ELT* Solve( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M,

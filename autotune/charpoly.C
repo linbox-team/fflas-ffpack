@@ -55,7 +55,7 @@ int main () {
     using namespace std;
     using namespace FFPACK;
     typedef Givaro::ModularBalanced<double> Field;
-    Field F(131071);
+    Field F(4194301);
     typedef Field::Element Element ;
     size_t n=NSTART, nmax=NMAX, prec=NFIRSTSTEP, nbest=0, count=0;
     TTimer chrono,tim;

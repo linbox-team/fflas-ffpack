@@ -28,10 +28,15 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL
 
+#include "givaro/givtypestring.h"
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+#include <type_traits>
+
 /*
  * Simd128 specialized for float
  */
-template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
+template <> struct Simd128_impl<true, false, true, 4> {
 #if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
     /*
@@ -50,9 +55,28 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
     static const constexpr size_t vect_size = 4;
 
     /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
+    /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
      */
     static const constexpr size_t alignment = 16;
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
+
+    union Converter {
+        vect_t v;
+        scalar_t t[vect_size];
+    };
 
     /*
      * Check if the pointer p is a multiple of alignemnt
@@ -147,27 +171,117 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
 #endif
 
     /*
-     * Unpack and interleave single-precision (32-bit) floating-point elements from the low half of a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [a0, b0, a1, b1] float
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
      */
-    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_ps(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpacklo_ps(a, b);
+    }
 
     /*
-     * Unpack and interleave single-precision (32-bit) floating-point elements from the high half a and b, and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [a2, b2, a3, b3] float
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
      */
-    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_ps(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpackhi_ps(a, b);
+    }
 
     /*
-     * Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [s[0]?a0:b0,   , s[3]?a3:b3] float
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, b0, a1, b1 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        return unpacklo_intrinsic(a, b);
+    }
+
+    /*
+     * Unpack and interleave single-precision (32-bit) floating-point elements
+     * from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a2, b2, a3, b3 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        return unpackhi_intrinsic(a, b);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: lo = [ a0, b0, a1, b1 ]
+     *         hi = [ a2, b2, a3, b3 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        lo = unpacklo (a, b);
+        hi = unpackhi (a, b);
+    }
+
+    /*
+     * Pack single-precision (32-bit) floating-point elements from the even
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a0, a2, b0, b2 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
+        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
+        return _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
+    }
+
+    /*
+     * Pack single-precision (32-bit) floating-point elements from the odd
+     * positions of a and b.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return:   [ a1, a3, b1, b3 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
+        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
+        return _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3 ]
+     *       b = [ b0, b1, b2, b3 ]
+     * Return: even = [ a0, a2, b0, b2 ]
+     *         odd  = [ a1, a3, b1, b3 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        /* 0xd8 = 3120 base_4 */
+        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
+        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
+        even = _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
+        odd = _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+    }
+
+    /*
+     * Blend packed single-precision (32-bit) floating-point elements from a and
+     * b using control mask s.
+     * Args: a = [ a0, ..., a3 ]
+     *       b = [ b0, ..., b3 ]
+     *       s = a 4-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, ..., s[3] ? a3 : b3 ]
      */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
@@ -175,11 +289,12 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
     }
 
     /*
-     * Blend packed single-precision (32-bit) floating-point elements from a and b using mask, and store the results in dst.
-     * and store the results in dst.
-     * Args   : [a0, a1, a2, a3] float
-     [b0, b1, b2, b3] float
-     * Return : [mask[31]?a0:b0,   , mask[127]?a3:b3] float
+     * Blend packed single-precision (32-bit) floating-point elements from a and
+     * b using the vector mask as control.
+     * Args: a = [ a0, ..., a3 ]
+     *       b = [ b0, ..., b3 ]
+     *       mask
+     * Return: [ mask[31] ? a0 : b0, ..., mask[127] ? a3 : b3 ]
      */
     static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
         return _mm_blendv_ps(a, b, mask);
@@ -231,7 +346,15 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
 #ifdef __FMA__
         return _mm_fmadd_ps(a, b, c);
 #else
-        return add(c, mul(a, b));
+	Converter ca, cb, cc;
+        ca.v = a;
+        cb.v = b;
+        cc.v = c;
+        return set(std::fma (ca.t[0], cb.t[0], cc.t[0]),
+                   std::fma (ca.t[1], cb.t[1], cc.t[1]),
+                   std::fma (ca.t[2], cb.t[2], cc.t[2]),
+                   std::fma (ca.t[3], cb.t[3], cc.t[3]) );
+
 #endif
     }
 
@@ -247,7 +370,7 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
 #ifdef __FMA__
         return _mm_fnmadd_ps(a, b, c);
 #else
-        return sub(c, mul(a, b));
+	return fmadd (c, sub (zero(), a), b);
 #endif
     }
 
@@ -263,7 +386,7 @@ template <> struct Simd128_impl<true, false, true, 4> : public Simd128fp_base {
 #ifdef __FMA__
         return _mm_fmsub_ps(a, b, c);
 #else
-        return sub(mul(a, b), c);
+	return fmadd (sub (zero(), c), a, b);
 #endif
     }
 

@@ -131,6 +131,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #define __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS  1
 #endif
 
+/* 256 SIMD registers are not supported by gcc on CYGWIN
+ * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54412
+ */
+#if not defined(__CYGWIN__) or not defined(__GNUC__)
+
 /* Define if avx instructions are supported */
 #ifdef __AVX__
 #define __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS  1
@@ -150,6 +155,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef __AVX512DQ__
 #define __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS 1
 #endif
+
+#endif // CYGWIN and GCC
 
 /* Define if fma instructions are supported */
 #ifdef __FMA__

@@ -52,7 +52,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, u
 	T * B = FFLAS::fflas_new<T>(m*n);
 
 	Givaro::ModularBalanced<T> E(101);
-	typename Givaro::ModularBalanced<T>::RandIter G(E,0,seed);
+	typename Givaro::ModularBalanced<T>::RandIter G(E,seed);
 
 	if (timing)	std::cout << ">>>" << std::endl ;
 	if (timing)	std::cout << "=== inc == 1 ===" << std::endl ;

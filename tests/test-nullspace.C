@@ -73,7 +73,7 @@ typename Field::Element_ptr readOrRandomMatrixWithRankAndRandomRPM(const Field& 
     else {
         lda = std::max(m, n) + (rand() % 13);
         A = FFLAS::fflas_new(F, m, lda);
-        typename Field::RandIter G(F, 0, seed);
+        typename Field::RandIter G(F, seed);
         FFPACK::RandomMatrixWithRankandRandomRPM(F, m, n, r, A, lda, G);
     }
 
@@ -91,21 +91,22 @@ bool test_nullspace(Field& F, FFLAS::FFLAS_SIDE side, size_t m, size_t n, size_t
     size_t NSdim = 0u;
     typename Field::Element_ptr NS;
     FFPACK::NullSpaceBasis(F, side, m, n, ACopy, lda, NS, ldns, NSdim);
+    FFLAS::fflas_delete(ACopy);
 
 #if defined(__FFLAS_FFPACK_DEBUG)
     std::cout << std::endl;
     std::cout << "A: " << m << "x" << n << " (rank " << r << ")" << std::endl;
     std::cout << "NS: " << NSdim << std::endl;
 #endif
-
     if (side == FFLAS::FFLAS_SIDE::FflasRight) {
         // Right nullspace dimension + Rank == Matrix column dimension
         if (NSdim + r != n) return false;
-
         // Ensure nullspace is full rank
         auto NSCopy = FFLAS::fflas_new(F, n, NSdim);
         FFLAS::fassign(F, n, NSdim, NS, NSdim, NSCopy, NSdim);
-        if (FFPACK::Rank(F, n, NSdim, NSCopy, NSdim) != NSdim) return false;
+        size_t rank = FFPACK::Rank(F, n, NSdim, NSCopy, NSdim);
+        FFLAS::fflas_delete(NSCopy);
+        if (rank != NSdim) return false;
 
         // Check that NS is a nullspace
         auto C = FFLAS::fflas_new(F, m, NSdim);
@@ -120,7 +121,9 @@ bool test_nullspace(Field& F, FFLAS::FFLAS_SIDE side, size_t m, size_t n, size_t
         // Ensure nullspace is full rank
         auto NSCopy = FFLAS::fflas_new(F, NSdim, m);
         FFLAS::fassign(F, NSdim, m, NS, m, NSCopy, m);
-        if (FFPACK::Rank(F, NSdim, m, NSCopy, m) != NSdim) return false;
+        size_t rank = FFPACK::Rank(F, NSdim, m, NSCopy, m);
+        FFLAS::fflas_delete(NSCopy);
+        if (rank != NSdim) return false;
 
         // Check that NS is a nullspace
         auto C = FFLAS::fflas_new(F, NSdim, n);

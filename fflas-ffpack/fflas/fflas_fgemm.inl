@@ -429,7 +429,7 @@ namespace FFLAS {
         fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 
         Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
-
+        
         H.initOut();
 
         return C;
@@ -470,7 +470,7 @@ namespace FFLAS {
 
         // Call to the blas Multiplication
         FFLASFFPACK_check(n);
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,

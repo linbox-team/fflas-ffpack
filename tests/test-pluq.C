@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------
 
 #define ENABLE_ALL_CHECKINGS 1
-
+//#include "omp.h"
 #define __FFPACK_LUDIVINE_CUTOFF 60
 #include <iostream>
 #include <iomanip>
@@ -48,7 +48,7 @@
 #include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/test-utils.h"
-
+#include "fflas-ffpack/fflas-ffpack-config.h"
 using namespace std;
 using namespace FFPACK;
 
@@ -58,7 +58,7 @@ typedef Givaro::Modular<Givaro::Integer> Field;
 
 int main(int argc, char** argv){
     //cerr<<setprecision(20);
-    int m,n;
+    size_t m,n;
     size_t R;
 
     if (argc!=4){
@@ -116,6 +116,7 @@ int main(int argc, char** argv){
         FFLAS::fflas_delete( A);
         FFLAS::ReadMatrix (argv[2],F,m,n,A);
         timlud.clear();
+
         timlud.start();
         R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
         timlud.stop();
@@ -207,7 +208,7 @@ int main(int argc, char** argv){
     // cerr<<endl;
 
     Field::Element* B;
-    FFLAS::ReadMatrix (argv[2],F,m,n,B);
+    FFLAS::ReadMatrix (argv[2],F,m,n,B,FFLAS::FflasDense);
 
     bool fail = false;
     for (size_t i=0; i<(size_t)m; ++i)

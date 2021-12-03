@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 
     Field F(q);
     srand (seed);
-    Field::RandIter Rand(F,0,seed);
+    Field::RandIter Rand(F,seed);
     typedef Givaro::Poly1Dom<Field> PolRing;
     typedef PolRing::Element Polynomial;
     PolRing R(F);

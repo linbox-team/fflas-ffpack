@@ -18,6 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
+
+// declare that the call to openblas_set_numthread will be made here, hence don't do it
+// everywhere in the call stack
+#define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include "fflas-ffpack/config-blas.h"
@@ -25,7 +30,7 @@
 #include <givaro/modular-balanced.h>
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/args-parser.h"
-
+#include "fflas-ffpack/ffpack/ffpack.h"
 using namespace std;
 
 typedef Givaro::ModularBalanced<double> Field;
@@ -36,12 +41,12 @@ ptrdiff_t myrandom (ptrdiff_t i) { return rand()%i;}
 // pointer object to it:                                                                                               
 ptrdiff_t (*p_myrandom)(ptrdiff_t) = myrandom;
 
-typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t n, size_t r, std::vector<size_t>& P, size_t commonseed, size_t seed)
+typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t n, size_t r, std::vector<size_t>& P, size_t commonseed, size_t seed, int nt)
 {
     size_t lda = n;
     Field::Element *U=new Field::Element[n*n];
 
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads>  H(nt);
 
     std::vector<size_t> E(r);
     PARFOR1D(i,r,H, E[i]=i; );
@@ -67,9 +72,9 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
     return U;
 }
 
-typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t m, size_t r, const std::vector<size_t>& P, size_t seed)
+typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t m, size_t r, const std::vector<size_t>& P, size_t seed, int nt)
 {
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads>  H(nt);
 
     size_t lda = m;
     size_t taille=m*m;
@@ -104,7 +109,7 @@ typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t 
 }
 
 
-typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,typename Field::Element* U, size_t r, size_t m, size_t n)
+typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,typename Field::Element* U, size_t r, size_t m, size_t n, int nt)
 {
     Field::Element alpha, beta;
     F.init(alpha);
@@ -120,9 +125,8 @@ typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,ty
        FFLAS::ftrmm(F,  FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, m,n,1.0, U, lda, L, lda);
        */
 
-    const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-    const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
-    typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
+
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>  pWH(nt);
     PAR_BLOCK{
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                       m,n,r, alpha, L,r, U,
@@ -132,10 +136,10 @@ typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,ty
 }
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
-                       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
+                       size_t * P, size_t * Q, size_t m, size_t n, size_t R, int nt)
 {
 
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads>  H(nt);
 
     Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
     Field::Element * L, *U;
@@ -167,8 +171,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 #pragma omp task shared(F, Q, U)
         FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 #pragma omp taskwait
-        const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
-        typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
+        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>  pWH (nt);
 #pragma omp task shared(F, L, U, X)
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
                       F.one, L,R, U,n, F.zero, X,n, pWH);
@@ -187,7 +190,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
                 errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
                 << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
                 << std::endl;
-                std::cout << errs;
+                std::cout << errs.str();
                 fail=true;
                 std::cout<<" end verification"<<std::endl;
                 exit(1);
@@ -207,6 +210,10 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 
 int main(int argc, char** argv) {
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
+
     size_t iter = 3 ;
     int q = 131071 ;
     Field F(q);
@@ -214,8 +221,9 @@ int main(int argc, char** argv) {
     int n = 2000 ;
     size_t r = 2000 ;
     int v = 0;
-    //	int p=0;
-    int t=MAX_THREADS;
+
+    int nt = -1;
+
     int NBK = -1;
     int  a=1;
     bool transform = false;
@@ -229,13 +237,15 @@ int main(int argc, char** argv) {
         { 't', "-t T", "whether to compute the transformation matrix.", TYPE_BOOL , &transform },
         { 'a', "-a A", "Algorithm for PLUQ decomposition: 0=LUdivine 1=PLUQ.", TYPE_INT , &a },
         { 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
+        { 'p', "-p P", "number of threads to use", TYPE_INT , &nt },
         END_OF_ARGUMENTS
     };
     //		{ 'p', "-p P", "0 for sequential, 1 for 2D iterative,
     //2 for 2D rec, 3 for 2D rec adaptive, 4 for 3D rc in-place, 5 for 3D rec, 6 for 3D rec adaptive.", TYPE_INT , &p },
     FFLAS::parseArguments(argc,argv,as);
+    std::cerr<<"nt:="<<nt<<std::endl; if(nt==-1) PAR_BLOCK{ nt=NUM_THREADS; }  std::cerr<<"nt:="<<nt<<std::endl;
     FFPACK::FFPACK_LU_TAG LuTag = a?FFPACK::FfpackTileRecursive:FFPACK::FfpackSlabRecursive;
-    if (NBK==-1) NBK = t;
+    if (NBK==-1) NBK = nt;
     typedef Field::Element Element;
     Element * A, * Acop;
     A = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
@@ -252,15 +262,15 @@ int main(int argc, char** argv) {
     std::vector<size_t> Index_P(r);
     Field::RandIter GG(F, seed1);
 
-    PAR_BLOCK{ pfrand(F,GG,m,n,A,m/NBK); }
+    PAR_BLOCK{ FFLAS::pfrand(F,GG,m,n,A,m/NBK); }
 
 
     //       std::cout<<"Construct U"<<endl;
-    U = construct_U(F,GG, n, r, Index_P, seed4, seed3);
+    U = construct_U(F,GG, n, r, Index_P, seed4, seed3,nt);
     //       std::cout<<"Construct L"<<endl;
-    A = construct_L(F,GG, m, r, Index_P, seed2);
+    A = construct_L(F,GG, m, r, Index_P, seed2, nt);
     //       std::cout<<"randgen"<<endl;
-    A = M_randgen(F, A, U, r, m, n);
+    A = M_randgen(F, A, U, r, m, n, nt);
     size_t R=0;
     FFLAS::Timer chrono;
     double time=0.0;
@@ -273,7 +283,7 @@ int main(int argc, char** argv) {
     size_t *P = FFLAS::fflas_new<size_t>(maxP);
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
-    FFLAS::ParSeqHelper::Parallel H;
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads>  H(nt);
 
     PARFOR1D(i,(size_t)m,H,
              for (size_t j=0; j<(size_t)n; ++j)
@@ -291,13 +301,20 @@ int main(int argc, char** argv) {
                  *(A+k*n+j) = *(Acop+k*n+j) ;  
                 );
 
+    //Additional tests for templated helper
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::Threads> parH(nt);
+    
+
         chrono.clear();
 
         if (i) chrono.start();
         // Added by AB 2014-12-15
         //#ifdef __FFLASFFPACK_USE_OPENMP
-        r = RowEchelonForm(F,m,n,A,n,P,Q,transform,LuTag);
+        PAR_BLOCK{
+            r = FFPACK::RowEchelonForm(F,m,n,A,n,P,Q,transform,LuTag,parH);
+        }
         if (i) {chrono.stop(); time+=chrono.realtime();}
+
     }
 
     // -----------
@@ -311,7 +328,7 @@ int main(int argc, char** argv) {
 
     //verification
     if(v)
-        verification_PLUQ(F,Acop,A,P,Q,m,n,R);
+        verification_PLUQ(F,Acop,A,P,Q,m,n,R,nt);
     FFLAS::fflas_delete( A);
     FFLAS::fflas_delete( Acop);
 
@@ -320,3 +337,4 @@ int main(int argc, char** argv) {
 
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+

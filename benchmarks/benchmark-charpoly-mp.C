@@ -26,6 +26,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
@@ -38,13 +39,16 @@ int main(int argc, char** argv) {
     size_t    n    = 100;
     std::string file = "";
     static int variant =0;
-    size_t b = 150;
+    uint64_t b = 150;
+    uint64_t seed = FFLAS::getSeed();
+
     Argument as[] = {
         { 'b', "-b B", "Set the bitsize of the random characteristic.",  TYPE_INT , &b },
         { 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
         { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
         { 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
+        { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
 
         END_OF_ARGUMENTS
     };
@@ -70,8 +74,8 @@ int main(int argc, char** argv) {
     double time=0.0;
 
     Element *A;
-    size_t bs=1;
-    size_t size=b;
+    uint64_t bs=1;
+    uint64_t size=b;
     for (size_t i=0;i<iter;++i){
 
         if (!file.empty()){
@@ -79,7 +83,9 @@ int main(int argc, char** argv) {
         }
         else{
             A = FFLAS::fflas_new<Element>(n*n);
-            Field::RandIter G(F,size);
+//            typename Field::Residu_t samplesize(1); samplesize <<= size;
+            Field::RandIter G(F,seed);
+            G.setBitsize(size);
             for (size_t j=0; j< (size_t)n*n; ++j)
                 G.random(*(A+j));
         }

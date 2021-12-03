@@ -51,7 +51,6 @@ Known values for OPTION are:
   --blas-libs			print BLAS library linking information
   --cflags			print pre-processor and compiler flags
   --blas-cflags	 		print BLAS pre-processor and BLAS compiler flags
-  --blas-home	 		print where BLAS were found
   --help		 		display this help and exit
   --version		     	output version information string (eg @VERSION@)
   --decimal-version	 	output version in decimal representation (base 100, that is $decvr)
@@ -99,23 +98,19 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir} @BLAS_CFLAGS@ @CXXFLAGS@ @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@  @PARFLAGS@ # @CUDA_CFLAGS@
+			echo -I${includedir} @BLAS_CFLAGS@ @PARFLAGS@ @PRECOMPILE_FLAGS@ @REQUIRED_FLAGS@ @GIVARO_CFLAGS@
 			;;
 
 		--blas-cflags)
-			echo -I${includedir} @BLAS_CFLAG@  @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
+			echo -I${includedir} @BLAS_CFLAGS@
 			;;
 
 		--libs)
-			echo @PARLIBS@ @PRECOMPILE_LIBS@ @BLAS_LIBS@ @GIVARO_LIBS@ # @CUDA_LIBS@
+			echo @PARLIBS@ @PRECOMPILE_LIBS@ @BLAS_LIBS@ @GIVARO_LIBS@
 			;;
 
 		--blas-libs)
-			echo  @BLAS_LIBS@
-			;;
-
-		--blas-home)
-			echo  @BLAS_PATH@
+			echo @BLAS_LIBS@
 			;;
 
 		*)

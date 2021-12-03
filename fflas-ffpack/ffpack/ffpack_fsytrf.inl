@@ -462,6 +462,7 @@ namespace FFPACK {
         FFLAS::fflas_delete( P1);
         FFLAS::fflas_delete( P2);
         FFLAS::fflas_delete( P3);
+        FFLAS::fflas_delete( Q2);
         for (size_t i=N1; i<N; ++i)
             MathP[i] += N1;
 
@@ -486,6 +487,7 @@ namespace FFPACK {
         }
         FFLAS::fassign(Fi, R1, R3, tmpV1+N1-R1+R2, dim, A+R1+2*R2, lda);
         FFLAS::fassign(Fi, R1, N1-R1-R2, tmpV1+R2, dim, A+R1+2*R2+R3, lda);
+        FFLAS::fflas_delete(tmpV1);
 
         if (R2){
             // Interleaving L2^T, U2 and H1 into
@@ -563,7 +565,7 @@ namespace FFPACK {
         std::copy(tmpi, tmpi+N1-R1-R2, MP1);
 
         MathPerm2LAPACKPerm (P, MathP, N);
-        FFLAS::fflas_delete( MathP);
+        FFLAS::fflas_delete( MathP, tmpP );
 
         // Reporting the 2x2 blocks in P
         for (size_t i=0; i<R1+2*R2+R3; i++){

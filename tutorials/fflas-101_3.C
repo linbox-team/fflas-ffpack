@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     Float_Field::Element_ptr a;
     a = fflas_new(F,m,1);
     uint64_t seed = time(NULL);
-    typename Float_Field::RandIter G(F,0,seed);
+    typename Float_Field::RandIter G(F,seed);
     frand(F,G,m,a,inca);
 
     // Let n be natural

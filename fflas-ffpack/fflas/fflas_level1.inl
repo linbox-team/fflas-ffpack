@@ -85,6 +85,18 @@ namespace FFLAS {
            const OtherElement_ptr Y, const size_t incY,
            typename Field::Element_ptr X, const size_t incX);
 
+    /** finit
+     * Initializes \p X in \p F$.
+     * @param F field
+     * @param n size of the vectors
+     * \param X vector in \p F
+     * \param incX stride of \p X
+     */
+    template<class Field>
+    void
+    finit (const Field& F, const size_t n,
+           typename Field::Element_ptr X, const size_t incX);
+
     /** fconvert
      * \f$x \gets  y mod F\f$.
      * @param F field
@@ -186,7 +198,6 @@ namespace FFLAS {
             // memset(X,(int)F.zero,n); // might be bogus ?
             for (size_t i = 0 ; i < n ; ++i)
                 G.random(*(X+i));
-
         }
         else { // not contiguous (strided)
             for (size_t i = 0 ; i < n ; ++i)

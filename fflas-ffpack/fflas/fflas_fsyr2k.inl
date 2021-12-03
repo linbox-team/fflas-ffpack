@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2018 the FFLAS-FFPACK group
+ * Copyright (C) 2020 the FFLAS-FFPACK group
  *
- * Written by Clement Pernet <Clement.Pernet@imag.fr>
+ * Written by Jean-Guillaume Dumas <Jean-Guillaume.Dumas@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -26,7 +26,7 @@
 
 #ifndef __FFLASFFPACK_fflas_fsyr2k_INL
 #define __FFLASFFPACK_fflas_fsyr2k_INL
-
+#include <fflas-ffpack/utils/fflas_io.h>
 namespace FFLAS {
     template<class Field>
     inline typename Field::Element_ptr
@@ -42,48 +42,63 @@ namespace FFLAS {
             typename Field::Element_ptr C, const size_t ldc){
 
         if (!N) return C;
-        if (!K) FFLAS::fscalin(F, N,N, beta, C, ldc);
-        //@TODO: write an optimized iterative basecase
-        if (N==1){ // Base case
-            F.mulin (*C, beta);
-            size_t incA = (trans==FFLAS::FflasNoTrans)?1:lda;
-            size_t incB = (trans==FFLAS::FflasNoTrans)?1:ldb;
-            typename Field::Element two;
-            F.init(two, 2);
-            F.mulin (two,fdot (F, K, A, incA, B, incB));
-            F.axpyin(*C, alpha, two);
-            return C;
+        if (!K) fscalin(F, N,N, beta, C, ldc);
+
+        typename Field::Element_ptr diagC(nullptr);
+
+        if (F.characteristic() != 2) {
+                // diagonal Cii <- Cii/2
+            typename Field::Element itwo; F.init(itwo, 2); F.invin(itwo);
+            fscalin(F, N, itwo, C, ldc+1);
         } else {
-            size_t N1 = N>>1;
-            size_t N2 = N - N1;
-            // Comments written for the case UpLo==FflasUpper, trans==FflasNoTrans
-            FFLAS_TRANSPOSE oppTrans;
-            if (trans==FflasNoTrans) {oppTrans=FflasTrans;}
-            else {oppTrans=FflasNoTrans;}
-
-            typename Field::ConstElement_ptr A2 = A + N1*(trans==FflasNoTrans?lda:1);
-            typename Field::ConstElement_ptr B2 = B + N1*(trans==FflasNoTrans?ldb:1);
-            typename Field::Element_ptr C12 = C + N1;
-            typename Field::Element_ptr C21 = C + N1*ldc;
-            typename Field::Element_ptr C22 = C12 + N1*ldc;
-            // C11 <- alpha (A1 x B1^T + B1 x A1^T) + beta C11
-            fsyr2k (F, UpLo, trans, N1, K, alpha, A, lda, B, ldb, beta, C, ldc);
-            // C22 <- alpha (A2 x B2^T +B2 x A2^T) + beta C22
-            fsyr2k (F, UpLo, trans, N2, K, alpha, A2, lda, B2, ldb, beta, C22, ldc);
-
-            if (UpLo == FflasUpper) {
-                // C12 <- alpha A1 * B2^T + beta C12
-                fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, B2, ldb, beta, C12, ldc);
-                // C12 <- alpha B1 * A2^T + C12
-                fgemm (F, trans, oppTrans, N1, N2, K, alpha, B, ldb, A2, lda, F.one, C12, ldc);
-            } else {
-                // C21 <- alpha A2 * B1^T + beta C12
-                fgemm (F, trans, oppTrans, N2, N1, K, alpha, A2, lda, B, ldb, beta, C21, ldc);
-                // C21 <- alpha B2 * A1^T + C12
-                fgemm (F, trans, oppTrans, N2, N1, K, alpha, B2, ldb, A, lda, F.one, C21, ldc);
-            }
-            return C;
+                // store diagonal diagC <- beta Cii
+            diagC = FFLAS::fflas_new(F,N);
+            fscal(F, N, beta, diagC, 1, C, ldc+1);
         }
+
+            // Set unused triangular part of C to zero
+        if (UpLo == FflasUpper) {
+                // Lower part set to zero
+            for(size_t i=0; i<N; ++i)
+                fzero(F, i, C+i*ldc, 1);
+        } else {
+                // Upper part set to zero
+            for(size_t i=0; i<N; ++i)
+                fzero(F, i, C+i, ldc);
+        }
+
+        FFLAS_TRANSPOSE oppTrans;
+        if (trans==FflasNoTrans) {oppTrans=FflasTrans;}
+        else {oppTrans=FflasNoTrans;}
+
+            // alpha(A B^T) + beta(C)
+        fgemm (F, trans, oppTrans, N, N, K, alpha, A, lda, B, ldb, beta, C, ldc);
+
+                // adds alpha(B A^T) from the unused part
+        if (F.characteristic() != 2) {
+                // diagonal included (so that initial div by 2 is compensated)
+            if (UpLo == FflasUpper) {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, i+1, C+i*ldc, 1, C+i, ldc);
+            } else {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, N-i, C+i*ldc+i, 1, C+i*ldc+i, ldc);
+            }
+        } else {
+                // diagonal excluded
+            if (UpLo == FflasUpper) {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, i, C+i*ldc, 1, C+i, ldc);
+            } else {
+                for(size_t i=0; i<N; ++i)
+                    faddin(F, N-i-1, C+i*ldc+(i+1), 1, C+(i+1)*ldc+i, ldc);
+            }
+                // restore diagonal Cii <- beta Cii
+            fassign(F, N, diagC, 1, C, ldc+1);
+            FFLAS::fflas_delete(diagC);
+        }
+
+        return C;
     }
 } // namespace FFLAS
 #endif //__FFLASFFPACK_fflas_fsyr2k_INL

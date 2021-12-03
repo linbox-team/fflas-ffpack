@@ -33,6 +33,11 @@
 #error "You need SSE instructions to perform 128 bits operations on int16"
 #endif
 
+#include "givaro/givtypestring.h"
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+#include <type_traits>
+
 /*
  * Simd128 specialized for int16_t
  */
@@ -54,9 +59,23 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
     static const constexpr size_t vect_size = 8;
 
     /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
+    /*
      *  alignement required by scalar_t pointer to be loaded in a vect_t
      */
     static const constexpr size_t alignment = 16;
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
     /*
      * Check if the pointer p is a multiple of alignemnt
@@ -186,26 +205,109 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
     }
 
     /*
-     * Unpack and interleave 16-bit integers from the low half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int16_t
-     [b0, ..., b7] int16_t
-     * Return :	[a0, b0, ..., a3, b3] int16_t
+     * Unpack and interleave 16-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a1, b1, a2, b2, a3, b3 ]
      */
-    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_epi16(a, b); }
+    static INLINE CONST vect_t
+    unpacklo_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpacklo_epi16(a, b);
+    }
 
     /*
-     * Unpack and interleave 16-bit integers from the high half of a and b, and store the results in dst.
-     * Args   :	[a0, ..., a7] int16_t
-     [b0, ..., b7] int16_t
-     * Return :	[a4, b4, ..., a7, b7] int16_t
+     * Unpack and interleave 16-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a4, b4, a5, b5, a6, b6, a7, b7 ]
      */
-    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi16(a, b); }
+    static INLINE CONST vect_t
+    unpackhi_intrinsic (const vect_t a, const vect_t b) {
+        return _mm_unpackhi_epi16(a, b);
+    }
 
     /*
-     * Blend packed 16-bit integers from a and b using control mask imm8, and store the results in dst.
-     * Args   :	[a0, ..., a7] int16_t
-     [b0, ..., b7] int16_t
-     * Return :	[s[0]?a0:b0,   , s[7]?a7:b7] int16_t
+     * Unpack and interleave 16-bit integers from the low half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     */
+    static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+        return unpacklo_intrinsic(a, b);
+    }
+
+    /*
+     * Unpack and interleave 16-bit integers from the high half of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a4, b4, a5, b5, a6, b6, a7, b7 ]
+     */
+    static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+        return unpackhi_intrinsic(a, b);
+    }
+
+    /*
+     * Perform unpacklo and unpackhi with a and b and store the results in lo
+     * and hi.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: lo = [ a0, b0, a1, b1, a2, b2, a3, b3 ]
+     *         hi = [ a4, b4, a5, b5, a6, b6, a7, b7 ]
+     */
+    static INLINE void
+    unpacklohi (vect_t& lo, vect_t& hi, const vect_t a, const vect_t b) {
+        lo = unpacklo (a, b);
+        hi = unpackhi (a, b);
+    }
+    /*
+     * Pack 16-bit integers from the even positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     */
+    static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
+        vect_t idx = _mm_set_epi8 (15,14,11,10,7,6,3,2,13,12,9,8,5,4,1,0);
+        vect_t t1 = _mm_shuffle_epi8 (a, idx);
+        vect_t t2 = _mm_shuffle_epi8 (b, idx);
+        return _mm_unpacklo_epi64 (t1, t2);
+    }
+
+    /*
+     * Pack 16-bit integers from the odd positions of a and b.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return:   [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
+        vect_t idx = _mm_set_epi8 (15,14,11,10,7,6,3,2,13,12,9,8,5,4,1,0);
+        vect_t t1 = _mm_shuffle_epi8 (a, idx);
+        vect_t t2 = _mm_shuffle_epi8 (b, idx);
+        return _mm_unpackhi_epi64 (t1, t2);
+    }
+
+    /*
+     * Perform pack_even and pack_odd with a and b and store the results in even
+     * and odd.
+     * Args: a = [ a0, a1, a2, a3, a4, a5, a6, a7 ]
+     *       b = [ b0, b1, b2, b3, b4, b5, b6, b7 ]
+     * Return: even = [ a0, a2, a4, a6, b0, b2, b4, b6 ]
+     *         odd = [ a1, a3, a5, a7, b1, b3, b5, b7 ]
+     */
+    static INLINE void
+    pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
+        vect_t idx = _mm_set_epi8 (15,14,11,10,7,6,3,2,13,12,9,8,5,4,1,0);
+        vect_t t1 = _mm_shuffle_epi8 (a, idx);
+        vect_t t2 = _mm_shuffle_epi8 (b, idx);
+        even = _mm_unpacklo_epi64 (t1, t2);
+        odd = _mm_unpackhi_epi64 (t1, t2);
+    }
+
+    /*
+     * Blend 16-bit integers from a and b using control mask s.
+     * Args: a = [ a0, ..., a7 ]
+     *       b = [ b0, ..., b7 ]
+     *       s = a 8-bit immediate integer
+     * Return: [ s[0] ? a0 : b0, ..., s[7] ? a7 : b7 ]
      */
     template<uint8_t s>
     static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
@@ -426,6 +528,21 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
     using scalar_t = uint16_t;
 
     /*
+     *  string describing the Simd struct
+     */
+    static const std::string type_string () {
+        return "Simd" + std::to_string(8*vect_size*sizeof(scalar_t)) + "<"
+                      + Givaro::TypeString<scalar_t>::get() + ">";
+    }
+
+    using aligned_allocator = AlignedAllocator<scalar_t, Alignment(alignment)>;
+    using aligned_vector = std::vector<scalar_t, aligned_allocator>;
+
+    /* To check compatibility with Modular struct */
+    template <class Field>
+    using is_same_element = std::is_same<typename Field::Element, scalar_t>;
+
+    /*
      * Converter from vect_t to a tab.
      * exple:
      *	Converter conv;
@@ -512,17 +629,17 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
 
     static INLINE CONST vect_t greater(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm_cmpgt_epi16(a, b);
     }
 
     static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
         vect_t x;
-        x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(a,x);
-        b = sub(b,x);
+        x = set1(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1));
+        a = vxor(x, a);
+        b = vxor(x, b);
         return _mm_cmplt_epi16(a, b);
     }
 

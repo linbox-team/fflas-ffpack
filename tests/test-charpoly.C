@@ -63,7 +63,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
     case FfpackKGFast:  oss<<"KGFast variant"; break;
     case FfpackKGFastG: oss<<"KGFastG variant"; break;
     case FfpackHybrid: oss<<"Hybrid variant"; break;
-    case FfpackArithProg: oss<<"ArithProg variant"; break;
+    case FfpackArithProgKrylovPrecond: oss<<"Precond. ArithProg variant"; break;
     default: oss<<"LUKrylov variant"; break;
     }
     F.write(oss<<" over ");
@@ -105,6 +105,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
         F.subin (trace, B [i*(n+1)]);
     if (!F.areEqual(trace, charp[n-1])){
         std::cerr<<"FAILED: trace = "<<trace<<" P["<<n-1<<"] = "<<charp[n-1]<<std::endl;
+        std::cerr<<" P = "<<charp<<std::endl;
         FFLAS::fflas_delete (B);
         return false;
     }
@@ -112,13 +113,14 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
     // Checking det(A) == charp[0]
     typename Field::Element det;
     F.init(det);
-    F.assign(det, FFPACK::Det(F, n, n, B, n));
+    FFPACK::Det(F, det, n, B, n);
     FFLAS::fflas_delete (B);
 
     if (n&1) F.negin(det); // p0 == (-1)^n det
 
     if (!F.areEqual(det,charp[0])){
         std::cerr<<"FAILED: det = "<<det<<" P["<<0<<"] = "<<charp[0]<<std::endl;
+        std::cerr<<" P = "<<charp<<std::endl;
         return false;
     }
 
@@ -133,7 +135,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
     case 0: CT = FfpackAuto; break;
     case 1: CT = FfpackDanilevski; break;
     case 2: CT = FfpackLUK; break;
-    case 3: CT = FfpackArithProg; break;
+    case 3: CT = FfpackArithProgKrylovPrecond; break;
     case 4: CT = FfpackKG; break;
     case 5: CT = FfpackKGFast; break;
     case 6: CT = FfpackHybrid; break;
@@ -149,7 +151,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
         if (F==nullptr){
             return true;
         }
-        typename Field::RandIter R(*F,bits,seed++);
+        typename Field::RandIter R(*F,seed++);
 
         typename Field::Element * A=NULL;
 
@@ -168,7 +170,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
         else{ // No variant specified, testing them all
             passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackDanilevski);
             passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
-            passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
+            passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProgKrylovPrecond);
             passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackAuto);
             //passed = passed && launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
             //passed = passed && launch_test<Field>(*F, n, A, lda, iter, FfpackKGFast); // generic: does not work with any matrix
@@ -186,8 +188,8 @@ int main(int argc, char** argv)
 {
     Givaro::Integer q = -1; // characteristic
     uint64_t     bits = 0;       // bit size
-    size_t       iter = 3; // repetitions
-    size_t       n = 300;
+    size_t       iter = 2; // repetitions
+    size_t       n = 150;
     std::string  file = "" ; // file where
     bool loop = false; // loop infintely
     std::string  mat_file = "" ; // input matrix file

@@ -304,11 +304,13 @@ namespace FFLAS { namespace details {
                 FFLAS::vectorised::subp<!FieldTraits<Field>::balanced>(C,A,B,N,p,F.minElement(),F.maxElement());
         }
         else {
-            for (size_t i=0; i<N; i++)
+            typename Field::ConstElement_ptr Ai=A, Bi=B;
+            typename Field::Element_ptr Ci=C;
+            for (size_t i=0; i<N; i++, Ai+=inca, Bi+=incb, Ci+=incc)
                 if (ADD)
-                    F.add (C[i*incc], A[i*inca], B[i*incb]);
+                    F.add (*Ci, *Ai, *Bi);
                 else
-                    F.sub (C[i*incc], A[i*inca], B[i*incb]);
+                    F.sub (*Ci, *Ai, *Bi);
         }
     }
 
@@ -329,11 +331,13 @@ namespace FFLAS { namespace details {
                     F.sub (C[i], A[i], B[i]);
         }
         else {
-            for (size_t i=0; i<N; i++)
+            typename Field::ConstElement_ptr Ai=A, Bi=B;
+            typename Field::Element_ptr Ci=C;
+            for (size_t i=0; i<N; i++, Ai+=inca, Bi+=incb, Ci+=incc)
                 if (ADD)
-                    F.add (C[i*incc], A[i*inca], B[i*incb]);
+                    F.add (*Ci, *Ai, *Bi);
                 else
-                    F.sub (C[i*incc], A[i*inca], B[i*incb]);
+                    F.sub (*Ci, *Ai, *Bi);
         }
     }
 
@@ -357,11 +361,13 @@ namespace FFLAS { namespace details {
             }
         }
         else {
-            for (size_t i=0; i<N; i++)
+            typename Field::ConstElement_ptr Ai=A, Bi=B;
+            typename Field::Element_ptr Ci=C;
+            for (size_t i=0; i<N; i++, Ai+=inca, Bi+=incb, Ci+=incc)
                 if (ADD)
-                    F.add (C[i*incc], A[i*inca], B[i*incb]);
+                    F.add (*Ci, *Ai, *Bi);
                 else
-                    F.add (C[i*incc], A[i*inca], B[i*incb]);
+                    F.add (*Ci, *Ai, *Bi);
         }
     }
 
@@ -374,11 +380,13 @@ namespace FFLAS { namespace details {
           , FieldCategories::UnparametricTag
          )
     {
-        for (size_t i=0; i<N; i++)
+        typename Field::ConstElement_ptr Ai=A, Bi=B;
+        typename Field::Element_ptr Ci=C;
+        for (size_t i=0; i<N; i++, Ai+=inca,Bi+=incb,Ci+=incc)
             if (ADD)
-                C[i] = A[i] + B[i];
+                *Ci = *Ai + *Bi;
             else
-                C[i] = A[i] - B[i];
+                *Ci = *Ai - *Bi;
     }
 
     template <class Field, bool ADD>
@@ -396,11 +404,13 @@ namespace FFLAS { namespace details {
             else
                 FFLAS::vectorised::sub(C,A,B,N);
         } else {
-            for (size_t i=0; i<N; i++)
+            typename Field::ConstElement_ptr Ai=A, Bi=B;
+            typename Field::Element_ptr Ci=C;
+            for (size_t i=0; i<N; i++, Ai+=inca,Bi+=incb,Ci+=incc)
                 if (ADD)
-                    C[i] = A[i] + B[i];
+                    *Ci = *Ai + *Bi;
                 else
-                    C[i] = A[i] - B[i];
+                    *Ci = *Ai - *Bi;
         }
     }
 

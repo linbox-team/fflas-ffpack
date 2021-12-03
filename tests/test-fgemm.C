@@ -31,9 +31,12 @@
 // #define WINOTHRESHOLD 100
 // #define OLD_DYNAMIC_PEELING
 
+
+
 #define ENABLE_CHECKER_fgemm 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 #include <iomanip>
 #include <iostream>
@@ -300,11 +303,9 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 
         if (nbw<0)
             nbw = (int) random() % 7;
-#ifdef __FFLASFFPACK_DEBUG
-        F->write(std::cerr) << std::endl;
-#endif
+
         typedef typename Field::Element  Element ;
-        typename Field::RandIter R(*F,b,seed++);
+        typename Field::RandIter R(*F,seed++);
         typename Field::NonZeroRandIter NZR(R);
 
         //size_t k = 0 ;
@@ -349,7 +350,6 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
             ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
             //std::cout << k << "/24" << std::endl; ++k;
         }
-        //std::cout<<std::endl;
         nbit--;
         if ( !ok )
             //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
@@ -367,7 +367,7 @@ int main(int argc, char** argv)
     std::cerr<<setprecision(17);
 
     uint64_t seed = getSeed();
-    size_t iters = 3 ;
+    size_t iters = 2 ;
     Givaro::Integer q = -1 ;
     uint64_t b = 0 ;
     int m = -50 ;
@@ -409,6 +409,7 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
+        ok = ok && run_with_field<Modular<RecInt::ruint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
@@ -416,7 +417,7 @@ int main(int argc, char** argv)
         seed++;
     } while (loop && ok);
 
-
+    if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
 
 
     return !ok ;

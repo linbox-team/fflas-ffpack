@@ -1,7 +1,8 @@
-/* fflas/fflas_faxpy.inl
+/* fflas/fflas_fscal.inl
  * Copyright (C) 2014 FFLAS-FFPACK group
  *
  * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Pierre Karpman <pierre.karpman@univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -27,34 +28,28 @@
 #ifndef __FFLASFFPACK_fscal_INL
 #define __FFLASFFPACK_fscal_INL
 
-namespace FFLAS { namespace vectorised {
+namespace FFLAS { namespace vectorised { namespace unswitch {
 
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
-    template<class SimdT, class Element>
-    inline typename std::enable_if<is_simd<SimdT>::value, void>::type
-    VEC_SCAL(SimdT & C, SimdT & ALPHA, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & INVP, SimdT & MIN, SimdT & MAX)
+    template<class Field, class SimdT>
+    inline void
+    VEC_SCAL(typename SimdT::vect_t & C, typename SimdT::vect_t & ALPHA, HelperModSimd<Field,SimdT> & H)
     {
-        using simd = Simd<Element>;
-        Q = simd::mul(C,INVP);
-        C = simd::mul(C,ALPHA);
-        Q = simd::floor(Q);
-        C = simd::fnmadd(C,Q,P);
-        Q = simd::greater(C,MAX);
-        T = simd::lesser(C,MIN);
-        Q = simd::vand(Q,NEGP);
-        T = simd::vand(T,P);
-        Q = simd::vor(Q,T);
-        C = simd::add(C,Q);
+        C = SimdT::mul(C,ALPHA);
+        VEC_MOD(C, H);
     }
 
-    template<class Element, class T1, class T2>
-    inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
-    scalp(Element *T, const Element alpha, const Element * U, const size_t n, const Element p, const Element invp, const T1 min_, const T2 max_)
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, HelperMod<Field> &G)
     {
-        Element min = (Element)min_, max=(Element)max_;
+        typedef typename Field::Element Element;
         using simd = Simd<Element>;
         using vect_t = typename simd::vect_t;
+        HelperModSimd<Field,simd> H(F,G);
+        vect_t C,ALPHA;
+        ALPHA = simd::set1(alpha);
 
         size_t i = 0;
 
@@ -62,99 +57,160 @@ namespace FFLAS { namespace vectorised {
         {
             for (; i < n ; i++)
             {
-                T[i]=monfmod(alpha*U[i], p);
-                T[i] -= (T[i] > max) ? p : 0;
-                T[i] += (T[i] < min) ? p : 0;
+                T[i] = reduce(alpha*U[i], H);
             }
             return;
 
         }
-        vect_t C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
-        ALPHA = simd::set1(alpha);
-        P   = simd::set1(p);
-        NEGP = simd::set1(-p);
-        INVP = simd::set1(invp);
-        MIN = simd::set1(min);
-        MAX = simd::set1(max);
+
         long st = long(T) % simd::alignment;
         if (st)
-        { // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+        { // the array T is not aligned (process few elements s.t. (T+i) is aligned)
             for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j+=sizeof(Element), i++)
             {
-                T[i] = monfmod(alpha*U[i], p);
-                T[i] -= (T[i] > max) ? p : 0;
-                T[i] += (T[i] < min) ? p : 0;
+                T[i] = reduce(alpha*U[i], H);
             }
         }
         FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
         if ((long(U+i)%simd::alignment==0))
         {
-            // perform the loop using 256 bits SIMD
+            // perform the loop using SIMD
             for (;i <= n - simd::vect_size ; i += simd::vect_size)
             {
                 C = simd::load(U+i);
-                VEC_SCAL<vect_t,Element>(C, ALPHA, Q, TMP, P, NEGP, INVP, MIN, MAX);
+                VEC_SCAL(C, ALPHA, H);
                 simd::store(T+i,C);
             }
         }
         // perform the last elt from T without SIMD
         for (; i < n ; i++)
         {
-            T[i] = monfmod(alpha*U[i],p);
-            T[i] -= (T[i] > max) ? p : 0;
-            T[i] += (T[i] < min) ? p : 0;
+            T[i] = reduce(alpha*U[i], H);
         }
-    }
-
-#else
-
-    template<class Element, class T1, class T2>
-    void
-    scalp(Element *T, const Element alpha, const Element * U, const size_t n, const Element p, const Element invp, const T1 min_, const T2 max_)
-    {
-        Element min = (Element)min_, max=(Element)max_;
-
-        size_t i = 0;
-
-        {
-            for (; i < n ; i++)
-            {
-                T[i]=monfmod(alpha*U[i], p);
-                T[i] -= (T[i] > max) ? p : 0;
-                T[i] += (T[i] < min) ? p : 0;
-            }
-            return;
-
-        }
-
     }
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
+
+    template<class Field>
+    inline typename std::enable_if<!FFLAS::support_simd_mod<typename Field::Element>::value && FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, HelperMod<Field> &H)
+    {
+        size_t i = 0;
+
+        for (; i < n ; i++)
+        {
+            T[i] = reduce(alpha*U[i], H);
+        }
+    }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX, HelperMod<Field> &H)
+    {
+        size_t i = 0;
+        typename Field::ConstElement_ptr Xi = U;
+        for (; Xi < U+n*incX ; Xi+=incX,i+=incX)
+        {
+            T[i]=reduce(alpha*(*Xi),H);
+        }
+    }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n,
+          const size_t & incX, const size_t & incY, HelperMod<Field> &H)
+    {
+        typename Field::ConstElement_ptr Xi = U;
+        typename Field::Element_ptr Yi = T;
+        for (; Xi < U+n*incX ; Xi+=incX,Yi+=incY)
+        {
+            *Yi = reduce(alpha*(*Xi),H);
+        }
+    }
+
+} // unswitch
 } // vectorised
 } // FFLAS
 
-namespace FFLAS {
+namespace FFLAS { namespace vectorised {
 
-    /***************************/
-    /*         LEVEL 1         */
-    /***************************/
+    // simd_mod => fast_mod, so this declaration's one in two
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n)
+    {
+        HelperMod<Field> H(F);
 
+        unswitch::scalp(F,T,alpha,U,n,H);
+    }
 
     template<class Field>
-    inline void
-    fscal( const Field& F, const size_t N,
-           const typename Field::Element a,
-           typename Field::ConstElement_ptr X, const size_t incX,
-           typename Field::Element_ptr Y, const size_t incY )
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX)
     {
-        // details::fscal(F,N,a,X,incX,Y,incY, typename FieldTraits<Field>::value() );
+        HelperMod<Field> H(F);
+
+        unswitch::scalp(F,T,alpha,U,n,incX,H);
+    }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    scalp(const Field &F, typename Field::Element_ptr T, const typename Field::Element alpha, typename Field::ConstElement_ptr U, const size_t n, const size_t & incX, const size_t & incY)
+    {
+        HelperMod<Field> H(F);
+
+        unswitch::scalp(F,T,alpha,U,n,incX,incY,H);
+    }
+
+
+} // vectorised
+} // FFLAS
+
+namespace FFLAS { namespace details {
+
+    /*** Entry-points for specialised code ***/
+    // simd_mod => fast_mod;
+    // will default to the best supported option in unswitch
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    fscalin( const Field & F , const size_t N,
+             const typename Field::Element a,
+             typename Field::Element_ptr  X, const size_t incX, FieldCategories::ModularTag)
+    {
+        if(incX == 1)
+        {
+            vectorised::scalp(F,X,a,X,N);
+        }
+        else
+        {
+            if (N < FFLASFFPACK_COPY_REDUCE) // defined in fflas_freduce.inl
+            {
+                vectorised::scalp(F,X,a,X,N,incX);
+            }
+            else
+            {
+                typename Field::Element_ptr Xc = fflas_new (F,N) ;
+                fassign (F,N,X,incX,Xc,1);
+                vectorised::scalp(F,Xc,a,Xc,N);
+                fassign (F,N,Xc,1,X,incX);
+                fflas_delete (Xc);
+            }
+        }
+    }
+
+    template<class Field>
+    inline typename std::enable_if<FFLAS::support_fast_mod<typename Field::Element>::value, void>::type
+    fscal( const Field & F , const size_t N,
+           const typename Field::Element a,
+           typename  Field::ConstElement_ptr X, const size_t incX,
+           typename Field::Element_ptr Y, const size_t incY, FieldCategories::ModularTag)
+    {
         if (F.isOne(a)) {
             fassign(F,N,X,incX,Y,incY);
             return ;
         }
 
-        typename Field::ConstElement_ptr Xi = X;
-        typename Field::Element_ptr Yi = Y;
         if (F.areEqual(a,F.mOne)){
             fneg(F,N,X,incX,Y,incY);
             return;
@@ -165,18 +221,58 @@ namespace FFLAS {
             return;
         }
 
-        if (incX == 1 && incY == 1)
-            for (size_t i = 0 ; i < N ; ++i)
-                F.mul( Y[i], a, X[i] );
+        if(incX == 1 && incY==1) {
+            vectorised::scalp(F,Y,a,X,N);
+        }
         else
-            for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
-                F.mul( *Yi, a, *Xi );
+        {
+            if (N < FFLASFFPACK_COPY_REDUCE)
+            {
+                vectorised::scalp(F,Y,a,X,N,incX,incY);
+            }
+            else
+            {
+                typename Field::Element_ptr Xc;
+                typename Field::Element_ptr Yc;
+                if (incX != 1)
+                {
+                    Xc = fflas_new (F,N);
+                    fassign(F,N,X,incX,Xc,1);
+                }
+                else
+                {
+                    Xc = const_cast<typename Field::Element_ptr>(X); // Oh the horror
+                }
+                if (incY != 1)
+                {
+                    Yc = fflas_new (F,N);
+                    fassign(F,N,Y,incY,Yc,1);
+                }
+                else
+                {
+                    Yc = Y;
+                }
+
+                vectorised::scalp(F,Yc,a,Xc,N);
+
+                if (incY != 1)
+                {
+                    fassign(F,N,Yc,1,Y,incY);
+                    fflas_delete(Yc);
+                }
+                if (incX != 1)
+                {
+                    fflas_delete(Xc);
+                }
+            }
+        }
     }
 
-    template<class Field>
+
+    template<class Field, class FC>
     inline void
     fscalin (const Field& F, const size_t n, const typename Field::Element a,
-             typename Field::Element_ptr X, const size_t incX)
+             typename Field::Element_ptr X, const size_t incX, FC)
     {
         if (F.isOne(a))
             return ;
@@ -202,6 +298,66 @@ namespace FFLAS {
                 F.mulin( *Xi, a);
     }
 
+
+    template<class Field, class FC>
+    inline void
+    fscal( const Field& F, const size_t N,
+           const typename Field::Element a,
+           typename Field::ConstElement_ptr X, const size_t incX,
+           typename Field::Element_ptr Y, const size_t incY, FC)
+    {
+        if (F.isOne(a)) {
+            fassign(F,N,X,incX,Y,incY);
+            return ;
+        }
+
+        if (F.areEqual(a,F.mOne)){
+            fneg(F,N,X,incX,Y,incY);
+            return;
+        }
+
+        if (F.isZero(a)){
+            fzero(F,N,Y,incY);
+            return;
+        }
+
+        typename Field::ConstElement_ptr Xi = X;
+        typename Field::Element_ptr Yi = Y;
+        if (incX == 1 && incY == 1)
+            for (size_t i = 0 ; i < N ; ++i)
+                F.mul( Y[i], a, X[i] );
+        else
+            for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
+                F.mul( *Yi, a, *Xi );
+    }
+} // details
+} // FFLAS
+
+namespace FFLAS {
+
+    /***************************/
+    /*         LEVEL 1         */
+    /***************************/
+
+    template<class Field>
+    inline void
+    fscalin (const Field& F, const size_t n, const typename Field::Element a,
+             typename Field::Element_ptr X, const size_t incX)
+    {
+        details::fscalin(F,n,a,X,incX,typename FieldTraits<Field>::category());
+    }
+
+    template<class Field>
+    inline void
+    fscal( const Field& F, const size_t N,
+           const typename Field::Element a,
+           typename Field::ConstElement_ptr X, const size_t incX,
+           typename Field::Element_ptr Y, const size_t incY)
+    {
+        details::fscal(F,N,a,X,incX,Y,incY,typename FieldTraits<Field>::category());
+    }
+
+
     template<>
     inline void
     fscal( const Givaro::DoubleDomain& , const size_t N,
@@ -209,7 +365,7 @@ namespace FFLAS {
            Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
            Givaro::DoubleDomain::Element_ptr y, const size_t incy )
     {
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_dcopy( (int)N, x, (int)incy, y, (int)incy);
@@ -223,7 +379,7 @@ namespace FFLAS {
            Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
            Givaro::FloatDomain::Element_ptr y, const size_t incy )
     {
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_scopy( (int)N, x, (int)incy, y, (int)incy);
@@ -237,7 +393,7 @@ namespace FFLAS {
              Givaro::DoubleDomain::Element_ptr y, const size_t incy )
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_dscal( (int)N, a, y, (int)incy);
@@ -250,124 +406,18 @@ namespace FFLAS {
              Givaro::FloatDomain::Element_ptr y, const size_t incy )
     {
 
-#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+#if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
         cblas_sscal( (int)N, a, y, (int)incy);
     }
 
-
-    template<>
-    inline void
-    fscalin( const Givaro::Modular<float>& F , const size_t N,
-             const float a,
-             float * X, const size_t incX )
-    {
-        if(incX == 1) {
-            float p, invp;
-            p=(float)F.cardinality();
-            invp=a/p;
-            vectorised::scalp(X,a,X,N,p,invp,0,p-1);
-        }
-        else {
-            float * Xi = X ;
-            for (; Xi < X+N*incX; Xi+=incX )
-                F.mulin( *Xi , a);
-
-        }
-    }
-
-    template<>
-    inline void
-    fscalin( const Givaro::ModularBalanced<float>& F , const size_t N,
-             const float a,
-             float * X, const size_t incX )
-    {
-        if(incX == 1) {
-            float p, invp;
-            p=(float)F.cardinality();
-            invp=a/p;
-            vectorised::scalp(X,a,X,N,p,invp,F.minElement(),F.maxElement());
-        }
-        else {
-            float * Xi = X ;
-            for (; Xi < X+N*incX; Xi+=incX )
-                F.mulin( *Xi , a);
-
-        }
-    }
-
-    template<>
-    inline void
-    fscalin( const Givaro::Modular<double>& F , const size_t N,
-             const double a,
-             double * X, const size_t incX )
-    {
-        if(incX == 1) {
-            double p, invp;
-            p=(double)F.cardinality();
-            invp=a/p;
-            vectorised::scalp(X,a,X,N,p,invp,0,p-1);
-        }
-        else {
-            double * Xi = X ;
-            for (; Xi < X+N*incX; Xi+=incX )
-                F.mulin( *Xi , a);
-
-        }
-    }
-
-    template<>
-    inline void
-    fscal( const Givaro::Modular<double>& F , const size_t N,
-           const double a,
-           const double * X, const size_t incX,
-           double * Y, const size_t incY )
-    {
-        if(incX == 1 && incY==1) {
-            double p, invp;
-            p=(double)F.cardinality();
-            invp=a/p;
-            vectorised::scalp(Y,a,X,N,p,invp,0,p-1);
-        }
-        else {
-            const double * Xi = X ;
-            double * Yi = Y ;
-            for (; Xi < X+N*incX; Xi+=incX,Yi+=incY )
-                F.mul(*Yi, *Xi , a);
-
-        }
-    }
-
-    template<>
-    inline void
-    fscalin( const Givaro::ModularBalanced<double>& F , const size_t N,
-             const double a,
-             double * X, const size_t incX )
-    {
-        if(incX == 1) {
-            double p, invp;
-            p=(double)F.cardinality();
-            invp=a/p;
-            vectorised::scalp(X,a,X,N,p,invp,F.minElement(),F.maxElement());
-        }
-        else {
-            double * Xi = X ;
-            for (; Xi < X+N*incX; Xi+=incX )
-                F.mulin( *Xi , a);
-
-        }
-    }
-
-
     /***************************/
     /*         LEVEL 2         */
     /***************************/
 
-
-
     template<class Field>
-    void
+    inline void
     fscalin (const Field& F, const size_t m , const size_t n,
              const typename Field::Element a,
              typename Field::Element_ptr A, const size_t lda)
@@ -387,7 +437,9 @@ namespace FFLAS {
             }
             else {
                 for (size_t i = 0 ; i < m ; ++i)
+                {
                     fscalin(F,n,a,A+i*lda,1);
+                }
             }
 
             return;
@@ -395,7 +447,7 @@ namespace FFLAS {
     }
 
     template<class Field>
-    void
+    inline void
     fscal (const Field& F, const size_t m , const size_t n,
            const typename Field::Element a,
            typename Field::ConstElement_ptr A, const size_t lda,

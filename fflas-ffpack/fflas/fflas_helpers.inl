@@ -76,6 +76,7 @@ namespace FFLAS {
     namespace MMHelperAlgo{
         struct Auto{};
         struct Classic{};
+        struct DivideAndConquer{};
         struct Winograd{};
         struct WinogradPar{};
         struct Bini{};
@@ -180,12 +181,10 @@ namespace FFLAS {
             if (beta < 0) absbeta = -beta;
             // This cast is needed when Cmin base type is int8/16_t,
             // getting -Cmin returns a int, not the same base type.
-            DFElt diff = MaxStorableValue - absbeta
-            * std::max(static_cast<const DFElt&>(-Cmin), Cmax);
-            DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
-            * std::max(static_cast<const DFElt&>(-Bmin), Bmax);
-            if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
+            DFElt diff = MaxStorableValue - absbeta * std::max(static_cast<const DFElt&>(-Cmin), Cmax);
+            DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax) * std::max(static_cast<const DFElt&>(-Bmin), Bmax);
 
+            if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
 
             DFElt kmax = diff/AB;
             return FFLAS::Protected::min_types<DFElt>(kmax);
@@ -255,6 +254,28 @@ namespace FFLAS {
                         std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
                         return false;
                     }
+#endif
+            return true;
+        }
+        bool checkOut(const Field& F, FFLAS_UPLO uplo, const size_t M, const size_t N,
+                      typename Field::ConstElement_ptr A, const size_t lda ){
+#ifdef __FFLASFFPACK_DEBUG
+            if (uplo == FflasUpper){
+                for (size_t i=0; i<M;++i)
+                    for (size_t j=i; j<N;++j)
+                        if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){
+                            std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
+                            return false;
+                        }
+            } else {
+                for (size_t i=0; i<M;++i)
+                    for (size_t j=0; j<=i;++j)
+                        if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){
+                            std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
+                            return false;
+                        }
+
+            }
 #endif
             return true;
         }

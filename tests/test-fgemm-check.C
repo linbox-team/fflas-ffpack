@@ -144,7 +144,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t 
         F->write(std::cerr) << std::endl;
 #endif
         typedef typename Field::Element  Element ;
-        typename Field::RandIter R(*F,b,local_seed++);
+        typename Field::RandIter R(*F,local_seed++);
         typename Field::NonZeroRandIter NZR(R);
 
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters, R);

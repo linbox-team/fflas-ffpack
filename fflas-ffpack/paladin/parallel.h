@@ -28,7 +28,6 @@
 #define __FFLASFFPACK_fflas_parallel_H
 
 
-
 #include "fflas-ffpack/config.h"
 
 #ifndef __FFLASFFPACK_USE_OPENMP
@@ -36,7 +35,6 @@
 #else
 #include "omp.h"
 #endif
-
 
 #ifdef __FFLASFFPACK_SEQUENTIAL
 #undef __FFLASFFPACK_USE_OPENMP
@@ -105,8 +103,9 @@
 
 #define SYNCH_GROUP(Args...) {{Args};}
 
-
+#define THREAD_INDEX 0
 #define NUM_THREADS 1
+#define SET_THREADS(num_threads) {}
 #define MAX_THREADS 1
 
 #define READ(Args...)
@@ -203,16 +202,33 @@ WAIT;
     for(iter.initialize(); !iter.isTerminated(); ++iter){ {Args;}  } }
 
 
+
 // for strategy 1D
 // WARNING: the inner code Args should not contain any coma outside parenthesis (e.g. declaration lists, and template param list)
-#define FOR1D(i, m, Helper, Args...)                             \
+#define FOR1D_1(i, m, Helper, Args ...)                             \
 FORBLOCK1D(_internal_iterator, m, Helper,                           \
-           TASK( , \
-                 {for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
+           const auto internal_iter_begin(_internal_iterator.begin());      \
+           const auto internal_iter_end(_internal_iterator.end());      \
+           TASK(VALUE(internal_iter_begin, internal_iter_end), \
+                 {for(auto i=internal_iter_begin; i!=internal_iter_end; ++i) \
                  { Args; } });)                                         \
                  WAIT;
 
 
+// WARNING: @fixme, the passed mode should not contain another VALUE mode
+#define FOR1D_2(i, m, Helper, mode, Args ...)                             \
+FORBLOCK1D(_internal_iterator, m, Helper,                           \
+           const auto internal_iter_begin(_internal_iterator.begin());      \
+           const auto internal_iter_end(_internal_iterator.end());      \
+           TASK(VALUE(internal_iter_begin, internal_iter_end) mode, \
+                 {for(auto i=internal_iter_begin; i!=internal_iter_end; ++i) \
+                 { Args; } });)                                         \
+                 WAIT;
+
+
+#define CONCATVAARGS(a, ...) CONCATVAARGS_(a, __VA_ARGS__)
+#define CONCATVAARGS_(a, ...) a##__VA_ARGS__
+#define FOR1D(i, m, Helper, ...) CONCATVAARGS(FOR1D_, NUMARGS(__VA_ARGS__))(i, m, Helper, __VA_ARGS__)
 
 /*
 #define PARFORBLOCK1D(iter, m, Helper, Args...)                         \
@@ -282,8 +298,12 @@ FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
 // parallel region
 #define PAR_BLOCK  PRAGMA_OMP_IMPL(omp parallel)   \
 PRAGMA_OMP_IMPL(omp single)
+
+# define THREAD_INDEX omp_get_thread_num()
 // get the number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
+// set the number of threads in the parallel region
+# define SET_THREADS(numthreads) omp_set_num_threads(numthreads)
 // get the number of threads specified with the global variable OMP_NUM_THREADS
 # define MAX_THREADS omp_get_max_threads()
 
@@ -383,7 +403,9 @@ PRAGMA_OMP_IMPL(omp single)
 #define BARRIER
 #define PAR_BLOCK
 
+#define THREAD_INDEX tbb::this_task_arena::current_thread_index()
 #define NUM_THREADS tbb::task_scheduler_init::default_num_threads()
+#define SET_THREADS(numthreads) tbb::task_scheduler_init::initialize(numthreads)
 #define MAX_THREADS tbb::task_scheduler_init::default_num_threads()
 #define READ(Args...)
 #define WRITE(Args...)
@@ -488,9 +510,11 @@ PARFORBLOCK2D(_internal_iterator, m, n, Helper,                     \
 #define PAR_BLOCK
 #define PARFOR1D for
 
+#  define THREAD_INDEX kaapi_get_thread_num()
+
 // Number of threads
 #  define NUM_THREADS kaapi_getconcurrency_cpu()
-
+#  define SET_THREADS(numthreads) {}
 #  define MAX_THREADS kaapi_getconcurrency_cpu()
 
 // Begin parallel main

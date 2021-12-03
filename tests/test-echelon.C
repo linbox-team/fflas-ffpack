@@ -56,7 +56,7 @@ using Givaro::ModularBalanced;
 
 template<class Field, class RandIter>
 bool
-test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
+test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G, bool par)
 {
     typedef typename Field::Element Element ;
     Element * A = FFLAS::fflas_new (F,m,n);
@@ -76,11 +76,13 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+        
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
-
-        R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
-
+        if(!par)
+            R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        else
+            R = FFPACK::pColumnEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
         if (R != r) {pass = false; break;}
 
         FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,U,n, LuTag);
@@ -117,7 +119,6 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -130,7 +131,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 template<class Field, class RandIter>
 bool
-test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
+test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G, bool par)
 {
     typedef typename Field::Element Element ;
     Element * A = FFLAS::fflas_new (F,m,n);
@@ -150,10 +151,14 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
 
-        R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        if(!par)
+            R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        else
+            R = FFPACK::pRowEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
 
         if (R != r) {pass = false; break;}
 
@@ -190,7 +195,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -203,7 +207,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 template<class Field, class RandIter>
 bool
-test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
+test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G, bool par)
 {
     typedef typename Field::Element Element ;
     Element * A = FFLAS::fflas_new (F,m,n);
@@ -216,17 +220,20 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *P = FFLAS::fflas_new<size_t>(n);
     size_t *Q = FFLAS::fflas_new<size_t>(m);
     size_t R = (size_t)-1;
-
     bool pass=true;
 
     for (size_t  l=0;l<iters;l++){
         R = (size_t)-1;
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+
         for (size_t j=0;j<n;j++) P[j]=0;
         for (size_t j=0;j<m;j++) Q[j]=0;
 
-        R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        if(!par)
+            R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        else
+            R = FFPACK::pReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
 
         if (R != r) {pass = false; break;}
 
@@ -259,7 +266,6 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -271,7 +277,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 }
 template<class Field, class RandIter>
 bool
-test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
+test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G, bool par)
 {
     typedef typename Field::Element Element ;
     Element * A = FFLAS::fflas_new (F,m,n);
@@ -285,6 +291,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
     size_t *Q = FFLAS::fflas_new<size_t>(n);
     size_t R = (size_t)-1;
 
+
     bool pass=true;
 
     for (size_t  l=0;l<iters;l++){
@@ -293,10 +300,15 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
         RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 
         FFLAS::fassign(F,m,n,A,lda,B,lda);
+
         for (size_t j=0;j<m;j++) P[j]=0;
         for (size_t j=0;j<n;j++) Q[j]=0;
 
-        R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        if(!par)
+            R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        else
+            R = FFPACK::pReducedRowEchelonForm (F, m, n, A, n, P, Q, true, 0, LuTag);
+
 
         if (R != r) {pass = false; break;}
 
@@ -338,7 +350,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
             break;
         }
     }
-
     FFLAS::fflas_delete( U);
     FFLAS::fflas_delete( L);
     FFLAS::fflas_delete( X);
@@ -360,7 +371,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
         Field* F= chooseField<Field>(q,b,seed);
         if (F==nullptr)
             return true;
-        typename Field::RandIter G(*F,b,seed++);
+        typename Field::RandIter G(*F,seed++);
         std::ostringstream oss;
         F->write(oss);
         std::cout.fill('.');
@@ -369,26 +380,48 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
         std::cout<<oss.str();
         std::cout<<" .";
 
-        ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+        ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+        ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+        ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+        ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+        ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+        ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, false);
         std::cout<<".";
-        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanSlab, G);
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanSlab, G, false);
         std::cout<<".";
-        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G);
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G, false);
         std::cout<<".";
+
+        ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G, true);
+        std::cout<<".";
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanSlab, G, true);
+        std::cout<<".";
+        ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G, true);
+        std::cout<<".";
+
         nbit--;
         if ( !ok )
             std::cout << "FAILED with seed = "<<seed<<std::endl;
@@ -404,9 +437,9 @@ int main(int argc, char** argv){
 
     Givaro::Integer q = -1;
     size_t b = 0;
-    size_t m = 284;
-    size_t n = 154;
-    size_t r = 54;
+    size_t m = 124;
+    size_t n = 64;
+    size_t r = 34;
     size_t iters = 3 ;
     bool loop = false;
     uint64_t seed =  getSeed();
