@@ -156,17 +156,19 @@ static inline uint64_t mulhi_u64(uint64_t x, uint64_t y) {
     uint128_t rl = xl * yl;
     return (uint64_t)(rl >> 64);
 #else
-    uint64_t x0 = (uint32_t)x, x1 = x >> 32;
-    uint64_t y0 = (uint32_t)y, y1 = y >> 32;
+    const uint64_t mask_lo = 0xFFFFFFFFULL;
 
-    uint64_t xy_hi =  x1 * y1;
+    uint64_t x0 = x & mask_lo, x1 = x >> 32;
+    uint64_t y0 = y & mask_lo, y1 = y >> 32;
+
+    uint64_t xy_hi  = x1 * y1;
     uint64_t xy_mid = x1 * y0;
     uint64_t yx_mid = x0 * y1;
-    uint64_t xy_lo =  x0 * y0;
+    uint64_t xy_lo  = x0 * y0;
 
-    uint64_t carry_bit = ((uint64_t)(uint32_t)xy_mid +
-                             (uint64_t)(uint32_t)yx_mid +
-                             (xy_lo >> 32)) >> 32;
+    uint64_t carry_bit = ((xy_mid & mask_lo) +
+                          (yx_mid & mask_lo) +
+                          (xy_lo >> 32)) >> 32;
 
     return xy_hi + (xy_mid >> 32) + (yx_mid >> 32) + carry_bit;
 #endif
