@@ -31,6 +31,8 @@
 #error "You need AVX512 instructions to perform 512bits operations on int64_t"
 #endif
 
+#include "fflas-ffpack/utils/bit_manipulation.h"
+
 /*
  * Simd512 specialized for int64_t
  */
@@ -345,19 +347,10 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-#ifdef __FFLASFFPACK_HAVE_INT128
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
-        return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
-                   (scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64),
-                   (scalar_t)((int128_t(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)((int128_t(ca.t[5]) * cb.t[5]) >> 64),
-                   (scalar_t)((int128_t(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)((int128_t(ca.t[7]) * cb.t[7]) >> 64));
-#else /* here we assume __x86_64__ */
-        Converter o;
-        for (unsigned int i = 0; i < vect_size; i++)
-            __asm__ ("imulq %2" : "=d" (o.t[i]) : "a" (ca.t[i]), "r" (cb.t[i]));
-        return o.v;
-#endif
+        return set(mulhi_64(ca.t[0], cb.t[0]), mulhi_64 (ca.t[1], cb.t[1]),
+                   mulhi_64(ca.t[2], cb.t[2]), mulhi_64 (ca.t[3], cb.t[3]),
+                   mulhi_64(ca.t[4], cb.t[4]), mulhi_64 (ca.t[5], cb.t[5]),
+                   mulhi_64(ca.t[6], cb.t[6]), mulhi_64 (ca.t[7], cb.t[7]));
     }
 
     /*
@@ -710,20 +703,10 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-#ifdef __FFLASFFPACK_HAVE_INT128
-        //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
-        return set((scalar_t)(((uint128_t)(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)(((uint128_t)(ca.t[1]) * cb.t[1]) >> 64),
-                   (scalar_t)(((uint128_t)(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)(((uint128_t)(ca.t[3]) * cb.t[3]) >> 64),
-                   (scalar_t)(((uint128_t)(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)(((uint128_t)(ca.t[5]) * cb.t[5]) >> 64),
-                   (scalar_t)(((uint128_t)(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)(((uint128_t)(ca.t[7]) * cb.t[7]) >> 64));
-#else /* here we assume __x86_64__ */
-        Converter o;
-        for (unsigned int i = 0; i < vect_size; i++)
-            __asm__ ("mulq %2" : "=d" (o.t[i]) : "a" (ca.t[i]), "r" (cb.t[i]));
-        return o.v;
-#endif
+        return set(mulhi_u64(ca.t[0], cb.t[0]), mulhi_u64 (ca.t[1], cb.t[1]),
+                   mulhi_u64(ca.t[2], cb.t[2]), mulhi_u64 (ca.t[3], cb.t[3]),
+                   mulhi_u64(ca.t[4], cb.t[4]), mulhi_u64 (ca.t[5], cb.t[5]),
+                   mulhi_u64(ca.t[6], cb.t[6]), mulhi_u64 (ca.t[7], cb.t[7]));
     }
 
     /*
