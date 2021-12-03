@@ -36,6 +36,7 @@
 
 #include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
+#include "fflas-ffpack/utils/bit_manipulation.h"
 #include <vector>
 #include <type_traits>
 
@@ -432,18 +433,14 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
      *	    [b0, b1, b2, b3]	int64_t
      * Return : [Floor(a0*b0/2^64), ..., Floor(a3*b3/2^64)] int64_t
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-        return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
-                   (scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64));
+        return set(mulhi_64(ca.t[0], cb.t[0]), mulhi_64 (ca.t[1], cb.t[1]),
+                   mulhi_64(ca.t[2], cb.t[2]), mulhi_64 (ca.t[3], cb.t[3]));
     }
-#endif
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results
@@ -764,18 +761,14 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
      [b0, b1, b2, b3]  		 							 uint64_t
      * Return :
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
-        Converter c0, c1;
-        c0.v = a;
-        c1.v = b;
-        return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set(mulhi_u64(ca.t[0], cb.t[0]), mulhi_u64 (ca.t[1], cb.t[1]),
+                   mulhi_u64(ca.t[2], cb.t[2]), mulhi_u64 (ca.t[3], cb.t[3]));
     }
-#endif
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit
