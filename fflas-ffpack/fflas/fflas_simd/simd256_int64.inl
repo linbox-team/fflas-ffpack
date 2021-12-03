@@ -335,6 +335,31 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     }
 
     /*
+     * Transpose the 4x4 matrix formed by the 4 rows of 64-bit integers in r0,
+     * r1, r2 and r3, and store the transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01, r02, r03 ]
+     *       r1 = [ r10, r11, r12, r13 ]
+     *       r2 = [ r20, r21, r22, r23 ]
+     *       r3 = [ r30, r31, r32, r33 ]
+     * Return: r0 = [ r00, r10, r20, r30 ]
+     *         r1 = [ r01, r11, r21, r31 ]
+     *         r2 = [ r02, r12, r22, r32 ]
+     *         r3 = [ r03, r13, r23, r33 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3) {
+        vect_t t0, t1, t2, t3;
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        r0 = _mm256_permute2x128_si256 (t0, t2, 0x20);
+        r1 = _mm256_permute2x128_si256 (t1, t3, 0x20);
+        r2 = _mm256_permute2x128_si256 (t0, t2, 0x31);
+        r3 = _mm256_permute2x128_si256 (t1, t3, 0x31);
+    }
+
+    /*
      * Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
      * Args   : [a0, a1, a2, a3] int64_t
      [b0, b1, b2, b3] int64_t

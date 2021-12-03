@@ -357,6 +357,117 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
     }
 
     /*
+     * Transpose the 16x16 matrix formed by the 16 rows of 32-bit integers in
+     * r0, r1, r2, r3, ..., r14 and r15, and store the transposed matrix in
+     * these vectors.
+     * Args: r0 = [ r00, r01, r02, r03, r04, r05, r06, r07, ... ]
+     *       r1 = [ r10, r11, r12, r13, r14, r15, r16, r17, ... ]
+     *       ...                                            ...
+     * Return: r0 = [ r00, r10, r20, r30, r40, r50, r60, r70, ... ]
+     *         r1 = [ r01, r11, r21, r31, r41, r51, r61, r71, ... ]
+     *         ...                                            ...
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3, vect_t& r4,
+               vect_t& r5, vect_t& r6, vect_t& r7, vect_t& r8, vect_t& r9,
+               vect_t& r10, vect_t& r11, vect_t& r12, vect_t& r13, vect_t& r14,
+               vect_t& r15) {
+        vect_t t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11,t12,t13,t14,t15;
+        vect_t v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,v12,v13,v14,v15;
+
+        int64_t permute_idx1[16] = { 0x00, 0x01, 0x02, 0x03,
+                                     0x10, 0x11, 0x12, 0x13,
+                                     0x08, 0x09, 0x0a, 0x0b,
+                                     0x18, 0x19, 0x1a, 0x1b };
+        int64_t permute_idx2[16] = { 0x04, 0x05, 0x06, 0x07,
+                                     0x14, 0x15, 0x16, 0x17,
+                                     0x0c, 0x0d, 0x0e, 0x0f,
+                                     0x1c, 0x1d, 0x1e, 0x1f };
+        int64_t permute_idx3[16] = { 0x00, 0x01, 0x02, 0x03,
+                                     0x04, 0x05, 0x06, 0x07,
+                                     0x10, 0x11, 0x12, 0x13,
+                                     0x14, 0x15, 0x16, 0x17 };
+        int64_t permute_idx4[16] = { 0x08, 0x09, 0x0a, 0x0b,
+                                     0x0c, 0x0d, 0x0e, 0x0f,
+                                     0x18, 0x19, 0x1a, 0x1b,
+                                     0x1c, 0x1d, 0x1e, 0x1f };
+
+        vect_t i1 = loadu (permute_idx1);
+
+        v0 = unpacklo_intrinsic (r0, r2);
+        v1 = unpacklo_intrinsic (r1, r3);
+        v4 = unpacklo_intrinsic (r4, r6);
+        v5 = unpacklo_intrinsic (r5, r7);
+        v8 = unpacklo_intrinsic (r8, r10);
+        v9 = unpacklo_intrinsic (r9, r11);
+        v12 = unpacklo_intrinsic (r12, r14);
+        v13 = unpacklo_intrinsic (r13, r15);
+        v2 = unpackhi_intrinsic (r0, r2);
+        v3 = unpackhi_intrinsic (r1, r3);
+        v6 = unpackhi_intrinsic (r4, r6);
+        v7 = unpackhi_intrinsic (r5, r7);
+        v10 = unpackhi_intrinsic (r8, r10);
+        v11 = unpackhi_intrinsic (r9, r11);
+        v14 = unpackhi_intrinsic (r12, r14);
+        v15 = unpackhi_intrinsic (r13, r15);
+
+        t0 = unpacklo_intrinsic (v0, v1);
+        t2 = unpacklo_intrinsic (v2, v3);
+        t4 = unpacklo_intrinsic (v4, v5);
+        t6 = unpacklo_intrinsic (v6, v7);
+        t8 = unpacklo_intrinsic (v8, v9);
+        t10 = unpacklo_intrinsic (v10, v11);
+        t12 = unpacklo_intrinsic (v12, v13);
+        t14 = unpacklo_intrinsic (v14, v15);
+        t1 = unpackhi_intrinsic (v0, v1);
+        t3 = unpackhi_intrinsic (v2, v3);
+        t5 = unpackhi_intrinsic (v4, v5);
+        t7 = unpackhi_intrinsic (v6, v7);
+        t9 = unpackhi_intrinsic (v8, v9);
+        t11 = unpackhi_intrinsic (v10, v11);
+        t13 = unpackhi_intrinsic (v12, v13);
+        t15 = unpackhi_intrinsic (v14, v15);
+
+
+        vect_t i2 = loadu (permute_idx2);
+        v0 = _mm512_permutex2var_epi32 (t0, i1, t4);
+        v1 = _mm512_permutex2var_epi32 (t1, i1, t5);
+        v2 = _mm512_permutex2var_epi32 (t2, i1, t6);
+        v3 = _mm512_permutex2var_epi32 (t3, i1, t7);
+        v8 = _mm512_permutex2var_epi32 (t8, i1, t12);
+        v9 = _mm512_permutex2var_epi32 (t9, i1, t13);
+        v10 = _mm512_permutex2var_epi32 (t10, i1, t14);
+        v11 = _mm512_permutex2var_epi32 (t11, i1, t15);
+        vect_t i3 = loadu (permute_idx3);
+        v4 = _mm512_permutex2var_epi32 (t0, i2, t4);
+        v5 = _mm512_permutex2var_epi32 (t1, i2, t5);
+        v6 = _mm512_permutex2var_epi32 (t2, i2, t6);
+        v7 = _mm512_permutex2var_epi32 (t3, i2, t7);
+        v12 = _mm512_permutex2var_epi32 (t8, i2, t12);
+        v13 = _mm512_permutex2var_epi32 (t9, i2, t13);
+        v14 = _mm512_permutex2var_epi32 (t10, i2, t14);
+        v15 = _mm512_permutex2var_epi32 (t11, i2, t15);
+
+        vect_t i4 = loadu (permute_idx4);
+        r0 = _mm512_permutex2var_epi32 (v0, i3, v8);
+        r1 = _mm512_permutex2var_epi32 (v1, i3, v9);
+        r2 = _mm512_permutex2var_epi32 (v2, i3, v10);
+        r3 = _mm512_permutex2var_epi32 (v3, i3, v11);
+        r4 = _mm512_permutex2var_epi32 (v4, i3, v12);
+        r5 = _mm512_permutex2var_epi32 (v5, i3, v13);
+        r6 = _mm512_permutex2var_epi32 (v6, i3, v14);
+        r7 = _mm512_permutex2var_epi32 (v7, i3, v15);
+        r8 = _mm512_permutex2var_epi32 (v0, i4, v8);
+        r9 = _mm512_permutex2var_epi32 (v1, i4, v9);
+        r10 = _mm512_permutex2var_epi32 (v2, i4, v10);
+        r11 = _mm512_permutex2var_epi32 (v3, i4, v11);
+        r12 = _mm512_permutex2var_epi32 (v4, i4, v12);
+        r13 = _mm512_permutex2var_epi32 (v5, i4, v13);
+        r14 = _mm512_permutex2var_epi32 (v6, i4, v14);
+        r15 = _mm512_permutex2var_epi32 (v7, i4, v15);
+    }
+
+    /*
      * Blend 32-bit integers from a and b using control mask s.
      * Args: a = [ a0, ..., a15 ]
      *       b = [ b0, ..., b15 ]

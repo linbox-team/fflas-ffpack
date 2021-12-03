@@ -343,6 +343,54 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
     }
 
     /*
+     * Transpose the 8x8 matrix formed by the 8 rows of single-precision
+     * (32-bit) floating-point elements in r0, r1, r2, r3, r4, r5, r6 and r7,
+     * and store the transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01, r02, r03, r04, r05, r06, r07 ]
+     *       r1 = [ r10, r11, r12, r13, r14, r15, r16, r17 ]
+     *       ...                   ...                   ...
+     *       r6 = [ r60, r61, r62, r63, r64, r65, r66, r67 ]
+     *       r7 = [ r70, r71, r72, r73, r74, r75, r76, r77 ]
+     * Return: r0 = [ r00, r10, r20, r30, r40, r50, r60, r70 ]
+     *         r1 = [ r01, r11, r21, r31, r41, r51, r61, r71 ]
+     *         ...                   ...                   ...
+     *         r6 = [ r06, r16, r26, r36, r46, r56, r66, r76 ]
+     *         r7 = [ r07, r17, r27, r37, r47, r57, r67, r77 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3, vect_t& r4,
+               vect_t& r5, vect_t& r6, vect_t& r7) {
+        vect_t t0, t1, t2, t3, t4, t5, t6, t7;
+        vect_t v0, v1, v2, v3, v4, v5, v6, v7;
+        v0 = unpacklo_intrinsic (r0, r2);
+        v1 = unpacklo_intrinsic (r1, r3);
+        v4 = unpacklo_intrinsic (r4, r6);
+        v5 = unpacklo_intrinsic (r5, r7);
+        v2 = unpackhi_intrinsic (r0, r2);
+        v3 = unpackhi_intrinsic (r1, r3);
+        v6 = unpackhi_intrinsic (r4, r6);
+        v7 = unpackhi_intrinsic (r5, r7);
+
+        t0 = unpacklo_intrinsic (v0, v1);
+        t2 = unpacklo_intrinsic (v2, v3);
+        t4 = unpacklo_intrinsic (v4, v5);
+        t6 = unpacklo_intrinsic (v6, v7);
+        t1 = unpackhi_intrinsic (v0, v1);
+        t3 = unpackhi_intrinsic (v2, v3);
+        t5 = unpackhi_intrinsic (v4, v5);
+        t7 = unpackhi_intrinsic (v6, v7);
+
+        r0 = _mm256_permute2f128_ps (t0, t4, 0x20);
+        r1 = _mm256_permute2f128_ps (t1, t5, 0x20);
+        r2 = _mm256_permute2f128_ps (t2, t6, 0x20);
+        r3 = _mm256_permute2f128_ps (t3, t7, 0x20);
+        r4 = _mm256_permute2f128_ps (t0, t4, 0x31);
+        r5 = _mm256_permute2f128_ps (t1, t5, 0x31);
+        r6 = _mm256_permute2f128_ps (t2, t6, 0x31);
+        r7 = _mm256_permute2f128_ps (t3, t7, 0x31);
+    }
+
+    /*
      * Blend packed single-precision (32-bit) floating-point elements from a and
      * b using control mask s.
      * Args: a = [ a0, ..., a7 ]
