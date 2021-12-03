@@ -300,7 +300,7 @@ int main(int argc, char** argv)
     size_t t = 1;
 #endif
     /* A bit less easy */
-    size_t s = 2;
+    size_t s = 1;
     size_t t = 2;
     size_t n = 12;
 
