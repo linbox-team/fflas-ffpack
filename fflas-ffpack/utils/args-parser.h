@@ -223,6 +223,23 @@ int getListArgs(std::list<int> & outlist, std::string & instring)
 
 
 namespace FFLAS {
+    /**
+     * @brief Get the value of an argument 
+     *        and avoid core dump when no value was given after an argument
+     * 
+     * @param argv argument value list
+     * @param i    argument index
+     * @return char* argument value
+     */
+    char* getArgumentValue(int argc, char **argv,int i){
+        if (i+1 < argc) {
+            return argv[i+1];
+        } else {
+            std::cerr << "ArgumentParser error: Expected a value after argument " << argv[i] << std::endl;
+            exit(-1);
+        }
+    }
+
     void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
     {
         int i;
@@ -260,21 +277,21 @@ namespace FFLAS {
 
                     case TYPE_INT:
                         {
-                            *(int *) current->data = atoi (argv[i+1]);
+                            *(int *) current->data = atoi (getArgumentValue(argc, argv, i));
                             ++i;
                         }
                         break;
 
                     case TYPE_UINT64:
                         {
-                            *(uint64_t *) current->data = atol (argv[i+1]);
+                            *(uint64_t *) current->data = atol (getArgumentValue(argc, argv, i));
                             ++i;
                         }
                         break;
 
                     case TYPE_LONGLONG:
                         {
-                            *(long long *) current->data = atol (argv[i+1]);
+                            *(long long *) current->data = atol (getArgumentValue(argc, argv, i));
                             ++i;
                         }
                         break;
@@ -282,9 +299,9 @@ namespace FFLAS {
                     case TYPE_INTEGER:
                         {
 #ifdef _GIVARO_CONFIG_H
-                            type_integer tmp(argv[i+1]);
+                            type_integer tmp(getArgumentValue(argc, argv, i));
 #else
-                            type_integer tmp = atol(argv[i+1]);
+                            type_integer tmp = atol(getArgumentValue(argc, argv, i));
 #endif
                             *(type_integer *) current->data = tmp;
                         }
@@ -293,14 +310,14 @@ namespace FFLAS {
 
                     case TYPE_DOUBLE:
                         {
-                            *(double *) current->data = atof (argv[i+1]);
+                            *(double *) current->data = atof (getArgumentValue(argc, argv, i));
                             ++i;
                         }
                         break;
 
                     case TYPE_INTLIST:
                         {
-                            std::string lst = argv[i+1] ;
+                            std::string lst = getArgumentValue(argc, argv, i) ;
                             std::list<int> LST ;
                             getListArgs(LST,lst);
                             *(std::list<int> *) current->data = LST ;
@@ -310,7 +327,7 @@ namespace FFLAS {
 
                     case TYPE_STR:
                         {
-                            *(std::string *) current->data = argv[i+1] ;
+                            *(std::string *) current->data = getArgumentValue(argc, argv, i);
                             ++i;
                         }
                         break;
