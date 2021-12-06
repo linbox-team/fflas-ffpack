@@ -264,22 +264,126 @@ bool hand_test_reconstruction (const Field & F, size_t n, size_t s,
   return true;
 }
 
+/** \brief test equality between matrix reconstructed by sssToDense and applied to identity with productSSSxTS */
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, size_t iters, uint64_t seed){
+bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s, 
+					typename Field::ConstElement_ptr P, size_t ldp,
+					typename Field::ConstElement_ptr Q, size_t ldq,
+					typename Field::ConstElement_ptr R, size_t ldr,
+					typename Field::ConstElement_ptr U, size_t ldu,
+					typename Field::ConstElement_ptr V, size_t ldv,
+					typename Field::ConstElement_ptr W, size_t ldw,
+					typename Field::ConstElement_ptr D, size_t ldd)
+{
+
+  typename Field::Element_ptr rec = fflas_new (F, n, n);
+  typename Field::Element_ptr app = fflas_new (F, n, n);
+  typename Field::Element_ptr Id = fflas_new (F, n, n);
+  fidentity (F, n, n, Id, n);
+  
+  sssToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+		  D, ldd, rec, n);
+  productSSSxTS (F, n, n, s, F.one, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
+		 Id, n, F.zero, app, n);
+
+  bool ok = fequal (F, n, n, rec, n, app, n);
+
+  FFLAS::fflas_delete(rec);
+  FFLAS::fflas_delete(app);
+  FFLAS::fflas_delete(Id);
+
+  if ( !ok )
+	std::cout << "Different results for reconstruction and application to identity "<<std::endl;
+  else
+	std::cout << "Same results for reconstruction and application to identity "<<std::endl;
+  return ok;
+}
+
+/** \brief test equality between applying productSSSxTS or dense matrix */
+template<class Field>
+bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t s,
+				     const typename Field::Element alpha,
+				     typename Field::ConstElement_ptr P, size_t ldp,
+				     typename Field::ConstElement_ptr Q, size_t ldq,
+				     typename Field::ConstElement_ptr R, size_t ldr,
+				     typename Field::ConstElement_ptr U, size_t ldu,
+				     typename Field::ConstElement_ptr V, size_t ldv,
+				     typename Field::ConstElement_ptr W, size_t ldw,
+				     typename Field::ConstElement_ptr D, size_t ldd,
+				     typename Field::ConstElement_ptr B, size_t ldb,
+				     const typename Field::Element beta,
+				     typename Field::ConstElement_ptr C, size_t ldc)
+{
+  typename  Field::Element_ptr A = fflas_new (F, n, n);
+  sssToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+		  D, ldd, A, n);
+  
+  typename  Field::Element_ptr dense = fflas_new (F, n, t);
+  typename  Field::Element_ptr qs = fflas_new (F, n, t);
+  fassign (F, n, t, C, ldc, dense, t);
+  fassign (F, n, t, C, ldc, qs, t);
+
+  fgemm (F, FflasNoTrans, FflasNoTrans, n, t, n, alpha, A, n, B, ldb, beta, dense, t);
+  productSSSxTS (F, n, t, s, alpha, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
+		 B, ldb, beta, qs, t);
+
+  bool ok = fequal (F, n, t, dense, t, qs, t);
+
+  FFLAS::fflas_delete(A);
+  FFLAS::fflas_delete(dense);
+  FFLAS::fflas_delete(qs);
+
+  if ( !ok )
+	std::cout << "Different results for dense and qs application "<<std::endl;
+  else
+	std::cout << "Same results for dense and qs application "<<std::endl;
+  return ok;
+}
+
+template<class Field>
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, size_t iters, uint64_t seed)
+{
   bool ok = true ;
   typedef typename Field::Element_ptr Element_ptr ;
   while (ok && iters)
     {
+      /* New field */
       Field* F= chooseField<Field>(q,b,seed);
       if (F==nullptr)
 	return true;
-  
+      /* I don't know what this does */
+      typename Field::RandIter G(*F,seed++);
+      std::ostringstream oss;
+      F->write(oss);
+
+      /* Generate generators (which can be cropped a bit) */
       Element_ptr D = fflas_new (*F, n, s);
-      Element_ptr P = fflas_new (*F, n, s);     // Could be n - s but used as U (n - rs) too
+      Element_ptr P = fflas_new (*F, n, s);     // Could be n - s 
       Element_ptr Q = fflas_new (*F, n, s);     // Could be n - rs
       Element_ptr R = fflas_new (*F, n - s, s); // Could be n - s - rs
+      Element_ptr U = fflas_new (*F, n, s);     // Could be n - rs 
+      Element_ptr V = fflas_new (*F, n, s);     // Could be n - s
+      Element_ptr W = fflas_new (*F, n - s, s); // Could be n - s - rs
+      Element_ptr C = fflas_new (*F, n, t);
       Element_ptr B = fflas_new (*F, n, t);
-  
+
+      frand (*F, G, n, s, D, s);
+      frand (*F, G, n, s, P, s);
+      frand (*F, G, n, s, Q, s);
+      frand (*F, G, n - s, s, R, s);
+      frand (*F, G, n, s, U, s);
+      frand (*F, G, n, s, V, s);
+      frand (*F, G, n - s, s, W, s);
+      frand (*F, G, n, t, C, t);
+      frand (*F, G, n, t, B, t);
+
+      /* Does RandIter.random really work like this? */
+      typename Field::Element alpha, beta;
+      G.random(alpha);
+      G.random(beta);
+	
+      /* Used for tests "by hand" */
+#if 0
       for (size_t line = 0; line < n; line++)
 	{
 	  for (size_t column = 0; column < s; column++)
@@ -305,11 +409,17 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
       //  ok = ok && test_UT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
       /* Test reconstruction */
       ok = ok && hand_test_reconstruction (*F, n, s, P, s, Q, s, R, s, P, s, Q, s, R, s, D, s);
+#else
+      /* Call to functions being implemented */
+      ok = ok && test_reconstruction_compatibility(*F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
+      ok = ok && test_application_compatibility(*F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
+#endif
+      
       if ( !ok )
 	std::cout << "FAILED "<<std::endl;
       else
 	std::cout << "PASSED "<<std::endl;
-      delete F;
+
 
       /* Free memory and return */
       FFLAS::fflas_delete(D);
@@ -317,12 +427,20 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
       FFLAS::fflas_delete(P);
       FFLAS::fflas_delete(Q);
       FFLAS::fflas_delete(R);
+      FFLAS::fflas_delete(C);
+      FFLAS::fflas_delete(U);
+      FFLAS::fflas_delete(V);
+      FFLAS::fflas_delete(W);
+
+      delete F;
       iters--;
     }
   
   return ok;
 }
 
+/* main function used for tests done "by hand" */
+#if 0
 int main(int argc, char** argv)
 {
   cerr<<setprecision(20);
@@ -349,12 +467,11 @@ int main(int argc, char** argv)
   ok = ok && run_with_field<Givaro::Modular<int64_t> > (q, b, n, s, t, seed);
   return !ok;
 }
+#endif
 
-/* New main function WIP */
-#if 0
 int main(int argc, char** argv)
 {
-  cerr<<setprecision(20);
+  cerr<<setprecision(20); //Not sure why this is here
   Givaro::Integer q=-1;
   size_t b=0;
   size_t n=93;
@@ -368,9 +485,8 @@ int main(int argc, char** argv)
 		   { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		   { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
 		   { 'n', "-n N", "Set the matrix order.", TYPE_INT , &n },
-		   { 'r', "-r R", "Set the rank.", TYPE_INT , &r },
-		   { 'm', "-m M", "Set the col dim of the TS matrix.", TYPE_INT , &m },
-		   { 't', "-t T", "Set the order of quasi-separability.", TYPE_INT , &t },
+		   { 's', "-s S", "Set the order of quasi-separability.", TYPE_INT , &s },
+		   { 't', "-t T", "Set the col dim of the TS matrix.", TYPE_INT , &t },
 		   { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		   { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
 		   { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
@@ -402,4 +518,3 @@ int main(int argc, char** argv)
     
   return !ok;
 }
-#endif
