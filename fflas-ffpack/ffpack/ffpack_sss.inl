@@ -132,11 +132,12 @@ namespace FFPACK{
     typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, t);
     typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, t);
 
-    /* Temp1 <- alpha * Q_1 * B_1 */
-    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-	   s, t, s, alpha, Q,          
-	   ldq, B, ldb, Fi.zero,       // No addition
-	   Temp1, t);                                    // Leading dimension s
+    if (k > 1)
+      /* Temp1 <- alpha * Q_1 * B_1 */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+	     s, t, s, alpha, Q,          
+	     ldq, B, ldb, Fi.zero,       // No addition
+	     Temp1, t);                                    // Leading dimension s
   
     /* Instructions are doubled in the loop 
      *in order to avoid using more than two temporary blocks */
@@ -233,9 +234,10 @@ namespace FFPACK{
       }
     else
       {
-	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, // s x s by s x t
-	       alpha, V + (k - 2) * s * ldv, ldv, B + (k - 1) * s * ldb, ldb, Fi.zero,    
-	       Temp1, t); // Last block is same as above 
+	if (kf > 1) //No need if no full anti-diagonal block
+	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, s, // s x s by s x t
+		 alpha, V + (k - 2) * s * ldv, ldv, B + (k - 1) * s * ldb, ldb, Fi.zero,    
+		 Temp1, t); // Last block is same as above 
       }
   
     /* Sarting block: n - ls - s */
@@ -377,9 +379,10 @@ namespace FFPACK{
     typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, s);
 
     /* Line 2 */
-    /* A_{2, 1} <- P_{2} * Q_{1} */
-    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, P, 
-	   ldp, Q, ldq, Fi.zero, A +  s * lda, lda);
+    if (kf > 1)
+      /* A_{2, 1} <- P_{2} * Q_{1} */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, P, 
+	     ldp, Q, ldq, Fi.zero, A +  s * lda, lda);
     
     /* After line 2, R is also applied */
     for (size_t line = 1; line < kf - 1; line++) // Loop on lines which have LT part
@@ -391,7 +394,7 @@ namespace FFPACK{
 	       ldp, Q + line * s * ldq, ldq, Fi.zero, A + (line + 1) * s * lda + line * s, lda);
 	/* Temp1 <- P_{line + 2} * R_{line + 1} */
 	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, P + line * s * ldp, 
-	       ldp, R + line * s * ldr, ldr, Fi.zero, Temp1, s);
+	       ldp, R + (line - 1) * s * ldr, ldr, Fi.zero, Temp1, s);
 	
 	/* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
 	for (size_t block = 1; block < line; block+=2)
@@ -401,7 +404,7 @@ namespace FFPACK{
 		   Q + (line - block) * s * ldq, ldq, Fi.zero, A + (line + 1) * s * lda + (line - block) * s, lda);
 	    /* Temp2 <- Temp1 * R_{line + 1 - block} */
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, Temp1, 
-		   s, R + (line - block) * s * ldr, ldr, Fi.zero, Temp2, s);
+		   s, R + (line - 1 - block) * s * ldr, ldr, Fi.zero, Temp2, s);
 
 	    /* A_{line + 2, line - block} <- Temp2 * Q_{line - block} */
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, Temp2, s,
@@ -413,7 +416,7 @@ namespace FFPACK{
 	    if (block + 1 < line)
 	    /* Temp1 <- Temp2 * R_{line - block} */
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, Temp2, 
-		   s, R + (line - block - 1) * s * ldr, ldr, Fi.zero, Temp1, s);
+		   s, R + (line - block - 2) * s * ldr, ldr, Fi.zero, Temp1, s);
 	  }
 	/* First column if not done already */
 	if (line%2)
@@ -424,18 +427,20 @@ namespace FFPACK{
     
     /* Last line if partial */
     /* rs lines in the block */
-    if (rs)
+    if (rs && (k > 1))
       /* -1'd line indices of R, trying to avoid a segfault
-       * Might be worse */
+       * Might be worse 
+       * Seems fine */
             {
 	/* Loop needs Temp1, which is first set here */
 	/* A_{kf + 1, kf} <- P_{kf + 1} * Q_{kf} */
 	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 	       rs, s, s, Fi.one, P + (kf - 1) * s * ldp, 
 	       ldp, Q + (kf - 1) * s * ldq, ldq, Fi.zero, A + kf * s * lda + (kf - 1) * s, lda);
-	/* Temp1 <- P_{(kf + 1)} * R_{kf} */
-	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, P + (kf - 1) * s * ldp, 
-	       ldp, R + (kf - 2) * s * ldr, ldr, Fi.zero, Temp1, s); // rs x s by s x s
+	if (kf > 1) // Otherwise no R
+	  /* Temp1 <- P_{(kf + 1)} * R_{kf} */
+	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, P + (kf - 1) * s * ldp, 
+		 ldp, R + (kf - 2) * s * ldr, ldr, Fi.zero, Temp1, s); // rs x s by s x s
 	
 	/* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
 	for (size_t block = 1; block < (kf - 1); block+=2)
@@ -470,9 +475,10 @@ namespace FFPACK{
     /* Symmetrically identical to the lower part */
 
     /* Column 2 */
-    /* A_{1, 2} <- U_{2} * V_{1} */
-    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U, 
-	   ldu, V, ldv, Fi.zero, A + s, lda);
+    if (kf > 1)
+      /* A_{1, 2} <- U_{2} * V_{1} */
+      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U, 
+	     ldu, V, ldv, Fi.zero, A + s, lda);
     
     /* After column 2, R is also applied */
     for (size_t column = 1; column < kf - 1; column++) // Loop on columns which have a W
@@ -483,7 +489,7 @@ namespace FFPACK{
 	       s, s, s, Fi.one, U + column * s * ldu, // In this loop, all blocks are s x s
 	       ldu, V + column * s * ldv, ldv, Fi.zero, A + (column) * s * lda + (column + 1) * s, lda);
 	/* Temp1 <- W_{column + 1} * V_{column + 2} */
-	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, W + column * s * ldw, 
+	fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, W + (column - 1) * s * ldw, 
 	       ldw, V + column * s * ldv, ldv, Fi.zero, Temp1, s);
 	
 	/* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
@@ -494,7 +500,7 @@ namespace FFPACK{
 		   ldu, Temp1, s, Fi.zero, A + (column - block) * s * lda + (column + 1) * s, lda);
 	    /* Temp2 <- W_{column + 1 - block} * Temp1 */
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one,
-		   W + (column - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
+		   W + (column - 1 - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
 
 	    /* A_{column - block, column + 2} <- U_{column - block} * Temp2 */
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, Q + (column - block - 1) * s * ldu,
@@ -506,7 +512,7 @@ namespace FFPACK{
 	    if (block + 1 < column)
 	      /* Temp1 <- W_{column - block} * Temp2 */
 	      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one,
-		     W + (column - block - 1) * s * ldw, ldw, Temp2, s, Fi.zero, Temp1, s);
+		     W + (column - block - 2) * s * ldw, ldw, Temp2, s, Fi.zero, Temp1, s);
 	  }
 	/* First column if not done already */
 	if (column%2)
@@ -515,9 +521,10 @@ namespace FFPACK{
 		 ldu, Temp1, s, Fi.zero, A + (column + 1) * s, lda);
       }
     
-    /* Last column if partial */
+    /* Last column if partial 
+     * and partial column is not just a diagonal */
     /* rs columns in the block */
-    if (rs)
+    if (rs && (k > 1))
       /* W same as R earlier: seems to work */
             {
 	      /* Block loop needs Temp1, which is first updated here */
@@ -525,9 +532,10 @@ namespace FFPACK{
 	      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 		     s, rs, s, Fi.one, U + (kf - 1) * s * ldu, // In this loop, all blocks are s x rs
 		     ldu, V + (kf - 1) * s * ldv, ldv, Fi.zero, A + (kf - 1) * s * lda + (kf) * s, lda);
-	      /* Temp1 <- W_{kf} * V_{kf + 1} */
-	      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, W + (kf - 2) * s * ldw, 
-		     ldw, V + (kf - 1) * s * ldv, ldv, Fi.zero, Temp1, s);
+	      if (kf > 1) // Or W does not exist
+		/* Temp1 <- W_{kf} * V_{kf + 1} */
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, W + (kf - 2) * s * ldw, 
+		       ldw, V + (kf - 1) * s * ldv, ldv, Fi.zero, Temp1, s);
 	
 	      /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
 	      for (size_t block = 1; block < kf - 1; block+=2)

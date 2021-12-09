@@ -29,6 +29,7 @@
 //-------------------------------------------------------------------------
 
 /* Structure taken from test-quasisep.C */
+/* /!\ I don't understand calls to F, *F, &F, I'm just doing the one which works */
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
@@ -264,6 +265,20 @@ bool hand_test_reconstruction (const Field & F, size_t n, size_t s,
   return true;
 }
 
+/** \brief print matrix */
+template<class Field>
+void print_matrix (const Field & F, size_t m, size_t n, typename Field::ConstElement_ptr A, size_t lda)
+{
+  for (size_t line = 0; line < m; line++)
+    {
+      for (size_t column = 0; column < n; column++)
+	{
+	  std::cout<<A[column + line * lda]<<"\t";
+	}
+      std::cout<<std::endl;
+    }
+}
+
 /** \brief test equality between matrix reconstructed by sssToDense and applied to identity with productSSSxTS */
 template<class Field>
 bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s, 
@@ -288,14 +303,21 @@ bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s,
 
   bool ok = fequal (F, n, n, rec, n, app, n);
 
+  if ( !ok )
+    {
+	std::cout << "Different results for reconstruction and application to identity "<<std::endl;
+  	std::cout << "rec =  "<<std::endl;
+	print_matrix(F, n, n, rec, n);
+  	std::cout << "app =  "<<std::endl;
+	print_matrix(F, n, n, app, n);
+    }
+  else
+	std::cout << "Same results for reconstruction and application to identity "<<std::endl;
+
   FFLAS::fflas_delete(rec);
   FFLAS::fflas_delete(app);
   FFLAS::fflas_delete(Id);
 
-  if ( !ok )
-	std::cout << "Different results for reconstruction and application to identity "<<std::endl;
-  else
-	std::cout << "Same results for reconstruction and application to identity "<<std::endl;
   return ok;
 }
 
@@ -343,10 +365,12 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
 template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, size_t iters, uint64_t seed)
 {
+  std::cout << "Test new type" << std::endl;
   bool ok = true ;
   typedef typename Field::Element_ptr Element_ptr ;
   while (ok && iters)
     {
+      std::cout << "Iterations left: " << iters << std::endl;
       /* New field */
       Field* F= chooseField<Field>(q,b,seed);
       if (F==nullptr)
@@ -377,6 +401,24 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
       frand (*F, G, n, t, C, t);
       frand (*F, G, n, t, B, t);
 
+      /* Print generators for debugging */
+#if 1
+      std::cout << "P =  "<<std::endl;
+      print_matrix(*F, n, s, P, s);
+      std::cout << "Q =  "<<std::endl;
+      print_matrix(*F, n, s, Q, s);
+      std::cout << "R =  "<<std::endl;
+      print_matrix(*F, n - s, s, R, s);
+      std::cout << "U =  "<<std::endl;
+      print_matrix(*F, n, s, U, s);
+      std::cout << "V =  "<<std::endl;
+      print_matrix(*F, n, s, V, s);
+      std::cout << "W =  "<<std::endl;
+      print_matrix(*F, n - s, s, W, s);
+      std::cout << "D =  "<<std::endl;
+      print_matrix(*F, n, s, D, s);
+#endif
+	
       /* Does RandIter.random really work like this? */
       typename Field::Element alpha, beta;
       G.random(alpha);
@@ -493,10 +535,19 @@ int main(int argc, char** argv)
 		   END_OF_ARGUMENTS
   };
 
-  parseArguments(argc,argv,as);
+   parseArguments(argc,argv,as);
 
-  if (t > n) t = n/2;
+   
+   
+  if (s > n)
+    {
+      s = n/2;
+      std::cout << "Input value for s is too high, it has been decreased" << std::endl;
+    }
 
+  /* Print parameter values */
+   std::cout << "n = "<< n << ", s = " << s << ", t = " << t << std::endl;
+   
   srand(seed);
     
   bool ok=true;
