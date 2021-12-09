@@ -29,7 +29,6 @@
 //-------------------------------------------------------------------------
 
 /* Structure taken from test-quasisep.C */
-/* /!\ I don't understand calls to F, *F, &F, I'm just doing the one which works */
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
@@ -371,14 +370,13 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
   while (ok && iters)
     {
       std::cout << "Iterations left: " << iters << std::endl;
-      /* New field */
+      /* New field 
+       * chooseField returns a pointer, F needs to be passed by its value */
       Field* F= chooseField<Field>(q,b,seed);
       if (F==nullptr)
 	return true;
-      /* I don't know what this does */
+      /* Initiate random number generator */
       typename Field::RandIter G(*F,seed++);
-      std::ostringstream oss;
-      F->write(oss);
 
       /* Generate generators (which can be cropped a bit) */
       Element_ptr D = fflas_new (*F, n, s);
@@ -419,7 +417,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
       print_matrix(*F, n, s, D, s);
 #endif
 	
-      /* Does RandIter.random really work like this? */
+      /* RandIter.random seems to work like this? */
       typename Field::Element alpha, beta;
       G.random(alpha);
       G.random(beta);
@@ -513,7 +511,7 @@ int main(int argc, char** argv)
 
 int main(int argc, char** argv)
 {
-  cerr<<setprecision(20); //Not sure why this is here
+  cerr<<setprecision(20); // In order to print integers as integers even on float types
   Givaro::Integer q=-1;
   size_t b=0;
   size_t n=93;
@@ -558,7 +556,7 @@ int main(int argc, char** argv)
     ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,s,t,iters,seed);
     ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,s,t,iters,seed);
     ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed);
+    ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed); // Valgrind does not like this one 
     ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
     ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
     ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
