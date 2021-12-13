@@ -399,23 +399,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
       frand (*F, G, n, t, C, t);
       frand (*F, G, n, t, B, t);
 
-      /* Print generators for debugging */
-#if 1
-      std::cout << "P =  "<<std::endl;
-      print_matrix(*F, n, s, P, s);
-      std::cout << "Q =  "<<std::endl;
-      print_matrix(*F, n, s, Q, s);
-      std::cout << "R =  "<<std::endl;
-      print_matrix(*F, n - s, s, R, s);
-      std::cout << "U =  "<<std::endl;
-      print_matrix(*F, n, s, U, s);
-      std::cout << "V =  "<<std::endl;
-      print_matrix(*F, n, s, V, s);
-      std::cout << "W =  "<<std::endl;
-      print_matrix(*F, n - s, s, W, s);
-      std::cout << "D =  "<<std::endl;
-      print_matrix(*F, n, s, D, s);
-#endif
+
 	
       /* RandIter.random seems to work like this? */
       typename Field::Element alpha, beta;
@@ -456,7 +440,26 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
 #endif
       
       if ( !ok )
-	std::cout << "FAILED "<<std::endl;
+	{
+	  std::cout << "FAILED "<<std::endl;
+	  /* Print generators for debugging */
+#if 1
+	  std::cout << "P =  "<<std::endl;
+	  print_matrix(*F, n, s, P, s);
+	  std::cout << "Q =  "<<std::endl;
+	  print_matrix(*F, n, s, Q, s);
+	  std::cout << "R =  "<<std::endl;
+	  print_matrix(*F, n - s, s, R, s);
+	  std::cout << "U =  "<<std::endl;
+	  print_matrix(*F, n, s, U, s);
+	  std::cout << "V =  "<<std::endl;
+	  print_matrix(*F, n, s, V, s);
+	  std::cout << "W =  "<<std::endl;
+	  print_matrix(*F, n - s, s, W, s);
+	  std::cout << "D =  "<<std::endl;
+	  print_matrix(*F, n, s, D, s);
+#endif
+	}
       else
 	std::cout << "PASSED "<<std::endl;
 

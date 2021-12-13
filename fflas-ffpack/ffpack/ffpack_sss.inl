@@ -503,7 +503,7 @@ namespace FFPACK{
 		   W + (column - 1 - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
 
 	    /* A_{column - block, column + 2} <- U_{column - block} * Temp2 */
-	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, Q + (column - block - 1) * s * ldu,
+	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U + (column - block - 1) * s * ldu,
 		   ldu, Temp2, s, Fi.zero, A + (column - block - 1) * s * lda + (column + 1) * s, lda);
 	    /* If necessary:
 	     * - Not last loop
@@ -514,7 +514,7 @@ namespace FFPACK{
 	      fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one,
 		     W + (column - block - 2) * s * ldw, ldw, Temp2, s, Fi.zero, Temp1, s);
 	  }
-	/* First column if not done already */
+	/* First line if not done already */
 	if (column%2)
 	  /* A_{1, column + 2} <- U_{1} * Temp1 */
 	  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U,
@@ -548,7 +548,7 @@ namespace FFPACK{
 			 W + (kf - 2 - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
 
 		  /* A_{kf - 1 - block, kf + 1} <- U_{kf - 1 - block} * Temp2 */
-		  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, Q + (kf - block - 2) * s * ldu,
+		  fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, U + (kf - block - 2) * s * ldu,
 			 ldu, Temp2, s, Fi.zero, A + (kf - block - 2) * s * lda + (kf) * s, lda);
 		  /* If necessary:
 		   * - Not last loop
