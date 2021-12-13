@@ -55,7 +55,7 @@ enum class Alignment : size_t {
     DEFAULT =
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
     64
-#elseif __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
+#elif defined __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
     32
 #else
     16
