@@ -33,33 +33,37 @@ namespace FFPACK{
   /**
    * @brief Compute the product of a quasi-separable matrix A, 
    *represented by a sequentially semi-separable generator, 
-   * with a dense rectangular matrix B:  \f$ C \gets A \times B + beta C \f$
+   * with a dense rectangular matrix B:  \f$ C \gets \alpha * A \times B + beta C \f$
    *
-   * @param F the base field
+   * @param Fi the base field
    * @param N the order of \p A
+   * @param t the width of \p B and \p C
    * @param s the order of quasiseparability of \p A
+   * @param alpha scaling product constant
    * @param D an \f$ N \times s\f$ dense matrix
-   * @param ldp leading dimension of \p D
+   * @param ldd leading dimension of \p D
    * @param P an \f$ (N - s) \times s\f$ dense matrix
    * @param ldp leading dimension of \p P
-   * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
-   * @param ldr leading dimension of \p R
    * @param Q an \f$ (N - ls) \times s\f$ dense matrix
    * @param ldq leading dimension of \p Q
+   * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
+   * @param ldr leading dimension of \p R
    * @param U an \f$ (N - ls) \times s\f$ dense matrix
    * @param ldu leading dimension of \p U
    * @param V an \f$ (N - ls) \times s\f$ dense matrix
    * @param ldv leading dimension of \p V
    * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
    * @param ldw leading dimension of \p W
-   * @param t the number of columns of \p B
    * @param B an \f$ N \times t\f$ dense matrix
    * @param ldb leading dimension of \p B
    * @param beta scaling constant
    * @param [inout] C output matrix
    * @param ldc leading dimension of \p C
    *
-   * @bib Missing
+   * @bib S. Chandrasekaran et al. “Fast Stable Solver for Sequentially Semi-separable Linear
+   * Systems of Equations”. In : High Performance Computing — HiPC 2002. Sous la dir.
+   * de Sartaj Sahni, Viktor K. Prasanna et Uday Shukla. Berlin, Heidelberg : Springer
+   * Berlin Heidelberg, 2002, p. 545-554. isbn : 978-3-540-36265-4.
    */
   template<class Field>
   inline  void productSSSxTS (const Field& Fi, size_t N, size_t t, size_t s,
@@ -75,8 +79,6 @@ namespace FFPACK{
 			      const typename Field::Element beta,
 			      typename Field::Element_ptr C, size_t ldc)
   {
-    /* Prototype copied from ffpack_bruhatgen.inl */
-  
     /*     +--------+------+------+--------+---  +--+         +--+
 	   |   D1   | U1V2 |U1W2V3|U1W2W3V4|     |B1|         |C1|
 	   +--------+------+------+--------+---  +--+         +--+
@@ -88,7 +90,9 @@ namespace FFPACK{
 	   +--------+------+------+--------+---  +--+         +--+
 	   |        |      |      |        |     |  |         |  | */
   
-    /*   First            Last
+    /* Correspondence between matrix and table indices
+     * 
+     *   First            Last
      * D.0 -> D_1,   D.((n - ls) * ldd)  
      * P.0 -> P_2,   P.((n - s - ls) * ldp)  
      * Q.0 -> Q_1,   Q.((n - s - ls) * ldq)  
@@ -97,7 +101,7 @@ namespace FFPACK{
      * V.0 -> V_2,   V.((n - s - ls) * ldv)  
      * W.0 -> W_1,   W.((n - 2s - ls) * ldw)   */
 
-    /* Unused space:
+    /* Unused space when s does not divide n:
      *
      * |       |  |       |
      * +---+---+  +---+---+            Code readability is preferred to efficiency:
@@ -112,7 +116,7 @@ namespace FFPACK{
     size_t k = kf;
     if (rs) k++; // Total number of blocks
     // In the preceeding, ls is the size of the last block:
-    //  size_t ls = (rs)? rs: s;
+    //  size_t ls = (rs)? rs: s; Not used in the code
   
     /* Diagonal Blocks :
      * C <- beta * C + alpha D B */
@@ -128,7 +132,7 @@ namespace FFPACK{
 	     ldd, B + kf * s * ldb, ldb, beta, // D_block is block * s lines under D
 	     C + kf * s * ldc, ldc);
 
-    /* Lower */
+    /* Lower Triangular Part */
     typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, t);
     typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, t);
 
@@ -140,7 +144,7 @@ namespace FFPACK{
 	     Temp1, t);                                    // Leading dimension s
   
     /* Instructions are doubled in the loop 
-     *in order to avoid using more than two temporary blocks */
+     * in order to avoid using more than two temporary blocks */
     for (size_t block = 0; (block + 2) < kf; block+=2)
       {
 	/* C_{block + 1} += P_{block + 1} * Temp1 */
@@ -315,7 +319,10 @@ namespace FFPACK{
    * @param [inout] A the \f$ N \times N \f$ output matrix
    * @param lda leading dimension of \p A
    *
-   * @bib Missing
+   * @bib S. Chandrasekaran et al. “Fast Stable Solver for Sequentially Semi-separable Linear
+   * Systems of Equations”. In : High Performance Computing — HiPC 2002. Sous la dir.
+   * de Sartaj Sahni, Viktor K. Prasanna et Uday Shukla. Berlin, Heidelberg : Springer
+   * Berlin Heidelberg, 2002, p. 545-554. isbn : 978-3-540-36265-4.
    */
   template<class Field>
   inline  void sssToDense (const Field& Fi, size_t N, size_t s,
@@ -328,16 +335,16 @@ namespace FFPACK{
 			   typename Field::ConstElement_ptr D, size_t ldd,
 			   typename Field::Element_ptr A, size_t lda)
   {
-    /*     +--------+------+------+--------+---
-	   |   D1   | U1V2 |U1W2V3|U1W2W3V4|   
-	   +--------+------+------+--------+---
-	   |  P2Q1  |  D2  | U2V3 | U2W3V4 |   
-	   A =  +--------+------+------+--------+---
-	   | P3R2Q1 | P3Q2 |  D3  |  U3V4  |   
-	   +--------+------+------+--------+---
-	   |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   |   
-	   +--------+------+------+--------+---
-	   |        |      |      |        |    */
+    /*      +--------+------+------+--------+---
+     *      |   D1   | U1V2 |U1W2V3|U1W2W3V4|   
+     *      +--------+------+------+--------+---
+     *      |  P2Q1  |  D2  | U2V3 | U2W3V4 |   
+     * A =  +--------+------+------+--------+---
+     *      | P3R2Q1 | P3Q2 |  D3  |  U3V4  |   
+     *      +--------+------+------+--------+---
+     *      |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   |   
+     *      +--------+------+------+--------+---
+     *      |        |      |      |        |    */
   
     /*   First            Last
      * D.0 -> D_1,   D.((n - ls) * ldd)  
@@ -373,7 +380,7 @@ namespace FFPACK{
     if (rs) // Last block
       FFLAS::fassign(Fi, rs, rs, D + kf * s * ldd, ldd, A + kf * s * (lda + 1), lda); // Last rs x rs block
 
-    /* Lower */
+    /* Lower triangular part */
     /* Blocks are computed line by line, by successively applying the R and Q to the P(RRR...) */
     typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, s);
     typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, s);
@@ -428,9 +435,6 @@ namespace FFPACK{
     /* Last line if partial */
     /* rs lines in the block */
     if (rs && (k > 1))
-      /* -1'd line indices of R, trying to avoid a segfault
-       * Might be worse 
-       * Seems fine */
             {
 	/* Loop needs Temp1, which is first set here */
 	/* A_{kf + 1, kf} <- P_{kf + 1} * Q_{kf} */
@@ -471,7 +475,7 @@ namespace FFPACK{
 		   Q, ldq, Fi.zero, A + kf * s * lda, lda);
       }
 
-    /* Upper */
+    /* Upper tirangular part */
     /* Symmetrically identical to the lower part */
 
     /* Column 2 */
@@ -525,7 +529,6 @@ namespace FFPACK{
      * and partial column is not just a diagonal */
     /* rs columns in the block */
     if (rs && (k > 1))
-      /* W same as R earlier: seems to work */
             {
 	      /* Block loop needs Temp1, which is first updated here */
 	      /* A_{kf, kf + 1} <- U_{kf} * V_{kf + 1} */

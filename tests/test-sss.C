@@ -1,6 +1,6 @@
 /*
  * Copyright (C) FFLAS-FFPACK
- * Written by Hippolyte Signargout
+ * Written by Hippolyte Signargout (hippolyte.signargout@ens-lyon.fr
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -47,223 +47,6 @@ using namespace std;
 using namespace FFPACK;
 using namespace FFLAS;
 
-template<class Field>
-bool test_diag_product (const Field & F, size_t n, size_t s, size_t t,
-			typename Field::ConstElement_ptr D, size_t ldd,
-			typename Field::Element_ptr TS, size_t ldt)
-{
-  typedef typename Field::Element_ptr Element_ptr ;
-  Element_ptr null = fflas_new (F, n, s);
-  fzero (F, n, s, null, s);
-  Element_ptr C = fflas_new (F, n, t);
-    
-  productSSSxTS (F, n, t, s, F.one, null, s, null, s, null, s, null, s, null, s, null, s,
-		 D, ldd, t, TS, ldt, F.zero, C, t);
-
-  std::cout<<"D:"<<std::endl;
-  for (size_t line = 0; line < n; line++)
-    {
-      for (size_t column = 0; column < s; column++)
-	{
-	  std::cout<<D[column + line*s]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  std::cout<<"B:"<<std::endl;
-  for (size_t line = 0; line < n; line++)
-    {
-      for (size_t column = 0; column < t; column++)
-	{
-	  std::cout<<TS[column + line*ldt]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  std::cout<<"C:"<<std::endl;
-  for (size_t line = 0; line < n; line++)
-    {
-      for (size_t column = 0; column < t; column++)
-	{
-	  std::cout<<C[column + line*t]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  FFLAS::fflas_delete(null);
-  FFLAS::fflas_delete(C);
-  return true;
-}
-
-/* @brief Tests SSSxTS product on a lower triangular matrix */
-template<class Field>
-bool test_LT_product (const Field & F, size_t n, size_t s, size_t t,
-		      typename Field::ConstElement_ptr P, size_t ldp,
-		      typename Field::ConstElement_ptr Q, size_t ldq,
-		      typename Field::ConstElement_ptr R, size_t ldr,
-		      typename Field::Element_ptr TS, size_t ldt)
-{
-  typedef typename Field::Element_ptr Element_ptr ;
-  Element_ptr null = fflas_new (F, n, s);
-  fzero (F, n, s, null, s);
-  Element_ptr C = fflas_new (F, n, t);
-    
-  productSSSxTS (F, n, t, s, F.one, P, ldp, Q, ldq, R, ldr, null, s, null, s, null, s,
-		 null, s, TS, ldt, F.zero, C, t);
-
-  std::cout<<"P:"<<std::endl;
-  for (size_t line = 0; line < n - s; line++)
-    {
-      for (size_t column = 0; column < s; column++)
-	{
-	  std::cout<<P[column + line*ldp]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  std::cout<<"Q:"<<std::endl;
-  for (size_t line = 0; line < n - s; line++)
-    {
-      for (size_t column = 0; column < s; column++)
-	{
-	  std::cout<<Q[column + line*ldq]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  std::cout<<"R:"<<std::endl;
-  for (size_t line = 0; (line < n - 2*s) && (2*s <= n); line++)
-    {
-      for (size_t column = 0; column < s; column++)
-	{
-	  std::cout<<R[column + line*ldq]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-    
-  std::cout<<"B:"<<std::endl;
-  for (size_t line = 0; line < n; line++)
-    {
-      for (size_t column = 0; column < t; column++)
-	{
-	  std::cout<<TS[column + line*ldt]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  std::cout<<"C:"<<std::endl;
-  for (size_t line = 0; line < n; line++)
-    {
-      for (size_t column = 0; column < t; column++)
-	{
-	  std::cout<<C[column + line*t]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-    
-  /* Free memory and return */
-  FFLAS::fflas_delete(null);
-  FFLAS::fflas_delete(C);
-  return true;
-}
-
-/* @brief Tests SSSxTS product on an upper triangular matrix */
-template<class Field>
-bool test_UT_product (const Field & F, size_t n, size_t s, size_t t,
-		      typename Field::ConstElement_ptr P, size_t ldp,
-		      typename Field::ConstElement_ptr Q, size_t ldq,
-		      typename Field::ConstElement_ptr R, size_t ldr,
-		      typename Field::Element_ptr TS, size_t ldt)
-{
-  typedef typename Field::Element_ptr Element_ptr ;
-  Element_ptr null = fflas_new (F, n, s);
-  fzero (F, n, s, null, s);
-  Element_ptr C = fflas_new (F, n, t);
-
-  for (int dec = 0; dec < 4; dec++)
-    {
-      productSSSxTS (F, n - dec, t, s, F.one, null, s, null, s, null, s, P, ldp, Q, ldq, R, ldr, 
-		     null, s, TS, ldt, F.zero, C, t);
-
-      std::cout<<"U:"<<std::endl;
-      for (size_t line = 0; line < n - dec- s; line++)
-	{
-	  for (size_t column = 0; column < s; column++)
-	    {
-	      std::cout<<P[column + line*ldp]<<" ";
-	    }
-	  std::cout<<std::endl;
-	}
-      std::cout<<"V:"<<std::endl;
-      for (size_t line = 0; line < n - dec - s; line++)
-	{
-	  for (size_t column = 0; column < s; column++)
-	    {
-	      std::cout<<Q[column + line*ldq]<<" ";
-	    }
-	  std::cout<<std::endl;
-	}
-      std::cout<<"W:"<<std::endl;
-      for (size_t line = 0; (line < n - dec - 2*s) && (2*s <= n - dec); line++)
-	{
-	  for (size_t column = 0; column < s; column++)
-	    {
-	      std::cout<<R[column + line*ldq]<<" ";
-	    }
-	  std::cout<<std::endl;
-	}
-	
-      std::cout<<"B:"<<std::endl;
-      for (size_t line = 0; line < n - dec; line++)
-	{
-	  for (size_t column = 0; column < t; column++)
-	    {
-	      std::cout<<TS[column + line*ldt]<<" ";
-	    }
-	  std::cout<<std::endl;
-	}
-      std::cout<<"C:"<<std::endl;
-      for (size_t line = 0; line < n - dec; line++)
-	{
-	  for (size_t column = 0; column < t; column++)
-	    {
-	      std::cout<<C[column + line*t]<<" ";
-	    }
-	  std::cout<<std::endl;
-	}
-    }
-    
-  /* Free memory and return */
-  FFLAS::fflas_delete(null);
-  FFLAS::fflas_delete(C);
-  return true;
-}
-
-template<class Field>
-bool hand_test_reconstruction (const Field & F, size_t n, size_t s, 
-			       typename Field::ConstElement_ptr P, size_t ldp,
-			       typename Field::ConstElement_ptr Q, size_t ldq,
-			       typename Field::ConstElement_ptr R, size_t ldr,
-			       typename Field::ConstElement_ptr U, size_t ldu,
-			       typename Field::ConstElement_ptr V, size_t ldv,
-			       typename Field::ConstElement_ptr W, size_t ldw,
-			       typename Field::ConstElement_ptr D, size_t ldd)
-{
-  typedef typename Field::Element_ptr Element_ptr ;
-  Element_ptr C = fflas_new (F, n, n);
-   
-  for (int dec = 0; dec < 4; dec++)
-    {
-      sssToDense (F, n - dec, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
-		  D, ldd, C, n - dec);
-      std::cout<<"A:"<<std::endl;
-      for (size_t line = 0; line < n - dec; line++)
-	{
-	  for (size_t column = 0; column < n - dec; column++)
-	    {
-	      std::cout<<C[column + line*(n - dec)]<<"\t";
-	    }
-	  std::cout<<std::endl;
-	}
-    }
-  FFLAS::fflas_delete(C);
-  return true;
-}
-
 /** \brief print matrix */
 template<class Field>
 void print_matrix (const Field & F, size_t m, size_t n, typename Field::ConstElement_ptr A, size_t lda)
@@ -289,7 +72,6 @@ bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s,
 					typename Field::ConstElement_ptr W, size_t ldw,
 					typename Field::ConstElement_ptr D, size_t ldd)
 {
-
   typename Field::Element_ptr rec = fflas_new (F, n, n);
   typename Field::Element_ptr app = fflas_new (F, n, n);
   typename Field::Element_ptr Id = fflas_new (F, n, n);
@@ -398,46 +180,16 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
       frand (*F, G, n - s, s, W, s);
       frand (*F, G, n, t, C, t);
       frand (*F, G, n, t, B, t);
-
-
 	
       /* RandIter.random seems to work like this? */
       typename Field::Element alpha, beta;
       G.random(alpha);
       G.random(beta);
 	
-      /* Used for tests "by hand" */
-#if 0
-      for (size_t line = 0; line < n; line++)
-	{
-	  for (size_t column = 0; column < s; column++)
-	    {
-	      D[column + line*s] = line;
-	      P[column + line * s] = 1;
-	      Q[column + line * s] = 1;
-	      if (line < n - s)
-		{
-		  R[column + line * s] = 2;
-		}
-	    }
-	  for (size_t column = 0; column < t; column++)
-	    {
-	      B[column + line*t] = column + line;
-	    }
-	}
-      /* Test with only Diagonal blocks */
-      //  ok = ok && test_diag_product (*F, n, s, t, D, s, B, t);
-      /* Test with only lower-triangular part */
-      //  ok = ok && test_LT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
-      /* Test with only lower-triangular part */
-      //  ok = ok && test_UT_product (*F, n, s, t, P, s, Q, s, R, s, B, t);
-      /* Test reconstruction */
-      ok = ok && hand_test_reconstruction (*F, n, s, P, s, Q, s, R, s, P, s, Q, s, R, s, D, s);
-#else
       /* Call to functions being implemented */
       ok = ok && test_reconstruction_compatibility(*F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
       ok = ok && test_application_compatibility(*F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
-#endif
+
       
       if ( !ok )
 	{
@@ -482,36 +234,6 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
   return ok;
 }
 
-/* main function used for tests done "by hand" */
-#if 0
-int main(int argc, char** argv)
-{
-  cerr<<setprecision(20);
-  Givaro::Integer q=101;
-  bool ok=true;
-    
-    
-  /* Very easy */
-#if 0
-  size_t n = 5;
-  size_t s = 1;
-  size_t t = 1;
-#endif
-  /* A bit less easy */
-  size_t s = 2;
-  size_t t = 2;
-  size_t n = 12;
-
-  uint64_t b = 1;
-
-  uint64_t seed = getSeed();
-  srand(seed);
-    
-  ok = ok && run_with_field<Givaro::Modular<int64_t> > (q, b, n, s, t, seed);
-  return !ok;
-}
-#endif
-
 int main(int argc, char** argv)
 {
   cerr<<setprecision(20); // In order to print integers as integers even on float types
@@ -537,8 +259,6 @@ int main(int argc, char** argv)
   };
 
    parseArguments(argc,argv,as);
-
-   
    
   if (s > n)
     {
@@ -561,7 +281,7 @@ int main(int argc, char** argv)
     ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
     ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed); // Valgrind does not like this one 
     ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
+    ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed); // Those are very slow
     ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
     seed++;
   } while (loop && ok);
