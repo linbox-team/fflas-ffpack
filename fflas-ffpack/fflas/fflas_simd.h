@@ -384,6 +384,20 @@ struct SimdChooser<T, true, true> // integral number
 #endif
 };
 
+#ifndef __x86_64__
+template <>
+struct SimdChooser<uint64_t, true, true>
+{
+    using value = NoSimd<uint64_t>;
+};
+
+template <>
+struct SimdChooser<int64_t, true, true>
+{
+    using value = NoSimd<int64_t>;
+};
+#endif
+
 template <class T> using Simd = typename SimdChooser<T>::value;
 
 // template <class T> struct SimdChooser<T, true> {
