@@ -15,7 +15,7 @@ It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the 
 
 ## LICENSE
 
-FFLAS-FFPACK is distributed unded the terms of the GNU LGPL v2.1 or later (see LICENSE).
+FFLAS-FFPACK is distributed under the terms of the GNU LGPL v2.1 or later (see COPYING and COPYING.LESSER).
 
 ## REQUIREMENTS:
 - a C++ compiler supporting C++11 standard. More precisely g++ v5 or greater, clang++ v3.4 or greater, icpc v16 or greater (earlier versions of clang and icpc might also work but have not been tested)
