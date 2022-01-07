@@ -51,242 +51,245 @@ using namespace FFLAS;
 template<class Field>
 void print_matrix (const Field & F, size_t m, size_t n, typename Field::ConstElement_ptr A, size_t lda)
 {
-  for (size_t line = 0; line < m; line++)
+    for (size_t line = 0; line < m; line++)
     {
-      for (size_t column = 0; column < n; column++)
-	{
-	  std::cout<<A[column + line * lda]<<"\t";
-	}
-      std::cout<<std::endl;
+        for (size_t column = 0; column < n; column++)
+        {
+            std::cout<<A[column + line * lda]<<"\t";
+        }
+        std::cout<<std::endl;
     }
 }
 
 /** \brief test equality between matrix reconstructed by SSSToDense and applied to identity with productSSSxTS */
 template<class Field>
 bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s, 
-					typename Field::ConstElement_ptr P, size_t ldp,
-					typename Field::ConstElement_ptr Q, size_t ldq,
-					typename Field::ConstElement_ptr R, size_t ldr,
-					typename Field::ConstElement_ptr U, size_t ldu,
-					typename Field::ConstElement_ptr V, size_t ldv,
-					typename Field::ConstElement_ptr W, size_t ldw,
-					typename Field::ConstElement_ptr D, size_t ldd)
+                                        typename Field::ConstElement_ptr P, size_t ldp,
+                                        typename Field::ConstElement_ptr Q, size_t ldq,
+                                        typename Field::ConstElement_ptr R, size_t ldr,
+                                        typename Field::ConstElement_ptr U, size_t ldu,
+                                        typename Field::ConstElement_ptr V, size_t ldv,
+                                        typename Field::ConstElement_ptr W, size_t ldw,
+                                        typename Field::ConstElement_ptr D, size_t ldd)
 {
-  typename Field::Element_ptr rec = fflas_new (F, n, n);
-  typename Field::Element_ptr app = fflas_new (F, n, n);
-  typename Field::Element_ptr Id = fflas_new (F, n, n);
-  fidentity (F, n, n, Id, n);
+    typename Field::Element_ptr rec = fflas_new (F, n, n);
+    typename Field::Element_ptr app = fflas_new (F, n, n);
+    typename Field::Element_ptr Id = fflas_new (F, n, n);
+    fidentity (F, n, n, Id, n);
   
-  SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
-		  D, ldd, rec, n);
-  productSSSxTS (F, n, n, s, F.one, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
-		 Id, n, F.zero, app, n);
+    SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+                D, ldd, rec, n);
+    productSSSxTS (F, n, n, s, F.one, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
+                   Id, n, F.zero, app, n);
 
-  bool ok = fequal (F, n, n, rec, n, app, n);
+    bool ok = fequal (F, n, n, rec, n, app, n);
 
-  if ( !ok )
+    if ( !ok )
     {
-	std::cout << "Different results for reconstruction and application to identity "<<std::endl;
-  	std::cout << "rec =  "<<std::endl;
-	print_matrix(F, n, n, rec, n);
-  	std::cout << "app =  "<<std::endl;
-	print_matrix(F, n, n, app, n);
+        std::cout << "Different results for reconstruction and application to identity "<<std::endl;
+        std::cout << "rec =  "<<std::endl;
+        print_matrix(F, n, n, rec, n);
+        std::cout << "app =  "<<std::endl;
+        print_matrix(F, n, n, app, n);
     }
-  else
-	std::cout << "Same results for reconstruction and application to identity "<<std::endl;
+    else
+        std::cout << "Same results for reconstruction and application to identity "<<std::endl;
 
-  FFLAS::fflas_delete(rec);
-  FFLAS::fflas_delete(app);
-  FFLAS::fflas_delete(Id);
+    FFLAS::fflas_delete(rec);
+    FFLAS::fflas_delete(app);
+    FFLAS::fflas_delete(Id);
 
-  return ok;
+    return ok;
 }
 
 /** \brief test equality between applying productSSSxTS or dense matrix */
 template<class Field>
 bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t s,
-				     const typename Field::Element alpha,
-				     typename Field::ConstElement_ptr P, size_t ldp,
-				     typename Field::ConstElement_ptr Q, size_t ldq,
-				     typename Field::ConstElement_ptr R, size_t ldr,
-				     typename Field::ConstElement_ptr U, size_t ldu,
-				     typename Field::ConstElement_ptr V, size_t ldv,
-				     typename Field::ConstElement_ptr W, size_t ldw,
-				     typename Field::ConstElement_ptr D, size_t ldd,
-				     typename Field::ConstElement_ptr B, size_t ldb,
-				     const typename Field::Element beta,
-				     typename Field::ConstElement_ptr C, size_t ldc)
+                                     const typename Field::Element alpha,
+                                     typename Field::ConstElement_ptr P, size_t ldp,
+                                     typename Field::ConstElement_ptr Q, size_t ldq,
+                                     typename Field::ConstElement_ptr R, size_t ldr,
+                                     typename Field::ConstElement_ptr U, size_t ldu,
+                                     typename Field::ConstElement_ptr V, size_t ldv,
+                                     typename Field::ConstElement_ptr W, size_t ldw,
+                                     typename Field::ConstElement_ptr D, size_t ldd,
+                                     typename Field::ConstElement_ptr B, size_t ldb,
+                                     const typename Field::Element beta,
+                                     typename Field::ConstElement_ptr C, size_t ldc)
 {
-  typename  Field::Element_ptr A = fflas_new (F, n, n);
-  SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
-		  D, ldd, A, n);
+    typename  Field::Element_ptr A = fflas_new (F, n, n);
+    SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+                D, ldd, A, n);
   
-  typename  Field::Element_ptr dense = fflas_new (F, n, t);
-  typename  Field::Element_ptr qs = fflas_new (F, n, t);
-  fassign (F, n, t, C, ldc, dense, t);
-  fassign (F, n, t, C, ldc, qs, t);
+    typename  Field::Element_ptr dense = fflas_new (F, n, t);
+    typename  Field::Element_ptr qs = fflas_new (F, n, t);
+    fassign (F, n, t, C, ldc, dense, t);
+    fassign (F, n, t, C, ldc, qs, t);
 
-  fgemm (F, FflasNoTrans, FflasNoTrans, n, t, n, alpha, A, n, B, ldb, beta, dense, t);
-  productSSSxTS (F, n, t, s, alpha, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
-		 B, ldb, beta, qs, t);
+    fgemm (F, FflasNoTrans, FflasNoTrans, n, t, n, alpha, A, n, B, ldb, beta, dense, t);
+    productSSSxTS (F, n, t, s, alpha, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
+                   B, ldb, beta, qs, t);
 
-  bool ok = fequal (F, n, t, dense, t, qs, t);
+    bool ok = fequal (F, n, t, dense, t, qs, t);
 
-  FFLAS::fflas_delete(A);
-  FFLAS::fflas_delete(dense);
-  FFLAS::fflas_delete(qs);
+    FFLAS::fflas_delete(A);
+    FFLAS::fflas_delete(dense);
+    FFLAS::fflas_delete(qs);
 
-  if ( !ok )
-	std::cout << "Different results for dense and qs application "<<std::endl;
-  else
-	std::cout << "Same results for dense and qs application "<<std::endl;
-  return ok;
+    if ( !ok )
+        std::cout << "Different results for dense and qs application "<<std::endl;
+    else
+        std::cout << "Same results for dense and qs application "<<std::endl;
+    return ok;
 }
 
 template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, size_t iters, uint64_t seed)
 {
-  std::cout << "Test new type" << std::endl;
-  bool ok = true ;
-  typedef typename Field::Element_ptr Element_ptr ;
-  while (ok && iters)
+    std::cout << "Test new type" << std::endl;
+    bool ok = true ;
+    typedef typename Field::Element_ptr Element_ptr ;
+    while (ok && iters)
     {
-      std::cout << "Iterations left: " << iters << std::endl;
-      /* New field 
-       * chooseField returns a pointer, F needs to be passed by its value */
-      Field* F= chooseField<Field>(q,b,seed);
-      if (F==nullptr)
-	return true;
-      /* Initiate random number generator */
-      typename Field::RandIter G(*F,seed++);
+        std::cout << "Iterations left: " << iters << std::endl;
+            /* New field 
+             * chooseField returns a pointer, F needs to be passed by its value */
+        Field* F= chooseField<Field>(q,b,seed);
+        if (F==nullptr)
+            return true;
+            /* Initiate random number generator */
+        typename Field::RandIter G(*F,seed++);
 
-      /* Generate generators (which can be cropped a bit) */
-      Element_ptr D = fflas_new (*F, n, s);
-      Element_ptr P = fflas_new (*F, n, s);     // Could be n - s 
-      Element_ptr Q = fflas_new (*F, n, s);     // Could be n - rs
-      Element_ptr R = fflas_new (*F, n - s, s); // Could be n - s - rs
-      Element_ptr U = fflas_new (*F, n, s);     // Could be n - rs 
-      Element_ptr V = fflas_new (*F, n, s);     // Could be n - s
-      Element_ptr W = fflas_new (*F, n - s, s); // Could be n - s - rs
-      Element_ptr C = fflas_new (*F, n, t);
-      Element_ptr B = fflas_new (*F, n, t);
+            /* Generate generators (which can be cropped a bit) */
+        Element_ptr D = fflas_new (*F, n, s);
+        Element_ptr P = fflas_new (*F, n, s);     // Could be n - s 
+        Element_ptr Q = fflas_new (*F, n, s);     // Could be n - rs
+        Element_ptr R = fflas_new (*F, n - s, s); // Could be n - s - rs
+        Element_ptr U = fflas_new (*F, n, s);     // Could be n - rs 
+        Element_ptr V = fflas_new (*F, n, s);     // Could be n - s
+        Element_ptr W = fflas_new (*F, n - s, s); // Could be n - s - rs
+        Element_ptr C = fflas_new (*F, n, t);
+        Element_ptr B = fflas_new (*F, n, t);
 
-      frand (*F, G, n, s, D, s);
-      frand (*F, G, n, s, P, s);
-      frand (*F, G, n, s, Q, s);
-      frand (*F, G, n - s, s, R, s);
-      frand (*F, G, n, s, U, s);
-      frand (*F, G, n, s, V, s);
-      frand (*F, G, n - s, s, W, s);
-      frand (*F, G, n, t, C, t);
-      frand (*F, G, n, t, B, t);
-	
-      /* RandIter.random seems to work like this? */
-      typename Field::Element alpha, beta;
-      G.random(alpha);
-      G.random(beta);
-	
-      /* Call to functions being implemented */
-      ok = ok && test_reconstruction_compatibility(*F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
-      ok = ok && test_application_compatibility(*F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
+        frand (*F, G, n, s, D, s);
+        frand (*F, G, n, s, P, s);
+        frand (*F, G, n, s, Q, s);
+        frand (*F, G, n - s, s, R, s);
+        frand (*F, G, n, s, U, s);
+        frand (*F, G, n, s, V, s);
+        frand (*F, G, n - s, s, W, s);
+        frand (*F, G, n, t, C, t);
+        frand (*F, G, n, t, B, t);
+        
+            /* RandIter.random seems to work like this? */
+        typename Field::Element alpha, beta;
+        G.random(alpha);
+        G.random(beta);
+        
+            /* Call to functions being implemented */
+        ok = ok && test_reconstruction_compatibility(*F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
+        ok = ok && test_application_compatibility(*F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
 
       
-      if ( !ok )
-	{
-	  std::cout << "FAILED "<<std::endl;
-	  /* Print generators for debugging */
+        if ( !ok )
+        {
+            std::cout << "FAILED "<<std::endl;
+                /* Print generators for debugging */
 #if 1
-	  std::cout << "P =  "<<std::endl;
-	  print_matrix(*F, n, s, P, s);
-	  std::cout << "Q =  "<<std::endl;
-	  print_matrix(*F, n, s, Q, s);
-	  std::cout << "R =  "<<std::endl;
-	  print_matrix(*F, n - s, s, R, s);
-	  std::cout << "U =  "<<std::endl;
-	  print_matrix(*F, n, s, U, s);
-	  std::cout << "V =  "<<std::endl;
-	  print_matrix(*F, n, s, V, s);
-	  std::cout << "W =  "<<std::endl;
-	  print_matrix(*F, n - s, s, W, s);
-	  std::cout << "D =  "<<std::endl;
-	  print_matrix(*F, n, s, D, s);
+            std::cout << "P =  "<<std::endl;
+            print_matrix(*F, n, s, P, s);
+            std::cout << "Q =  "<<std::endl;
+            print_matrix(*F, n, s, Q, s);
+            std::cout << "R =  "<<std::endl;
+            print_matrix(*F, n - s, s, R, s);
+            std::cout << "U =  "<<std::endl;
+            print_matrix(*F, n, s, U, s);
+            std::cout << "V =  "<<std::endl;
+            print_matrix(*F, n, s, V, s);
+            std::cout << "W =  "<<std::endl;
+            print_matrix(*F, n - s, s, W, s);
+            std::cout << "D =  "<<std::endl;
+            print_matrix(*F, n, s, D, s);
 #endif
-	}
-      else
-	std::cout << "PASSED "<<std::endl;
+        }
+        else
+            std::cout << "PASSED "<<std::endl;
 
 
-      /* Free memory and return */
-      FFLAS::fflas_delete(D);
-      FFLAS::fflas_delete(B);
-      FFLAS::fflas_delete(P);
-      FFLAS::fflas_delete(Q);
-      FFLAS::fflas_delete(R);
-      FFLAS::fflas_delete(C);
-      FFLAS::fflas_delete(U);
-      FFLAS::fflas_delete(V);
-      FFLAS::fflas_delete(W);
+            /* Free memory and return */
+        FFLAS::fflas_delete(D);
+        FFLAS::fflas_delete(B);
+        FFLAS::fflas_delete(P);
+        FFLAS::fflas_delete(Q);
+        FFLAS::fflas_delete(R);
+        FFLAS::fflas_delete(C);
+        FFLAS::fflas_delete(U);
+        FFLAS::fflas_delete(V);
+        FFLAS::fflas_delete(W);
 
-      delete F;
-      iters--;
+        delete F;
+        iters--;
     }
   
-  return ok;
+    return ok;
 }
 
 int main(int argc, char** argv)
 {
-  cerr<<setprecision(20); // In order to print integers as integers even on float types
-  Givaro::Integer q=-1;
-  size_t b=0;
-  size_t n=93;
-  size_t s=8;
-  size_t t=6;
-  int iters=3;
-  bool loop=false;
-  uint64_t seed = getSeed();
+    cerr<<setprecision(20); // In order to print integers as integers even on float types
+    Givaro::Integer q=-1;
+    size_t b=0;
+    size_t n=93;
+    size_t s=8;
+    size_t t=6;
+    int iters=3;
+    bool loop=false;
+    uint64_t seed = getSeed();
 
-  Argument as[] = {
-		   { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-		   { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
-		   { 'n', "-n N", "Set the matrix order.", TYPE_INT , &n },
-		   { 's', "-s S", "Set the order of quasi-separability.", TYPE_INT , &s },
-		   { 't', "-t T", "Set the col dim of the TS matrix.", TYPE_INT , &t },
-		   { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		   { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-		   { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
-		   END_OF_ARGUMENTS
-  };
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
+        { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
+        { 'n', "-n N", "Set the matrix order.", TYPE_INT , &n },
+        { 's', "-s S", "Set the order of quasi-separability.", TYPE_INT , &s },
+        { 't', "-t T", "Set the col dim of the TS matrix.", TYPE_INT , &t },
+        { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+        { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+        { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
+        END_OF_ARGUMENTS
+    };
 
-   parseArguments(argc,argv,as);
+    parseArguments(argc,argv,as);
    
-  if (s > n)
+    if (s > n)
     {
-      s = n/2;
-      std::cout << "Input value for s is too high, it has been decreased" << std::endl;
+        s = n/2;
+        std::cout << "Input value for s is too high, it has been decreased" << std::endl;
     }
 
-  /* Print parameter values */
-   std::cout << "n = "<< n << ", s = " << s << ", t = " << t << std::endl;
+        /* Print parameter values */
+    std::cout << "n = "<< n << ", s = " << s << ", t = " << t << std::endl;
    
-  srand(seed);
+    srand(seed);
     
-  bool ok=true;
-  do{
-    ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed); // Valgrind does not like this one 
-    ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
-    ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed); // Those are very slow
-    ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
-    seed++;
-  } while (loop && ok);
+    bool ok=true;
+    do{
+        ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed); // Valgrind does not like this one 
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed); // Those are very slow
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
+        seed++;
+    } while (loop && ok);
 
-  if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
+    if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
     
-  return !ok;
+    return !ok;
 }
+
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:et:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
