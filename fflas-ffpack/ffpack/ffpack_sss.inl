@@ -1,4 +1,4 @@
-/* ffpack/ffpack_bruhatgen.inl
+/* ffpack/ffpack_sss.inl
  * Copyright (C) 2021 Hippolyte Signargout
  *
  * Written by Hippolyte Signargout <hippolyte.signargout@ens-lyon.fr>
@@ -51,7 +51,7 @@ namespace FFPACK{
             alpha  +--------+------+------+--------+---  +--+  + beta +--+
                    | P3R2Q1 | P3Q2 |  D3  |  U3V4  |     |B3|         |C3|
                    +--------+------+------+--------+---  +--+         +--+
-                   |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   |     |B4|         |C4|
+                   |P4R3R2Q1|P4R3Q2| P4Q3 |   D4   |     |B4|         |C4|
                    +--------+------+------+--------+---  +--+         +--+
                    |        |      |      |        |     |  |         |  | */
   
@@ -261,24 +261,24 @@ namespace FFPACK{
     }
   
     template<class Field>
-    inline  void SSSToDense (const Field& Fi, size_t N, size_t s,
-                             typename Field::ConstElement_ptr P, size_t ldp,
-                             typename Field::ConstElement_ptr Q, size_t ldq,
-                             typename Field::ConstElement_ptr R, size_t ldr,
-                             typename Field::ConstElement_ptr U, size_t ldu,
-                             typename Field::ConstElement_ptr V, size_t ldv,
-                             typename Field::ConstElement_ptr W, size_t ldw,
-                             typename Field::ConstElement_ptr D, size_t ldd,
-                             typename Field::Element_ptr A, size_t lda)
+    inline void SSSToDense (const Field& Fi, size_t N, size_t s,
+                            typename Field::ConstElement_ptr P, size_t ldp,
+                            typename Field::ConstElement_ptr Q, size_t ldq,
+                            typename Field::ConstElement_ptr R, size_t ldr,
+                            typename Field::ConstElement_ptr U, size_t ldu,
+                            typename Field::ConstElement_ptr V, size_t ldv,
+                            typename Field::ConstElement_ptr W, size_t ldw,
+                            typename Field::ConstElement_ptr D, size_t ldd,
+                            typename Field::Element_ptr A, size_t lda)
     {
             /*      +--------+------+------+--------+---
-             *      |   D1   | U1V2 |U1W2V3|U1W2W3V4|   
+             *      |   D1   | U1V2 |U1W2V3|U1W2W3V4|
              *      +--------+------+------+--------+---
-             *      |  P2Q1  |  D2  | U2V3 | U2W3V4 |   
+             *      |  P2Q1  |  D2  | U2V3 | U2W3V4 |
              * A =  +--------+------+------+--------+---
-             *      | P3R2Q1 | P3Q2 |  D3  |  U3V4  |   
+             *      | P3R2Q1 | P3Q2 |  D3  |  U3V4  |
              *      +--------+------+------+--------+---
-             *      |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   |   
+             *      |P4R3R2Q1|P4R3Q2| P4Q3 |   D4   |
              *      +--------+------+------+--------+---
              *      |        |      |      |        |    */
   
