@@ -1926,36 +1926,51 @@ namespace FFPACK { /* Quasi-separable matrices*/
 }
 
 namespace FFPACK { /* SSS */
-  /**
-   * @brief Compute the product of a lower-triangular quasi-separable matrix A, represented by a sequentially semi-separable generator, 
-   * with a dense rectangular matrix B:  \f$ C \gets A \times B + beta C \f$
-   *
-   * @param F the base field
-   * @param N the order of \p A
-   * @param s the order of quasiseparability of \p A
-   * @param D an \f$ N \times s\f$ dense matrix
-   * @param ldp leading dimension of \p D
-   * @param P an \f$ N \times s\f$ dense matrix
-   * @param ldp leading dimension of \p P
-   * @param R an \f$ N \times s\f$ dense matrix
-   * @param ldr leading dimension of \p R
-   * @param Q an \f$ N \times s\f$ dense matrix
-   * @param ldq leading dimension of \p Q
-   * @param U an \f$ N \times s\f$ dense matrix
-   * @param ldu leading dimension of \p U
-   * @param V an \f$ N \times s\f$ dense matrix
-   * @param ldv leading dimension of \p V
-   * @param W an \f$ N \times s\f$ dense matrix
-   * @param ldw leading dimension of \p W
-   * @param t the number of columns of \p B
-   * @param B an \f$ N \times t\f$ dense matrix
-   * @param ldb leading dimension of \p B
-   * @param beta scaling constant
-   * @param [inout] C output matrix
-   * @param ldc leading dimension of \p C
-   *
-   * @bib Missing
-   */
+        /**
+         * @brief Compute the product of a quasi-separable matrix A, 
+         *        represented by a sequentially semi-separable generator, 
+         *        with a dense rectangular matrix B:  \f$ C \gets \alpha * A \times B + beta C \f$
+         *
+         * @param Fi the base field
+         * @param N the row and column dimension of \p A
+         * @param t the column dimension of \p B and \p C
+         * @param s the order of quasiseparability of \p A
+         * @param alpha a scalar
+         * @param D an \f$ N \times s\f$ dense matrix
+         * @param ldd leading dimension of \p D
+         * @param P an \f$ (N - s) \times s\f$ dense matrix
+         * @param ldp leading dimension of \p P
+         * @param Q an \f$ (N - ls) \times s\f$ dense matrix where ls = (N%s)? N%s: s
+         * @param ldq leading dimension of \p Q
+         * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
+         * @param ldr leading dimension of \p R
+         * @param U an \f$ (N - ls) \times s\f$ dense matrix
+         * @param ldu leading dimension of \p U
+         * @param V an \f$ (N - ls) \times s\f$ dense matrix
+         * @param ldv leading dimension of \p V
+         * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
+         * @param ldw leading dimension of \p W
+         * @param B an \f$ N \times t\f$ dense matrix
+         * @param ldb leading dimension of \p B
+         * @param beta scaling constant
+         * @param [inout] C output matrix
+         * @param ldc leading dimension of \p C
+         *
+         * A = 
+         * +--------+------+------+--------+----
+         * |   D1   | U1V2 |U1W2V3|U1W2W3V4| ...
+         * +--------+------+------+--------+----
+         * |  P2Q1  |  D2  | U2V3 | U2W3V4 | ...   
+         * +--------+------+------+--------+----
+         * | P3R2Q1 | P3Q2 |  D3  |  U3V4  | ...  
+         * +--------+------+------+--------+----
+         * |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   | ...  
+         * +--------+------+------+--------+----
+         * |  ...   | ...  | ...  |  ...   | ...  
+
+         * @bib S. Chandrasekaran et al. “Fast Stable Solver for Sequentially Semi-separable Linear
+         * Systems of Equations”. In : High Performance Computing — HiPC 2002.
+         */
   template<class Field>
   inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
                               typename Field::ConstElement_ptr P, size_t ldp,
@@ -1970,32 +1985,44 @@ namespace FFPACK { /* SSS */
                               const typename Field::Element beta,
                               typename Field::Element_ptr C, size_t ldc);
 
-
-  /**
-   * @brief Computes a quasi-separable matrix A from its SSS generators
-   *
-   * @param Fi the base field
-   * @param N the order of \p A
-   * @param s the order of quasiseparability of \p A
-   * @param P an \f$ (N - s) \times s\f$ dense matrix
-   * @param ldp leading dimension of \p P
-   * @param Q an \f$ (N - ls) \times s\f$ dense matrix
-   * @param ldq leading dimension of \p Q
-   * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
-   * @param ldr leading dimension of \p R
-   * @param U an \f$ (N - ls) \times s\f$ dense matrix
-   * @param ldu leading dimension of \p U
-   * @param V an \f$ (N - ls) \times s\f$ dense matrix
-   * @param ldv leading dimension of \p V
-   * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
-   * @param ldw leading dimension of \p W
-   * @param D an \f$ N \times s\f$ dense matrix
-   * @param ldd leading dimension of \p D
-   * @param [inout] A the \f$ N \times N \f$ output matrix
-   * @param lda leading dimension of \p A
-   *
-   * @bib Missing
-   */
+        /**
+         * @brief Computes a quasi-separable matrix A from its SSS generators
+         *
+         * @param Fi the base field
+         * @param N the row and column dimension of \p A
+         * @param s the order of quasiseparability of \p A
+         * @param P an \f$ (N - s) \times s\f$ dense matrix
+         * @param ldp leading dimension of \p P
+         * @param Q an \f$ (N - ls) \times s\f$ dense matrix  where ls = (N%s)? N%s: s
+         * @param ldq leading dimension of \p Q
+         * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
+         * @param ldr leading dimension of \p R
+         * @param U an \f$ (N - ls) \times s\f$ dense matrix
+         * @param ldu leading dimension of \p U
+         * @param V an \f$ (N - ls) \times s\f$ dense matrix
+         * @param ldv leading dimension of \p V
+         * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
+         * @param ldw leading dimension of \p W
+         * @param D an \f$ N \times s\f$ dense matrix
+         * @param ldd leading dimension of \p D
+         * @param [inout] A the \f$ N \times N \f$ output matrix
+         * @param lda leading dimension of \p A
+         *
+         * A = 
+         * +--------+------+------+--------+----
+         * |   D1   | U1V2 |U1W2V3|U1W2W3V4| ...
+         * +--------+------+------+--------+----
+         * |  P2Q1  |  D2  | U2V3 | U2W3V4 | ...   
+         * +--------+------+------+--------+----
+         * | P3R2Q1 | P3Q2 |  D3  |  U3V4  | ...  
+         * +--------+------+------+--------+----
+         * |P4R3R4Q1|P4R3Q2| P4Q3 |   D4   | ...  
+         * +--------+------+------+--------+----
+         * |  ...   | ...  | ...  |  ...   | ...  
+         *
+         * @bib S. Chandrasekaran et al. “Fast Stable Solver for Sequentially Semi-separable Linear
+         * Systems of Equations”. In : High Performance Computing — HiPC 2002.
+         */
   template<class Field>
   inline  void SSSToDense (const Field& Fi, size_t N, size_t s,
                            typename Field::ConstElement_ptr P, size_t ldp,

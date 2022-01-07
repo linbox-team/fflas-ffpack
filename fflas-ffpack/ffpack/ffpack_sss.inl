@@ -30,41 +30,6 @@
 
 namespace FFPACK{
 
-        /**
-         * @brief Compute the product of a quasi-separable matrix A, 
-         *represented by a sequentially semi-separable generator, 
-         * with a dense rectangular matrix B:  \f$ C \gets \alpha * A \times B + beta C \f$
-         *
-         * @param Fi the base field
-         * @param N the order of \p A
-         * @param t the width of \p B and \p C
-         * @param s the order of quasiseparability of \p A
-         * @param alpha scaling product constant
-         * @param D an \f$ N \times s\f$ dense matrix
-         * @param ldd leading dimension of \p D
-         * @param P an \f$ (N - s) \times s\f$ dense matrix
-         * @param ldp leading dimension of \p P
-         * @param Q an \f$ (N - ls) \times s\f$ dense matrix
-         * @param ldq leading dimension of \p Q
-         * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
-         * @param ldr leading dimension of \p R
-         * @param U an \f$ (N - ls) \times s\f$ dense matrix
-         * @param ldu leading dimension of \p U
-         * @param V an \f$ (N - ls) \times s\f$ dense matrix
-         * @param ldv leading dimension of \p V
-         * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
-         * @param ldw leading dimension of \p W
-         * @param B an \f$ N \times t\f$ dense matrix
-         * @param ldb leading dimension of \p B
-         * @param beta scaling constant
-         * @param [inout] C output matrix
-         * @param ldc leading dimension of \p C
-         *
-         * @bib S. Chandrasekaran et al. “Fast Stable Solver for Sequentially Semi-separable Linear
-         * Systems of Equations”. In : High Performance Computing — HiPC 2002. Sous la dir.
-         * de Sartaj Sahni, Viktor K. Prasanna et Uday Shukla. Berlin, Heidelberg : Springer
-         * Berlin Heidelberg, 2002, p. 545-554. isbn : 978-3-540-36265-4.
-         */
     template<class Field>
     inline  void productSSSxTS (const Field& Fi, size_t N, size_t t, size_t s,
                                 const typename Field::Element alpha,
@@ -295,35 +260,6 @@ namespace FFPACK{
         FFLAS::fflas_delete(Temp2);
     }
   
-
-        /**
-         * @brief Computes a quasi-separable matrix A from its SSS generators
-         *
-         * @param Fi the base field
-         * @param N the order of \p A
-         * @param s the order of quasiseparability of \p A
-         * @param P an \f$ (N - s) \times s\f$ dense matrix
-         * @param ldp leading dimension of \p P
-         * @param Q an \f$ (N - ls) \times s\f$ dense matrix
-         * @param ldq leading dimension of \p Q
-         * @param R an \f$ (N - s - ls) \times s\f$ dense matrix
-         * @param ldr leading dimension of \p R
-         * @param U an \f$ (N - ls) \times s\f$ dense matrix
-         * @param ldu leading dimension of \p U
-         * @param V an \f$ (N - ls) \times s\f$ dense matrix
-         * @param ldv leading dimension of \p V
-         * @param W an \f$ (N - s - ls) \times s\f$ dense matrix
-         * @param ldw leading dimension of \p W
-         * @param D an \f$ N \times s\f$ dense matrix
-         * @param ldd leading dimension of \p D
-         * @param [inout] A the \f$ N \times N \f$ output matrix
-         * @param lda leading dimension of \p A
-         *
-         * @bib S. Chandrasekaran et al. “Fast Stable Solver for Sequentially Semi-separable Linear
-         * Systems of Equations”. In : High Performance Computing — HiPC 2002. Sous la dir.
-         * de Sartaj Sahni, Viktor K. Prasanna et Uday Shukla. Berlin, Heidelberg : Springer
-         * Berlin Heidelberg, 2002, p. 545-554. isbn : 978-3-540-36265-4.
-         */
     template<class Field>
     inline  void SSSToDense (const Field& Fi, size_t N, size_t s,
                              typename Field::ConstElement_ptr P, size_t ldp,
