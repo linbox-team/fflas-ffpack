@@ -254,7 +254,7 @@ namespace FFPACK { /* Permutations */
      *  - the remaining iend-ibeg-R values of the permutation are in a monotonically increasing progression
      * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
      * Trans==FFLAS::FflasTrans for the inverse permutation of P
-     * @param F	base field
+     * @param F base field
      * @param Side selects if it is a row (FflasLeft) or column (FflasRight) permutation
      * @param Trans inverse permutation (FflasTrans/NoTrans)
      * @param M
@@ -464,7 +464,7 @@ namespace FFPACK { /* ftrtr */
     template<class Field>
     void
     ftrtrm (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag,
-            const size_t N,	typename Field::Element_ptr A, const size_t lda);
+            const size_t N,     typename Field::Element_ptr A, const size_t lda);
 
     /** @brief Solve a triangular system with a triangular right hand side of the same shape.
      * @param F base field
@@ -1958,17 +1958,17 @@ namespace FFPACK { /* SSS */
    */
   template<class Field>
   inline  void productSSSxTS (const Field& Fi, size_t N, size_t s,
-			      typename Field::ConstElement_ptr P, size_t ldp,
-			      typename Field::ConstElement_ptr Q, size_t ldq,
-			      typename Field::ConstElement_ptr R, size_t ldr,
-			      typename Field::ConstElement_ptr U, size_t ldu,
-			      typename Field::ConstElement_ptr V, size_t ldv,
-			      typename Field::ConstElement_ptr W, size_t ldw,
-			      typename Field::ConstElement_ptr D, size_t ldd,
-			      size_t t, const typename Field::Element alpha,
-			      typename  Field::Element_ptr B, size_t ldb,
-			      const typename Field::Element beta,
-			      typename Field::Element_ptr C, size_t ldc);
+                              typename Field::ConstElement_ptr P, size_t ldp,
+                              typename Field::ConstElement_ptr Q, size_t ldq,
+                              typename Field::ConstElement_ptr R, size_t ldr,
+                              typename Field::ConstElement_ptr U, size_t ldu,
+                              typename Field::ConstElement_ptr V, size_t ldv,
+                              typename Field::ConstElement_ptr W, size_t ldw,
+                              typename Field::ConstElement_ptr D, size_t ldd,
+                              size_t t, const typename Field::Element alpha,
+                              typename  Field::Element_ptr B, size_t ldb,
+                              const typename Field::Element beta,
+                              typename Field::Element_ptr C, size_t ldc);
 
 
   /**
@@ -1997,15 +1997,15 @@ namespace FFPACK { /* SSS */
    * @bib Missing
    */
   template<class Field>
-  inline  void sssToDense (const Field& Fi, size_t N, size_t s,
-			   typename Field::ConstElement_ptr P, size_t ldp,
-			   typename Field::ConstElement_ptr Q, size_t ldq,
-			   typename Field::ConstElement_ptr R, size_t ldr,
-			   typename Field::ConstElement_ptr U, size_t ldu,
-			   typename Field::ConstElement_ptr V, size_t ldv,
-			   typename Field::ConstElement_ptr W, size_t ldw,
-			   typename Field::ConstElement_ptr D, size_t ldd,
-			   typename Field::Element_ptr A, size_t lda);
+  inline  void SSSToDense (const Field& Fi, size_t N, size_t s,
+                           typename Field::ConstElement_ptr P, size_t ldp,
+                           typename Field::ConstElement_ptr Q, size_t ldq,
+                           typename Field::ConstElement_ptr R, size_t ldr,
+                           typename Field::ConstElement_ptr U, size_t ldu,
+                           typename Field::ConstElement_ptr V, size_t ldv,
+                           typename Field::ConstElement_ptr W, size_t ldw,
+                           typename Field::ConstElement_ptr D, size_t ldd,
+                           typename Field::Element_ptr A, size_t lda);
 }
     
 

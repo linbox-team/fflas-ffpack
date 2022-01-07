@@ -61,7 +61,7 @@ void print_matrix (const Field & F, size_t m, size_t n, typename Field::ConstEle
     }
 }
 
-/** \brief test equality between matrix reconstructed by sssToDense and applied to identity with productSSSxTS */
+/** \brief test equality between matrix reconstructed by SSSToDense and applied to identity with productSSSxTS */
 template<class Field>
 bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s, 
 					typename Field::ConstElement_ptr P, size_t ldp,
@@ -77,7 +77,7 @@ bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s,
   typename Field::Element_ptr Id = fflas_new (F, n, n);
   fidentity (F, n, n, Id, n);
   
-  sssToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+  SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
 		  D, ldd, rec, n);
   productSSSxTS (F, n, n, s, F.one, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw, D, ldd,
 		 Id, n, F.zero, app, n);
@@ -118,7 +118,7 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
 				     typename Field::ConstElement_ptr C, size_t ldc)
 {
   typename  Field::Element_ptr A = fflas_new (F, n, n);
-  sssToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
+  SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldr, U, ldu, V, ldv, W, ldw,
 		  D, ldd, A, n);
   
   typename  Field::Element_ptr dense = fflas_new (F, n, t);

@@ -325,7 +325,7 @@ namespace FFPACK{
    * Berlin Heidelberg, 2002, p. 545-554. isbn : 978-3-540-36265-4.
    */
   template<class Field>
-  inline  void sssToDense (const Field& Fi, size_t N, size_t s,
+  inline  void SSSToDense (const Field& Fi, size_t N, size_t s,
 			   typename Field::ConstElement_ptr P, size_t ldp,
 			   typename Field::ConstElement_ptr Q, size_t ldq,
 			   typename Field::ConstElement_ptr R, size_t ldr,
