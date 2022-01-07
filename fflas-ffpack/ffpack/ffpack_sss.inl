@@ -104,31 +104,25 @@ namespace FFPACK{
         if (k > 1)
                 /* Temp1 <- alpha * Q_1 * B_1 */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, t, s, alpha, Q,          
-                   ldq, B, ldb, Fi.zero,       // No addition
-                   Temp1, t);                                    // Leading dimension s
+                   s, t, s, alpha, Q, ldq, B, ldb, Fi.zero, Temp1, t);
   
-            /* Instructions are doubled in the loop 
-             * in order to avoid using more than two temporary blocks */
+            /* unrolling by step of 2 to avoid swapping temporaries */
         for (size_t block = 0; (block + 2) < kf; block+=2)
         {
-                /* C_{block + 1} += P_{block + 1} * Temp1 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
-                   s, t, s, Fi.one, P + (block) * s * ldp,   //s x s by s x t, alpha VB 
-                   ldp, Temp1, t, Fi.one,                        // No mult
-                   C + (block + 1) * s * ldc, ldc);
+                /* C_{block + 2} += P_{block + 2} * Temp1 */
+            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                   s, t, s, Fi.one, P + (block) * s * ldp,
+                   ldp, Temp1, t, Fi.one, C + (block + 1) * s * ldc, ldc);
                 /* Temp2 <- alpha * Q_{block + 1} * B_{block + 1} */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-                   s, t, s, alpha, Q + (block + 1) * s * ldq,          
-                   ldq, B + (block + 1) * s * ldb, ldb, Fi.zero,       // No addition
-                   Temp2, t);                                    // Leading dimension s
+            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                   s, t, s, alpha, Q + (block + 1) * s * ldq, ldq,
+                   B + (block + 1) * s * ldb, ldb, Fi.zero, Temp2, t);
                 /* Temp2 += R_{block + 1} * Temp1 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-                   s, t, s, Fi.one, R + (block) * s * ldr,          
-                   ldr, Temp1, t, Fi.one,    
-                   Temp2, t);                                    // Leading dimension s
+            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                   s, t, s, Fi.one, R + (block) * s * ldr,
+                   ldr, Temp1, t, Fi.one, Temp2, t);
 
-                /* C_{block + 2} += P_{block + 2} * Temp2 */
+                /* C_{block + 3} += P_{block + 3} * Temp2 */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
                    s, t, s, Fi.one, P + (block + 1) * s * ldp,   
                    ldp, Temp2, t, Fi.one,                        
