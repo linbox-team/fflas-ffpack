@@ -1,6 +1,6 @@
 /*
- * Copyright (C) FFLAS-FFPACK
- * Written by Hippolyte Signargout (hippolyte.signargout@ens-lyon.fr
+ * Copyright (C) the FFLAS-FFPACK group
+ * Written by Hippolyte Signargout (hippolyte.signargout@ens-lyon.fr)
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -47,20 +47,6 @@ using namespace std;
 using namespace FFPACK;
 using namespace FFLAS;
 
-/** \brief print matrix */
-template<class Field>
-void print_matrix (const Field & F, size_t m, size_t n, typename Field::ConstElement_ptr A, size_t lda)
-{
-    for (size_t line = 0; line < m; line++)
-    {
-        for (size_t column = 0; column < n; column++)
-        {
-            std::cout<<A[column + line * lda]<<"\t";
-        }
-        std::cout<<std::endl;
-    }
-}
-
 /** \brief test equality between matrix reconstructed by SSSToDense and applied to identity with productSSSxTS */
 template<class Field>
 bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s, 
@@ -86,14 +72,10 @@ bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s,
 
     if ( !ok )
     {
-        std::cout << "Different results for reconstruction and application to identity "<<std::endl;
-        std::cout << "rec =  "<<std::endl;
-        print_matrix(F, n, n, rec, n);
-        std::cout << "app =  "<<std::endl;
-        print_matrix(F, n, n, app, n);
+        std::cout << "ERROR: different results for reconstruction and application to identity "<<std::endl;
+        WriteMatrix(std::cout<<"rec = "<<std::endl, F, n, n, rec, n);
+        WriteMatrix(std::cout << "app =  "<<std::endl, F, n, n, app, n);
     }
-    else
-        std::cout << "Same results for reconstruction and application to identity "<<std::endl;
 
     FFLAS::fflas_delete(rec);
     FFLAS::fflas_delete(app);
@@ -137,21 +119,80 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
     FFLAS::fflas_delete(qs);
 
     if ( !ok )
-        std::cout << "Different results for dense and qs application "<<std::endl;
-    else
-        std::cout << "Same results for dense and qs application "<<std::endl;
+        std::cout << "ERROR: different results for dense and qs application "<<std::endl;
+    return ok;
+}
+
+
+template<class Field>
+bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typename Field::RandIter& G)
+{
+        /* Generate generators (which can be cropped a bit) */
+    typedef typename Field::Element_ptr Element_ptr;
+    Element_ptr D = fflas_new (F, n, s);
+    Element_ptr P = fflas_new (F, n, s);     // Could be n - s
+    Element_ptr Q = fflas_new (F, n, s);     // Could be n - rs
+    Element_ptr R = fflas_new (F, n - s, s); // Could be n - s - rs
+    Element_ptr U = fflas_new (F, n, s);     // Could be n - rs
+    Element_ptr V = fflas_new (F, n, s);     // Could be n - s
+    Element_ptr W = fflas_new (F, n - s, s); // Could be n - s - rs
+    Element_ptr C = fflas_new (F, n, t);
+    Element_ptr B = fflas_new (F, n, t);
+
+    frand (F, G, n, s, D, s);
+    frand (F, G, n, s, P, s);
+    frand (F, G, n, s, Q, s);
+    frand (F, G, n - s, s, R, s);
+    frand (F, G, n, s, U, s);
+    frand (F, G, n, s, V, s);
+    frand (F, G, n - s, s, W, s);
+    frand (F, G, n, t, C, t);
+    frand (F, G, n, t, B, t);
+
+    typename Field::Element alpha, beta;
+    G.random(alpha);
+    G.random(beta);
+
+    bool ok = true;
+        /* Call to functions being implemented */
+    ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
+    ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
+    ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, F.zero, C, t);
+
+    if ( !ok )
+    {
+        std::cout << "FAILED "<<std::endl;
+            /* Print generators for debugging */
+        WriteMatrix (std::cout << "P =  "<<std::endl,F, n, s, P, s);
+        WriteMatrix (std::cout << "Q =  "<<std::endl,F, n, s, Q, s);
+        WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s, s, R, s);
+        WriteMatrix (std::cout << "U =  "<<std::endl,F, n, s, U, s);
+        WriteMatrix (std::cout << "V =  "<<std::endl,F, n, s, V, s);
+        WriteMatrix (std::cout << "W =  "<<std::endl,F, n - s, s, W, s);
+        WriteMatrix (std::cout << "D =  "<<std::endl,F, n, s, D, s);
+    }
+
+        /* Free memory and return */
+    FFLAS::fflas_delete(D);
+    FFLAS::fflas_delete(B);
+    FFLAS::fflas_delete(P);
+    FFLAS::fflas_delete(Q);
+    FFLAS::fflas_delete(R);
+    FFLAS::fflas_delete(C);
+    FFLAS::fflas_delete(U);
+    FFLAS::fflas_delete(V);
+    FFLAS::fflas_delete(W);
+
     return ok;
 }
 
 template<class Field>
 bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t, size_t iters, uint64_t seed)
 {
-    std::cout << "Test new type" << std::endl;
     bool ok = true ;
-    typedef typename Field::Element_ptr Element_ptr ;
     while (ok && iters)
     {
-        std::cout << "Iterations left: " << iters << std::endl;
+            //std::cout << "Iterations left: " << iters << std::endl;
             /* New field 
              * chooseField returns a pointer, F needs to be passed by its value */
         Field* F= chooseField<Field>(q,b,seed);
@@ -159,78 +200,26 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
             return true;
             /* Initiate random number generator */
         typename Field::RandIter G(*F,seed++);
-
-            /* Generate generators (which can be cropped a bit) */
-        Element_ptr D = fflas_new (*F, n, s);
-        Element_ptr P = fflas_new (*F, n, s);     // Could be n - s 
-        Element_ptr Q = fflas_new (*F, n, s);     // Could be n - rs
-        Element_ptr R = fflas_new (*F, n - s, s); // Could be n - s - rs
-        Element_ptr U = fflas_new (*F, n, s);     // Could be n - rs 
-        Element_ptr V = fflas_new (*F, n, s);     // Could be n - s
-        Element_ptr W = fflas_new (*F, n - s, s); // Could be n - s - rs
-        Element_ptr C = fflas_new (*F, n, t);
-        Element_ptr B = fflas_new (*F, n, t);
-
-        frand (*F, G, n, s, D, s);
-        frand (*F, G, n, s, P, s);
-        frand (*F, G, n, s, Q, s);
-        frand (*F, G, n - s, s, R, s);
-        frand (*F, G, n, s, U, s);
-        frand (*F, G, n, s, V, s);
-        frand (*F, G, n - s, s, W, s);
-        frand (*F, G, n, t, C, t);
-        frand (*F, G, n, t, B, t);
+        srandom(seed);
         
-            /* RandIter.random seems to work like this? */
-        typename Field::Element alpha, beta;
-        G.random(alpha);
-        G.random(beta);
-        
-            /* Call to functions being implemented */
-        ok = ok && test_reconstruction_compatibility(*F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
-        ok = ok && test_application_compatibility(*F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
+        std::ostringstream oss;
+        F->write(oss);
 
-      
-        if ( !ok )
-        {
-            std::cout << "FAILED "<<std::endl;
-                /* Print generators for debugging */
-#if 1
-            std::cout << "P =  "<<std::endl;
-            print_matrix(*F, n, s, P, s);
-            std::cout << "Q =  "<<std::endl;
-            print_matrix(*F, n, s, Q, s);
-            std::cout << "R =  "<<std::endl;
-            print_matrix(*F, n - s, s, R, s);
-            std::cout << "U =  "<<std::endl;
-            print_matrix(*F, n, s, U, s);
-            std::cout << "V =  "<<std::endl;
-            print_matrix(*F, n, s, V, s);
-            std::cout << "W =  "<<std::endl;
-            print_matrix(*F, n - s, s, W, s);
-            std::cout << "D =  "<<std::endl;
-            print_matrix(*F, n, s, D, s);
-#endif
-        }
-        else
+        std::cout.fill('.');
+        std::cout<<"Checking ";
+        std::cout.width(65);
+        std::cout<<oss.str();
+        std::cout<<" ... ";
+
+        ok = ok && launch_instance_check (*F, n, s, t, G);
+        ok = ok && launch_instance_check (*F, n, (random() % s)+1, t, G);
+
+        if (ok)
             std::cout << "PASSED "<<std::endl;
-
-
-            /* Free memory and return */
-        FFLAS::fflas_delete(D);
-        FFLAS::fflas_delete(B);
-        FFLAS::fflas_delete(P);
-        FFLAS::fflas_delete(Q);
-        FFLAS::fflas_delete(R);
-        FFLAS::fflas_delete(C);
-        FFLAS::fflas_delete(U);
-        FFLAS::fflas_delete(V);
-        FFLAS::fflas_delete(W);
 
         delete F;
         iters--;
     }
-  
     return ok;
 }
 
@@ -239,38 +228,27 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=93;
-    size_t s=8;
-    size_t t=6;
+    size_t n=162;
+    size_t s=15;
+    size_t t=42;
     int iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
 
     Argument as[] = {
-        { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-        { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
-        { 'n', "-n N", "Set the matrix order.", TYPE_INT , &n },
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
+        { 'b', "-b B", "Set the bitsize of the field characteristic.", TYPE_INT , &b },
+        { 'n', "-n N", "Set the matrix row and column dimension.", TYPE_INT , &n },
         { 's', "-s S", "Set the order of quasi-separability.", TYPE_INT , &s },
-        { 't', "-t T", "Set the col dim of the TS matrix.", TYPE_INT , &t },
-        { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-        { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+        { 't', "-t T", "Set the col dim of the Tall and Skinny matrix.", TYPE_INT , &t },
+        { 'i', "-i R", "Set number of repetitions.", TYPE_INT, &iters },
+        { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL, &loop },
         { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
         END_OF_ARGUMENTS
     };
 
     parseArguments(argc,argv,as);
    
-    if (s > n)
-    {
-        s = n/2;
-        std::cout << "Input value for s is too high, it has been decreased" << std::endl;
-    }
-
-        /* Print parameter values */
-    std::cout << "n = "<< n << ", s = " << s << ", t = " << t << std::endl;
-   
-    srand(seed);
-    
     bool ok=true;
     do{
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,s,t,iters,seed);
@@ -281,13 +259,13 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed); // Those are very slow
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,b,n,s,t,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9,n/4,s/4,t/4,iters,seed); // Those are very slow
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224),n/4,s/4,t/4,iters,seed);
         seed++;
     } while (loop && ok);
 
     if (!ok) std::cerr<<"with seed = "<<seed-1<<std::endl;
-    
+
     return !ok;
 }
 

@@ -31,7 +31,7 @@
 namespace FFPACK{
 
     template<class Field>
-    inline  void productSSSxTS (const Field& Fi, size_t N, size_t t, size_t s,
+    inline void productSSSxTS (const Field& Fi, size_t N, size_t t, size_t s,
                                 const typename Field::Element alpha,
                                 typename Field::ConstElement_ptr P, size_t ldp,
                                 typename Field::ConstElement_ptr Q, size_t ldq,

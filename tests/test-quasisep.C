@@ -1,5 +1,5 @@
 /*
- * Copyright (C) FFLAS-FFPACK
+ * Copyright (C) the FFLAS-FFPACK group
  * Written by Clément Pernet and Quentin Houssier
  * This file is Free Software and part of FFLAS-FFPACK.
  *
