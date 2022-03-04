@@ -100,7 +100,9 @@ int tmain(){
     double timeFlint=0.;
 #endif
     for (size_t loop=0;loop<iters;loop++){
-        Givaro::Integer::random_exact_2exp(p, b);
+        if (q<0){
+            Givaro::Integer::random_exact_2exp(p, b);}
+        else p=q;
         Givaro::IntPrimeDom IPD;
         IPD.nextprimein(p);
         Ints ip; Givaro::Caster<Ints,Givaro::Integer>(ip,p);
