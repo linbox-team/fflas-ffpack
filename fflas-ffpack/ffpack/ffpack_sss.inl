@@ -339,48 +339,6 @@ namespace FFPACK{
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp1, s,
                        Q, ldq, Fi.zero, A + (row + 1) * s * lda, lda);
 	  }
-	// /* Last row if partial */
-        //     /* rs rows in the block */
-        // if (rs && (k > 1))
-        // {
-        //         /* A_{kf + 1, kf} <- P_{kf + 1} * Q_{kf} */
-        //     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-        //            rs, s, s, Fi.one, P + (kf - 1) * s * ldp,
-        //            ldp, Q + (kf - 1) * s * ldq, ldq, Fi.zero, A + kf * s * lda + (kf - 1) * s, lda);
-        //     if (kf > 1) // Otherwise no R
-        //             /* next inner loop needs Temp1, which is first set here */
-        //             /* Temp1 <- P_{(kf + 1)} * R_{kf} */
-        //         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, P + (kf - 1) * s * ldp,
-        //                ldp, R + (kf - 2) * s * ldr, ldr, Fi.zero, Temp1, s);
-	//     /* unrolling by step of 2 to avoid swapping temporaries */
-        //     for (size_t block = 1; block < (kf - 1); block+=2)
-        //     {
-        //             /* A_{kf + 1, kf - block} <- Temp1 * Q_{kf - block} */
-        //         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, //Temp1 is only up to date on rs rows
-	// 	       s, Fi.one, Temp1, s, Q + ((kf - 1) - block) * s * ldq, ldq, Fi.zero,
-	// 	       A + (kf) * s * lda + ((kf - 1) - block) * s, lda);
-        //             /* Temp2 <- Temp1 * R_{kf - block} */
-        //         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, Temp1, 
-        //                s, R + ((kf - 2) - block) * s * ldr, ldr, Fi.zero, Temp2, s);
-        //             /* A_{kf + 1, (kf - 1) - block} <- Temp2 * Q_{(kf - 1) - block} */
-        //         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, Temp2, s,
-        //                Q + ((kf - 2) - block) * s * ldq, ldq, Fi.zero,
-	// 	       A + (kf) * s * lda + ((kf - 2) - block) * s, lda);
-        //             /* If necessary:
-        //              * - Not last loop
-        //              * - One more block
-        //              * -> At least one more block */
-        //         if (block + 1 < kf - 1)
-        //                 /* Temp1 <- Temp2 * R_{(kf - 1) - block} */
-        //             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, Temp2, 
-        //                    s, R + ((kf - 3) - block) * s * ldr, ldr, Fi.zero, Temp1, s);
-        //     }
-        //         /* First column if not done already */
-        //     if ((kf - 1)%2)
-        //             /* A_{(kf + 1), 1} <- Temp1 * Q_{1} */
-        //         fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rs, s, s, Fi.one, Temp1, s,
-        //                Q, ldq, Fi.zero, A + kf * s * lda, lda);
-        // }
        /******************* Upper triangular part *****************/
             /* Symmetrically identical to the lower part */
 
