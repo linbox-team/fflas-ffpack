@@ -24,12 +24,10 @@
  *.
  */
 
-
 #ifndef __FFLASFFPACK_ffpack_sss_inl
 #define __FFLASFFPACK_ffpack_sss_inl
 
 namespace FFPACK{
-
     template<class Field>
     inline void productSSSxTS (const Field& Fi, size_t N, size_t t, size_t s,
                                 const typename Field::Element alpha,
@@ -59,8 +57,7 @@ namespace FFPACK{
         size_t kf = N/s;  // Nb of full slices of dimension s
         size_t rs = N%s; //size of the partial block
         size_t k = rs ? kf+1 : kf; // Total number of blocks
-            // In the following ls is the size of the last block:
-            //  size_t ls = (rs)? rs: s;
+        size_t ls = (rs)? rs: s;   // Size of the last block:
 
             /* Correspondence between matrix and table indices
              * First block   Last block
@@ -89,7 +86,6 @@ namespace FFPACK{
                    s, t, s, alpha, D + block * s * ldd, //s x s by s x t, alpha DB + beta C
                    ldd, B + block * s * ldb, ldb, beta, // D_block is block * s rows under D
                    C + block * s * ldc, ldc);
-
         if (rs) // Last block
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, //Element field, no transpose
                    rs, t, rs, alpha, D + kf * s * ldd, //rs x rs by rs x t, alpha DB + beta C
@@ -99,13 +95,11 @@ namespace FFPACK{
         /************ Lower Triangular Part **********/
         typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, t);
         typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, t);
-
-        if (k > 1)
+	if (k > 1)
                 /* Temp1 <- alpha * Q_1 * B_1 */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    s, t, s, alpha, Q, ldq, B, ldb, Fi.zero, Temp1, t);
-  
-            /* unrolling by step of 2 to avoid swapping temporaries */
+	/* unrolling by step of 2 to avoid swapping temporaries */
         for (size_t block = 0; (block + 2) < kf; block+=2)
         {
                 /* C_{block + 2} += P_{block + 2} * Temp1 */
@@ -182,8 +176,7 @@ namespace FFPACK{
 
             /* Temp1 <- alpha * V_lastv * B_lastb */
         if (kf > 1 || rs){
-            size_t bks = rs ? rs : s;
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, bks, alpha,
+            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, ls, alpha,
                    V + (k - 2) * s * ldv, ldv, B + (k - 1) * s * ldb, ldb, Fi.zero, Temp1, t);
         }
             /* Starting block: n - ls - s */
@@ -258,22 +251,19 @@ namespace FFPACK{
              */
   
             /* Block division */
-        size_t kf = N/s;  // Nb of full slices of dimension s
-        size_t rs = N%s; //size of the partial block
+        size_t kf = N/s;           // Nb of full slices of dimension s
+        size_t rs = N%s;           // Size of the partial block
         size_t k = rs ? kf+1 : kf; // Total number of blocks
-        
-            // In the following ls is the size of the last block:
-            //  size_t ls = (rs)? rs: s;
-
-            /*   First block    Last block
-             * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
-             * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
-             * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
-             * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
-             * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
-             * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
-             * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
-             */
+	size_t ls = (rs)? rs: s;   // Size of the last block:
+	/*   First block    Last block
+	 * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
+	 * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
+	 * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
+	 * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
+	 * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
+	 * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
+	 * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
+	 */
 
             /* Unused space:
              *
@@ -284,7 +274,7 @@ namespace FFPACK{
              *            |   |   |
              *            +---+---+ */
 
-        /******************* Diagonal Blocks ************** :
+        /******************* Diagonal Blocks **************
              * A <- diag (D) */
         for (size_t block = 0; block < kf; block++) // Full blocks
                 /* Diagonal block 'block' starts on row s*block, column s*block */
@@ -296,11 +286,12 @@ namespace FFPACK{
 	/* Blocks are computed row by row, by successively applying the R and Q to the P(RRR...) */
         typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, s);
         typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, s);
+	size_t bsize;
 	// Loop on rows which have LT part
         for (size_t row = 0; row < k - 1; row++) 
 	{
 	    // In the last iteration, the block may not be full
-	    size_t bsize = (rs && (row == k - 2))? rs: s; 
+	    bsize = (row == k - 2)? ls: s;
 	    /* A_{row + 2, row + 1} <- P_{row + 2} * Q_{row + 1} */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    bsize, s, s, Fi.one, P + row * s * ldp, // In this loop, all blocks are s x s
@@ -340,100 +331,50 @@ namespace FFPACK{
                        Q, ldq, Fi.zero, A + (row + 1) * s * lda, lda);
 	  }
        /******************* Upper triangular part *****************/
-            /* Symmetrically identical to the lower part */
-
-            /* Column 2 */
-        if (kf > 1)
-                /* A_{1, 2} <- U_{2} * V_{1} */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U, 
-                   ldu, V, ldv, Fi.zero, A + s, lda);
-    
-            /* After column 2, R is also applied */
-        for (size_t column = 1; column < kf - 1; column++) // Loop on columns which have a W
+	/* Symmetrically identical to the lower part (Could be merged with transposes) */
+        for (size_t column = 0; column < k - 1; column++) // Loop on columns which have a W
         {
-                /* Block loop needs Temp1, which is first updated here */
-                /* A_{column + 1, column + 2} <- U_{column + 1} * V_{column + 2} */
+	    // In the last iteration, the block may not be full
+	    bsize = (column == k - 2)? ls: s;
+	    /* A_{column + 1, column + 2} <- U_{column + 1} * V_{column + 2} */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, s, s, Fi.one, U + column * s * ldu, // In this loop, all blocks are s x s
+                   s, bsize, s, Fi.one, U + column * s * ldu, // In this loop, all blocks are s x s
                    ldu, V + column * s * ldv, ldv, Fi.zero, A + (column) * s * lda + (column + 1) * s, lda);
+	    /* After column 2, R is also applied */
+	    if (column > 0)
+		/* Block loop needs Temp1, which is first updated here */
                 /* Temp1 <- W_{column + 1} * V_{column + 2} */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, W + (column - 1) * s * ldw, 
-                   ldw, V + column * s * ldv, ldv, Fi.zero, Temp1, s);
-        
-                /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
+		       W + (column - 1) * s * ldw, ldw, V + column * s * ldv, ldv, Fi.zero, Temp1, s);
+	    /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
             for (size_t block = 1; block < column; block+=2)
             {
-                    /* A_{column + 1 - block, column + 2} <- U_{column + 1 - block} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U + (column - block) * s * ldu,
-                       ldu, Temp1, s, Fi.zero, A + (column - block) * s * lda + (column + 1) * s, lda);
-                    /* Temp2 <- W_{column + 1 - block} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one,
+		/* A_{column + 1 - block, column + 2} <- U_{column + 1 - block} * Temp1 */
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
+		       U + (column - block) * s * ldu, ldu, Temp1, s, Fi.zero,
+		       A + (column - block) * s * lda + (column + 1) * s, lda);
+		/* Temp2 <- W_{column + 1 - block} * Temp1 */
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
                        W + (column - 1 - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
-
-                    /* A_{column - block, column + 2} <- U_{column - block} * Temp2 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U + (column - block - 1) * s * ldu,
+		/* A_{column - block, column + 2} <- U_{column - block} * Temp2 */
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
+		       U + (column - block - 1) * s * ldu,
                        ldu, Temp2, s, Fi.zero, A + (column - block - 1) * s * lda + (column + 1) * s, lda);
                     /* If necessary:
                      * - Not last loop
                      * - One more block
                      * -> At least one more block */
                 if (block + 1 < column)
-                        /* Temp1 <- W_{column - block} * Temp2 */
-                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one,
+		    /* Temp1 <- W_{column - block} * Temp2 */
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
                            W + (column - block - 2) * s * ldw, ldw, Temp2, s, Fi.zero, Temp1, s);
             }
-                /* First row if not done already */
+	    /* First row if not done already */
             if (column%2)
-                    /* A_{1, column + 2} <- U_{1} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, s, s, Fi.one, U,
+		/* A_{1, column + 2} <- U_{1} * Temp1 */
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one, U,
                        ldu, Temp1, s, Fi.zero, A + (column + 1) * s, lda);
-        }
-    
-            /* Last column if partial 
-             * and partial column is not just a diagonal */
-            /* rs columns in the block */
-        if (rs && (k > 1))
-        {
-                /* Block loop needs Temp1, which is first updated here */
-                /* A_{kf, kf + 1} <- U_{kf} * V_{kf + 1} */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, rs, s, Fi.one, U + (kf - 1) * s * ldu, // In this loop, all blocks are s x rs
-                   ldu, V + (kf - 1) * s * ldv, ldv, Fi.zero, A + (kf - 1) * s * lda + (kf) * s, lda);
-            if (kf > 1) // Or W does not exist
-                    /* Temp1 <- W_{kf} * V_{kf + 1} */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, W + (kf - 2) * s * ldw, 
-                       ldw, V + (kf - 1) * s * ldv, ldv, Fi.zero, Temp1, s);
-        
-                /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
-            for (size_t block = 1; block < kf - 1; block+=2)
-            {
-                    /* A_{kf - block, kf + 1} <- U_{kf - block} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, U + (kf - 1 - block) * s * ldu,
-                       ldu, Temp1, s, Fi.zero, A + (kf - 1 - block) * s * lda + (kf) * s, lda);
-                    /* Temp2 <- W_{kf - block} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one,
-                       W + (kf - 2 - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
-
-                    /* A_{kf - 1 - block, kf + 1} <- U_{kf - 1 - block} * Temp2 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, U + (kf - block - 2) * s * ldu,
-                       ldu, Temp2, s, Fi.zero, A + (kf - block - 2) * s * lda + (kf) * s, lda);
-                    /* If necessary:
-                     * - Not last loop
-                     * - One more block
-                     * -> At least one more block */
-                if (block + 1 < kf - 1)
-                        /* Temp1 <- W_{kf - 1 - block} * Temp2 */
-                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one,
-                           W + (kf - block - 3) * s * ldw, ldw, Temp2, s, Fi.zero, Temp1, s);
-            }
-                /* First column if not done already */
-            if ((kf%2) == 0)
-                    /* A_{1, kf + 1} <- U_{1} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, rs, s, Fi.one, U,
-                       ldu, Temp1, s, Fi.zero, A + (kf) * s, lda);
-        }
-    
-            /* Free memory */
+        }    
         FFLAS::fflas_delete(Temp1);
         FFLAS::fflas_delete(Temp2);
     }
