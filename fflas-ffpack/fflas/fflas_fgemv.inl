@@ -491,7 +491,7 @@ namespace FFLAS{
            const typename Field::Element beta,
            typename Field::Element_ptr Y, const size_t incY,
            ParSeqHelper::Sequential& seqH ){
-        MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> pH(F,m,n,1,seqH);
+        MMHelper<Field, MMHelperAlgo::Classic> pH(F,m,n,1,seqH);
         return fgemv(F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY, pH);
     }
 }

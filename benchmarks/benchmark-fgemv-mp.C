@@ -155,7 +155,8 @@ int tmain(){
                 FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, parH);
             }
         } else { // Sequential
-            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc);
+            FFLAS::ParSeqHelper::Sequential seqH;
+            FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
         }
 
         chrono.stop();
