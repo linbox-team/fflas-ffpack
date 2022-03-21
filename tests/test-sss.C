@@ -127,25 +127,27 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
 template<class Field>
 bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typename Field::RandIter& G)
 {
-        /* Generate generators (which can be cropped a bit) */
+        /* Generate generators */
+    size_t rs = n%s;           // Size of the partial block
+    size_t ls = (rs)? rs: s;   // Size of the last block
     typedef typename Field::Element_ptr Element_ptr;
     Element_ptr D = fflas_new (F, n, s);
-    Element_ptr P = fflas_new (F, n, s);     // Could be n - s
-    Element_ptr Q = fflas_new (F, n, s);     // Could be n - ls I think 
-    Element_ptr R = fflas_new (F, n - s, s); // Could be n - s - rs       Maybe not for the rs
-    Element_ptr U = fflas_new (F, n, s);     // Could be n - rs
-    Element_ptr V = fflas_new (F, n, s);     // Could be n - s
-    Element_ptr W = fflas_new (F, n - s, s); // Could be n - s - rs
+    Element_ptr P = fflas_new (F, n - s, s);
+    Element_ptr Q = fflas_new (F, n - ls, s);
+    Element_ptr R = fflas_new (F, n - s - ls, s);
+    Element_ptr U = fflas_new (F, n - ls, s);
+    Element_ptr V = fflas_new (F, n - ls, s);
+    Element_ptr W = fflas_new (F, n - s - ls, s);
     Element_ptr C = fflas_new (F, n, t);
     Element_ptr B = fflas_new (F, n, t);
 
     frand (F, G, n, s, D, s);
-    frand (F, G, n, s, P, s);
-    frand (F, G, n, s, Q, s);
-    frand (F, G, n - s, s, R, s);
-    frand (F, G, n, s, U, s);
-    frand (F, G, n, s, V, s);
-    frand (F, G, n - s, s, W, s);
+    frand (F, G, n - s, s, P, s);
+    frand (F, G, n - ls, s, Q, s);
+    frand (F, G, n - s - ls, s, R, s);
+    frand (F, G, n - ls, s, U, s);
+    frand (F, G, n - ls, s, V, s);
+    frand (F, G, n - s - ls, s, W, s);
     frand (F, G, n, t, C, t);
     frand (F, G, n, t, B, t);
 
@@ -163,15 +165,14 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
     {
         std::cout << "FAILED "<<std::endl;
             /* Print generators for debugging */
-        WriteMatrix (std::cout << "P =  "<<std::endl,F, n, s, P, s);
-        WriteMatrix (std::cout << "Q =  "<<std::endl,F, n, s, Q, s);
-        WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s, s, R, s);
-        WriteMatrix (std::cout << "U =  "<<std::endl,F, n, s, U, s);
-        WriteMatrix (std::cout << "V =  "<<std::endl,F, n, s, V, s);
-        WriteMatrix (std::cout << "W =  "<<std::endl,F, n - s, s, W, s);
+	WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
+        WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - s, s, Q, s);
+        WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s - ls, s, R, s);
+        WriteMatrix (std::cout << "U =  "<<std::endl,F, n - ls, s, U, s);
+        WriteMatrix (std::cout << "V =  "<<std::endl,F, n - ls, s, V, s);
+        WriteMatrix (std::cout << "W =  "<<std::endl,F, n - s - ls, s, W, s);
         WriteMatrix (std::cout << "D =  "<<std::endl,F, n, s, D, s);
     }
-
         /* Free memory and return */
     FFLAS::fflas_delete(D);
     FFLAS::fflas_delete(B);
