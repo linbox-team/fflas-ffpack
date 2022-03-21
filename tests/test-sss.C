@@ -131,8 +131,8 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
     typedef typename Field::Element_ptr Element_ptr;
     Element_ptr D = fflas_new (F, n, s);
     Element_ptr P = fflas_new (F, n, s);     // Could be n - s
-    Element_ptr Q = fflas_new (F, n, s);     // Could be n - rs
-    Element_ptr R = fflas_new (F, n - s, s); // Could be n - s - rs
+    Element_ptr Q = fflas_new (F, n, s);     // Could be n - ls I think 
+    Element_ptr R = fflas_new (F, n - s, s); // Could be n - s - rs       Maybe not for the rs
     Element_ptr U = fflas_new (F, n, s);     // Could be n - rs
     Element_ptr V = fflas_new (F, n, s);     // Could be n - s
     Element_ptr W = fflas_new (F, n - s, s); // Could be n - s - rs

@@ -92,7 +92,10 @@ namespace FFPACK{
                    ldd, B + kf * s * ldb, ldb, beta, // D_kf is kf * s rows under D
                    C + kf * s * ldc, ldc);
 
-        /************ Lower Triangular Part **********/
+        /************ Lower Triangular Part **********
+	 * Calls to fgemm in the code can be reduced by including "Remaining blocks" in the 'for' loop
+	 * This would use more tests
+	 * (Same for UT part) */
         typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, t);
         typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, t);
 	if (k > 1)
@@ -106,7 +109,7 @@ namespace FFPACK{
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    s, t, s, Fi.one, P + (block) * s * ldp,
                    ldp, Temp1, t, Fi.one, C + (block + 1) * s * ldc, ldc);
-                /* Temp2 <- alpha * Q_{block + 1} * B_{block + 1} */
+                /* Temp2 <- alpha * Q_{block + 2} * B_{block + 2} */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    s, t, s, alpha, Q + (block + 1) * s * ldq, ldq,
                    B + (block + 1) * s * ldb, ldb, Fi.zero, Temp2, t);
