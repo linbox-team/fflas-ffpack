@@ -28,6 +28,7 @@
 // everywhere in the call stack
 #define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
+#define INTEGER_NO_RNS 1
 
 #if not defined(MG_DEFAULT)
 #define MG_DEFAULT MG_ACTIVE
