@@ -381,6 +381,64 @@ namespace FFPACK{
         FFLAS::fflas_delete(Temp1);
         FFLAS::fflas_delete(Temp2);
     }
+        template<class Field>
+    inline void DenseToSSS (const Field& Fi, size_t N, size_t s,
+                            typename Field::Element_ptr P, size_t ldp,
+                            typename Field::Element_ptr Q, size_t ldq,
+                            typename Field::Element_ptr R, size_t ldr,
+                            typename Field::Element_ptr U, size_t ldu,
+                            typename Field::Element_ptr V, size_t ldv,
+                            typename Field::Element_ptr W, size_t ldw,
+                            typename Field::Element_ptr D, size_t ldd,
+                            typename Field::ConstElement_ptr A, size_t lda)
+    {
+            /*       +--------+------+------+--------+---
+             *       |   D1   | U1V2 |U1W2V3|U1W2W3V4|
+             *       +--------+------+------+--------+---
+             *       |  P2Q1  |  D2  | U2V3 | U2W3V4 |
+             * A <-  +--------+------+------+--------+---
+             *       | P3R2Q1 | P3Q2 |  D3  |  U3V4  |
+             *       +--------+------+------+--------+---
+             *       |P4R3R2Q1|P4R3Q2| P4Q3 |   D4   |
+             *       +--------+------+------+--------+---
+             *       |        |      |      |        |
+             */
+  
+            /* Block division */
+        size_t kf = N/s;           // Nb of full slices of dimension s
+        size_t rs = N%s;           // Size of the partial block
+        size_t k = rs ? kf+1 : kf; // Total number of blocks
+	size_t ls = (rs)? rs: s;   // Size of the last block:
+	/*   First block    Last block
+	 * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
+	 * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
+	 * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
+	 * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
+	 * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
+	 * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
+	 * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
+	 */
+
+            /* Unused space:
+             *
+             * |       |  |       |
+             * +---+---+  +---+---+            Code readability is preferred to efficiency:
+             * | D | * |  |   |   |        One could store D_last and V_last in new variables
+             * +---+---+  | V | * |
+             *            |   |   |
+             *            +---+---+ */
+
+        /******************* Diagonal Blocks **************
+             * A <- diag (D) */
+        for (size_t block = 0; block < kf; block++) // Full blocks
+                /* Diagonal block 'block' starts on row s*block, column s*block */
+            FFLAS::fassign (Fi, s, s, A + block * s * (lda + 1), lda, D + block * s * ldd, ldd);
+        if (rs) // Last block
+            FFLAS::fassign (Fi, rs, rs, A + kf * s * (lda + 1), lda, D + kf * s * ldd, ldd);
+
+       /******************* Upper triangular part *****************/
+
+    }
 }
 
 #endif
