@@ -155,6 +155,10 @@ bool test_upper_compression (const Field & F, size_t n, size_t s,
 		  <<std::endl;
 	WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
         WriteMatrix(std::cout << "A2 =  "<<std::endl, F, n, n, A2, n);
+	WriteMatrix(std::cout << "Ucheck = "<<std::endl, F, n, s, Ucheck, s);
+        WriteMatrix(std::cout << "Vcheck =  "<<std::endl, F, n, s, Vcheck, s);
+	WriteMatrix(std::cout << "Wcheck = " <<std::endl, F, n, s, Wcheck, s);
+        WriteMatrix(std::cout << "Dcheck = " <<std::endl, F, n, s, Dcheck, s);
 	}
    
  FFLAS::fflas_delete(A1, A2, Z, Dcheck, Ucheck, Vcheck, Wcheck);

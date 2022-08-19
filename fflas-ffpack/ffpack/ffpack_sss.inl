@@ -444,7 +444,8 @@ namespace FFPACK{
 	size_t * p = FFLAS::fflas_new<size_t> (2 * s); // Type ?
 	size_t * q = FFLAS::fflas_new<size_t> (N - s);
 	size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
-
+	//FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, s, N - s, H + s, N);
+	
 	// pL -> U_1
 	FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, s, r, H + s,
 			      N, U, ldu);	
@@ -453,16 +454,26 @@ namespace FFPACK{
 	// Uq -> V_2
 	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
 			      H + s, N); // Remove L
+	//FFLAS::WriteMatrix(std::cout<<"After removing L, H = "<<std::endl, Fi, s, N - s, H + s, N);
 	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
 			0, N - s - 1, H + s, N, q); // Apply permutation q to H
+	/*FFLAS::WriteMatrix(std::cout<<"After applying q, H = "<<std::endl, Fi, s, N - s,
+	  H + s, N);*/
 	FFLAS::fassign (Fi, s, s, H + s, N, V, ldv);
 
 	for (size_t brow = 0; brow < k - 2; brow++)
 	    {
 		//		std::cout << "brow = "<<brow << std::endl;
 		//std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
+		/*FFLAS::WriteMatrix(std::cout<<"Before PLUQ, H = "<<std::endl, Fi, 2 * s,
+				   N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
+				   N);*/
 		r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
-				  N - s*(brow + 2), H + s * (brow + 2), N, p, q);
+				  N - s*(brow + 2), H + N * s * brow + s * (brow + 2), N,
+				  p, q);
+		/*FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, 2 * s,
+				   N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
+				   N);*/
 		// pL -> [W_{brow + 2} \\ U_{brow + 2}]
 		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s,
 				      N - s * (brow + 2), r,
@@ -476,8 +487,14 @@ namespace FFPACK{
 				      H + s * N * brow + s * (brow + 2), N, H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
 		FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
 				0, N - s* (brow + 2) - 1, H + s * N * (brow + 1) + s * (brow + 2), N, q); // Apply permutation q to H
-		FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N, V, ldv); /* Sould not cause any trouble even if
+		FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N,
+				V + ldv * s * (brow + 1), ldv); /* Sould not cause any trouble even if
 												  last block*/
+		// if (brow != k - 3) // Sould not cause segfault now
+		// // shifts \hat H down
+		// FFLAS::fassign (Fi, s, N - s * (brow + 3),
+		// 		H + s * N * (brow + 1) + s * (brow + 3), N,
+		// 		H + s * N * (brow + 2) + s * (brow + 3), N);
 	    }
 	FFLAS::fflas_delete (H, p, q);
     }
