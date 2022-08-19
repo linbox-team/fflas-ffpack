@@ -125,33 +125,39 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
 /** \brief test equality between block diagonal and result of densifying and 
     compressing it */
 template<class Field>
-bool test_diagonal_compression (const Field & F, size_t n, size_t s,
-				typename Field::ConstElement_ptr D, size_t ldd)
+//bool test_diagonal_compression (const Field & F, size_t n, size_t s,
+bool test_upper_compression (const Field & F, size_t n, size_t s,
+			     typename Field::ConstElement_ptr U, size_t ldu,
+			     typename Field::ConstElement_ptr V, size_t ldv,
+			     typename Field::ConstElement_ptr W, size_t ldw,
+			     typename Field::ConstElement_ptr D, size_t ldd)
 {
     typename  Field::Element_ptr A1 = fflas_new (F, n, n);
     typename  Field::Element_ptr A2 = fflas_new (F, n, n);
     typename  Field::Element_ptr Z = fflas_new (F, n + s, s); //To be sure
     typename  Field::Element_ptr Dcheck = fflas_new (F, n, s);
-    fzero (F, s, s, Z, s);
+    typename  Field::Element_ptr Ucheck = fflas_new (F, n, s);
+    typename  Field::Element_ptr Vcheck = fflas_new (F, n, s);
+    typename  Field::Element_ptr Wcheck = fflas_new (F, n, s);
+    fzero (F, n + s, s, Z, s);
 
-    SSSToDense (F, n, s, Z, s, Z, s, Z, s, Z, s, Z, s, Z, s,
+    SSSToDense (F, n, s, Z, s, Z, s, Z, s, U, ldu, V, ldv, W, ldw,
                 D, ldd, A1, n);
-    DenseToSSS (F, n, s, Z, s, Z, s, Z, s, Z, s, Z, s, Z, s,
+    DenseToSSS (F, n, s, Z, s, Z, s, Z, s, Ucheck, s, Vcheck, s, Wcheck, s,
                 Dcheck, s, A1, n);
-    SSSToDense (F, n, s, Z, s, Z, s, Z, s, Z, s, Z, s, Z, s,
+    SSSToDense (F, n, s, Z, s, Z, s, Z, s, Ucheck, s, Vcheck, s, Wcheck, s,
                 Dcheck, s, A2, n);
 
     bool ok = fequal (F, n, n, A1, n, A2, n);
  if ( !ok )
 	{
-        std::cout << "ERROR: different results for dense from D and compression"
+        std::cout << "ERROR: different results for dense from generator and compression"
 		  <<std::endl;
-	        WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
+	WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
         WriteMatrix(std::cout << "A2 =  "<<std::endl, F, n, n, A2, n);
 	}
    
- FFLAS::fflas_delete(A1, A2, Z, Dcheck);
-
+ FFLAS::fflas_delete(A1, A2, Z, Dcheck, Ucheck, Vcheck, Wcheck);
     return ok;
 }
 
@@ -191,7 +197,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
     ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, F.zero, C, t);
-    ok = ok && test_diagonal_compression (F, n, s, D, s);
+    ok = ok && test_upper_compression (F, n, s, U, s, V, s, W, s, D, s);
     
     if ( !ok )
     {

@@ -437,43 +437,48 @@ namespace FFPACK{
             FFLAS::fassign (Fi, rs, rs, A + kf * s * (lda + 1), lda, D + kf * s * ldd, ldd);
 
        /******************* Upper triangular part *****************/
+	FFLAS::fzero (Fi, N - s - ls, s, W, ldw); //
 	// Temporary submatrix, copied to be pluqed
-	typename  Field::Element_ptr H = fflas_new (Fi, n, n);
-	FFLAS::fassign (Fi, n, n, A, lda, H, n);
-	size_t * p = FFLAS::fflas_new<size_t>(n - s);
-	size_t * q = FFLAS::fflas_new<size_t>(n - s);
-	size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, n - s, H + s, n, p, q);
+	typename  Field::Element_ptr H = FFLAS::fflas_new (Fi, N, N);
+	FFLAS::fassign (Fi, N, N, A, lda, H, N);
+	size_t * p = FFLAS::fflas_new<size_t> (2 * s); // Type ?
+	size_t * q = FFLAS::fflas_new<size_t> (N - s);
+	size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
 
 	// pL -> U_1
 	FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, s, r, H + s,
-			      n, U, ldu);	
+			      N, U, ldu);	
 	FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
 			0, s - 1, U, ldu, p);
 	// Uq -> V_2
-	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNoUnit, s, n - s, r,
-			      H + s, n); // Remove L
+	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
+			      H + s, N); // Remove L
 	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-			0, n - s - 1, H + s, n, q); // Apply permutation q to H
-	FFLAS::fassign (Fi, s, s, H + s, n, V, ldv);
+			0, N - s - 1, H + s, N, q); // Apply permutation q to H
+	FFLAS::fassign (Fi, s, s, H + s, N, V, ldv);
 
-	for (size_t brow = 0; brow < k - 1; brow++)
+	for (size_t brow = 0; brow < k - 2; brow++)
 	    {
-		r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(brow + 2),
-				  n - s*(brow + 2), H + s * (brow + 2), n, p, q);
+		//		std::cout << "brow = "<<brow << std::endl;
+		//std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
+		r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
+				  N - s*(brow + 2), H + s * (brow + 2), N, p, q);
 		// pL -> [W_{brow + 2} \\ U_{brow + 2}]
-		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s, n - s * (brow + 2), r, H + s * n * brow + s * (brow + 2),
-			      n, W + ldw * s * brow, ldw);	
-	FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-			0, 2*s - 1, W + ldw * s * brow, ldw, p);
-	FFLAS::fassign (Fi, s, s, W + ldw * s * (brow + 1), ldw, U + ldu * s * (brow + 1), ldu);
-	// Uq -> [V_{brow + 3} & H]
-	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNoUnit, s, n - s * (brow + 2), r,
-			      H + s * n * brow + s * (brow + 2), n, H + s * n * (brow + 1) + s * (brow + 2), n); // Remove L
-	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-			0, n - s* (brow + 2) - 1, H + s * n * (brow + 1) + s * (brow + 2), n, q); // Apply permutation q to H
-	FFLAS::fassign (Fi, s, s, H + s * n * (brow + 1) + s * (brow + 2), n, V, ldv);
+		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s,
+				      N - s * (brow + 2), r,
+				      H + s * N * brow + s * (brow + 2),
+				      N, W + ldw * s * brow, ldw);	
+		FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+				0, 2*s - 1, W + ldw * s * brow, ldw, p);
+		FFLAS::fassign (Fi, s, s, W + ldw * s * (brow + 1), ldw, U + ldu * s * (brow + 1), ldu);
+		// Uq -> [V_{brow + 3} & H]
+		FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2), r,
+				      H + s * N * brow + s * (brow + 2), N, H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
+		FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+				0, N - s* (brow + 2) - 1, H + s * N * (brow + 1) + s * (brow + 2), N, q); // Apply permutation q to H
+		FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N, V, ldv); /* Sould not cause any trouble even if
+												  last block*/
 	    }
-	// Problème pour la dernière ligne de blocks avec seulement rs colonnes
 	FFLAS::fflas_delete (H, p, q);
     }
 }
