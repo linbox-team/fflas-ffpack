@@ -113,16 +113,47 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
                    B, ldb, beta, qs, t);
 
     bool ok = fequal (F, n, t, dense, t, qs, t);
-
+ if ( !ok )
+        std::cout << "ERROR: different results for dense and qs application "<<std::endl;
+   
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(dense);
     FFLAS::fflas_delete(qs);
 
-    if ( !ok )
-        std::cout << "ERROR: different results for dense and qs application "<<std::endl;
     return ok;
 }
+/** \brief test equality between block diagonal and result of densifying and 
+    compressing it */
+template<class Field>
+bool test_diagonal_compression (const Field & F, size_t n, size_t s,
+				typename Field::ConstElement_ptr D, size_t ldd)
+{
+    typename  Field::Element_ptr A1 = fflas_new (F, n, n);
+    typename  Field::Element_ptr A2 = fflas_new (F, n, n);
+    typename  Field::Element_ptr Z = fflas_new (F, n + s, s); //To be sure
+    typename  Field::Element_ptr Dcheck = fflas_new (F, n, s);
+    fzero (F, s, s, Z, s);
 
+    SSSToDense (F, n, s, Z, s, Z, s, Z, s, Z, s, Z, s, Z, s,
+                D, ldd, A1, n);
+    DenseToSSS (F, n, s, Z, s, Z, s, Z, s, Z, s, Z, s, Z, s,
+                Dcheck, s, A1, n);
+    SSSToDense (F, n, s, Z, s, Z, s, Z, s, Z, s, Z, s, Z, s,
+                Dcheck, s, A2, n);
+
+    bool ok = fequal (F, n, n, A1, n, A2, n);
+ if ( !ok )
+	{
+        std::cout << "ERROR: different results for dense from D and compression"
+		  <<std::endl;
+	        WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
+        WriteMatrix(std::cout << "A2 =  "<<std::endl, F, n, n, A2, n);
+	}
+   
+ FFLAS::fflas_delete(A1, A2, Z, Dcheck);
+
+    return ok;
+}
 
 template<class Field>
 bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typename Field::RandIter& G)
@@ -160,7 +191,8 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
     ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, F.zero, C, t);
-
+    ok = ok && test_diagonal_compression (F, n, s, D, s);
+    
     if ( !ok )
     {
         std::cout << "FAILED "<<std::endl;

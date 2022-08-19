@@ -437,7 +437,44 @@ namespace FFPACK{
             FFLAS::fassign (Fi, rs, rs, A + kf * s * (lda + 1), lda, D + kf * s * ldd, ldd);
 
        /******************* Upper triangular part *****************/
+	// Temporary submatrix, copied to be pluqed
+	typename  Field::Element_ptr H = fflas_new (Fi, n, n);
+	FFLAS::fassign (Fi, n, n, A, lda, H, n);
+	size_t * p = FFLAS::fflas_new<size_t>(n - s);
+	size_t * q = FFLAS::fflas_new<size_t>(n - s);
+	size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, n - s, H + s, n, p, q);
 
+	// pL -> U_1
+	FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, s, r, H + s,
+			      n, U, ldu);	
+	FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+			0, s - 1, U, ldu, p);
+	// Uq -> V_2
+	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNoUnit, s, n - s, r,
+			      H + s, n); // Remove L
+	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+			0, n - s - 1, H + s, n, q); // Apply permutation q to H
+	FFLAS::fassign (Fi, s, s, H + s, n, V, ldv);
+
+	for (size_t brow = 0; brow < k - 1; brow++)
+	    {
+		r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(brow + 2),
+				  n - s*(brow + 2), H + s * (brow + 2), n, p, q);
+		// pL -> [W_{brow + 2} \\ U_{brow + 2}]
+		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s, n - s * (brow + 2), r, H + s * n * brow + s * (brow + 2),
+			      n, W + ldw * s * brow, ldw);	
+	FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+			0, 2*s - 1, W + ldw * s * brow, ldw, p);
+	FFLAS::fassign (Fi, s, s, W + ldw * s * (brow + 1), ldw, U + ldu * s * (brow + 1), ldu);
+	// Uq -> [V_{brow + 3} & H]
+	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNoUnit, s, n - s * (brow + 2), r,
+			      H + s * n * brow + s * (brow + 2), n, H + s * n * (brow + 1) + s * (brow + 2), n); // Remove L
+	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+			0, n - s* (brow + 2) - 1, H + s * n * (brow + 1) + s * (brow + 2), n, q); // Apply permutation q to H
+	FFLAS::fassign (Fi, s, s, H + s * n * (brow + 1) + s * (brow + 2), n, V, ldv);
+	    }
+	// Problème pour la dernière ligne de blocks avec seulement rs colonnes
+	FFLAS::fflas_delete (H, p, q);
     }
 }
 
