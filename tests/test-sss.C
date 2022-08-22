@@ -126,26 +126,34 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
     compressing it */
 template<class Field>
 //bool test_diagonal_compression (const Field & F, size_t n, size_t s,
-bool test_upper_compression (const Field & F, size_t n, size_t s,
+bool test_compression (const Field & F, size_t n, size_t s,
+                                     typename Field::ConstElement_ptr P, size_t ldp,
+                                     typename Field::ConstElement_ptr Q, size_t ldq,
+                                     typename Field::ConstElement_ptr R, size_t ldr,
 			     typename Field::ConstElement_ptr U, size_t ldu,
 			     typename Field::ConstElement_ptr V, size_t ldv,
 			     typename Field::ConstElement_ptr W, size_t ldw,
 			     typename Field::ConstElement_ptr D, size_t ldd)
 {
+    size_t rs = n%s;           // Size of the partial block
+    size_t ls = (rs)? rs: s;   // Size of the last block
     typename  Field::Element_ptr A1 = fflas_new (F, n, n);
     typename  Field::Element_ptr A2 = fflas_new (F, n, n);
-    typename  Field::Element_ptr Z = fflas_new (F, n + s, s); //To be sure
+    //    typename  Field::Element_ptr Z = fflas_new (F, n + s, s); //To be sure
+    typename  Field::Element_ptr Pcheck = fflas_new (F, n - s, s);
+    typename  Field::Element_ptr Qcheck = fflas_new (F, n - ls, s);
+    typename  Field::Element_ptr Rcheck = fflas_new (F, ((n > s + ls)? (n - s - ls): 0), s);
     typename  Field::Element_ptr Dcheck = fflas_new (F, n, s);
-    typename  Field::Element_ptr Ucheck = fflas_new (F, n, s);
-    typename  Field::Element_ptr Vcheck = fflas_new (F, n, s);
-    typename  Field::Element_ptr Wcheck = fflas_new (F, n, s);
-    fzero (F, n + s, s, Z, s);
+    typename  Field::Element_ptr Ucheck = fflas_new (F, n - ls, s);
+    typename  Field::Element_ptr Vcheck = fflas_new (F, n - ls, s);
+    typename  Field::Element_ptr Wcheck = fflas_new (F, ((n > s + ls)? (n - s - ls): 0), s);
+    //    fzero (F, n + s, s, Z, s);
 
-    SSSToDense (F, n, s, Z, s, Z, s, Z, s, U, ldu, V, ldv, W, ldw,
+    SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldq, U, ldu, V, ldv, W, ldw,
                 D, ldd, A1, n);
-    DenseToSSS (F, n, s, Z, s, Z, s, Z, s, Ucheck, s, Vcheck, s, Wcheck, s,
+    DenseToSSS (F, n, s, Pcheck, s, Qcheck, s, Rcheck, s, Ucheck, s, Vcheck, s, Wcheck, s,
                 Dcheck, s, A1, n);
-    SSSToDense (F, n, s, Z, s, Z, s, Z, s, Ucheck, s, Vcheck, s, Wcheck, s,
+    SSSToDense (F, n, s, Pcheck, s, Qcheck, s, Rcheck, s, Ucheck, s, Vcheck, s, Wcheck, s,
                 Dcheck, s, A2, n);
 
     bool ok = fequal (F, n, n, A1, n, A2, n);
@@ -161,7 +169,7 @@ bool test_upper_compression (const Field & F, size_t n, size_t s,
         WriteMatrix(std::cout << "Dcheck = " <<std::endl, F, n, s, Dcheck, s);
 	}
    
- FFLAS::fflas_delete(A1, A2, Z, Dcheck, Ucheck, Vcheck, Wcheck);
+ FFLAS::fflas_delete(A1, A2, Dcheck, Ucheck, Vcheck, Wcheck, Pcheck, Qcheck, Rcheck);
     return ok;
 }
 
@@ -171,24 +179,25 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
         /* Generate generators */
     size_t rs = n%s;           // Size of the partial block
     size_t ls = (rs)? rs: s;   // Size of the last block
+    //std::cout << "n = " << n << std::endl << "s = " << s << std::endl << "ls = " << ls << std::endl;
     typedef typename Field::Element_ptr Element_ptr;
     Element_ptr D = fflas_new (F, n, s);
     Element_ptr P = fflas_new (F, n - s, s);
     Element_ptr Q = fflas_new (F, n - ls, s);
-    Element_ptr R = fflas_new (F, n - s - ls, s);
+    Element_ptr R = fflas_new (F, ((n > s + ls)? (n - s - ls): 0), s);
     Element_ptr U = fflas_new (F, n - ls, s);
     Element_ptr V = fflas_new (F, n - ls, s);
-    Element_ptr W = fflas_new (F, n - s - ls, s);
+    Element_ptr W = fflas_new (F, ((n > s + ls)? (n - s - ls): 0), s);
     Element_ptr C = fflas_new (F, n, t);
     Element_ptr B = fflas_new (F, n, t);
 
     frand (F, G, n, s, D, s);
     frand (F, G, n - s, s, P, s);
     frand (F, G, n - ls, s, Q, s);
-    frand (F, G, n - s - ls, s, R, s);
+    frand (F, G, ((n > s + ls)? (n - s - ls): 0), s, R, s);
     frand (F, G, n - ls, s, U, s);
     frand (F, G, n - ls, s, V, s);
-    frand (F, G, n - s - ls, s, W, s);
+    frand (F, G, ((n > s + ls)? (n - s - ls): 0), s, W, s);
     frand (F, G, n, t, C, t);
     frand (F, G, n, t, B, t);
 
@@ -201,7 +210,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
     ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, F.zero, C, t);
-    ok = ok && test_upper_compression (F, n, s, U, s, V, s, W, s, D, s);
+    ok = ok && test_compression (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
     
     if ( !ok )
     {
@@ -304,12 +313,12 @@ int main(int argc, char** argv)
 								     seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9,((n > 3)? n/4: n), ((s > 3)? s/4:
-											     (s > n)? n: s),
+											     ((s > n)? n: s)),
 								     ((t > 3)? t/4: t), iters,
 								     seed); /* Those are very slow, and problem
 									       with small values */
         ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ((n > 3)? n/4: n),
-								     ((s > 3)? s/4: s),
+								     ((s > 3)? s/4: ((s > n)? n: s)),
 								    ((t > 3)? t/4: t),iters,seed);
         seed++;
     } while (loop && ok);
