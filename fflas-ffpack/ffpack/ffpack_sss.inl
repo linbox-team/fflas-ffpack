@@ -503,6 +503,68 @@ namespace FFPACK{
 		// 		H + s * N * (brow + 1) + s * (brow + 3), N,
 		// 		H + s * N * (brow + 2) + s * (brow + 3), N);
 	    }
+	
+	/******************* Lower triangular part *****************/
+	// Does it need to be copied? It seems easier than to play with transposes
+	FFLAS::fzero (Fi, N - s - ls, s, R, ldr);
+	size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, N - s, s, H + s * N, N, p, q);
+	// Uq -> Q_1 []
+	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, s, r, H + s * N,
+			      N, U, ldu);	
+	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+			0, s - 1, U, ldu, p);
+	// pL -> [P_2 \\ H]
+	// Remove L
+	FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
+			      H + s, N);
+	FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+			0, N - s - 1, H + s, N, q); // Apply permutation q to H
+	/*FFLAS::WriteMatrix(std::cout<<"After applying q, H = "<<std::endl, Fi, s, N - s,
+	  H + s, N);*/
+	FFLAS::fassign (Fi, s, s, H + s, N, V, ldv);
+
+	for (size_t brow = 0; brow < k - 2; brow++)
+	    {
+		//		std::cout << "brow = "<<brow << std::endl;
+		//std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
+		/*FFLAS::WriteMatrix(std::cout<<"Before PLUQ, H = "<<std::endl, Fi, 2 * s,
+				   N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
+				   N);*/
+		r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
+				  N - s*(brow + 2), H + N * s * brow + s * (brow + 2), N,
+				  p, q);
+		// FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, 2 * s,
+		// 		   N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
+		// 		   N);
+		// pL -> [W_{brow + 2} \\ U_{brow + 2}]
+		// 1) L -> [W_{brow + 2} \\ W_{brow + 3}]
+		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s,
+				      N - s * (brow + 2), r,
+				      H + s * N * brow + s * (brow + 2),
+				      N, W + ldw * s * brow, ldw, true);
+		// FFLAS::WriteMatrix(std::cout<<"After L, W_2+ = "<<std::endl, Fi, 2 * s,
+		// 		   s, W + ldw * s * brow, ldw);
+		// 2) p[W_{brow + 2} \\ W_{brow + 3}] -> [W_{brow + 2} \\ W_{brow + 3}]
+		FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+				0, 2*s - 1, W + ldw * s * brow, ldw, p);
+		// 3) W_{brow + 3} -> U_{brow + 2}
+		FFLAS::fassign (Fi, s, s, W + ldw * s * (brow + 1), ldw, U + ldu * s * (brow + 1), ldu);
+		// Uq -> [V_{brow + 3} & H]
+		FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2), r,
+				      H + s * N * brow + s * (brow + 2), N,
+				      H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
+		FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+				0, N - s* (brow + 2) - 1, H + s * N * (brow + 1) + s * (brow + 2), N,
+				q); // Apply permutation q to H
+		FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N,
+				V + ldv * s * (brow + 1), ldv); /* Sould not cause any trouble even if
+												  last block*/
+		// if (brow != k - 3) // Sould not cause segfault now
+		// // shifts \hat H down
+		// FFLAS::fassign (Fi, s, N - s * (brow + 3),
+		// 		H + s * N * (brow + 1) + s * (brow + 3), N,
+		// 		H + s * N * (brow + 2) + s * (brow + 3), N);
+	    }
 	FFLAS::fflas_delete (H, p, q);
     }
 }
