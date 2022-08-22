@@ -300,10 +300,17 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,seed); // Valgrind does not like this one 
+        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,
+								     seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9,n/4,s/4,t/4,iters,seed); // Those are very slow
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224),n/4,s/4,t/4,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9,((n > 3)? n/4: n), ((s > 3)? s/4:
+											     (s > n)? n: s),
+								     ((t > 3)? t/4: t), iters,
+								     seed); /* Those are very slow, and problem
+									       with small values */
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ((n > 3)? n/4: n),
+								     ((s > 3)? s/4: s),
+								    ((t > 3)? t/4: t),iters,seed);
         seed++;
     } while (loop && ok);
 
