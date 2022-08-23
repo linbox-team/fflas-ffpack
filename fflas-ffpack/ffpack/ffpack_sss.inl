@@ -103,80 +103,56 @@ namespace FFPACK{
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    s, t, s, alpha, Q, ldq, B, ldb, Fi.zero, Temp1, t);
 	/* unrolling by step of 2 to avoid swapping temporaries */
-        for (size_t block = 0; (block + 2) < kf; block+=2)
-        {
-                /* C_{block + 2} += P_{block + 2} * Temp1 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, t, s, Fi.one, P + (block) * s * ldp,
-                   ldp, Temp1, t, Fi.one, C + (block + 1) * s * ldc, ldc);
-                /* Temp2 <- alpha * Q_{block + 2} * B_{block + 2} */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, t, s, alpha, Q + (block + 1) * s * ldq, ldq,
-                   B + (block + 1) * s * ldb, ldb, Fi.zero, Temp2, t);
-                /* Temp2 += R_{block + 1} * Temp1 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, t, s, Fi.one, R + (block) * s * ldr,
-                   ldr, Temp1, t, Fi.one, Temp2, t);
-
-                /* C_{block + 3} += P_{block + 3} * Temp2 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, t, s, Fi.one, P + (block + 1) * s * ldp,
-                   ldp, Temp2, t, Fi.one,           
-                   C + (block + 2) * s * ldc, ldc);
-                /* Only needs to be done if the results is useful :
-                 * - Not last loop
-                 * - Even amount of blocks
-                 * - Partial blocks */
-            if (((block + 4) < kf)||((kf%2 == 0)||rs))
-            {
-                    /* Temp1 <- alpha * Q_{block + 2} * B_{block + 2} */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                       s, t, s, alpha, Q + (block + 2) * s * ldq,
-                       ldq, B + (block + 2) * s * ldb, ldb, Fi.zero,
-                       Temp1, t);
-                    /* Temp1 += R_{block + 2} * Temp2 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                       s, t, s, Fi.one, R + (block + 1) * s * ldr,
-                       ldr, Temp2, t, Fi.one, Temp1, t);
-            }
-        }
-
-            /* Remaining blocks */
-        if (kf%2 == 0) // One full block left to be processed (Even amount of full blocks)
-        {
-                /* C_{kf - 1} += P_{kf - 1} * Temp1 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   s, t, s, Fi.one, P + (kf - 2) * s * ldp,
-                   ldp, Temp1, t, Fi.one, C + (kf - 1) * s * ldc, ldc);
-            if (rs) // Then one small block to be processed
-            {
-                    /* Temp2 <- alpha * Q_{kf - 1} * B_{kf - 1} */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                       s, t, s, alpha, Q + (kf - 1) * s * ldq,
-                       ldq, B + (kf - 1) * s * ldb, ldb, Fi.zero, Temp2, t);
-                    /* Temp2 += R_{kf - 1} * Temp1 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                       s, t, s, Fi.one, R + (kf - 2) * s * ldr,
-                       ldr, Temp1, t, Fi.one, Temp2, t);
-
-                    /* C_{kf} += P_{kf} * Temp2 */
-                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
-                       rs, t, s, Fi.one, P + (kf - 1) * s * ldp,   
-                       ldp, Temp2, t, Fi.one,                        
-                       C + (kf) * s * ldc, ldc);
-            }
-        }
-        else if (rs)
-        {
-                /* C_{kf} += P_{kf} * Temp1 */
-            fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                   rs, t, s, Fi.one, P + (kf - 1) * s * ldp,
-                   ldp, Temp1, t, Fi.one, C + (kf) * s * ldc, ldc);
-        }
-
+	size_t bs = s;
+        for (size_t block = 0; (block) < kf; block+=2)
+	    {
+		if ((block + 2) == k)
+		    bs = ls;
+		if (((block + 2) < kf) || ((kf % 2) == 0) || rs)
+		    {
+			// Step a
+			/* C_{block + 2} += P_{block + 2} * Temp1 */
+			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			       bs, t, s, Fi.one, P + (block) * s * ldp,
+			       ldp, Temp1, t, Fi.one, C + (block + 1) * s * ldc, ldc);
+		    }
+		if (((block + 2) < kf) || ((rs) && (kf%2 == 0)))
+		    {
+			/* Temp2 <- alpha * Q_{block + 2} * B_{block + 2} */
+			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			       s, t, s, alpha, Q + (block + 1) * s * ldq, ldq,
+			       B + (block + 1) * s * ldb, ldb, Fi.zero, Temp2, t);
+			/* Temp2 += R_{block + 1} * Temp1 */
+			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			       s, t, s, Fi.one, R + (block) * s * ldr,
+			       ldr, Temp1, t, Fi.one, Temp2, t);
+			if ((block + 3) == k)
+			    bs = ls;
+			// Step b
+			/* C_{block + 3} += P_{block + 3} * Temp2 */
+			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			       bs, t, s, Fi.one, P + (block + 1) * s * ldp,
+			       ldp, Temp2, t, Fi.one,           
+			       C + (block + 2) * s * ldc, ldc);
+		    }
+		/* Only needs to be done if the results is useful :
+		 * - Not last loop with instructions
+		 */
+		if (((block + 2) < kf) && ((kf%2 == 0) || rs)))
+		    {
+			/* Temp1 <- alpha * Q_{block + 2} * B_{block + 2} */
+			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			       s, t, s, alpha, Q + (block + 2) * s * ldq,
+			       ldq, B + (block + 2) * s * ldb, ldb, Fi.zero,
+			       Temp1, t);
+			/* Temp1 += R_{block + 2} * Temp2 */
+			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			       s, t, s, Fi.one, R + (block + 1) * s * ldr,
+			       ldr, Temp2, t, Fi.one, Temp1, t);
+		    }
         /*********** Upper ****************/
             /* Copy, but the other way: partial blocks are taken care of first*/
-
+		    // Needs to be modified to have only 6 fgemm calls (2 too many)?
             /* Temp1 <- alpha * V_lastv * B_lastb */
         if (kf > 1 || rs){
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, t, ls, alpha,
