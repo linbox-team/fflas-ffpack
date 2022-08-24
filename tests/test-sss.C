@@ -277,13 +277,13 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t s, size_t t,
 
 int main(int argc, char** argv)
 {
-    cerr<<setprecision(20); // In order to print integers as integers even on float types
+    cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=162;
-    size_t s=15;
+    size_t n=471;
+    size_t s=23;
     size_t t=42;
-    int iters=3;
+    int iters=5;
     bool loop=false;
     uint64_t seed = getSeed();
 
@@ -312,14 +312,11 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,
 								     seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9,((n > 3)? n/4: n), ((s > 3)? s/4:
-											     ((s > n)? n: s)),
-								     ((t > 3)? t/4: t), iters,
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(s / 4.), ceil(t / 4.), iters,
 								     seed); /* Those are very slow, and problem
-									       with small values */
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ((n > 3)? n/4: n),
-								     ((s > 3)? s/4: ((s > n)? n: s)),
-								    ((t > 3)? t/4: t),iters,seed);
+									       with small values ?*/
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(s / 4.), ceil(t / 4.),
+								     iters,seed);
         seed++;
     } while (loop && ok);
 
