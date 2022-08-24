@@ -72,7 +72,7 @@ bool test_reconstruction_compatibility (const Field & F, size_t n, size_t s,
 
     if ( !ok )
     {
-        std::cout << "ERROR: different results for reconstruction and application to identity "<<std::endl;
+        std::cout << std::endl << "ERROR: different results for reconstruction and application to identity "<<std::endl << "n = " << n << ", s = " << s << std::endl;
         WriteMatrix(std::cout<<"rec = "<<std::endl, F, n, n, rec, n);
         WriteMatrix(std::cout << "app =  "<<std::endl, F, n, n, app, n);
     }
@@ -119,7 +119,11 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
     FFLAS::fflas_delete(qs);
 
     if ( !ok )
-        std::cout << "ERROR: different results for dense and qs application "<<std::endl;
+	{
+        std::cout <<std::endl << "ERROR: different results for dense and qs application "<<std::endl << "n = " << n << ", s = " << s << ", t = " << t <<  std::endl;
+	WriteMatrix (std::cout << "dense = "<<std::endl, F, n, t, dense, t);
+        WriteMatrix (std::cout << "qs =  " << std::endl, F, n, t, qs, t);
+	}
     return ok;
 }
 
@@ -157,9 +161,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
 
     bool ok = true;
         /* Call to functions being implemented */
-    ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
     ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, F.zero, C, t);
+    ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
 
     if ( !ok )
     {
