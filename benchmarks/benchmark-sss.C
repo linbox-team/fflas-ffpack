@@ -1,7 +1,5 @@
 /* Copyright (c) FFLAS-FFPACK
- * Written by 
- * Clement Pernet <clement.pernet@univ-grenoble-alpes.fr>
- * Hippolyte Signargout <hippolyte.signargout@ens-lyon.fr>
+ * Written by Hippolyte Signargout <hippolyte.signargout@ens-lyon.fr>
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
  *
@@ -20,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
  */
+
+// Template from benchmark-quasisep.C
 
 #define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
@@ -41,18 +41,19 @@ using namespace FFLAS;
 using namespace FFPACK;
 
 template<class Field>
-void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, uint64_t seed){
+void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, uint64_t seed){
 
     Field F(q);
     typedef typename Field::Element_ptr Element_ptr;
 
     FFLAS::Timer chrono;
-    Element_ptr A, TS;
+    Element_ptr A, B, TS;
 
     double time_gen = 0, time_cbxts =0;
     for (size_t i=0;i<iter;++i){
 
         A = FFLAS::fflas_new (F, n, n);
+	B = FFLAS::fflas_new (F, n, n);
         size_t lda=n;
         TS = FFLAS::fflas_new (F, n, m);
         size_t ldts = m;
@@ -62,55 +63,68 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         // Element_ptr A = fflas_new (F, n, lda);
 	// Element_ptr TS = fflas_new(F, n, ldts);
 
-        RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A,lda,G);
+        RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A,lda,G);
+	RandomLTQSMatrixWithRankandQSorder (F,n,r,s,B,lda,G);
+	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
+        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
+	// p should be J, but it does not work
+	size_t * p = FFLAS::fflas_new<size_t> (n);
+	for (size_t i = 0; 2 * i < n; i++)
+	    {
+		p[2*i] = n - i - 1;
+		if ((2 * i + 1) < n);
+		p[2 * i + 1] = i;
+		std::cout << "p[" << i << "] = " << p[i] << std::endl;
+	    }
+              
+	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, n - 1, A, n, p);
+	applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, n - 1, B, n, p);
+		WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
+        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
+       
+	faddin (F, n, n, B, n, A, n);
+		WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
+        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
+       
 	RandomMatrix(F, n, m, TS, ldts, G);
-        
-        size_t * P = fflas_new<size_t> (n);
-        size_t * Q = fflas_new<size_t> (n);
-        Element_ptr L = fflas_new(F,n,n);
-            //      Element_ptr R = fflas_new(F,n,n);
-        Element_ptr U = fflas_new(F,n,n);
-        
-        Element_ptr Xu = fflas_new(F, 2*t, n);
-        size_t * Ku = fflas_new<size_t> (r+1);
-        size_t * Mu = fflas_new<size_t> (n);
-        size_t * Tu = fflas_new<size_t>(r);
-        Element_ptr Xl = fflas_new(F, n, 2*t);
-        size_t * Kl = fflas_new<size_t> (r+1);
-        size_t * Ml = fflas_new<size_t> (n);
-        size_t * Tl = fflas_new<size_t>(r);
-  
-        size_t r2;
+
+	    size_t rs = n%s;           // Size of the partial block
+    size_t ls = (rs)? rs: s;   // Size of the last block
+
+    Element_ptr D = fflas_new (F, n, s);
+    Element_ptr P = fflas_new (F, n - s, s);
+    Element_ptr Q = fflas_new (F, n - ls, s);
+    Element_ptr R = fflas_new (F, ((n > (s + ls))? (n - s - ls): 0), s);
+    Element_ptr U = fflas_new (F, n - ls, s);
+    Element_ptr V = fflas_new (F, n - ls, s);
+    Element_ptr W = fflas_new (F, ((n > (s + ls))? (n - s - ls): 0), s);
+
         chrono.clear();
         chrono.start();
-        r2 =  LTBruhatGen (F, FflasNonUnit, n, A, lda, P, Q);
-//        getLTBruhatGen(F, n, r, P, Q, R, n);
-        getLTBruhatGen(F, FflasLower, FflasUnit, n, r, P, Q, A, lda, L,n);
-        size_t NbBlocksL = CompressToBlockBiDiagonal(F, FflasLower, n, t, r, P, Q, L,n ,Xl,2*t,Kl,Ml,Tl);
-        getLTBruhatGen(F, FflasUpper, FflasNonUnit, n, r, P, Q, A, lda, U, n);
-        size_t NbBlocksU = CompressToBlockBiDiagonal(F, FflasUpper, n, t, r, P, Q, U,n ,Xu,n,Ku,Mu,Tu);
+	DenseToSSS (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s,
+		    D, s, A, n);
         chrono.stop();
 
-        if (r2!=r){ std::cerr<<"ERROR: r != r2"<<std::endl; exit(-1);}
-
         time_gen+=chrono.usertime();
-        FFLAS::fflas_delete(A,L,U);
 
-        Element_ptr CBruhat = fflas_new(F, n, m);
+
+        Element_ptr CBruhat = fflas_new(F, n, m); // Inadequate name
  
         chrono.clear();
         chrono.start();
-        productBruhatxTS(F, n, t, r, m, P, Q, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*t, NbBlocksL, Kl, Tl, Ml,TS, ldts, F.zero, CBruhat, m);
+        productSSSxTS(F, n, m, s, F.one, P, s, Q, s, R, s, U, s, V, s, W, s,
+		      D, s, TS, m, F.zero, CBruhat, m);
         chrono.stop();
 
         time_cbxts += chrono.usertime();
-        
-        FFLAS::fflas_delete(TS,P,Q,Xu,Ku,Mu,Tu,Xl,Ml,Tl);
+        FFLAS::fflas_delete(A, D, P, Q, R, U, V, W, B, p); // Could be done once for all iters
+        FFLAS::fflas_delete(TS, CBruhat);
     }
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
-    std::cout << "Time: " << (time_gen + time_cbxts) / double(iter)  << " Gfops: Irrelevant (Generator) Specific times: " << time_gen / double(iter)<<" (for construction)" << time_cbxts / double(iter)<<" (for CB x TS)" ;
-
+    std::cout << "Time: " << (time_gen + time_cbxts) / double(iter)
+	      << " Gfops: Irrelevant (Generator) Specific times: " << time_gen / double(iter)
+	      <<" (for construction)" << time_cbxts / double(iter)<<" (for CB x TS)" ;
 }
 
 int main(int argc, char** argv) {
