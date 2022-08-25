@@ -163,9 +163,9 @@ bool test_compression (const Field & F, size_t n, size_t s,
 		  <<std::endl;
 	WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
         WriteMatrix(std::cout << "A2 =  "<<std::endl, F, n, n, A2, n);
-	WriteMatrix(std::cout << "Ucheck = "<<std::endl, F, n, s, Ucheck, s);
-        WriteMatrix(std::cout << "Vcheck =  "<<std::endl, F, n, s, Vcheck, s);
-	WriteMatrix(std::cout << "Wcheck = " <<std::endl, F, n, s, Wcheck, s);
+	WriteMatrix(std::cout << "Ucheck = "<<std::endl, F, n - ls, s, Ucheck, s);
+        WriteMatrix(std::cout << "Vcheck =  "<<std::endl, F, n - ls, s, Vcheck, s);
+	WriteMatrix(std::cout << "Wcheck = " <<std::endl, F, ((n > s + ls)? (n - s - ls): 0), s, Wcheck, s);
         WriteMatrix(std::cout << "Dcheck = " <<std::endl, F, n, s, Dcheck, s);
 	}
    
@@ -217,7 +217,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
         std::cout << "FAILED "<<std::endl;
             /* Print generators for debugging */
 	WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
-        WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - s, s, Q, s);
+        WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - ls, s, Q, s);
         WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s - ls, s, R, s);
         WriteMatrix (std::cout << "U =  "<<std::endl,F, n - ls, s, U, s);
         WriteMatrix (std::cout << "V =  "<<std::endl,F, n - ls, s, V, s);
