@@ -93,16 +93,16 @@ namespace FFPACK{
                    C + kf * s * ldc, ldc);
 
         /************ Lower Triangular Part **********
-	 * Calls to fgemm in the code can be reduced by including "Remaining blocks" in the 'for' loop
-	 * This would use more tests
-	 * (Same for UT part) */
+         * Calls to fgemm in the code can be reduced by including "Remaining blocks" in the 'for' loop
+         * This would use more tests
+         * (Same for UT part) */
         typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, t);
         typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, t);
-	if (k > 1)
+        if (k > 1)
                 /* Temp1 <- alpha * Q_1 * B_1 */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    s, t, s, alpha, Q, ldq, B, ldb, Fi.zero, Temp1, t);
-	/* unrolling by step of 2 to avoid swapping temporaries */
+        /* unrolling by step of 2 to avoid swapping temporaries */
         for (size_t block = 0; (block + 2) < kf; block+=2)
         {
                 /* C_{block + 2} += P_{block + 2} * Temp1 */
@@ -257,16 +257,16 @@ namespace FFPACK{
         size_t kf = N/s;           // Nb of full slices of dimension s
         size_t rs = N%s;           // Size of the partial block
         size_t k = rs ? kf+1 : kf; // Total number of blocks
-	size_t ls = (rs)? rs: s;   // Size of the last block:
-	/*   First block    Last block
-	 * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
-	 * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
-	 * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
-	 * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
-	 * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
-	 * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
-	 * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
-	 */
+        size_t ls = (rs)? rs: s;   // Size of the last block:
+        /*   First block    Last block
+         * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
+         * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
+         * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
+         * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
+         * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
+         * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
+         * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
+         */
 
             /* Unused space:
              *
@@ -286,95 +286,95 @@ namespace FFPACK{
             FFLAS::fassign (Fi, rs, rs, D + kf * s * ldd, ldd, A + kf * s * (lda + 1), lda);
 
         /************** Lower triangular part **********************/
-	/* Blocks are computed row by row, by successively applying the R and Q to the P(RRR...) */
+        /* Blocks are computed row by row, by successively applying the R and Q to the P(RRR...) */
         typename Field::Element_ptr Temp1 = FFLAS::fflas_new(Fi, s, s);
         typename Field::Element_ptr Temp2 = FFLAS::fflas_new(Fi, s, s);
-	size_t bsize;
-	// Loop on rows which have LT part
+        size_t bsize;
+        // Loop on rows which have LT part
         for (size_t row = 0; row < k - 1; row++) 
-	{
-	    // In the last iteration, the block may not be full
-	    bsize = (row == k - 2)? ls: s;
-	    /* A_{row + 2, row + 1} <- P_{row + 2} * Q_{row + 1} */
+        {
+            // In the last iteration, the block may not be full
+            bsize = (row == k - 2)? ls: s;
+            /* A_{row + 2, row + 1} <- P_{row + 2} * Q_{row + 1} */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    bsize, s, s, Fi.one, P + row * s * ldp, // In this loop, all blocks are s x s
                    ldp, Q + row * s * ldq, ldq, Fi.zero, A + (row + 1) * s * lda + row * s, lda);
-	    if (row > 0) /* After row 2, R is also applied 
-			  * Next inner loop needs Temp1, which is first set here
-			  * Temp1 <- P_{row + 2} * R_{row + 1} */
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, P + row * s * ldp, 
-		       ldp, R + (row - 1) * s * ldr, ldr, Fi.zero, Temp1, s);
-	    /* unrolling by step of 2 to avoid swapping temporaries */
-	    for (size_t block = 1; block < row; block+=2)
-		{
+            if (row > 0) /* After row 2, R is also applied 
+                          * Next inner loop needs Temp1, which is first set here
+                          * Temp1 <- P_{row + 2} * R_{row + 1} */
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, P + row * s * ldp, 
+                       ldp, R + (row - 1) * s * ldr, ldr, Fi.zero, Temp1, s);
+            /* unrolling by step of 2 to avoid swapping temporaries */
+            for (size_t block = 1; block < row; block+=2)
+                {
                     /* A_{row + 2, row + 1 - block} <- Temp1 * Q_{row + 1 - block} */
-		    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp1, s,
-			   Q + (row - block) * s * ldq, ldq, Fi.zero,
-			   A + (row + 1) * s * lda + (row - block) * s, lda);
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp1, s,
+                           Q + (row - block) * s * ldq, ldq, Fi.zero,
+                           A + (row + 1) * s * lda + (row - block) * s, lda);
                     /* Temp2 <- Temp1 * R_{row + 1 - block} */
-		    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp1,
-			   s, R + (row - 1 - block) * s * ldr, ldr, Fi.zero, Temp2, s);
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp1,
+                           s, R + (row - 1 - block) * s * ldr, ldr, Fi.zero, Temp2, s);
                     /* A_{row + 2, row - block} <- Temp2 * Q_{row - block} */
-		    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp2, s,
-			   Q + (row - block - 1) * s * ldq, ldq, Fi.zero,
-			   A + (row + 1) * s * lda + (row - block - 1) * s, lda);
+                    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp2, s,
+                           Q + (row - block - 1) * s * ldq, ldq, Fi.zero,
+                           A + (row + 1) * s * lda + (row - block - 1) * s, lda);
                     /* If necessary:
                      * - Not last loop
                      * - One more block
                      * -> At least one more block */
-		    if (block + 1 < row)
-			/* Temp1 <- Temp2 * R_{row - block} */
-			fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp2,
-			       s, R + (row - block - 2) * s * ldr, ldr, Fi.zero, Temp1, s);
-		}
-	    /* First column if not done already */
+                    if (block + 1 < row)
+                        /* Temp1 <- Temp2 * R_{row - block} */
+                        fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp2,
+                               s, R + (row - block - 2) * s * ldr, ldr, Fi.zero, Temp1, s);
+                }
+            /* First column if not done already */
             if (row%2)
-		/* A_{row + 2, 1} <- Temp1 * Q_{1} */
+                /* A_{row + 2, 1} <- Temp1 * Q_{1} */
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, bsize, s, s, Fi.one, Temp1, s,
                        Q, ldq, Fi.zero, A + (row + 1) * s * lda, lda);
-	  }
+          }
        /******************* Upper triangular part *****************/
-	/* Symmetrically identical to the lower part (Could be merged with transposes) */
+        /* Symmetrically identical to the lower part (Could be merged with transposes) */
         for (size_t column = 0; column < k - 1; column++) // Loop on columns which have a W
         {
-	    // In the last iteration, the block may not be full
-	    bsize = (column == k - 2)? ls: s;
-	    /* A_{column + 1, column + 2} <- U_{column + 1} * V_{column + 2} */
+            // In the last iteration, the block may not be full
+            bsize = (column == k - 2)? ls: s;
+            /* A_{column + 1, column + 2} <- U_{column + 1} * V_{column + 2} */
             fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                    s, bsize, s, Fi.one, U + column * s * ldu, // In this loop, all blocks are s x s
                    ldu, V + column * s * ldv, ldv, Fi.zero, A + (column) * s * lda + (column + 1) * s, lda);
-	    /* After column 2, R is also applied */
-	    if (column > 0)
-		/* Block loop needs Temp1, which is first updated here */
+            /* After column 2, R is also applied */
+            if (column > 0)
+                /* Block loop needs Temp1, which is first updated here */
                 /* Temp1 <- W_{column + 1} * V_{column + 2} */
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
-		       W + (column - 1) * s * ldw, ldw, V + column * s * ldv, ldv, Fi.zero, Temp1, s);
-	    /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
+                fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
+                       W + (column - 1) * s * ldw, ldw, V + column * s * ldv, ldv, Fi.zero, Temp1, s);
+            /* Instructions are doubled in the loop in order to avoid using more than two temporary blocks */
             for (size_t block = 1; block < column; block+=2)
             {
-		/* A_{column + 1 - block, column + 2} <- U_{column + 1 - block} * Temp1 */
+                /* A_{column + 1 - block, column + 2} <- U_{column + 1 - block} * Temp1 */
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
-		       U + (column - block) * s * ldu, ldu, Temp1, s, Fi.zero,
-		       A + (column - block) * s * lda + (column + 1) * s, lda);
-		/* Temp2 <- W_{column + 1 - block} * Temp1 */
+                       U + (column - block) * s * ldu, ldu, Temp1, s, Fi.zero,
+                       A + (column - block) * s * lda + (column + 1) * s, lda);
+                /* Temp2 <- W_{column + 1 - block} * Temp1 */
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
                        W + (column - 1 - block) * s * ldw, ldw, Temp1, s, Fi.zero, Temp2, s);
-		/* A_{column - block, column + 2} <- U_{column - block} * Temp2 */
+                /* A_{column - block, column + 2} <- U_{column - block} * Temp2 */
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
-		       U + (column - block - 1) * s * ldu,
+                       U + (column - block - 1) * s * ldu,
                        ldu, Temp2, s, Fi.zero, A + (column - block - 1) * s * lda + (column + 1) * s, lda);
                     /* If necessary:
                      * - Not last loop
                      * - One more block
                      * -> At least one more block */
                 if (block + 1 < column)
-		    /* Temp1 <- W_{column - block} * Temp2 */
+                    /* Temp1 <- W_{column - block} * Temp2 */
                     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one,
                            W + (column - block - 2) * s * ldw, ldw, Temp2, s, Fi.zero, Temp1, s);
             }
-	    /* First row if not done already */
+            /* First row if not done already */
             if (column%2)
-		/* A_{1, column + 2} <- U_{1} * Temp1 */
+                /* A_{1, column + 2} <- U_{1} * Temp1 */
                 fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, s, bsize, s, Fi.one, U,
                        ldu, Temp1, s, Fi.zero, A + (column + 1) * s, lda);
         }    
@@ -408,16 +408,16 @@ namespace FFPACK{
         size_t kf = N/s;           // Nb of full slices of dimension s
         size_t rs = N%s;           // Size of the partial block
         size_t k = rs ? kf+1 : kf; // Total number of blocks
-	size_t ls = (rs)? rs: s;   // Size of the last block:
-	/*   First block    Last block
-	 * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
-	 * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
-	 * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
-	 * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
-	 * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
-	 * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
-	 * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
-	 */
+        size_t ls = (rs)? rs: s;   // Size of the last block:
+        /*   First block    Last block
+         * D -> D_1,     D + ((n - ls) * ldd)      -> D_k
+         * P -> P_2,     P + ((n - s - ls) * ldp)  -> P_k
+         * Q -> Q_1,     Q + ((n - s - ls) * ldq)  -> Q_{k-1}
+         * R -> R_2,     R + ((n - 2s - ls) * ldr) -> R_{k-1}
+         * U -> U_1,     U + ((n - s - ls) * ldu)  -> U_{k-1}
+         * V -> V_2,     V + ((n - s - ls) * ldv)  -> V_k
+         * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
+         */
 
             /* Unused space:
              *
@@ -436,142 +436,142 @@ namespace FFPACK{
         if (rs) // Last block
             FFLAS::fassign (Fi, rs, rs, A + kf * s * (lda + 1), lda, D + kf * s * ldd, ldd);
 
-	if (N > s) // Otherwise we're done
-	    {
-		size_t fs = s;
-		if (N - s < s)
-		    {
-			fs = N - s;
-			FFLAS::fzero(Fi, s, s, U, ldu); // U, Q^T will only be updated on their fs first columns
-			FFLAS::fzero(Fi, s, s, Q, ldq);
-			//FFLAS::fzero(Fi, s, fs, V, ldv);
-		    }
+        if (N > s) // Otherwise we're done
+            {
+                size_t fs = s;
+                if (N - s < s)
+                    {
+                        fs = N - s;
+                        FFLAS::fzero(Fi, s, s, U, ldu); // U, Q^T will only be updated on their fs first columns
+                        FFLAS::fzero(Fi, s, s, Q, ldq);
+                        //FFLAS::fzero(Fi, s, fs, V, ldv);
+                    }
 
-		/******************* Upper triangular part *****************/
-		//FFLAS::fzero (Fi, ((N > s + ls)? (N - s - ls): 0), s, W, ldw); //
-		// Temporary submatrix, copied to be pluqed
-		typename  Field::Element_ptr H = FFLAS::fflas_new (Fi, N, N);
-		FFLAS::fassign (Fi, N, N, A, lda, H, N);
-		size_t * p = FFLAS::fflas_new<size_t> (N - ls);
-		size_t * q = FFLAS::fflas_new<size_t> (N - ls);
-		size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
-	
-		// pL -> U_1
-		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, fs, r, H + s,
-				      N, U, ldu);	
-		FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, fs,
-				0, s - 1, U, ldu, p);
-		// Uq -> V_2
-		FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
-				      H + s, N); // Remove L
-		FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-				0, N - s - 1, H + s, N, q); // Apply permutation q to H
-		FFLAS::fassign (Fi, s, fs, H + s, N, V, ldv);
+                /******************* Upper triangular part *****************/
+                //FFLAS::fzero (Fi, ((N > s + ls)? (N - s - ls): 0), s, W, ldw); //
+                // Temporary submatrix, copied to be pluqed
+                typename  Field::Element_ptr H = FFLAS::fflas_new (Fi, N, N);
+                FFLAS::fassign (Fi, N, N, A, lda, H, N);
+                size_t * p = FFLAS::fflas_new<size_t> (N - ls);
+                size_t * q = FFLAS::fflas_new<size_t> (N - ls);
+                size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
+        
+                // pL -> U_1
+                FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, fs, r, H + s,
+                                      N, U, ldu);       
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, fs,
+                                0, s - 1, U, ldu, p);
+                // Uq -> V_2
+                FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
+                                      H + s, N); // Remove L
+                FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+                                0, N - s - 1, H + s, N, q); // Apply permutation q to H
+                FFLAS::fassign (Fi, s, fs, H + s, N, V, ldv);
 
-		// Temporary matrix for storing lower triangular of pluq
-		typename  Field::Element_ptr Temp = FFLAS::fflas_new (Fi, 2 * s, s);
-	
-		for (size_t brow = 0; brow < k - 2; brow++)
-		    {
-			//		std::cout << "brow = "<<brow << std::endl;
-			//std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
-			/*FFLAS::WriteMatrix(std::cout<<"Before PLUQ, H = "<<std::endl, Fi, 2 * s,
-			  N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
-			  N);*/
-			r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
-					  N - s*(brow + 2), H + N * s * brow + s * (brow + 2), N,
-					  p, q);
-			// FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, 2 * s,
-			// 		   N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
-			// 		   N);
-			// pL -> [W_{brow + 2} \\ U_{brow + 2}]
-			// 1) L -> Temp
-			FFLAS::fzero (Fi, 2 * s, s, Temp, s);		
-			FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s,
-					      N - s * (brow + 2), r,
-					      H + s * N * brow + s * (brow + 2),
-					      N, Temp, s, true);
-			// 2) p * Temp -> Temp
-			FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-					0, 2*s - 1, Temp, s, p);
-			// 3) Temp1 -> W_{brow + 2}
-			FFLAS::fassign (Fi, s, s, Temp, s, W + ldw * s * brow, ldw);
-			// 4) Temp2 -> U_{brow + 2}
-			FFLAS::fassign (Fi, s, s, Temp + s * s, s, U + ldu * s * (brow + 1), ldu);
-			// Uq -> [V_{brow + 3} & H]
-			FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2), r,
-					      H + s * N * brow + s * (brow + 2), N,
-					      H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
-			FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-					0, N - s* (brow + 2) - 1, H + s * N * (brow + 1) + s * (brow + 2), N,
-					q); // Apply permutation q to H
-			FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N,
-					V + ldv * s * (brow + 1), ldv); /* Sould not cause any trouble even if
-									   last block*/
-			// if (brow != k - 3) // Sould not cause segfault now
-			// // shifts \hat H down
-			// FFLAS::fassign (Fi, s, N - s * (brow + 3),
-			// 		H + s * N * (brow + 1) + s * (brow + 3), N,
-			// 		H + s * N * (brow + 2) + s * (brow + 3), N);
-		    }
-		FFLAS::fflas_delete (Temp);
-	
-		/******************* Lower triangular part *****************/
-		// Does it need to be copied? It seems easier than to play with transposes
-		// FFLAS::fzero (Fi, N - s - ls, s, R, ldr); //Needed? Or only 0-out Temp?
-		r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, N - s, s, H + s * N, N, p, q);
-		// Uq -> Q_1 []
-		FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, fs, s, r, H + s * N,
-				      N, Q, ldq);	
-		FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, fs,
-				0, s - 1, Q, ldq, q);
-		// pL -> [P_2 \\ H]
-		// Remove L
-		FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, N - s, s, r,
-				      H + s * N, N);
-		// Apply permutation p to H
-		FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-				0, N - s - 1, H + s * N, N, p);
-		FFLAS::fassign (Fi, fs, s, H + s * N, N, P, ldp);
+                // Temporary matrix for storing lower triangular of pluq
+                typename  Field::Element_ptr Temp = FFLAS::fflas_new (Fi, 2 * s, s);
+        
+                for (size_t brow = 0; brow < k - 2; brow++)
+                    {
+                        //              std::cout << "brow = "<<brow << std::endl;
+                        //std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
+                        /*FFLAS::WriteMatrix(std::cout<<"Before PLUQ, H = "<<std::endl, Fi, 2 * s,
+                          N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
+                          N);*/
+                        r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
+                                          N - s*(brow + 2), H + N * s * brow + s * (brow + 2), N,
+                                          p, q);
+                        // FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, 2 * s,
+                        //                 N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
+                        //                 N);
+                        // pL -> [W_{brow + 2} \\ U_{brow + 2}]
+                        // 1) L -> Temp
+                        FFLAS::fzero (Fi, 2 * s, s, Temp, s);           
+                        FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, 2*s,
+                                              N - s * (brow + 2), r,
+                                              H + s * N * brow + s * (brow + 2),
+                                              N, Temp, s, true);
+                        // 2) p * Temp -> Temp
+                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+                                        0, 2*s - 1, Temp, s, p);
+                        // 3) Temp1 -> W_{brow + 2}
+                        FFLAS::fassign (Fi, s, s, Temp, s, W + ldw * s * brow, ldw);
+                        // 4) Temp2 -> U_{brow + 2}
+                        FFLAS::fassign (Fi, s, s, Temp + s * s, s, U + ldu * s * (brow + 1), ldu);
+                        // Uq -> [V_{brow + 3} & H]
+                        FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2), r,
+                                              H + s * N * brow + s * (brow + 2), N,
+                                              H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
+                        FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+                                        0, N - s* (brow + 2) - 1, H + s * N * (brow + 1) + s * (brow + 2), N,
+                                        q); // Apply permutation q to H
+                        FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N,
+                                        V + ldv * s * (brow + 1), ldv); /* Sould not cause any trouble even if
+                                                                           last block*/
+                        // if (brow != k - 3) // Sould not cause segfault now
+                        // // shifts \hat H down
+                        // FFLAS::fassign (Fi, s, N - s * (brow + 3),
+                        //              H + s * N * (brow + 1) + s * (brow + 3), N,
+                        //              H + s * N * (brow + 2) + s * (brow + 3), N);
+                    }
+                FFLAS::fflas_delete (Temp);
+        
+                /******************* Lower triangular part *****************/
+                // Does it need to be copied? It seems easier than to play with transposes
+                // FFLAS::fzero (Fi, N - s - ls, s, R, ldr); //Needed? Or only 0-out Temp?
+                r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, N - s, s, H + s * N, N, p, q);
+                // Uq -> Q_1 []
+                FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, fs, s, r, H + s * N,
+                                      N, Q, ldq);       
+                FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, fs,
+                                0, s - 1, Q, ldq, q);
+                // pL -> [P_2 \\ H]
+                // Remove L
+                FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, N - s, s, r,
+                                      H + s * N, N);
+                // Apply permutation p to H
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+                                0, N - s - 1, H + s * N, N, p);
+                FFLAS::fassign (Fi, fs, s, H + s * N, N, P, ldp);
 
-		// Temporary matrix for storing upper triangular of pluq
-		typename  Field::Element_ptr TempFlat = FFLAS::fflas_new (Fi, s, 2*s);
-	
-		for (size_t brow = 0; brow < k - 2; brow++)
-		    {
-			r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit,
-					  N - s*(brow + 2), s*(2), H + N * s * (brow + 2) + s * (brow), N,
-					  p, q);
-			// Uq -> [R_{brow + 2} & Q_{brow + 2}]
-			// 1) U -> TempFlat
-			FFLAS::fzero (Fi, s, 2 * s, TempFlat, 2 * s);
-			FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit,
-					      N - s * (brow + 2), 2*s, r,
-					      H + s * N * (brow + 2) + s * (brow),
-					      N, TempFlat, 2 * s, true);
-			// 2) TempFlat * q -> TempFlat
-			FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-					0, 2*s - 1, TempFlat, 2 * s, q);
-			// 3) TempFlat_1 -> R_{brow + 2}
-			FFLAS::fassign (Fi, s, s, TempFlat, 2 * s, R + s * ldr * brow, ldr);
-			// 4) TempFlat_2 -> Q_{brow + 2}
-			FFLAS::fassign (Fi, s, s, TempFlat + s, 2 * s, Q + ldq * s * (brow + 1), ldq);
+                // Temporary matrix for storing upper triangular of pluq
+                typename  Field::Element_ptr TempFlat = FFLAS::fflas_new (Fi, s, 2*s);
+        
+                for (size_t brow = 0; brow < k - 2; brow++)
+                    {
+                        r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit,
+                                          N - s*(brow + 2), s*(2), H + N * s * (brow + 2) + s * (brow), N,
+                                          p, q);
+                        // Uq -> [R_{brow + 2} & Q_{brow + 2}]
+                        // 1) U -> TempFlat
+                        FFLAS::fzero (Fi, s, 2 * s, TempFlat, 2 * s);
+                        FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit,
+                                              N - s * (brow + 2), 2*s, r,
+                                              H + s * N * (brow + 2) + s * (brow),
+                                              N, TempFlat, 2 * s, true);
+                        // 2) TempFlat * q -> TempFlat
+                        FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
+                                        0, 2*s - 1, TempFlat, 2 * s, q);
+                        // 3) TempFlat_1 -> R_{brow + 2}
+                        FFLAS::fassign (Fi, s, s, TempFlat, 2 * s, R + s * ldr * brow, ldr);
+                        // 4) TempFlat_2 -> Q_{brow + 2}
+                        FFLAS::fassign (Fi, s, s, TempFlat + s, 2 * s, Q + ldq * s * (brow + 1), ldq);
 
-			// pL -> [P_{brow + 3} \\ H]
-			// Remove L
-			FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, N - s * (brow + 2), s, r,
-					      H + s * N * (brow + 2) + s * (brow), N,
-					      H + s * N * (brow + 2) + s * (brow + 1), N);
-			// Apply permutation p to H
-			FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-					0, N - s* (brow + 2) - 1, H + s * N * (brow + 2) + s * (brow + 1), N,
-					p);
-			// H -> P_{brow + 3}
-			FFLAS::fassign (Fi, ((brow == k - 3)? ls: s), s, H + s * N * (brow + 2) + s * (brow + 1), N,
-					P + ldp * s * (brow + 1), ldp);
-		    }
-		FFLAS::fflas_delete (H, p, q, TempFlat);
-	    }
+                        // pL -> [P_{brow + 3} \\ H]
+                        // Remove L
+                        FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, N - s * (brow + 2), s, r,
+                                              H + s * N * (brow + 2) + s * (brow), N,
+                                              H + s * N * (brow + 2) + s * (brow + 1), N);
+                        // Apply permutation p to H
+                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+                                        0, N - s* (brow + 2) - 1, H + s * N * (brow + 2) + s * (brow + 1), N,
+                                        p);
+                        // H -> P_{brow + 3}
+                        FFLAS::fassign (Fi, ((brow == k - 3)? ls: s), s, H + s * N * (brow + 2) + s * (brow + 1), N,
+                                        P + ldp * s * (brow + 1), ldp);
+                    }
+                FFLAS::fflas_delete (H, p, q, TempFlat);
+            }
     }
 }
 #endif

@@ -130,10 +130,10 @@ bool test_compression (const Field & F, size_t n, size_t s,
                                      typename Field::ConstElement_ptr P, size_t ldp,
                                      typename Field::ConstElement_ptr Q, size_t ldq,
                                      typename Field::ConstElement_ptr R, size_t ldr,
-			     typename Field::ConstElement_ptr U, size_t ldu,
-			     typename Field::ConstElement_ptr V, size_t ldv,
-			     typename Field::ConstElement_ptr W, size_t ldw,
-			     typename Field::ConstElement_ptr D, size_t ldd)
+                             typename Field::ConstElement_ptr U, size_t ldu,
+                             typename Field::ConstElement_ptr V, size_t ldv,
+                             typename Field::ConstElement_ptr W, size_t ldw,
+                             typename Field::ConstElement_ptr D, size_t ldd)
 {
     size_t rs = n%s;           // Size of the partial block
     size_t ls = (rs)? rs: s;   // Size of the last block
@@ -158,16 +158,16 @@ bool test_compression (const Field & F, size_t n, size_t s,
 
     bool ok = fequal (F, n, n, A1, n, A2, n);
  if ( !ok )
-	{
+        {
         std::cout << "ERROR: different results for dense from generator and compression"
-		  <<std::endl;
-	WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
+                  <<std::endl;
+        WriteMatrix(std::cout<<"A1 = "<<std::endl, F, n, n, A1, n);
         WriteMatrix(std::cout << "A2 =  "<<std::endl, F, n, n, A2, n);
-	WriteMatrix(std::cout << "Ucheck = "<<std::endl, F, n - ls, s, Ucheck, s);
+        WriteMatrix(std::cout << "Ucheck = "<<std::endl, F, n - ls, s, Ucheck, s);
         WriteMatrix(std::cout << "Vcheck =  "<<std::endl, F, n - ls, s, Vcheck, s);
-	WriteMatrix(std::cout << "Wcheck = " <<std::endl, F, ((n > s + ls)? (n - s - ls): 0), s, Wcheck, s);
+        WriteMatrix(std::cout << "Wcheck = " <<std::endl, F, ((n > s + ls)? (n - s - ls): 0), s, Wcheck, s);
         WriteMatrix(std::cout << "Dcheck = " <<std::endl, F, n, s, Dcheck, s);
-	}
+        }
    
  FFLAS::fflas_delete(A1, A2, Dcheck, Ucheck, Vcheck, Wcheck, Pcheck, Qcheck, Rcheck);
     return ok;
@@ -216,7 +216,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, typena
     {
         std::cout << "FAILED "<<std::endl;
             /* Print generators for debugging */
-	WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
+        WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
         WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - ls, s, Q, s);
         WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s - ls, s, R, s);
         WriteMatrix (std::cout << "U =  "<<std::endl,F, n - ls, s, U, s);
@@ -280,10 +280,10 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=471;
+    size_t n=319;
     size_t s=23;
     size_t t=42;
-    int iters=5;
+    int iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
 
@@ -310,13 +310,12 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t,iters,
-								     seed); // Valgrind does not like this one 
+                                                                     seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(s / 4.), ceil(t / 4.), iters,
-								     seed); /* Those are very slow, and problem
-									       with small values ?*/
+                                                                     seed);
         ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(s / 4.), ceil(t / 4.),
-								     iters,seed);
+                                                                     iters,seed);
         seed++;
     } while (loop && ok);
 
