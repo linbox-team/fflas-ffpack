@@ -303,6 +303,54 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
     }
 
     /*
+     * Transpose the 8x8 matrix formed by the 8 rows of 16-bit integers in r0,
+     * r1, r2, r3, r4, r5, r6 and r7, and store the transposed matrix in these
+     * vectors.
+     * Args: r0 = [ r00, r01, r02, r03, r04, r05, r06, r07 ]
+     *       r1 = [ r10, r11, r12, r13, r14, r15, r16, r17 ]
+     *       ...                   ...                   ...
+     *       r6 = [ r60, r61, r62, r63, r64, r65, r66, r67 ]
+     *       r7 = [ r70, r71, r72, r73, r74, r75, r76, r77 ]
+     * Return: r0 = [ r00, r10, r20, r30, r40, r50, r60, r70 ]
+     *         r1 = [ r01, r11, r21, r31, r41, r51, r61, r71 ]
+     *         ...                   ...                   ...
+     *         r6 = [ r06, r16, r26, r36, r46, r56, r66, r76 ]
+     *         r7 = [ r07, r17, r27, r37, r47, r57, r67, r77 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3, vect_t& r4,
+               vect_t& r5, vect_t& r6, vect_t& r7) {
+        vect_t t0, t1, t2, t3, t4, t5, t6, t7;
+        vect_t v0, v1, v2, v3, v4, v5, v6, v7;
+        t0 = unpacklo_intrinsic (r0, r4);
+        t1 = unpacklo_intrinsic (r1, r5);
+        t2 = unpacklo_intrinsic (r2, r6);
+        t3 = unpacklo_intrinsic (r3, r7);
+        t4 = unpackhi_intrinsic (r0, r4);
+        t5 = unpackhi_intrinsic (r1, r5);
+        t6 = unpackhi_intrinsic (r2, r6);
+        t7 = unpackhi_intrinsic (r3, r7);
+
+        v0 = unpacklo_intrinsic (t0, t2);
+        v1 = unpacklo_intrinsic (t1, t3);
+        v4 = unpacklo_intrinsic (t4, t6);
+        v5 = unpacklo_intrinsic (t5, t7);
+        v2 = unpackhi_intrinsic (t0, t2);
+        v3 = unpackhi_intrinsic (t1, t3);
+        v6 = unpackhi_intrinsic (t4, t6);
+        v7 = unpackhi_intrinsic (t5, t7);
+
+        r0 = unpacklo_intrinsic (v0, v1);
+        r2 = unpacklo_intrinsic (v2, v3);
+        r4 = unpacklo_intrinsic (v4, v5);
+        r6 = unpacklo_intrinsic (v6, v7);
+        r1 = unpackhi_intrinsic (v0, v1);
+        r3 = unpackhi_intrinsic (v2, v3);
+        r5 = unpackhi_intrinsic (v4, v5);
+        r7 = unpackhi_intrinsic (v6, v7);
+    }
+
+    /*
      * Blend 16-bit integers from a and b using control mask s.
      * Args: a = [ a0, ..., a7 ]
      *       b = [ b0, ..., b7 ]

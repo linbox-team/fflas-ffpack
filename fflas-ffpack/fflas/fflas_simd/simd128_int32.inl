@@ -301,6 +301,35 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
     }
 
     /*
+     * Transpose the 4x4 matrix formed by the 4 rows of 32-bit integers in r0,
+     * r1, r2 and r3, and store the transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01, r02, r03 ]
+     *       r1 = [ r10, r11, r12, r13 ]
+     *       r2 = [ r20, r21, r22, r23 ]
+     *       r3 = [ r30, r31, r32, r33 ]
+     * Return: r0 = [ r00, r10, r20, r30 ]
+     *         r1 = [ r01, r11, r21, r31 ]
+     *         r2 = [ r02, r12, r22, r32 ]
+     *         r3 = [ r03, r13, r23, r33 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3) {
+        vect_t t0, t1, t2, t3;
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        r0 = _mm_castps_si128 (_mm_movelh_ps (_mm_castsi128_ps (t0),
+                                              _mm_castsi128_ps (t2)));
+        r1 = _mm_castps_si128 (_mm_movehl_ps (_mm_castsi128_ps (t2),
+                                              _mm_castsi128_ps (t0)));
+        r2 = _mm_castps_si128 (_mm_movelh_ps (_mm_castsi128_ps (t1),
+                                              _mm_castsi128_ps (t3)));
+        r3 = _mm_castps_si128 (_mm_movehl_ps (_mm_castsi128_ps (t3),
+                                              _mm_castsi128_ps (t1)));
+    }
+
+    /*
      * Blend 32-bit integers from a and b using control mask s.
      * Args: a = [ a0, ..., a3 ]
      *       b = [ b0, ..., b3 ]

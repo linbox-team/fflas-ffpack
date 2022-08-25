@@ -59,6 +59,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_freivalds.inl       \
 	   fflas_fscal.h       \
 	   fflas_fscal.inl       \
+	   fflas_transpose.h	\
 	   fflas_ftrsm_src.inl   \
 	   fflas_faxpy.inl       \
 	   fflas_fger.inl        \

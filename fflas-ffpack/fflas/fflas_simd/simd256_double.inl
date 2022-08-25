@@ -75,6 +75,11 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
     template <class Field>
     using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
+    union Converter {
+        vect_t v;
+        scalar_t t[vect_size];
+    };
+
     /*
      * Check if the pointer p is a multiple of alignemnt
      */
@@ -318,6 +323,32 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
     }
 
     /*
+     * Transpose the 4x4 matrix formed by the 4 rows of double-precision
+     * (64-bit) floating-point elements in r0, r1, r2 and r3, and store the
+     * transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01, r02, r03 ]
+     *       r1 = [ r10, r11, r12, r13 ]
+     *       r2 = [ r20, r21, r22, r23 ]
+     *       r3 = [ r30, r31, r32, r33 ]
+     * Return: r0 = [ r00, r10, r20, r30 ]
+     *         r1 = [ r01, r11, r21, r31 ]
+     *         r2 = [ r02, r12, r22, r32 ]
+     *         r3 = [ r03, r13, r23, r33 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3) {
+        vect_t t0, t1, t2, t3;
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        r0 = _mm256_permute2f128_pd (t0, t2, 0x20);
+        r1 = _mm256_permute2f128_pd (t1, t3, 0x20);
+        r2 = _mm256_permute2f128_pd (t0, t2, 0x31);
+        r3 = _mm256_permute2f128_pd (t1, t3, 0x31);
+    }
+
+    /*
      * Blend packed double-precision (64-bit) floating-point elements from a and
      * b using control mask s.
      * Args: a = [ a0, ..., a3 ]
@@ -388,7 +419,14 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
 #ifdef __FMA__
         return _mm256_fmadd_pd(a, b, c);
 #else
-        return add(c, mul(a, b));
+	Converter ca, cb, cc;
+        ca.v = a;
+        cb.v = b;
+        cc.v = c;
+        return set(std::fma (ca.t[0], cb.t[0], cc.t[0]),
+                   std::fma (ca.t[1], cb.t[1], cc.t[1]),
+                   std::fma (ca.t[2], cb.t[2], cc.t[2]),
+                   std::fma (ca.t[3], cb.t[3], cc.t[3]) );
 #endif
     }
 
@@ -404,7 +442,7 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
 #ifdef __FMA__
         return _mm256_fnmadd_pd(a, b, c);
 #else
-        return sub(c, mul(a, b));
+	return fmadd (c, sub (zero(), a), b);
 #endif
     }
 
@@ -420,7 +458,7 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
 #ifdef __FMA__
         return _mm256_fmsub_pd(a, b, c);
 #else
-        return sub(mul(a, b), c);
+	return fmadd (sub (zero(), c), a, b);
 #endif
     }
 

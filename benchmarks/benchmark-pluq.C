@@ -66,6 +66,7 @@
 using namespace std;
 
 typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::ModularBalanced<int64_t> Field;
 //typedef Givaro::ModularBalanced<float> Field;
 //typedef Givaro::ZRing<double> Field;
 //typedef Givaro::UnparametricZRing<double> Field;
@@ -167,7 +168,7 @@ int main(int argc, char** argv) {
 
     size_t iter = 3 ;
     bool slab=false;
-    int q = 131071 ;
+    Givaro::Integer q = 131071 ;
     int m = 2000 ;
     int n = 2000 ;
     int r = 2000 ;
@@ -178,7 +179,7 @@ int main(int argc, char** argv) {
     bool grp =true;
     Argument as[] = {
         { 's', "-s S", "Use the Slab recursive algorithm (LUdivine)instead of the tile recursive algorithm (PLUQ).", TYPE_BOOL , &slab },
-        { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
         { 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
         { 'n', "-n N", "Set the col dimension of A.",      TYPE_INT , &n },
         { 'r', "-r R", "Set the rank of matrix A.",            TYPE_INT , &r },

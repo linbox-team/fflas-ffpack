@@ -53,7 +53,7 @@ namespace FFLAS {
         } else {
                 // store diagonal diagC <- beta Cii
             diagC = FFLAS::fflas_new(F,N);
-            fscal(F, N, beta, diagC, 1, C, ldc+1);
+            fscal(F, N, beta, C, ldc+1, diagC, 1);
         }
 
             // Set unused triangular part of C to zero

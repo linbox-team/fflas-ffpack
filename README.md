@@ -24,11 +24,11 @@ FFLAS-FFPACK is distributed unded the terms of the GNU LGPL v2.1 or later (see L
 
 ## INSTALLATION
 
-In brief:
+### In brief:
 - if you are compiling a released tar.gz archive, use ```./configure <options> && make && make install```
 - if you are compiling the upstream git master branch, juste replace `configure` by `autogen.sh` in the above command: the configure script will be auto-generated and run with the arguments passed to `autogen.sh`
 
-The most commonly used option include:
+### Most commonly used options
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
 - `--enable-precompilation` : to precompile the standard templates specializations (and gain some compilation time later on)
 
@@ -38,23 +38,23 @@ You may need to set the `PKG_CONFIG_PATH` environment variable to `<givaro-prefi
 
 For example on a x86_64 architecture:
 - Using OpenBLAS in Fedora:
- - install the package `openblas-devel.x86_64`,
- - run `./configure --with-blas-libs="-lopenblas"`
+   - install the package `openblas-devel.x86_64`,
+   - run `./configure --with-blas-libs="-lopenblas"`
 - Using OpenBLAS in Debian, Ubuntu, Mint, and all debian based distribution:
- - avoid using the distribution's package, as it is threaded by default. You need to
+   - avoid using the distribution's package, as it is threaded by default. You need to
    compile openblas yourself on these systems,
- - run `./configure --with-blas-libs="-L/pathtolocalopenblas/lib -lopenblas" --with-blas-cflags="-I/pathtolocalopenblas/include"`
+   - run `./configure --with-blas-libs="-L/pathtolocalopenblas/lib -lopenblas" --with-blas-cflags="-I/pathtolocalopenblas/include"`
 - Using ATLAS in Debian, Ubuntu, Mint:
- - install the package `libatlas-dev`,
- - run `./configure --with-blas-libs="-latlas -lcblas"`
+   - install the package `libatlas-dev`,
+   - run `./configure --with-blas-libs="-latlas -lcblas"`
 - Using ATLAS in Fedora:
- - install the package `atlas-devel.x86_64`,
- - run `./configure --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
+   - install the package `atlas-devel.x86_64`,
+   - run `./configure --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
 - Using Accelerate Framework on OS-X:
- - run `./configure --with-blas-libs="-framework Accelerate"`.
+   - run `./configure --with-blas-libs="-framework Accelerate"`.
 - Using BLIS
- - Configure BLIS with, say, `./configure --enable-cblas auto`.
- - run fflas/ffpack's `./configure --with-blas-libs="-lblis -lpthread"`.
+   - Configure BLIS with, say, `./configure --enable-cblas auto`.
+   - run fflas/ffpack's `./configure --with-blas-libs="-lblis -lpthread"`.
 
 
 Then, simply run `make; make autotune; make install; make check`
@@ -63,9 +63,17 @@ Note that running the `autotune` target is optional but recommended as it will t
 
 see INSTALL for further details.
 
+### Homebrew install on Mac OSX
+
+Homebrew bottles for fflas-ffpack and givaro are made available by Macaulay2's [tap](https://github.com/Macaulay2/homebrew-tap). You can install them with the following steps:
+```
+brew tap Macaulay2/tap
+brew install givaro
+brew install fflas-ffpack
+```
+
 ## KNOWN BUGS
 
- - `test-ftrsm` fails due to a problem with multiprecision arithmetic used with small fields (not used in practice). See https://github.com/linbox-team/fflas-ffpack/issues/29
 
 ## AVAILABILITY
 

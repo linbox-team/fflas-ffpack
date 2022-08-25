@@ -181,10 +181,9 @@ namespace FFLAS {
             if (beta < 0) absbeta = -beta;
             // This cast is needed when Cmin base type is int8/16_t,
             // getting -Cmin returns a int, not the same base type.
-            DFElt diff = MaxStorableValue - absbeta
-            * std::max(static_cast<const DFElt&>(-Cmin), Cmax);
-            DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
-            * std::max(static_cast<const DFElt&>(-Bmin), Bmax);
+            DFElt diff = MaxStorableValue - absbeta * std::max(static_cast<const DFElt&>(-Cmin), Cmax);
+            DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax) * std::max(static_cast<const DFElt&>(-Bmin), Bmax);
+
             if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
 
             DFElt kmax = diff/AB;

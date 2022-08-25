@@ -34,6 +34,7 @@
 
 #include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
+#include "fflas-ffpack/utils/bit_manipulation.h"
 #include <vector>
 #include <type_traits>
 
@@ -340,6 +341,64 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
     }
 
     /*
+     * Transpose the 8x8 matrix formed by the 8 rows of 64-bit integers in r0,
+     * r1, r2, r3, r4, r5, r6 and r7, and store the transposed matrix in these
+     * vectors.
+     * Args: r0 = [ r00, r01, r02, r03, r04, r05, r06, r07 ]
+     *       r1 = [ r10, r11, r12, r13, r14, r15, r16, r17 ]
+     *       ...                   ...                   ...
+     *       r6 = [ r60, r61, r62, r63, r64, r65, r66, r67 ]
+     *       r7 = [ r70, r71, r72, r73, r74, r75, r76, r77 ]
+     * Return: r0 = [ r00, r10, r20, r30, r40, r50, r60, r70 ]
+     *         r1 = [ r01, r11, r21, r31, r41, r51, r61, r71 ]
+     *         ...                   ...                   ...
+     *         r6 = [ r06, r16, r26, r36, r46, r56, r66, r76 ]
+     *         r7 = [ r07, r17, r27, r37, r47, r57, r67, r77 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3, vect_t& r4,
+               vect_t& r5, vect_t& r6, vect_t& r7) {
+        vect_t t0, t1, t2, t3, t4, t5, t6, t7;
+        vect_t v0, v1, v2, v3, v4, v5, v6, v7;
+
+        int64_t permute_idx1[8] = { 0x0, 0x1, 0x8, 0x9, 0x4, 0x5, 0xc, 0xd };
+        int64_t permute_idx2[8] = { 0x2, 0x3, 0xa, 0xb, 0x6, 0x7, 0xe, 0xf };
+        int64_t permute_idx3[8] = { 0x0, 0x1, 0x2, 0x3, 0x8, 0x9, 0xa, 0xb };
+        int64_t permute_idx4[8] = { 0x4, 0x5, 0x6, 0x7, 0xc, 0xd, 0xe, 0xf };
+
+        vect_t i1 = loadu (permute_idx1);
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t4 = unpacklo_intrinsic (r4, r5);
+        t6 = unpacklo_intrinsic (r6, r7);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        t5 = unpackhi_intrinsic (r4, r5);
+        t7 = unpackhi_intrinsic (r6, r7);
+
+        vect_t i2 = loadu (permute_idx2);
+        v0 = _mm512_permutex2var_epi64 (t0, i1, t2);
+        v1 = _mm512_permutex2var_epi64 (t1, i1, t3);
+        v4 = _mm512_permutex2var_epi64 (t4, i1, t6);
+        v5 = _mm512_permutex2var_epi64 (t5, i1, t7);
+        vect_t i3 = loadu (permute_idx3);
+        v2 = _mm512_permutex2var_epi64 (t0, i2, t2);
+        v3 = _mm512_permutex2var_epi64 (t1, i2, t3);
+        v6 = _mm512_permutex2var_epi64 (t4, i2, t6);
+        v7 = _mm512_permutex2var_epi64 (t5, i2, t7);
+
+        vect_t i4 = loadu (permute_idx4);
+        r0 = _mm512_permutex2var_epi64 (v0, i3, v4);
+        r1 = _mm512_permutex2var_epi64 (v1, i3, v5);
+        r2 = _mm512_permutex2var_epi64 (v2, i3, v6);
+        r3 = _mm512_permutex2var_epi64 (v3, i3, v7);
+        r4 = _mm512_permutex2var_epi64 (v0, i4, v4);
+        r5 = _mm512_permutex2var_epi64 (v1, i4, v5);
+        r6 = _mm512_permutex2var_epi64 (v2, i4, v6);
+        r7 = _mm512_permutex2var_epi64 (v3, i4, v7);
+    }
+
+    /*
      * Blend 64-bit integers from a and b using control mask s.
      * Args: a = [ a0, ..., a7 ]
      *       b = [ b0, ..., b7 ]
@@ -398,20 +457,16 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
      * Return : [Floor(a0*b0/2^64), ..., Floor(a7*b7/2^64)] int64_t
      */
 
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-        return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
-                   (scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64),
-                   (scalar_t)((int128_t(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)((int128_t(ca.t[5]) * cb.t[5]) >> 64),
-                   (scalar_t)((int128_t(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)((int128_t(ca.t[7]) * cb.t[7]) >> 64));
+        return set(mulhi_64(ca.t[0], cb.t[0]), mulhi_64 (ca.t[1], cb.t[1]),
+                   mulhi_64(ca.t[2], cb.t[2]), mulhi_64 (ca.t[3], cb.t[3]),
+                   mulhi_64(ca.t[4], cb.t[4]), mulhi_64 (ca.t[5], cb.t[5]),
+                   mulhi_64(ca.t[6], cb.t[6]), mulhi_64 (ca.t[7], cb.t[7]));
     }
-#endif
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results
@@ -759,20 +814,15 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
      [b0, b1, b2, b3, b4, b5, b6, b7]  	uint64_t
      * Return :
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
-        //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
-        Converter c0, c1;
-        c0.v = a;
-        c1.v = b;
-        return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[4]) * c1.t[4]) >> 64), (scalar_t)(((uint128_t)(c0.t[5]) * c1.t[5]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[6]) * c1.t[6]) >> 64), (scalar_t)(((uint128_t)(c0.t[7]) * c1.t[7]) >> 64));
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set(mulhi_u64(ca.t[0], cb.t[0]), mulhi_u64 (ca.t[1], cb.t[1]),
+                   mulhi_u64(ca.t[2], cb.t[2]), mulhi_u64 (ca.t[3], cb.t[3]),
+                   mulhi_u64(ca.t[4], cb.t[4]), mulhi_u64 (ca.t[5], cb.t[5]),
+                   mulhi_u64(ca.t[6], cb.t[6]), mulhi_u64 (ca.t[7], cb.t[7]));
     }
-#endif
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit

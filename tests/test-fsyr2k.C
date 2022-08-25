@@ -176,6 +176,7 @@ int main(int argc, char** argv)
     bool ok = true;
     do{
         ok = ok && run_with_field<Modular<double> >(q,b,n,k,a,c,iters,seed);
+        ok = ok && run_with_field<Modular<double> >(2,b,n,k,a,c,iters,seed); // forcing Z/2Z test
         if (q!=2) ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,k,a,c,iters,seed);
         ok = ok && run_with_field<Modular<float> >(q,b,n,k,a,c,iters,seed);
         if (q!=2) ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,k,a,c,iters,seed);
