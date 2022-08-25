@@ -55,6 +55,7 @@ pkgincludesub_HEADERS=        \
 		ffpack_ftrstr.inl\
 		ffpack_ftrssyr2k.inl\
 		ffpack_bruhatgen.inl\
+		ffpack_sss.inl                        \
 		$(multiprecision)
 
 
