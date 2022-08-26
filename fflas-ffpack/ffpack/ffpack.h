@@ -2032,6 +2032,52 @@ namespace FFPACK { /* SSS */
                            typename Field::ConstElement_ptr W, size_t ldw,
                            typename Field::ConstElement_ptr D, size_t ldd,
                            typename Field::Element_ptr A, size_t lda);
+            /**
+         * @brief Computes a quasi-separable matrix A from its SSS generators
+         *
+         * @param Fi the base field
+         * @param N the row and column dimension of \p A
+         * @param s the order of quasiseparability of \p A
+         * @param [inout] P an \f$ (N - s) \times s\f$ output matrix
+         * @param ldp leading dimension of \p P
+         * @param [inout] Q an \f$ (N - ls) \times s\f$ output matrix where ls = (N%s)? N%s: s
+         * @param ldq leading dimension of \p Q
+         * @param [inout] R an \f$ (N - s - ls) \times s\f$ output matrix
+         * @param ldr leading dimension of \p R
+         * @param [inout] U an \f$ (N - ls) \times s\f$ output matrix
+         * @param ldu leading dimension of \p U
+         * @param [inout] V an \f$ (N - ls) \times s\f$ output matrix
+         * @param ldv leading dimension of \p V
+         * @param [inout] W an \f$ (N - s - ls) \times s\f$ output matrix
+         * @param ldw leading dimension of \p W
+         * @param [inout] D an \f$ N \times s\f$ output matrix
+         * @param ldd leading dimension of \p D
+         * @param A an \f$ N \times N \f$ dense matrix
+         * @param lda leading dimension of \p A
+         *
+         * A = 
+         * +--------+------+------+--------+----
+         * |   D1   | U1V2 |U1W2V3|U1W2W3V4| ...
+         * +--------+------+------+--------+----
+         * |  P2Q1  |  D2  | U2V3 | U2W3V4 | ...
+         * +--------+------+------+--------+----
+         * | P3R2Q1 | P3Q2 |  D3  |  U3V4  | ...
+         * +--------+------+------+--------+----
+         * |P4R3R2Q1|P4R3Q2| P4Q3 |   D4   | ...
+         * +--------+------+------+--------+----
+         * |  ...   | ...  | ...  |  ...   | ...
+         *
+         */
+            template<class Field>
+    inline void DenseToSSS (const Field& Fi, size_t N, size_t s,
+                            typename Field::Element_ptr P, size_t ldp,
+                            typename Field::Element_ptr Q, size_t ldq,
+                            typename Field::Element_ptr R, size_t ldr,
+                            typename Field::Element_ptr U, size_t ldu,
+                            typename Field::Element_ptr V, size_t ldv,
+                            typename Field::Element_ptr W, size_t ldw,
+                            typename Field::Element_ptr D, size_t ldd,
+                            typename Field::ConstElement_ptr A, size_t lda);
 }
     
 
