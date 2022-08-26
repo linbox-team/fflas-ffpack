@@ -85,4 +85,4 @@ git:
 
 EXTRA_DIST= README.md
 
-VERSION=2.5.0
+VERSION=2.5.1alpha0
