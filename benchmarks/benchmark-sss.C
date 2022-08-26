@@ -65,26 +65,23 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
 
         RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A,lda,G);
 	RandomLTQSMatrixWithRankandQSorder (F,n,r,s,B,lda,G);
-	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
-        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
+	//	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
+	//        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
 	// p should be J, but it does not work
 	size_t * p = FFLAS::fflas_new<size_t> (n);
-	for (size_t i = 0; 2 * i < n; i++)
+	for (size_t i = 0; i < ceil(n/2.); i++)
 	    {
-		p[2*i] = n - i - 1;
-		if ((2 * i + 1) < n);
-		p[2 * i + 1] = i;
-		std::cout << "p[" << i << "] = " << p[i] << std::endl;
+		p[i] = n - i - 1;
 	    }
-              
-	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, n - 1, A, n, p);
-	applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, n - 1, B, n, p);
-		WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
-        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
+	//FFLAS::WritePermutation (std::cout<<"P = "<<std::endl, p, ceil(n/2.));              
+	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A, n, p);
+	applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, B, n, p);
+	//	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
+        //WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
        
 	faddin (F, n, n, B, n, A, n);
-		WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
-        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
+	//	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
+	//        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
        
 	RandomMatrix(F, n, m, TS, ldts, G);
 
