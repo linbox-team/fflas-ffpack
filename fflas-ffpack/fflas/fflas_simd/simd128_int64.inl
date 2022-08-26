@@ -36,6 +36,7 @@
 
 #include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
+#include "fflas-ffpack/utils/bit_manipulation.h"
 #include <vector>
 #include <type_traits>
 
@@ -307,6 +308,19 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
     }
 
     /*
+     * Transpose the 2x2 matrix formed by the 2 rows of 64-bit integers in r0
+     * and r1, and store the transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01 ]
+     *       r1 = [ r10, r11 ]
+     * Return: r0 = [ r00, r10 ]
+     *         r1 = [ r01, r11 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1) {
+        unpacklohi (r0, r1, r0, r1);
+    }
+
+    /*
      * Blend 64-bit integers from a and b using control mask s.
      * Args: a = [ a0, a1 ]
      *       b = [ b0, b1 ]
@@ -382,15 +396,13 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
      [b0, b1] int64_t
      * Return : [Floor(a0*b0/2^64), Floor(a1*b1/2^64)] int64_t
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
         //#pragma warning "The simd mulhi function is emulated, it may impact the performances."
-        Converter c0, c1;
-        c0.v = a;
-        c1.v = b;
-        return set((scalar_t)((int128_t(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)((int128_t(c0.t[1]) * c1.t[1]) >> 64));
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set(mulhi_64(ca.t[0], cb.t[0]), mulhi_64 (ca.t[1], cb.t[1]));
     }
-#endif
 
     /*
      * Multiply the low 32-bit integers from each packed 64-bit element in a and b, and store the signed 64-bit results
@@ -732,15 +744,13 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
      [b0, b1] uint64_t
      * Return : [Floor(a0*b0/2^16), Floor(a1*b1/2^16)] uint64_t
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        Converter c0, c1;
-        c0.v = a;
-        c1.v = b;
-        return set((scalar_t)((uint128_t(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)((uint128_t(c0.t[1]) * c1.t[1]) >> 64));
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set(mulhi_u64(ca.t[0], cb.t[0]), mulhi_u64 (ca.t[1], cb.t[1]));
     }
-#endif
 
     /*
      * Multiply the low unsigned 32-bit integers from each packed 64-bit element in a and b, and store the signed 64-bit results

@@ -76,6 +76,7 @@ BASIC_TESTS =               \
 		test-simd \
 		test-fgemv \
 		test-nullspace \
+		test-storage-transpose	\
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -160,7 +161,7 @@ test_finit_SOURCES = test-finit.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
 test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 #  test_fspmv_SOURCES = test-fspmv.C
-
+test_storage_transpose_SOURCES = test-storage-transpose.C
 regression_check_SOURCES = regression-check.C
 
 test_solve_SOURCES = test-solve.C

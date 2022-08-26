@@ -36,6 +36,7 @@
 
 #include "givaro/givtypestring.h"
 #include "fflas-ffpack/utils/align-allocator.h"
+#include "fflas-ffpack/utils/bit_manipulation.h"
 #include <vector>
 #include <type_traits>
 
@@ -335,6 +336,31 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
     }
 
     /*
+     * Transpose the 4x4 matrix formed by the 4 rows of 64-bit integers in r0,
+     * r1, r2 and r3, and store the transposed matrix in these vectors.
+     * Args: r0 = [ r00, r01, r02, r03 ]
+     *       r1 = [ r10, r11, r12, r13 ]
+     *       r2 = [ r20, r21, r22, r23 ]
+     *       r3 = [ r30, r31, r32, r33 ]
+     * Return: r0 = [ r00, r10, r20, r30 ]
+     *         r1 = [ r01, r11, r21, r31 ]
+     *         r2 = [ r02, r12, r22, r32 ]
+     *         r3 = [ r03, r13, r23, r33 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1, vect_t& r2, vect_t& r3) {
+        vect_t t0, t1, t2, t3;
+        t0 = unpacklo_intrinsic (r0, r1);
+        t2 = unpacklo_intrinsic (r2, r3);
+        t1 = unpackhi_intrinsic (r0, r1);
+        t3 = unpackhi_intrinsic (r2, r3);
+        r0 = _mm256_permute2x128_si256 (t0, t2, 0x20);
+        r1 = _mm256_permute2x128_si256 (t1, t3, 0x20);
+        r2 = _mm256_permute2x128_si256 (t0, t2, 0x31);
+        r3 = _mm256_permute2x128_si256 (t1, t3, 0x31);
+    }
+
+    /*
      * Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
      * Args   : [a0, a1, a2, a3] int64_t
      [b0, b1, b2, b3] int64_t
@@ -407,18 +433,14 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
      *	    [b0, b1, b2, b3]	int64_t
      * Return : [Floor(a0*b0/2^64), ..., Floor(a3*b3/2^64)] int64_t
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-        return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
-                   (scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64));
+        return set(mulhi_64(ca.t[0], cb.t[0]), mulhi_64 (ca.t[1], cb.t[1]),
+                   mulhi_64(ca.t[2], cb.t[2]), mulhi_64 (ca.t[3], cb.t[3]));
     }
-#endif
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results
@@ -739,18 +761,14 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
      [b0, b1, b2, b3]  		 							 uint64_t
      * Return :
      */
-#ifdef __FFLASFFPACK_HAVE_INT128
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
-        // ugly solution, but it works.
-        // tested with gcc, clang, icc
-        Converter c0, c1;
-        c0.v = a;
-        c1.v = b;
-        return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
-                   (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set(mulhi_u64(ca.t[0], cb.t[0]), mulhi_u64 (ca.t[1], cb.t[1]),
+                   mulhi_u64(ca.t[2], cb.t[2]), mulhi_u64 (ca.t[3], cb.t[3]));
     }
-#endif
 
     /*
      * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit

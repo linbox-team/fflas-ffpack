@@ -28,6 +28,9 @@
 // everywhere in the call stack
 #define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
+// RNS is not competitive on classical instances
+#define INTEGER_NO_RNS 1
+
 #if not defined(MG_DEFAULT)
 #define MG_DEFAULT MG_ACTIVE
 #endif
@@ -87,16 +90,18 @@ static Givaro::Integer q = -1 ;
 static unsigned long b = 512 ;
 static size_t m = 512 ;
 static size_t k = 512 ;
-static int nbw = -1 ;
+static int p=0;
+static int t=MAX_THREADS;
 static size_t seed= time(NULL);
 static Argument as[] = {
     { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
     { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
     { 'm', "-m M", "Set the dimension m of the matrix.",                    TYPE_INT , &m },
     { 'k', "-k K", "Set the dimension k of the matrix.",                    TYPE_INT , &k },
-    { 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
     { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iters },
-    { 's', "-s S", "Sets seed.",                            				TYPE_INT , &seed },
+    { 'p', "-p P", "0 for sequential, 1 for 1D iterative",                  TYPE_INT , &p },
+    { 't', "-t T", "number of virtual threads to drive the partition.",     TYPE_INT , &t },
+    { 's', "-s S", "Sets seed.",                                            TYPE_INT , &seed },
     END_OF_ARGUMENTS
 };
 
@@ -107,15 +112,15 @@ int tmain(){
     Givaro::Integer::seeding(seed);
 
     typedef Givaro::Modular<Ints> Field;
-    Givaro::Integer p;
+    Givaro::Integer modulus;
     FFLAS::Timer chrono, TimFreivalds;
     double time=0.;
     for (size_t loop=0;loop<iters;loop++){
-        Givaro::Integer::random_exact_2exp(p, b);
+        Givaro::Integer::random_exact_2exp(modulus, b);
         Givaro::IntPrimeDom IPD;
-        IPD.nextprimein(p);
-        Ints ip; Givaro::Caster<Ints,Givaro::Integer>(ip,p);
-        Givaro::Caster<Givaro::Integer,Ints>(p,ip); // to check consistency
+        IPD.nextprimein(modulus);
+        Ints ip; Givaro::Caster<Ints,Givaro::Integer>(ip,modulus);
+        Givaro::Caster<Givaro::Integer,Ints>(modulus,ip); // to check consistency
 
         Field F(ip);
         size_t lda,ldb,ldc;
@@ -129,20 +134,10 @@ int tmain(){
         B= FFLAS::fflas_new(F,k,ldb);
         C= FFLAS::fflas_new(F,m,ldc);
 
-        // 		for (size_t i=0;i<m;++i)
-        // 			for (size_t j=0;j<k;++j)
-        // 				Rand.random(A[i*lda+j]);
-        // 		for (size_t i=0;i<k;++i)
-        // 			for (size_t j=0;j<n;++j)
-        // 				Rand.random(B[i*ldb+j]);
-        // 		for (size_t i=0;i<m;++i)
-        // 			for (size_t j=0;j<n;++j)
-        // 				Rand.random(C[i*ldc+j]);
 
-        PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/size_t(MAX_THREADS)); }
-        PAR_BLOCK { FFLAS::pfrand(F,Rand, k,1,B,k/MAX_THREADS); }
-        PAR_BLOCK { FFLAS::pfzero(F, m,1,C,m/MAX_THREADS); }
-
+        FFLAS::frand(F,Rand, m,k,A,lda);
+        FFLAS::frand(F,Rand, k,B,1);
+        FFLAS::fzero(F, m,C,1);
 
         Ints alpha,beta;
         alpha=F.one;
@@ -153,10 +148,17 @@ int tmain(){
         using  FFLAS::StrategyParameter::TwoDAdaptive;
         // RNS MUL_LA
         chrono.clear();chrono.start();
-        {
+        if (p){
+            PAR_BLOCK
+            {
+                FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads> parH(t);
+                FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc, parH);
+            }
+        } else { // Sequential
             FFLAS::ParSeqHelper::Sequential seqH;
             FFLAS::fgemv(F,FFLAS::FflasNoTrans,m,k,alpha,A,lda,B,ldb,beta,C,ldc,seqH);
         }
+
         chrono.stop();
         time+=chrono.realtime();
 
@@ -171,8 +173,8 @@ int tmain(){
     cout << "Time: "<< (time/double(iters))  <<" Gfops: "<<Mflops*1.0/1000.0
     << " (total:" << time <<") "
     <<typeid(Ints).name()
-    <<" perword: "<< (Mflops*double(p.bitsize()))/64. ;
-    FFLAS::writeCommandString(std::cout << " | " << p << " (" << p.bitsize()<<")|", as)  << std::endl;
+    <<" perword: "<< (Mflops*double(modulus.bitsize()))/64. ;
+    FFLAS::writeCommandString(std::cout << " | " << modulus << " (" << modulus.bitsize()<<")|", as)  << std::endl;
     return 0;
 }
 

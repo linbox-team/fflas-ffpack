@@ -73,6 +73,11 @@ template <> struct Simd128_impl<true, false, true, 8> {
     template <class Field>
     using is_same_element = std::is_same<typename Field::Element, scalar_t>;
 
+    union Converter {
+        vect_t v;
+        scalar_t t[vect_size];
+    };
+
     /*
      * Check if the pointer p is a multiple of alignemnt
      */
@@ -253,6 +258,20 @@ template <> struct Simd128_impl<true, false, true, 8> {
     }
 
     /*
+     * Transpose the 2x2 matrix formed by the 2 rows of double-precision
+     * (64-bit) floating-point elements in r0 and r1, and store the transposed
+     * matrix in these vectors.
+     * Args: r0 = [ r00, r01 ]
+     *       r1 = [ r10, r11 ]
+     * Return: r0 = [ r00, r10 ]
+     *         r1 = [ r01, r11 ]
+     */
+    static INLINE void
+    transpose (vect_t& r0, vect_t& r1) {
+        unpacklohi (r0, r1, r0, r1);
+    }
+
+    /*
      * Blend packed double-precision (64-bit) floating-point elements from a and
      * b using control mask s.
      * Args: a = [ a0, a1 ]
@@ -323,7 +342,12 @@ template <> struct Simd128_impl<true, false, true, 8> {
 #ifdef __FMA__
         return _mm_fmadd_pd(a, b, c);
 #else
-        return add(c, mul(a, b));
+	Converter ca, cb, cc;
+        ca.v = a;
+        cb.v = b;
+        cc.v = c;
+        return set(std::fma (ca.t[0], cb.t[0], cc.t[0]),
+                   std::fma (ca.t[1], cb.t[1], cc.t[1]) );
 #endif
     }
 
@@ -339,7 +363,7 @@ template <> struct Simd128_impl<true, false, true, 8> {
 #ifdef __FMA__
         return _mm_fnmadd_pd(a, b, c);
 #else
-        return sub(c, mul(a, b));
+	return fmadd (c, sub (zero(), a), b);
 #endif
     }
 
@@ -355,7 +379,7 @@ template <> struct Simd128_impl<true, false, true, 8> {
 #ifdef __FMA__
         return _mm_fmsub_pd(a, b, c);
 #else
-        return sub(mul(a, b), c);
+	return fmadd (sub (zero(), c), a, b);
 #endif
     }
 
