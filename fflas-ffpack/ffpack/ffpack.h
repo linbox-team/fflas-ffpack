@@ -2033,7 +2033,7 @@ namespace FFPACK { /* SSS */
                            typename Field::ConstElement_ptr D, size_t ldd,
                            typename Field::Element_ptr A, size_t lda);
             /**
-         * @brief Computes a quasi-separable matrix A from its SSS generators
+         * @brief Computes SSS generators for a quasi-separable matrix A
          *
          * @param Fi the base field
          * @param N the row and column dimension of \p A

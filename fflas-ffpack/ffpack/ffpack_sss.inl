@@ -448,17 +448,9 @@ namespace FFPACK{
         
                 for (size_t brow = 0; brow < k - 2; brow++)
                     {
-                        //              std::cout << "brow = "<<brow << std::endl;
-                        //std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
-                        /*FFLAS::WriteMatrix(std::cout<<"Before PLUQ, H = "<<std::endl, Fi, 2 * s,
-                          N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
-                          N);*/
                         r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
                                           N - s*(brow + 2), H + N * s * brow + s * (brow + 2), N,
                                           p, q);
-                        // FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, 2 * s,
-                        //                 N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
-                        //                 N);
                         // pL -> [W_{brow + 2} \\ U_{brow + 2}]
                         // 1) L -> Temp
                         FFLAS::fzero (Fi, 2 * s, s, Temp, s);           
@@ -483,17 +475,11 @@ namespace FFPACK{
                         FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N,
                                         V + ldv * s * (brow + 1), ldv); /* Sould not cause any trouble even if
                                                                            last block*/
-                        // if (brow != k - 3) // Sould not cause segfault now
-                        // // shifts \hat H down
-                        // FFLAS::fassign (Fi, s, N - s * (brow + 3),
-                        //              H + s * N * (brow + 1) + s * (brow + 3), N,
-                        //              H + s * N * (brow + 2) + s * (brow + 3), N);
                     }
                 FFLAS::fflas_delete (Temp);
         
                 /******************* Lower triangular part *****************/
                 // Does it need to be copied? It seems easier than to play with transposes
-                // FFLAS::fzero (Fi, N - s - ls, s, R, ldr); //Needed? Or only 0-out Temp?
                 r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, N - s, s, H + s * N, N, p, q);
                 // Uq -> Q_1 []
                 FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, fs, s, r, H + s * N,
