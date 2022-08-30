@@ -45,6 +45,8 @@
 #include <vector>
 #include <type_traits>
 
+#include "givaro/givtypestring.h"
+
 #if defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
 #define INLINE __attribute__((always_inline)) inline
 #else
@@ -335,7 +337,9 @@ struct NoSimd {
     using is_same_element = std::is_same<typename Field::Element, T>;
 
     /* Name of the NoSimd struct */
-    static inline const std::string type_string () { return "NoSimd"; }
+    static inline const std::string type_string () {
+        return "NoSimd<" + Givaro::TypeString<scalar_t>::get() + ">";
+    }
 
     // Test if the pointer p is multiple of alignment
     template <class TT> static constexpr bool valid(TT p) { return false; }
@@ -379,6 +383,20 @@ struct SimdChooser<T, true, true> // integral number
     using value = NoSimd<T>;
 #endif
 };
+
+#ifndef __x86_64__
+template <>
+struct SimdChooser<uint64_t, true, true>
+{
+    using value = NoSimd<uint64_t>;
+};
+
+template <>
+struct SimdChooser<int64_t, true, true>
+{
+    using value = NoSimd<int64_t>;
+};
+#endif
 
 template <class T> using Simd = typename SimdChooser<T>::value;
 

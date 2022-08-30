@@ -62,8 +62,12 @@ int main(int argc, char** argv){
 
     for (size_t i=0;i<iters;i++) {
 
-        Givaro::Integer::random_exact_2exp(p, b);
-        IPD.prevprimein(p);
+        if (q<0){
+            Givaro::Integer::random_exact_2exp(p, b);
+            IPD.prevprimein(p);
+        }
+        else
+            p=q;
         Field F(p);
         size_t lda;
         lda=n;
@@ -90,8 +94,9 @@ int main(int argc, char** argv){
     }
     double Gflops=(2./3.*double(m)/1000.*double(m)/1000.*double(n)/1000.0) / chrono.usertime() * double(iters);
     Gflops*=p.bitsize()/16.;
-    cout<<"Time: "<<time/iters<<"  Gfops: "<<Gflops<<endl;
+    cout<<"Time: "<<time/iters<<"  Gfops: "<<Gflops;
 
+    FFLAS::writeCommandString(std::cout << " | " << p << " (" << p.bitsize()<<")|", as)  << std::endl;
 
     return 0;
 }
