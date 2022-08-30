@@ -78,6 +78,7 @@ benchmarks/benchmark-charpoly
 benchmarks/benchmark-sss
 examples/det
 examples/pluq
+examples/charpoly
 tests/regression-check
 tests/test-compressQ
 tests/test-det

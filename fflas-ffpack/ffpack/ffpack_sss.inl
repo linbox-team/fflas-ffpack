@@ -427,14 +427,14 @@ namespace FFPACK{
                 // Temporary submatrix, copied to be pluqed
                 typename  Field::Element_ptr H = FFLAS::fflas_new (Fi, N, N);
                 FFLAS::fassign (Fi, N, N, A, lda, H, N);
-                size_t * p = FFLAS::fflas_new<size_t> (N - ls);
+                size_t * p = FFLAS::fflas_new<size_t> (N - ls); // - ls instead of -s so that the size remains greater than s
                 size_t * q = FFLAS::fflas_new<size_t> (N - ls);
                 size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
         
                 // pL -> U_1
                 FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, fs, r, H + s,
                                       N, U, ldu);       
-                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, fs,
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, fs, // /!\ should this be FflasTrans? /!\
                                 0, s - 1, U, ldu, p);
                 // Uq -> V_2
                 FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
