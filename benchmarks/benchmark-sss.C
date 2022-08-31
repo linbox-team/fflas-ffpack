@@ -53,53 +53,38 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     for (size_t i=0;i<iter;++i){
 
         A = FFLAS::fflas_new (F, n, n);
-	B = FFLAS::fflas_new (F, n, n);
+        B = FFLAS::fflas_new (F, n, n);
         size_t lda=n;
         TS = FFLAS::fflas_new (F, n, m);
         size_t ldts = m;
         typename Field::RandIter G (F, seed);
-
-        // FFPACK::RandomMatrix (F, n, n, A, n, G);
-        // Element_ptr A = fflas_new (F, n, lda);
-	// Element_ptr TS = fflas_new(F, n, ldts);
-
         RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A,lda,G);
-	RandomLTQSMatrixWithRankandQSorder (F,n,r,s,B,lda,G);
-	//	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
-	//        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
-	// p should be J, but it does not work
-	size_t * p = FFLAS::fflas_new<size_t> (n);
-	for (size_t i = 0; i < ceil(n/2.); i++)
-	    {
-		p[i] = n - i - 1;
-	    }
-	//FFLAS::WritePermutation (std::cout<<"P = "<<std::endl, p, ceil(n/2.));              
-	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A, n, p);
-	applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, B, n, p);
-	//	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
-        //WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
-       
-	faddin (F, n, n, B, n, A, n);
-	//	WriteMatrix(std::cout << "A = "<<std::endl, F, n, n, A, n);
-	//        WriteMatrix(std::cout << "B =  "<<std::endl, F, n, n, B, n);
-       
-	RandomMatrix(F, n, m, TS, ldts, G);
+        RandomLTQSMatrixWithRankandQSorder (F,n,r,s,B,lda,G);
+        size_t * p = FFLAS::fflas_new<size_t> (n);
+        for (size_t i = 0; i < ceil(n/2.); i++)
+            {
+                p[i] = n - i - 1;
+            }
+        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A, n, p);
+        applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, B, n, p);
+        faddin (F, n, n, B, n, A, n);
+        RandomMatrix(F, n, m, TS, ldts, G);
 
-	    size_t rs = n%s;           // Size of the partial block
-    size_t ls = (rs)? rs: s;   // Size of the last block
+        size_t rs = n%s;           // Size of the partial block
+        size_t ls = (rs)? rs: s;   // Size of the last block
 
-    Element_ptr D = fflas_new (F, n, s);
-    Element_ptr P = fflas_new (F, n - s, s);
-    Element_ptr Q = fflas_new (F, n - ls, s);
-    Element_ptr R = fflas_new (F, ((n > (s + ls))? (n - s - ls): 0), s);
-    Element_ptr U = fflas_new (F, n - ls, s);
-    Element_ptr V = fflas_new (F, n - ls, s);
-    Element_ptr W = fflas_new (F, ((n > (s + ls))? (n - s - ls): 0), s);
+        Element_ptr D = fflas_new (F, n, s);
+        Element_ptr P = fflas_new (F, n - s, s);
+        Element_ptr Q = fflas_new (F, n - ls, s);
+        Element_ptr R = fflas_new (F, ((n > (s + ls))? (n - s - ls): 0), s);
+        Element_ptr U = fflas_new (F, n - ls, s);
+        Element_ptr V = fflas_new (F, n - ls, s);
+        Element_ptr W = fflas_new (F, ((n > (s + ls))? (n - s - ls): 0), s);
 
         chrono.clear();
         chrono.start();
-	DenseToSSS (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s,
-		    D, s, A, n);
+        DenseToSSS (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s,
+                    D, s, A, n);
         chrono.stop();
 
         time_gen+=chrono.usertime();
@@ -110,7 +95,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
         chrono.clear();
         chrono.start();
         productSSSxTS(F, n, m, s, F.one, P, s, Q, s, R, s, U, s, V, s, W, s,
-		      D, s, TS, m, F.zero, CBruhat, m);
+                      D, s, TS, m, F.zero, CBruhat, m);
         chrono.stop();
 
         time_cbxts += chrono.usertime();
@@ -120,8 +105,8 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
     std::cout << "Time: " << (time_gen + time_cbxts) / double(iter)
-	      << " Gfops: Irrelevant (Generator) Specific times: " << time_gen / double(iter)
-	      <<" (for construction)" << time_cbxts / double(iter)<<" (for CB x TS)" ;
+              << " Gfops: Irrelevant (Generator) Specific times: " << time_gen / double(iter)
+              <<" (for construction)" << time_cbxts / double(iter)<<" (for CB x TS)" ;
 }
 
 int main(int argc, char** argv) {
@@ -139,14 +124,14 @@ int main(int argc, char** argv) {
     uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
-        { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",  TYPE_INT , &q },
-        { 'n', "-n N", "Set the order of the square matrix A.",               TYPE_INT , &n },
-        { 'm', "-m M", "Set the column dimension of n x m RHS matrix B.",               TYPE_INT , &m },
-        { 't', "-t T", "Set the quasiseparability order of A.",  TYPE_INT , &t },
-        { 'r', "-r R", "Set the rank of each upper/lower triangular part of A.",  TYPE_INT , &r },
-        { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
-        { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
-        END_OF_ARGUMENTS
+                     { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",  TYPE_INT , &q },
+                     { 'n', "-n N", "Set the order of the square matrix A.",               TYPE_INT , &n },
+                     { 'm', "-m M", "Set the column dimension of n x m RHS matrix B.",               TYPE_INT , &m },
+                     { 't', "-t T", "Set the quasiseparability order of A.",  TYPE_INT , &t },
+                     { 'r', "-r R", "Set the rank of each upper/lower triangular part of A.",  TYPE_INT , &r },
+                     { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+                     { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
+                     END_OF_ARGUMENTS
     };
 
     FFLAS::parseArguments(argc,argv,as);
