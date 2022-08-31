@@ -434,8 +434,8 @@ namespace FFPACK{
                 // pL -> U_1
                 FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, fs, r, H + s,
                                       N, U, ldu);       
-                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, fs, // /!\ should this be FflasTrans? /!\
-                                0, s - 1, U, ldu, p);
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, /* /!\ should this be FflasTrans? */
+                                 fs, 0, s - 1, U, ldu, p);
                 // Uq -> V_2
                 FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
                                       H + s, N); // Remove L
