@@ -568,17 +568,17 @@ namespace FFPACK {
                          const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
     /* PLUQ */
 
-    /** @brief Compute a PLUQ factorization of the given matrix.
+    /** @brief Compute a PLUQ factorization of the given matrix; such that A=PLUQ.
      * Return its rank.
-     * The permutations P and Q are represented
-     * using LAPACK's convention.
+     * The permutations P and Q are represented using LAPACK's convention.
+     * Instead of P, the routines produces Pt, a LAPACK representation of P^T 
      * @param F base field
      * @param Diag   whether U should have a unit diagonal (FflasUnit) or not (FflasNoUnit)
      * @param M matrix row dimension
      * @param N matrix column dimension
      * @param A input matrix
      * @param lda leading dimension of \p A
-     * @param P the row permutation
+     * @param Pt the transpose of row permutation P
      * @param Q the column permutation
 
      * @return the rank of \p A
