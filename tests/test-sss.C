@@ -29,7 +29,7 @@
 //-------------------------------------------------------------------------
 
 /* Structure taken from test-quasisep.C */
-#define __FFLASFFPACK_PLUQ_THRESHOLD 25 // Recursive vs iterative PLUQ threshold (default 256)
+#define __FFLASFFPACK_PLUQ_THRESHOLD 5 // Recursive vs iterative PLUQ threshold (default 256)
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
@@ -44,8 +44,9 @@
 
 #include <random>
 
-#define BRUHATGEN false /* true for the compression test to be executed on a QS matrix given by
-                          RandomLTQSMatrixWithRankandQSorder */
+#define BRUHATGEN true /* true for the compression test to be executed on a QS matrix given by
+                          RandomLTQSMatrixWithRankandQSorder 
+                       false to avoid the random generator */
 
 using namespace std;
 using namespace FFPACK;
@@ -241,6 +242,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A1, n, p);
     applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A2, n, p);
     faddin (F, n, n, A2, n, A1, n);
+    FFLAS::fflas_delete(A2, p);
 #else
     fzero(F, n, n, A1, n);
 #endif
@@ -276,6 +278,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     FFLAS::fflas_delete(U);
     FFLAS::fflas_delete(V);
     FFLAS::fflas_delete(W);
+    FFLAS::fflas_delete(A1);
 
     return ok;
 }
@@ -321,10 +324,10 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=319;
-    size_t s=23;
+    size_t n=113;
+    size_t s=12;
     size_t t=42;
-    size_t r = 151;
+    size_t r = 50;
     int iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
