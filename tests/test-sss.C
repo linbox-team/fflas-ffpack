@@ -29,6 +29,7 @@
 //-------------------------------------------------------------------------
 
 /* Structure taken from test-quasisep.C */
+#define __FFLASFFPACK_PLUQ_THRESHOLD 25 // Recursive vs iterative PLUQ threshold (default 256)
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
@@ -42,6 +43,9 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include <random>
+
+#define BRUHATGEN false /* true for the compression test to be executed on a QS matrix given by
+                          RandomLTQSMatrixWithRankandQSorder */
 
 using namespace std;
 using namespace FFPACK;
@@ -161,9 +165,9 @@ bool test_compression (const Field & F, size_t n, size_t s,
         {
             std::cout << "ERROR: different results for dense from generator and compression (LTBG)"
                       <<std::endl;
-            WriteMatrix(std::cout<<"A = "<<std::endl, F, n, n, A, lda);
-            WriteMatrix(std::cout << "A2 =  "<<std::endl, F, n, n, A2, n);
-            WriteMatrix(std::cout << "Ucheck = "<<std::endl, F, n - ls, s, Ucheck, s);
+            WriteMatrix(std::cout << "A = " << std::endl, F, n, n, A, lda);
+            WriteMatrix(std::cout << "A2 =  " << std::endl, F, n, n, A2, n);
+            WriteMatrix(std::cout << "Ucheck = " << std::endl, F, n - ls, s, Ucheck, s);
             WriteMatrix(std::cout << "Vcheck =  "<<std::endl, F, n - ls, s, Vcheck, s);
             WriteMatrix(std::cout << "Wcheck = " <<std::endl, F, ((n > s + ls)? (n - s - ls): 0), s, Wcheck, s);
             WriteMatrix(std::cout << "Dcheck = " <<std::endl, F, n, s, Dcheck, s);
@@ -209,7 +213,6 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     Element_ptr C = fflas_new (F, n, t);
     Element_ptr B = fflas_new (F, n, t);
     Element_ptr A1 = fflas_new (F, n, n);
-    Element_ptr A2 = fflas_new (F, n, n);
 
     frand (F, G, n, s, D, s);
     frand (F, G, n - s, s, P, s);
@@ -224,8 +227,10 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     typename Field::Element alpha, beta;
     G.random(alpha);
     G.random(beta);
-
+    
+#if BRUHATGEN
     // Generation of a dense QS matrix with RandomLTQSMatrixWithRankandQSorder
+    Element_ptr A2 = fflas_new (F, n, n);
     RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A1, n,G);
     RandomLTQSMatrixWithRankandQSorder (F,n,r,s, A2, n,G);
     size_t * p = FFLAS::fflas_new<size_t> (n);
@@ -236,11 +241,16 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A1, n, p);
     applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A2, n, p);
     faddin (F, n, n, A2, n, A1, n);
-
+#else
+    fzero(F, n, n, A1, n);
+#endif
+    
     bool ok = true;
     /* Call to functions being implemented */
-    ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, beta, C, t);
-    ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t, F.zero, C, t);
+    ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t,
+                                              beta, C, t);
+    ok = ok && test_application_compatibility(F, n, t, s, alpha, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, B, t,
+                                              F.zero, C, t);
     ok = ok && test_compression (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, A1, n);
     ok = ok && test_reconstruction_compatibility(F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s);
 
@@ -249,7 +259,6 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
             std::cout << "FAILED "<<std::endl;
             /* Print generators for debugging */
             WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
-
             WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - ls, s, Q, s);
             WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s - ls, s, R, s);
             WriteMatrix (std::cout << "U =  "<<std::endl,F, n - ls, s, U, s);
