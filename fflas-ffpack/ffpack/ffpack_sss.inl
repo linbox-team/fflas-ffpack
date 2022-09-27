@@ -393,7 +393,6 @@ namespace FFPACK{
          * W -> W_2,     W + ((n - 2s - ls) * ldw) -> W_{k-1}
          */
 
-
             /* Unused space:
              *
              * |       |  |       |
@@ -429,7 +428,7 @@ namespace FFPACK{
                                                                    greater than s */
                 size_t * q = FFLAS::fflas_new<size_t> (N - ls);
                 size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
-        
+
                 // pL -> U_1
                 FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, fs, r, H + s,
                                       N, U, ldu);       
@@ -497,7 +496,7 @@ namespace FFPACK{
 
                 // Temporary matrix for storing upper triangular of pluq
                 typename  Field::Element_ptr TempFlat = FFLAS::fflas_new (Fi, s, 2*s);
-        
+
                 for (size_t brow = 0; brow < k - 2; brow++)
                     {
                         r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit,

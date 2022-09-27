@@ -205,6 +205,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     /* Generate generators */
     size_t rs = n%s;           // Size of the partial block
     size_t ls = (rs)? rs: s;   // Size of the last block
+    //std::cout << "n = " << n << std::endl << "s = " << s << std::endl << "ls = " << ls << std::endl;
     typedef typename Field::Element_ptr Element_ptr;
     Element_ptr D = fflas_new (F, n, s);
     Element_ptr P = fflas_new (F, n - s, s);
@@ -262,15 +263,15 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
         {
             std::cout << "FAILED "<<std::endl;
             /* Print generators for debugging */
-            WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
-            WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - ls, s, Q, s);
-            WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s - ls, s, R, s);
-            WriteMatrix (std::cout << "U =  "<<std::endl,F, n - ls, s, U, s);
-            WriteMatrix (std::cout << "V =  "<<std::endl,F, n - ls, s, V, s);
-            WriteMatrix (std::cout << "W =  "<<std::endl,F, n - s - ls, s, W, s);
-            WriteMatrix (std::cout << "D =  "<<std::endl,F, n, s, D, s);
-        }
-    /* Free memory and return */
+        WriteMatrix (std::cout << "P =  "<<std::endl,F, n - ls, s, P, s);
+        WriteMatrix (std::cout << "Q =  "<<std::endl,F, n - ls, s, Q, s);
+        WriteMatrix (std::cout << "R =  "<<std::endl,F, n - s - ls, s, R, s);
+        WriteMatrix (std::cout << "U =  "<<std::endl,F, n - ls, s, U, s);
+        WriteMatrix (std::cout << "V =  "<<std::endl,F, n - ls, s, V, s);
+        WriteMatrix (std::cout << "W =  "<<std::endl,F, n - s - ls, s, W, s);
+        WriteMatrix (std::cout << "D =  "<<std::endl,F, n, s, D, s);
+    }
+        /* Free memory and return */
     FFLAS::fflas_delete(D);
     FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(P);
