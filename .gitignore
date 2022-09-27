@@ -23,6 +23,7 @@ configure
 fflas-ffpack-config
 fflas-ffpack.pc
 fflas-ffpack/config.h
+fflas-ffpack/fflas-ffpack-thresholds.h
 fflas-ffpack/fflas-ffpack-optimise.h
 interfaces/
 libtool
