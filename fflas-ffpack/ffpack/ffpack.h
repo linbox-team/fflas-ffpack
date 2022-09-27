@@ -210,7 +210,7 @@ namespace FFPACK { /* Permutations */
     /**
      * @brief Applies a permutation P to the matrix A.
      * Apply a permutation P, stored in the LAPACK format (a sequence of transpositions)
-     * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
+     * between indices ibeg and iend (excluded) of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
      * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
      * Trans==FFLAS::FflasTrans for the inverse permutation of P
      * @param F base field
@@ -218,7 +218,7 @@ namespace FFPACK { /* Permutations */
      * @param Trans decides if the matrix is seen as columns (FflasTrans) or rows (FflasNoTrans)
      * @param M size of the elements to permute
      * @param ibeg first index to consider in P
-     * @param iend last index to consider in P
+     * @param iend next to last index to consider in P
      * @param A input matrix
      * @param lda leading dimension of A
      * @param P permutation in LAPACK format
