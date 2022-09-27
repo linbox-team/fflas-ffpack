@@ -23,6 +23,7 @@ configure
 fflas-ffpack-config
 fflas-ffpack.pc
 fflas-ffpack/config.h
+fflas-ffpack/fflas-ffpack-thresholds.h
 fflas-ffpack/fflas-ffpack-optimise.h
 interfaces/
 libtool
@@ -78,6 +79,7 @@ benchmarks/benchmark-sss
 benchmarks/benchmark-quasisep
 examples/det
 examples/pluq
+examples/charpoly
 tests/regression-check
 tests/test-compressQ
 tests/test-det
@@ -104,6 +106,7 @@ tests/test-pluq-check
 tests/test-simd
 tests/test-charpoly
 tests/test-maxdelayeddim
+tests/test-quasisep
 tests/test-sss
 test-det-check
 test-fdot
