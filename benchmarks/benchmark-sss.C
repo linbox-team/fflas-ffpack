@@ -26,7 +26,6 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
-#include <givaro/givpoly1.h>
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -65,8 +64,8 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
             {
                 p[i] = n - i - 1;
             }
-        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A, n, p);
-        applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, B, n, p);
+        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A, n, p);
+        applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B, n, p);
         faddin (F, n, n, B, n, A, n);
         RandomMatrix(F, n, m, TS, ldts, G);
 
@@ -83,30 +82,29 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
 
         chrono.clear();
         chrono.start();
-        DenseToSSS (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s,
-                    D, s, A, n);
+        DenseToSSS (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, A, n);
         chrono.stop();
 
         time_gen+=chrono.usertime();
 
 
-        Element_ptr CBruhat = fflas_new(F, n, m); // Inadequate name
+        Element_ptr Res = fflas_new(F, n, m); // Inadequate name
  
         chrono.clear();
         chrono.start();
         productSSSxTS(F, n, m, s, F.one, P, s, Q, s, R, s, U, s, V, s, W, s,
-                      D, s, TS, m, F.zero, CBruhat, m);
+                      D, s, TS, m, F.zero, Res, m);
         chrono.stop();
 
         time_cbxts += chrono.usertime();
         FFLAS::fflas_delete(A, D, P, Q, R, U, V, W, B, p); // Could be done once for all iters
-        FFLAS::fflas_delete(TS, CBruhat);
+        FFLAS::fflas_delete(TS, Res);
     }
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
     std::cout << "Time: " << (time_gen + time_cbxts) / double(iter)
-              << " Gfops: Irrelevant (Generator) Specific times: " << time_gen / double(iter)
-              <<" (for construction)" << time_cbxts / double(iter)<<" (for CB x TS)" ;
+              << " Gfops: Irrelevant. Specific times: " << time_gen / double(iter)
+              <<" (for construction), " << time_cbxts / double(iter)<<" (for CB x TS)" ;
 }
 
 int main(int argc, char** argv) {
@@ -124,13 +122,13 @@ int main(int argc, char** argv) {
     uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
-                     { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",  TYPE_INT , &q },
-                     { 'n', "-n N", "Set the order of the square matrix A.",               TYPE_INT , &n },
-                     { 'm', "-m M", "Set the column dimension of n x m RHS matrix B.",               TYPE_INT , &m },
-                     { 't', "-t T", "Set the quasiseparability order of A.",  TYPE_INT , &t },
-                     { 'r', "-r R", "Set the rank of each upper/lower triangular part of A.",  TYPE_INT , &r },
-                     { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
-                     { 's', "-s S", "Sets seed.", TYPE_INT , &seed },
+                     { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",     TYPE_INT , &q },
+                     { 'n', "-n N", "Set the order of the square matrix A.",                  TYPE_INT , &n },
+                     { 'm', "-m M", "Set the column dimension of n x m RHS matrix B.",        TYPE_INT , &m },
+                     { 't', "-t T", "Set the quasiseparability order of A.",                  TYPE_INT , &t },
+                     { 'r', "-r R", "Set the rank of each upper/lower triangular part of A.", TYPE_INT , &r },
+                     { 'i', "-i R", "Set number of repetitions.",                             TYPE_INT , &iter },
+                     { 's', "-s S", "Sets seed.",                                             TYPE_INT , &seed },
                      END_OF_ARGUMENTS
     };
 

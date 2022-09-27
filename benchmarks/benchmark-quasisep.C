@@ -26,7 +26,6 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
-#include <givaro/givpoly1.h>
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -58,12 +57,8 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         size_t ldts = m;
         typename Field::RandIter G (F, seed);
 
-        // FFPACK::RandomMatrix (F, n, n, A, n, G);
-        // Element_ptr A = fflas_new (F, n, lda);
-	// Element_ptr TS = fflas_new(F, n, ldts);
-
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A,lda,G);
-	RandomMatrix(F, n, m, TS, ldts, G);
+        RandomMatrix(F, n, m, TS, ldts, G);
         
         size_t * P = fflas_new<size_t> (n);
         size_t * Q = fflas_new<size_t> (n);
