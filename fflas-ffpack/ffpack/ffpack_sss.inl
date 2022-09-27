@@ -419,11 +419,9 @@ namespace FFPACK{
                         fs = N - s;
                         FFLAS::fzero(Fi, s, s, U, ldu); // U, Q^T will only be updated on their fs first columns
                         FFLAS::fzero(Fi, s, s, Q, ldq);
-                        //FFLAS::fzero(Fi, s, fs, V, ldv);
                     }
 
                 /******************* Upper triangular part *****************/
-                //FFLAS::fzero (Fi, ((N > s + ls)? (N - s - ls): 0), s, W, ldw); //
                 // Temporary submatrix, copied to be pluqed
                 typename  Field::Element_ptr H = FFLAS::fflas_new (Fi, N, N);
                 FFLAS::fassign (Fi, N, N, A, lda, H, N);
@@ -467,7 +465,8 @@ namespace FFPACK{
                         // 4) Temp2 -> U_{brow + 2}
                         FFLAS::fassign (Fi, s, s, Temp + s * s, s, U + ldu * s * (brow + 1), ldu);
                         // Uq -> [V_{brow + 3} & H]
-                        FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2), r,
+                        FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2),
+                                              r,
                                               H + s * N * brow + s * (brow + 2), N,
                                               H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
                         FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
@@ -492,7 +491,7 @@ namespace FFPACK{
                 FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, N - s, s, r,
                                       H + s * N, N);
                 // Apply permutation p to H
-                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, s,
                                 0, N - s - 1, H + s * N, N, p);
                 FFLAS::fassign (Fi, fs, s, H + s * N, N, P, ldp);
 
@@ -525,7 +524,7 @@ namespace FFPACK{
                                               H + s * N * (brow + 2) + s * (brow), N,
                                               H + s * N * (brow + 2) + s * (brow + 1), N);
                         // Apply permutation p to H
-                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
+                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, s,
                                         0, N - s* (brow + 2) - 1, H + s * N * (brow + 2) + s * (brow + 1), N,
                                         p);
                         // H -> P_{brow + 3}
