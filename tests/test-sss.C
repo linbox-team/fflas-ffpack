@@ -176,8 +176,6 @@ bool test_compression (const Field & F, size_t n, size_t s,
 
     SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldq, U, ldu, V, ldv, W, ldw,
                 D, ldd, A, lda);
-
-    WriteMatrix(std::cerr<<"A = "<<std::endl,F, n,n,A,lda);
     DenseToSSS (F, n, s, Pcheck, s, Qcheck, s, Rcheck, s, Ucheck, s, Vcheck, s, Wcheck, s,
                 Dcheck, s, A, lda);
     SSSToDense (F, n, s, Pcheck, s, Qcheck, s, Rcheck, s, Ucheck, s, Vcheck, s, Wcheck, s,
@@ -236,13 +234,13 @@ bool launch_instance_check (const Field& F, size_t n, size_t s, size_t t, size_t
     Element_ptr A2 = fflas_new (F, n, n);
     RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A1, n,G);
     RandomLTQSMatrixWithRankandQSorder (F,n,r,s, A2, n,G);
-    size_t * p = FFLAS::fflas_new<size_t> (n);
+    size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
     for (size_t i = 0; i < ceil(n/2.); i++)
         {
             p[i] = n - i - 1;
         }
-    applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A1, n, p);
-    applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.) - 1, A2, n, p);
+    applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A1, n, p);
+    applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
     faddin (F, n, n, A2, n, A1, n);
     FFLAS::fflas_delete(A2, p);
 #else
