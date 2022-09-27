@@ -47,7 +47,7 @@ using namespace FFLAS;
 
 template<class Field, FFLAS_DIAG diag, class RandIter>
 bool test_BruhatGenerator (const Field & F, size_t n, size_t r, size_t t,
-			   typename Field::ConstElement_ptr A, size_t lda,typename Field::Element_ptr TS, size_t l ,RandIter& G)
+                           typename Field::ConstElement_ptr A, size_t lda,typename Field::Element_ptr TS, size_t l ,RandIter& G)
 {
     bool fail = false;
     typedef typename Field::Element_ptr Element_ptr ;
@@ -149,10 +149,10 @@ bool launch_test (const Field & F, size_t n, size_t r, size_t t, size_t l,RandIt
     { /*  user provided params, larger lda */
         size_t lda = n+10 ;
         Element_ptr A = fflas_new (F, n, lda);
-	Element_ptr TS = fflas_new(F, n, l);
+        Element_ptr TS = fflas_new(F, n, l);
             // TODO implement this randomGenerator
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A,lda,G);
-	RandomMatrix(F, n, l, TS,l,G);
+        RandomMatrix(F, n, l, TS,l,G);
         fail = fail || test_BruhatGenerator <Field,diag> (F, n, r, t, A, lda,TS, l,G);
 
         if (fail) std::cout << "failed at user params" << std::endl;
@@ -210,7 +210,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t t,
         ok = ok && testLTQSRPM (*F,n,r,t,G);
         ok = ok && launch_test<Field,FflasUnit>    (*F,n,r,t,l,G);
         ok = ok && launch_test<Field,FflasNonUnit> (*F,n,r,t,l,G);
-	ok = ok && 
+        ok = ok && 
         nbit--;
         if ( !ok )
             //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
@@ -228,9 +228,9 @@ int main(int argc, char** argv)
     cerr<<setprecision(20);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=93;
-    size_t r=30;
-    size_t t=8;
+    size_t n=319;
+    size_t r=45;
+    size_t t=11;
     size_t m=6;
     size_t iters=3;
     bool loop=false;
@@ -266,8 +266,11 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,r,t,m,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,r,t,m,iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,r,t,m,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/4,r/4,t/4,m/4,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/4,r/4,t/4,m/4,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5, ceil(n/4.), ceil(r/4.), ceil(t/4.),
+                                                                     ceil(m/4.), iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512), ceil(n/4.), ceil(r/4.),
+                                                                     ceil(t/4.),
+                                                                     ceil(m/4.),iters,seed);
         seed++;
     } while (loop && ok);
 
