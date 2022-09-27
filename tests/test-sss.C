@@ -176,6 +176,8 @@ bool test_compression (const Field & F, size_t n, size_t s,
 
     SSSToDense (F, n, s, P, ldp, Q, ldq, R, ldq, U, ldu, V, ldv, W, ldw,
                 D, ldd, A, lda);
+
+    WriteMatrix(std::cerr<<"A = "<<std::endl,F, n,n,A,lda);
     DenseToSSS (F, n, s, Pcheck, s, Qcheck, s, Rcheck, s, Ucheck, s, Vcheck, s, Wcheck, s,
                 Dcheck, s, A, lda);
     SSSToDense (F, n, s, Pcheck, s, Qcheck, s, Rcheck, s, Ucheck, s, Vcheck, s, Wcheck, s,
@@ -325,9 +327,9 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     size_t n=113;
-    size_t s=12;
-    size_t t=42;
-    size_t r = 50;
+    size_t t=12;
+    size_t m=42;
+    size_t r = 40;
     int iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
@@ -336,9 +338,9 @@ int main(int argc, char** argv)
                      { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
                      { 'b', "-b B", "Set the bitsize of the field characteristic.", TYPE_INT , &b },
                      { 'n', "-n N", "Set the matrix row and column dimension.", TYPE_INT , &n },
-                     { 's', "-s S", "Set the order of quasi-separability.", TYPE_INT , &s },
+                     { 't', "-t T", "Set the order of quasi-separability.", TYPE_INT , &t },
                      { 'r', "-r R", "Set the matrix rank when generated with RandomLTQSMatrixWithRankandQSorder.", TYPE_INT , &r },
-                     { 't', "-t T", "Set the col dim of the Tall and Skinny matrix.", TYPE_INT , &t },
+                     { 'm', "-m M", "Set the col dim of the Tall and Skinny matrix.", TYPE_INT , &m },
                      { 'i', "-i R", "Set number of repetitions.", TYPE_INT, &iters },
                      { 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL, &loop },
                      { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
@@ -349,18 +351,19 @@ int main(int argc, char** argv)
    
     bool ok=true;
     do{
-        ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,s,t, r,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,s,t, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,s,t, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,s,t, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,s,t, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,s,t, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,s,t, r, iters,
+        std::cerr<<"with seed = "<<seed<<std::endl;
+        ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
                                                                      seed); // Valgrind does not like this one 
-        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,s,t, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(s / 4.), ceil(t / 4.), ceil(r / 4.), iters,
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
                                                                      seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(s / 4.), ceil(t / 4.), ceil(r / 4.),
+        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),
                                                                      iters,seed);
         seed++;
     } while (loop && ok);
