@@ -125,11 +125,13 @@ bool test_application_compatibility (const Field & F, size_t n, size_t t, size_t
             WriteMatrix (std::cout << "dense = "<<std::endl, F, n, t, dense, t);
             WriteMatrix (std::cout << "qs =  " << std::endl, F, n, t, qs, t);
         }
-    return ok;
+    
 
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(dense);
     FFLAS::fflas_delete(qs);
+
+    return ok;
 }
 /** \brief test equality between a dense sss matrix and the result of compressing and reconstructing it 
  * A dense matrix is given in A, another one is constructed from its random generators */
