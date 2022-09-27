@@ -74,6 +74,7 @@ benchmarks/benchmark-fsytrf
 benchmarks/benchmark-fspmv
 benchmarks/benchmark-fspmm
 benchmarks/benchmark-inverse
+benchmarks/benchmark-quasisep
 benchmarks/benchmark-charpoly
 benchmarks/benchmark-sss
 benchmarks/benchmark-quasisep

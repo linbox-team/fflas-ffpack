@@ -418,28 +418,27 @@ namespace FFPACK{
                         fs = N - s;
                         FFLAS::fzero(Fi, s, s, U, ldu); // U, Q^T will only be updated on their fs first columns
                         FFLAS::fzero(Fi, s, s, Q, ldq);
-                        //FFLAS::fzero(Fi, s, fs, V, ldv);
                     }
 
                 /******************* Upper triangular part *****************/
-                //FFLAS::fzero (Fi, ((N > s + ls)? (N - s - ls): 0), s, W, ldw); //
                 // Temporary submatrix, copied to be pluqed
                 typename  Field::Element_ptr H = FFLAS::fflas_new (Fi, N, N);
                 FFLAS::fassign (Fi, N, N, A, lda, H, N);
-                size_t * p = FFLAS::fflas_new<size_t> (N - ls);
+                size_t * p = FFLAS::fflas_new<size_t> (N - ls); /* - ls instead of -s so that the size remains 
+                                                                   greater than s */
                 size_t * q = FFLAS::fflas_new<size_t> (N - ls);
                 size_t r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s, N - s, H + s, N, p, q);
-        
+
                 // pL -> U_1
                 FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, s, fs, r, H + s,
                                       N, U, ldu);       
-                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, fs,
-                                0, s - 1, U, ldu, p);
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans,
+                                 fs, 0, s, U, ldu, p);
                 // Uq -> V_2
                 FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s, r,
                                       H + s, N); // Remove L
                 FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-                                0, N - s - 1, H + s, N, q); // Apply permutation q to H
+                                0, N - s, H + s, N, q); // Apply permutation q to H
                 FFLAS::fassign (Fi, s, fs, H + s, N, V, ldv);
 
                 // Temporary matrix for storing lower triangular of pluq
@@ -447,17 +446,9 @@ namespace FFPACK{
         
                 for (size_t brow = 0; brow < k - 2; brow++)
                     {
-                        //              std::cout << "brow = "<<brow << std::endl;
-                        //std::cout << "N - sbrow+2  = "<<N - s * (brow + 2) << std::endl;
-                        /*FFLAS::WriteMatrix(std::cout<<"Before PLUQ, H = "<<std::endl, Fi, 2 * s,
-                          N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
-                          N);*/
                         r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, s*(2),
                                           N - s*(brow + 2), H + N * s * brow + s * (brow + 2), N,
                                           p, q);
-                        // FFLAS::WriteMatrix(std::cout<<"After PLUQ, H = "<<std::endl, Fi, 2 * s,
-                        //                 N - s* (brow + 2), H + N * s * brow + s * (brow + 2),
-                        //                 N);
                         // pL -> [W_{brow + 2} \\ U_{brow + 2}]
                         // 1) L -> Temp
                         FFLAS::fzero (Fi, 2 * s, s, Temp, s);           
@@ -466,51 +457,46 @@ namespace FFPACK{
                                               H + s * N * brow + s * (brow + 2),
                                               N, Temp, s, true);
                         // 2) p * Temp -> Temp
-                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-                                        0, 2*s - 1, Temp, s, p);
+                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, s,
+                                        0, 2*s, Temp, s, p);
                         // 3) Temp1 -> W_{brow + 2}
                         FFLAS::fassign (Fi, s, s, Temp, s, W + ldw * s * brow, ldw);
                         // 4) Temp2 -> U_{brow + 2}
                         FFLAS::fassign (Fi, s, s, Temp + s * s, s, U + ldu * s * (brow + 1), ldu);
                         // Uq -> [V_{brow + 3} & H]
-                        FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2), r,
+                        FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, s, N - s * (brow + 2),
+                                              r,
                                               H + s * N * brow + s * (brow + 2), N,
                                               H + s * N * (brow + 1) + s * (brow + 2), N); // Remove L
                         FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-                                        0, N - s* (brow + 2) - 1, H + s * N * (brow + 1) + s * (brow + 2), N,
+                                        0, N - s* (brow + 2), H + s * N * (brow + 1) + s * (brow + 2), N,
                                         q); // Apply permutation q to H
                         FFLAS::fassign (Fi, s, s, H + s * N * (brow + 1) + s * (brow + 2), N,
                                         V + ldv * s * (brow + 1), ldv); /* Sould not cause any trouble even if
                                                                            last block*/
-                        // if (brow != k - 3) // Sould not cause segfault now
-                        // // shifts \hat H down
-                        // FFLAS::fassign (Fi, s, N - s * (brow + 3),
-                        //              H + s * N * (brow + 1) + s * (brow + 3), N,
-                        //              H + s * N * (brow + 2) + s * (brow + 3), N);
                     }
                 FFLAS::fflas_delete (Temp);
         
                 /******************* Lower triangular part *****************/
                 // Does it need to be copied? It seems easier than to play with transposes
-                // FFLAS::fzero (Fi, N - s - ls, s, R, ldr); //Needed? Or only 0-out Temp?
                 r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit, N - s, s, H + s * N, N, p, q);
                 // Uq -> Q_1 []
                 FFPACK::getTriangular(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, fs, s, r, H + s * N,
                                       N, Q, ldq);       
                 FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, fs,
-                                0, s - 1, Q, ldq, q);
+                                0, s, Q, ldq, q);
                 // pL -> [P_2 \\ H]
                 // Remove L
                 FFPACK::getTriangular(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, N - s, s, r,
                                       H + s * N, N);
                 // Apply permutation p to H
-                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-                                0, N - s - 1, H + s * N, N, p);
+                FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, s,
+                                0, N - s, H + s * N, N, p);
                 FFLAS::fassign (Fi, fs, s, H + s * N, N, P, ldp);
 
                 // Temporary matrix for storing upper triangular of pluq
                 typename  Field::Element_ptr TempFlat = FFLAS::fflas_new (Fi, s, 2*s);
-        
+
                 for (size_t brow = 0; brow < k - 2; brow++)
                     {
                         r = FFPACK::PLUQ (Fi, FFLAS::FflasNonUnit,
@@ -525,7 +511,7 @@ namespace FFPACK{
                                               N, TempFlat, 2 * s, true);
                         // 2) TempFlat * q -> TempFlat
                         FFPACK::applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, s,
-                                        0, 2*s - 1, TempFlat, 2 * s, q);
+                                        0, 2*s, TempFlat, 2 * s, q);
                         // 3) TempFlat_1 -> R_{brow + 2}
                         FFLAS::fassign (Fi, s, s, TempFlat, 2 * s, R + s * ldr * brow, ldr);
                         // 4) TempFlat_2 -> Q_{brow + 2}
@@ -537,8 +523,8 @@ namespace FFPACK{
                                               H + s * N * (brow + 2) + s * (brow), N,
                                               H + s * N * (brow + 2) + s * (brow + 1), N);
                         // Apply permutation p to H
-                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, s,
-                                        0, N - s* (brow + 2) - 1, H + s * N * (brow + 2) + s * (brow + 1), N,
+                        FFPACK::applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, s,
+                                        0, N - s* (brow + 2), H + s * N * (brow + 2) + s * (brow + 1), N,
                                         p);
                         // H -> P_{brow + 3}
                         FFLAS::fassign (Fi, ((brow == k - 3)? ls: s), s, H + s * N * (brow + 2) + s * (brow + 1), N,
