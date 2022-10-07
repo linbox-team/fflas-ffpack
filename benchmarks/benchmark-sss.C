@@ -103,7 +103,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
     std::cout << "Time: " << (time_gen + time_cbxts) / double(iter)
-              << " Gfops: Irrelevant. Specific times: " << time_gen / double(iter)
+              << " Gfops: Irrelevant Specific times: " << time_gen / double(iter)
               <<" (for construction), " << time_cbxts / double(iter)<<" (for CB x TS)" ;
 }
 

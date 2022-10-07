@@ -36,7 +36,7 @@ AC_DEFUN([FF_CHECK_OMP],
 	  AS_IF([ test "x$avec_omp" != "xno" ],
 		[
 		BACKUP_CXXFLAGS=${CXXFLAGS}
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${OMPFLAGS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${OPENMP_CXXFLAGS}"
 		AC_TRY_RUN([
 #include <omp.h>
 			int main() {
@@ -53,13 +53,13 @@ AC_DEFUN([FF_CHECK_OMP],
 		AS_IF(	[ test "x$omp_found" = "xyes" ],
 			[
 				AC_DEFINE(USE_OPENMP,1,[Define if OMP is available])
-				AC_SUBST(OMPFLAGS)
+				AC_SUBST(OPENMP_CXXFLAGS)
 				AC_MSG_RESULT(yes)
 				HAVE_OMP=yes
 			],
 			[
-				OMPFLAGS=
-				AC_SUBST(OMPFLAGS)
+				OPENMP_CXXFLAGS=
+				AC_SUBST(OPENMP_CXXFLAGS)
 				AC_MSG_RESULT(no)
 			]
 		)
