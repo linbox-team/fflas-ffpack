@@ -2,8 +2,6 @@
 
 CI Inria: [![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/view/LinBox%20ecosystem/job/FFLAS-FFPACK/)
 
-Travis: [![Build Status](https://travis-ci.org/linbox-team/fflas-ffpack.svg?branch=master)](https://travis-ci.org/linbox-team/fflas-ffpack/)
-
 ## PURPOSE
 
 The FFLAS-FFPACK library provides a set of basic routines for linear algebra over a finite field or the ring of integers with dense and sparse matrices.
