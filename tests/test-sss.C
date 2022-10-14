@@ -327,10 +327,10 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=53;
-    size_t t=6;
+    size_t n=113;
+    size_t t=12;
     size_t m=42;
-    size_t r = 21;
+    size_t r = 40;
     int iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
