@@ -26,7 +26,8 @@ dnl turn on OpenMP if available
 
 AC_DEFUN([FF_CHECK_OMP],
 	[ AC_ARG_ENABLE(openmp,
-		[AS_HELP_STRING([--enable-openmp],[ Use OpenMP ])
+		[AC_HELP_STRING([--enable-openmp],
+				[ Use OpenMP ])
 		],
 		[ avec_omp=$enable_openmp],
 		[ avec_omp=yes ]
@@ -36,13 +37,16 @@ AC_DEFUN([FF_CHECK_OMP],
 		[
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${OPENMP_CXXFLAGS}"
-		AC_RUN_IFELSE([AC_LANG_SOURCE([[
+		AC_TRY_RUN([
 #include <omp.h>
 			int main() {
 			int p = omp_get_num_threads();
 			return 0;
 			}
-		]])],[ omp_found="yes" ],[ omp_found="no" ],[
+		],
+		[ omp_found="yes" ],
+		[ omp_found="no" ],
+		[
 			echo "cross compiling...disabling"
 			omp_found="no"
 		])

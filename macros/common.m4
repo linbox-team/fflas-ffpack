@@ -103,7 +103,8 @@ dnl Append -march=native or -mcpu=native (if recognized by the compiler) to
 dnl OPTIM_FLAGS if not present in CXXFLAGS and not cross-compiling and
 dnl --without-archnative is not set
 AC_DEFUN([ARCH_FLAGS],[
-    AC_ARG_WITH(archnative, [AS_HELP_STRING([--without-archnative],[do not use -march=native or -mcpu=native (default is to use it if not already present in CXXFLAGS)])])
+    AC_ARG_WITH(archnative, [AC_HELP_STRING([--without-archnative],
+        [do not use -march=native or -mcpu=native (default is to use it if not already present in CXXFLAGS)])])
 
     AX_CHECK_COMPILE_FLAG([-march=native], [
         AS_CASE([$CXXFLAGS],
