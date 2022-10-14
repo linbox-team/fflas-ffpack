@@ -44,7 +44,7 @@
 
 #include <random>
 
-#define BRUHATGEN true /* true for the compression test to be executed on a QS matrix given by
+#define BRUHATGEN false /* true for the compression test to be executed on a QS matrix given by
                           RandomLTQSMatrixWithRankandQSorder 
                        false to avoid the random generator */
 
