@@ -128,15 +128,16 @@ namespace FFPACK {
     /** @brief Random RPM for left triangular quasi-separable matrix using a
      * recursive strategy
      * @param n dimension of the matrix
-     * @param r rank of the matrix
+     * @param r number of pivots to put in the triangle
      * @param t order of quasiseparability
-     * @param ranks array of ranks of the current (n-i * i) submatrices
+     * @param[inout] ranks array of ranks of the current (n-i * i) submatrices
      * @param row_index row index of the most topleft entry of the subtriangle
      * to consider
      * @param col_index column index of the most topleft entry of the 
      * subtriangle to consider
      * @param[inout] rows row indices of the pivots
      * @param[inout] cols column indices of the pivots
+     * @param pivots number of pivots already set
      */
     inline void RandomRecursiveLTQSRankProfileMatrix (size_t n, size_t r,
                                                       size_t t, size_t *ranks,
@@ -146,32 +147,89 @@ namespace FFPACK {
                                                       size_t *cols,
                                                       size_t pivots)
     {
-        if (n != 0) // Otherwise do nothing
+        size_t triangle_size = n - row_index - col_index;
+        if (triangle_size != 0) // Otherwise do nothing: we consider r = 0
             {
-                if (n == 1) // No division
+                if (triangle_size == 1) // No division
                     {
                         if (r == 1) // Otherwise r = 0, do nothing
                             {
                                 // Add entry to pivots
                                 rows[pivots] = row_index;
                                 cols[pivots] = col_index;
-                                pivots++
+                                //pivots++ //This does not seem useful
                             }
                     }
                 else // n \geq 2, division
                     {
-                        // Choose division
-                        if (n - row_index - col_index == r)
+                        // Choose division (could be in a subfunction?)
+                        if (triangle_size == r)
                             size_t rc = 1;
                         else
                             {
-                                size_t rc = RandInt (0, 
+                                size_t ceil_ts = ceil (triangle_size / 2.)
+                                size_t rc_bound = min(r, t, triangle_size
+                                                      + 1 - r, ceil_ts);
+                                /* Does this work?
+                                 * r <= n
+                                 */
+                                size_t rc = RandInt (0, rc_bound);
                             }
+                        size_t rd_lbound = max (0, r - ceil_ts, r - ceil_ts - rc + 1);
+                        size_t rd_ubound = min (r - rc, triangle_size/2,
+                                                triangle_size/2 - rc + 1);
+                        size_t rd = RandInt (rd_lbound, rd_ubound);
+                        size_t rb = r - rc - rd;
                         // Recursive calls
-                        RandomRecursiveLTQSRankProfileMatrix (n,
-                                                              /* Place pivots in
-                                                               * rectangular
-                                                               * part */
+                        /* Place pivots in bottom triangular part */
+                        RandomRecursiveLTQSRankProfileMatrix(n, rb, t, ranks, row_index +
+                                                             triangle_size + 1 - ceil_ts,
+                                                             col_index,rows,cols,pivots);
+                        pivots += rb;
+                        /* Place pivots in  triangular part */
+                        RandomRecursiveLTQSRankProfileMatrix(n, rd, t, ranks, row_index,
+                                                             col_index + ceil_ts, rows,
+                                                             cols, pivots);
+                        pivots += rd;
+                        // Preliminaries for rectangle
+                        ranks[ceil_ts - 1] = t;
+                        //findimin
+                        size_t imin = 0;
+                        for (size_t l =col_index;(imin == 0) && (l < n - row_index); l++)
+                                if (ranks[l] == 0)
+                                    imin = n - l + 2;
+                        //findjmin
+                        size_t jmin = 0;
+                        for (size_t l =n - row_index;(imin == 0) && (l >= col_index);l--)
+                                if (ranks[l] == 0)
+                                    imin = l + 1;
+                        // Fill rectangle -> Placer
+                        for (size_t k = 0; k < rc; k++)
+                            {
+                                bool correcti = false;
+                                while (correcti == false)
+                                    {
+                                        size_t i = RandInt (imin, triangle_size/2 +1);
+                                        correcti = true;
+                                        for (size_t l = 0; correcti && (l < pivots); l++)
+                                            if (rows[l] == i)
+                                                correcti = false;
+                                    }
+                                bool correctj = false;
+                                while (correctj == false)
+                                    {
+                                        size_t j = RandInt (jmin, ceil_ts);
+                                        correctj = true;
+                                        for (size_t l = 0; correctj && (l < pivots); l++)
+                                            if (rows[l] == j)
+                                                correctj = false;
+                                    }
+                                for(size_t l = col_index + j; l < n -row_index-i+2; l++)
+                                    {
+                                        ranks[l]--;
+                                        //Rest of Placer (might miss a "change_imin" var)
+                                    }
+                            }
                     }
             }
     }
