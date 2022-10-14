@@ -71,6 +71,7 @@ AS_IF([test "x${CCNAM}" = "xclang38"],
       [AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])],
       [AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])]
       )
+
 REQUIRED_FLAGS="${CXX11FLAGS}"
 # Add the c++11 flags for the configure compilations as clang needs it to work properly with a glibc++ compiled with gcc
 CXXFLAGS="${CXX11FLAGS} ${CXXFLAGS}"
@@ -113,7 +114,7 @@ AS_ECHO([---------------------------------------])
 
 # Looking for OpenMP
 AC_OPENMP
-FF_CHECK_OMP
+#FF_CHECK_OMP
 
 PARFLAGS="${OPENMP_CXXFLAGS}"
 PARLIBS="${OPENMP_CXXFLAGS}"

@@ -34,9 +34,13 @@ AC_DEFUN([FF_CHECK_OMP],
 	  AC_MSG_CHECKING(for OpenMP)
 	  AS_IF([ test "x$avec_omp" != "xno" ],
 		[
+                 AS_IF([test "x${CCNAM}" = "xclang"],
+                       [OPENMP_CXXFLAGS="-fopenmp=libomp"],
+                       [OPENMP_CXXFLAGS="-fopenmp"],
+                       )
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${OPENMP_CXXFLAGS}"
-		AC_RUN_IFELSE([AC_LANG_SOURCE([[
+                AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <omp.h>
 			int main() {
 			int p = omp_get_num_threads();
