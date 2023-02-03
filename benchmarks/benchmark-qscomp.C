@@ -70,7 +70,6 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     
     double time_genb = 0, time_cbxtsb =0;
     Element_ptr H = FFLAS::fflas_new (F, n, 1);
-    Element_ptr Hdiag = FFLAS::fflas_new (F, n, n);
     Element_ptr TSB = FFLAS::fflas_new (F, n, m);
     size_t * pa = fflas_new<size_t> (n);
     size_t * qa = fflas_new<size_t> (n);
@@ -103,9 +102,6 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     for (size_t i=0;i<iter;++i){
         typename Field::RandIter G (F, seed + i);
         RandomMatrix(F, n, 1, H, 1, G);
-        fzero(F,n,n,Hdiag,lda);
-        for (size_t i = 0 ; i < n ; ++i)
-            Hdiag[i*lda+i] = H[i];
         RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A,lda,G);
         fassign (F, n, n, A, lda, A2, lda);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,s,B,lda,G);
@@ -114,7 +110,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
         applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A, n, p);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B, n, p);
         faddin (F, n, n, B, n, A, n);
-        faddin (F, n, n, Hdiag, n, A, n);
+        faddin (F, n, H, 1, A, n+1);
         RandomMatrix(F, n, m, TSS, ldts, G);
         fassign(F, n, m, TSS, ldts, TSB, ldts);
                 
@@ -155,10 +151,10 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
         size_t NbBlocksUb = CompressToBlockBiDiagonal(F, FflasUpper, n, s, r, pb, qb, Ub,n ,Xub,n,Kub,Mub,Tub);
         productBruhatxTS(F, n, s, r, m, pa, qa, Xu, n, NbBlocksU, Ku, Tu, Mu,Xl, 2*s,
                          NbBlocksL, Kl, Tl, Ml,TSB, ldts, F.zero, CBruhat, m);
-        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), CBruhat, n, p);
+        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, m, 0, ceil(n/2.), CBruhat, m, p);
         for (size_t i = 0 ; i < n ; ++i)
             faxpy(F, 1, m, H[i], TSB + ldts * i, ldts, CBruhat + ldts*i, ldts);
-        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), TSB, n, p);
+        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, m, 0, ceil(n/2.), TSB, m, p);
         productBruhatxTS(F, n, s, r, m, pb, qb, Xub, n, NbBlocksUb, Kub, Tub, Mub,Xlb, 2*s,
                          NbBlocksLb, Klb, Tlb, Mlb,TSB, ldts, F.one, CBruhat, m);
         chrono.stop();
@@ -166,10 +162,9 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     }
     FFLAS::fflas_delete(A, A2, B, B2, D, P, Q, R, U, V, W, p, H, L, Ua, Lb, Klb, CBruhat, TSS, Res, pa,qa,Xu,Ku);
     FFLAS::fflas_delete(Mu,Tu,Xl,Ml,Tl, Kl, TSB,pb,qb, Kub, Mub,Tub, Mlb,Tlb);
-        //FFLAS::fflas_delete( Hdiag);
-    //    FFLAS::fflas_delete( Ub);
-    //   FFLAS::fflas_delete(Xub);
-    //FFLAS::fflas_delete(Xlb);
+    FFLAS::fflas_delete( Ub);
+    FFLAS::fflas_delete(Xub);
+    FFLAS::fflas_delete(Xlb);
         // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
     std::cout << "Time: " << (time_gens + time_genb + time_cbxtss + time_cbxtsb) / double(iter)
