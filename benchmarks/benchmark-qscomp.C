@@ -100,6 +100,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     Element_ptr CBruhat = fflas_new(F, n, m);
     
     for (size_t i=0;i<iter;++i){
+        std::cout << "." <<std::flush;
         typename Field::RandIter G (F, seed + i);
         RandomMatrix(F, n, 1, H, 1, G);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A,lda,G);
@@ -167,12 +168,13 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     FFLAS::fflas_delete(Xlb);
         // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
-    std::cout << "Time: " << (time_gens + time_genb + time_cbxtss + time_cbxtsb) / double(iter)
+    std::cout << std:: endl << "Time: " << (time_gens + time_genb + time_cbxtss + time_cbxtsb) / double(iter)
               << " Gfops: Irrelevant. Specific times: "
               << " DenseToSSS: " << time_gens / double(iter)
               << "; AppSSS: " << time_cbxtss / double(iter)
               << " DenseToBruhat: " << time_genb / double(iter)
-              << "; AppBruhat: " << time_cbxtsb / double(iter) << "." ;
+              << "; AppBruhat: " << time_cbxtsb / double(iter) << ". r ="
+              << r << " s = " << s << std::endl ;
 }
 
 int main(int argc, char** argv) {
@@ -181,12 +183,12 @@ int main(int argc, char** argv) {
     openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 
-    size_t iter = 10;
+    size_t iter = 50;
     int    q    = 131071;
-    size_t    n    = 2167;
-    size_t    m    = 455;
-    size_t    t    = 236;
-    size_t    r    = 1100;
+    size_t    n    = 3000;
+    size_t    m    = 500;
+    size_t    t    = 300;
+    size_t    r    = 1500;
     uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
@@ -201,9 +203,13 @@ int main(int argc, char** argv) {
     };
 
     FFLAS::parseArguments(argc,argv,as);
-
-    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed);
-
+    for (size_t rank = r;  rank < 2100; rank += 500)
+        {
+            for (size_t order = t;  order < rank / 2; order += 50)
+                {
+                    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, order, rank, iter, seed);
+                }
+        }
     std::cout << "( ";
     FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
     return 0;
