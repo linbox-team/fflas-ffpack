@@ -33,11 +33,10 @@ endif
 
 PERFPUBLISHERFILE=benchmarks-report.xml
 
-FFLA_BENCH =    benchmark-fgemm benchmark-fgemm-rns benchmark-wino benchmark-ftrsm  benchmark-fgesv benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-fsyr2k benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot benchmark-fgemv benchmark-quasisep benchmark-storage-transpose
+FFLA_BENCH =    benchmark-fgemm benchmark-fgemm-rns benchmark-wino benchmark-ftrsm  benchmark-fgesv benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-fsyr2k benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot benchmark-fgemv benchmark-quasisep benchmark-sss benchmark-storage-transpose benchmark-qscomp
 
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf benchmark-dsytrf
-
 
 if FFLASFFPACK_HAVE_LAPACK
 USE_LAPACK_BENCH = $(LAPA_BENCH)
@@ -76,6 +75,8 @@ benchmark_fsytrf_SOURCES = benchmark-fsytrf.C
 benchmark_fsyr2k_SOURCES = benchmark-fsyr2k.C
 benchmark_fsyrk_SOURCES = benchmark-fsyrk.C
 benchmark_quasisep_SOURCES = benchmark-quasisep.C
+benchmark_qscomp_SOURCES = benchmark-qscomp.C
+benchmark_sss_SOURCES = benchmark-sss.C
 benchmark_charpoly_SOURCES = benchmark-charpoly.C
 benchmark_charpoly_mp_SOURCES = benchmark-charpoly-mp.C
 benchmark_lqup_SOURCES = benchmark-lqup.C

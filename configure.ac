@@ -24,7 +24,7 @@
 AC_PREREQ([2.67])
 
 
-AC_INIT([FFLAS-FFPACK], [2.5.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.5.1],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
 
@@ -115,10 +115,11 @@ AC_C_BIGENDIAN(
 AS_ECHO([---------------------------------------])
 
 # Looking for OpenMP
+AC_OPENMP
 FF_CHECK_OMP
 
-PARFLAGS="${OMPFLAGS}"
-PARLIBS="${OMPFLAGS}"
+PARFLAGS="${OPENMP_CXXFLAGS}"
+PARLIBS="${OPENMP_CXXFLAGS}"
 AC_SUBST(PARFLAGS)
 AC_SUBST(PARLIBS)
 

@@ -2,8 +2,6 @@
 
 CI Inria: [![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/view/LinBox%20ecosystem/job/FFLAS-FFPACK/)
 
-Travis: [![Build Status](https://travis-ci.org/linbox-team/fflas-ffpack.svg?branch=master)](https://travis-ci.org/linbox-team/fflas-ffpack/)
-
 ## PURPOSE
 
 The FFLAS-FFPACK library provides a set of basic routines for linear algebra over a finite field or the ring of integers with dense and sparse matrices.
@@ -24,11 +22,11 @@ FFLAS-FFPACK is distributed under the terms of the GNU LGPL v2.1 or later (see C
 
 ## INSTALLATION
 
-In brief:
+### In brief:
 - if you are compiling a released tar.gz archive, use ```./configure <options> && make && make install```
 - if you are compiling the upstream git master branch, juste replace `configure` by `autogen.sh` in the above command: the configure script will be auto-generated and run with the arguments passed to `autogen.sh`
 
-The most commonly used option include:
+### Most commonly used options
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
 - `--enable-precompilation` : to precompile the standard templates specializations (and gain some compilation time later on)
 
@@ -63,9 +61,17 @@ Note that running the `autotune` target is optional but recommended as it will t
 
 see INSTALL for further details.
 
+### Homebrew install on Mac OSX
+
+Homebrew bottles for fflas-ffpack and givaro are made available by Macaulay2's [tap](https://github.com/Macaulay2/homebrew-tap). You can install them with the following steps:
+```
+brew tap Macaulay2/tap
+brew install givaro
+brew install fflas-ffpack
+```
+
 ## KNOWN BUGS
 
- - `test-ftrsm` fails due to a problem with multiprecision arithmetic used with small fields (not used in practice). See https://github.com/linbox-team/fflas-ffpack/issues/29
 
 ## AVAILABILITY
 
