@@ -163,12 +163,10 @@ template <> struct Simd128_impl<true, false, true, 4> {
      * Args   :	[a0, a1, a2, a3] float
      * Return :	[a[s[0..1]], ..., a[s[6..7]] float
      */
-#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
     template<uint8_t s>
     static INLINE CONST vect_t shuffle(const vect_t a) {
-        return _mm_permute_ps(a, s);
+        return _mm_castsi128_ps (_mm_shuffle_epi32 (_mm_castps_si128 (a), s));
     }
-#endif
 
     /*
      * Unpack and interleave single-precision (32-bit) floating-point elements
@@ -239,9 +237,9 @@ template <> struct Simd128_impl<true, false, true, 4> {
      */
     static INLINE CONST vect_t pack_even (const vect_t a, const vect_t b) {
         /* 0xd8 = 3120 base_4 */
-        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
-        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
-        return _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
+        __m128i t1 = _mm_shuffle_epi32 (_mm_castps_si128 (a), 0xd8);
+        __m128i t2 = _mm_shuffle_epi32 (_mm_castps_si128 (b), 0xd8);
+        return _mm_castsi128_ps (_mm_unpacklo_epi64 (t1, t2));
     }
 
     /*
@@ -253,9 +251,9 @@ template <> struct Simd128_impl<true, false, true, 4> {
      */
     static INLINE CONST vect_t pack_odd (const vect_t a, const vect_t b) {
         /* 0xd8 = 3120 base_4 */
-        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
-        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
-        return _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+        __m128i t1 = _mm_shuffle_epi32 (_mm_castps_si128 (a), 0xd8);
+        __m128i t2 = _mm_shuffle_epi32 (_mm_castps_si128 (b), 0xd8);
+        return _mm_castsi128_ps (_mm_unpackhi_epi64 (t1, t2));
     }
 
     /*
@@ -269,10 +267,10 @@ template <> struct Simd128_impl<true, false, true, 4> {
     static INLINE void
     pack (vect_t& even, vect_t& odd, const vect_t a, const vect_t b) {
         /* 0xd8 = 3120 base_4 */
-        __m128d t1 = _mm_castps_pd (_mm_permute_ps (a, 0xd8));
-        __m128d t2 = _mm_castps_pd (_mm_permute_ps (b, 0xd8));
-        even = _mm_castpd_ps (_mm_unpacklo_pd (t1, t2));
-        odd = _mm_castpd_ps (_mm_unpackhi_pd (t1, t2));
+        __m128i t1 = _mm_shuffle_epi32 (_mm_castps_si128 (a), 0xd8);
+        __m128i t2 = _mm_shuffle_epi32 (_mm_castps_si128 (b), 0xd8);
+        even = _mm_castsi128_ps (_mm_unpacklo_epi64 (t1, t2));
+        odd = _mm_castsi128_ps (_mm_unpackhi_epi64 (t1, t2));
     }
 
     /*
