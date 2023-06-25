@@ -206,7 +206,7 @@ bool launch_MM(const Field & F,
             fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
         }
         ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
-
+prln
         fflas_delete(A);
         fflas_delete(B);
 

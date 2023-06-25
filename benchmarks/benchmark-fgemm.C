@@ -28,8 +28,8 @@
 //#define WINO_PARALLEL_TMPS
 //#define __FFLASFFPACK_FORCE_SEQ
 //#define PFGEMM_WINO_SEQ 32
-//#define CLASSIC_SEQ
-#define CLASSIC_HYBRID
+#define CLASSIC_SEQ
+//#define CLASSIC_HYBRID
 //#define WINO_SEQ
 //#define FFT_PROFILER
 //#define PROFILE_FGEMM_MP
@@ -82,15 +82,18 @@ int main(int argc, char** argv) {
     //  typedef Givaro::Modular<Givaro::Integer> Field;
     // typedef Givaro::Modular<int64_t> Field;
     typedef Givaro::Modular<double> Field;
-    //  typedef Givaro::Modular<float> Field;
+    //typedef Givaro::Modular<float> Field;
     //  typedef Givaro::ModularBalanced<float> Field;
-    //  typedef Givaro::ModularBalanced<double> Field;
+    //typedef Givaro::ModularBalanced<double> Field;
     // typedef Givaro::ModularBalanced<int64_t> Field;
     //  typedef Givaro::Modular<Givaro::Integer> Field;
+    //typedef Givaro::DoubleDomain Field;
+
+
     typedef Field::Element Element;
 
     Field F(q);
-    if (q > F.maxCardinality()) return 1;
+    //if (q > F.maxCardinality()) return 1;
 
     Timer chrono, TimFreivalds;
     double timev=0.0;
@@ -99,6 +102,8 @@ int main(int argc, char** argv) {
     Element * A, * B, * C;
 
     Field::RandIter G(F);
+    //G.setBitsize(20);
+
     A = fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
     //#pragma omp parallel for collapse(2) schedule(runtime)
     PAR_BLOCK { pfrand(F,G, m,k,A,m/size_t(NBK)); }
@@ -110,6 +115,7 @@ int main(int argc, char** argv) {
     C = fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
     //#pragma omp parallel for collapse(2) schedule(runtime)
     PAR_BLOCK { pfzero(F, m,n,C,m/NBK); }
+
 
 
     for (size_t i=0;i<=iter;++i){
