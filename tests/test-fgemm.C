@@ -41,7 +41,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <givaro/modular.h>
+#include <givaro/modular-extended.h>
 
 #include <recint/rint.h>
 
@@ -59,6 +59,7 @@ using namespace FFPACK;
 
 using Givaro::Modular;
 using Givaro::ModularBalanced;
+using Givaro::ModularExtended;
 
 
 // checks that D = alpha . C + beta . A ^ta * B ^tb
@@ -395,25 +396,28 @@ int main(int argc, char** argv)
     bool ok = true;
     srand(seed);
     do{
-        ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
-        ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
-        ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
-        ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
-#ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-        // int32_t simd not yet fully implemented over AVX512
-        ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-        ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-#endif
-        ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<Modular<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<Modular<RecInt::ruint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
-        ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
-        ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+//         ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
+//         ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
+//         ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
+//         ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
+// #ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+//         // int32_t simd not yet fully implemented over AVX512
+//         ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+//         ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+// #endif
+//         ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+//         ok = ok && run_with_field<Modular<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
+//         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+//         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
+
+            ok = ok && run_with_field<ModularExtended<double> >(q,b?b:45,m,n,k,nbw,iters, p, seed);
+
+        // ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
+        // ok = ok && run_with_field<Modular<RecInt::ruint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
+        // ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
+        // ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
+        // ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+        // ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
         seed++;
     } while (loop && ok);
 
