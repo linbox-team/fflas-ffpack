@@ -364,35 +364,32 @@ namespace FFLAS {
 
     // to be used in the future, when Winograd's algorithm will be made generic wrt the ModeTrait
     template <class MMH1, class MMH2>
-    typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value &&
-                            FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    inline typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value &&
+                                   FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
     copyOutBounds(const MMH1& Source, MMH2& Dest){
             Dest.Outmax = Source.Outmax;
             Dest.Outmin = Source.Outmin;
     }
     template <class MMH1,class MMH2>
-    typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value ||
-                            !FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    inline typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value ||
+                                   !FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
     copyOutBounds(const MMH1& Source, MMH2& Dest){}
 
-    template <class Field, class AlgoT, class ParSeqH>
-    void mergeOutBounds (const MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> &H1,
-                         const MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> &H2,
-                         const MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> &H3,
-                         MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> & Dest){
-            Dest.Outmax = max4 (H1.Outmax, H2.Outmax, H3.Outmax, Dest.Outmax);
-            Dest.Outmin = min4 (H1.Outmin, H2.Outmin, H3.Outmin, Dest.Outmin);
-    }
-    template <class Field, class AlgoT, class ParSeqH>
-    void mergeOutBounds (const MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> &H1,
-                         const MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> &H2,
-                         const MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> &H3,
-                         MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> & Dest){
+    template <class MMH1, class MMH2, class MMH3, class MMH4>
+    inline typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value &&
+                                   FFLAS::hasBounds<typename MMH2::Mode_t>::value &&
+                                   FFLAS::hasBounds<typename MMH3::Mode_t>::value &&
+                                   FFLAS::hasBounds<typename MMH4::Mode_t>::value, void>::type
+    mergeOutBounds (const MMH1& H1, const MMH2& H2, const MMH3& H3, MMH4& Dest){
             Dest.Outmax = max4 (H1.Outmax, H2.Outmax, H3.Outmax, Dest.Outmax);
             Dest.Outmin = min4 (H1.Outmin, H2.Outmin, H3.Outmin, Dest.Outmin);
     }
     template <class MMH1, class MMH2, class MMH3, class MMH4>
-    void mergeOutBounds (const MMH1& H1, const MMH2& H2, const MMH3& H3, MMH4& Dest){}
+    inline typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value ||
+                                   !FFLAS::hasBounds<typename MMH2::Mode_t>::value ||
+                                   !FFLAS::hasBounds<typename MMH3::Mode_t>::value ||
+                                   !FFLAS::hasBounds<typename MMH4::Mode_t>::value, void>::type
+    mergeOutBounds (const MMH1& H1, const MMH2& H2, const MMH3& H3, MMH4& Dest){}
         
     template <class MMH1, class MMH2>
     inline typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value &&
