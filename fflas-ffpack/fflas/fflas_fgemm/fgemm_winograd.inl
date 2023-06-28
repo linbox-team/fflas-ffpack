@@ -428,7 +428,7 @@ namespace FFLAS{
         FFLASFFPACK_check(n == n2*2+nr);
         FFLASFFPACK_check(k == k2*2+kr);
 
-        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Hsave); // Let's see if Cmin, Cmax in Hsave are still valid
+        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Hsave);
 #endif
         return C;
     } // fgemm
