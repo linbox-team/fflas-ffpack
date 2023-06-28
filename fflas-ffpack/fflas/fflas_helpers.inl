@@ -364,13 +364,15 @@ namespace FFLAS {
 
     // to be used in the future, when Winograd's algorithm will be made generic wrt the ModeTrait
     template <class MMH1, class MMH2>
-    typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value && FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value &&
+                            FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
     copyOutBounds(const MMH1& Source, MMH2& Dest){
             Dest.Outmax = Source.Outmax;
             Dest.Outmin = Source.Outmin;
     }
     template <class MMH1,class MMH2>
-    typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value && FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value ||
+                            !FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
     copyOutBounds(const MMH1& Source, MMH2& Dest){}
 
     template <class Field, class AlgoT, class ParSeqH>
@@ -392,23 +394,23 @@ namespace FFLAS {
     template <class MMH1, class MMH2, class MMH3, class MMH4>
     void mergeOutBounds (const MMH1& H1, const MMH2& H2, const MMH3& H3, MMH4& Dest){}
         
-    template <class Field, class AlgoT, class ParSeqH>
-    void copyAccumulator (const MMHelper<Field, AlgoT, ModeCategories::DelayedTag, ParSeqH>& Source,
-                          MMHelper<Field, AlgoT, ModeCategories::DelayedTag, ParSeqH>& Dest){
-            Dest.Cmin = Source.Outmin;
-            Dest.Cmax = Source.Outmax;
+    template <class MMH1, class MMH2>
+    inline typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value &&
+                                   FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    copyAccumulator (const bool fromOut, const MMH1& Source, MMH2& Dest){
+            if (fromOut){
+                    Dest.Cmin = Source.Outmin;
+                    Dest.Cmax = Source.Outmax;
+            } else {
+                    Dest.Cmin = Source.Cmin;
+                    Dest.Cmax = Source.Cmax;
+            }
     }
-    template <class Field, class AlgoT, class ParSeqH>
-    void copyAccumulator( const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqH>& Source,
-                          MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqH>& Dest){
-            Dest.Cmin = Source.Outmin;
-            Dest.Cmax = Source.Outmax;
-    }
+    template <class MMH1, class MMH2>
+    inline typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value ||
+                                   !FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    copyAccumulator (const bool fromOut, const MMH1& Source, MMH2& Dest) {}
 
-    template<class MMH1, class MMH2>
-    void copyAccumulator(const MMH1& Source, MMH2& Dest){}
-        
-        //Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
    /*! StructureHelper for ftrsm
     */
     namespace StructureHelper {

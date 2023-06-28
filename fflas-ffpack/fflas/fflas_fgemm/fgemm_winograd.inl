@@ -225,12 +225,12 @@ namespace FFLAS { namespace Protected {
         MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HModd(H);
         MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HNodd(H);
 
-        copyAccumulator(H, Hacc);
+        copyAccumulator (true, H, Hacc); // H.Out -> Hacc.C
 
         Hacc.recLevel=-1; HModd.recLevel=-1; HNodd.recLevel=-1;
 
-        HModd.Cmin = Hsave.Cmin; HModd.Cmax = Hsave.Cmax;
-        HNodd.Cmin = Hsave.Cmin; HNodd.Cmax = Hsave.Cmax;
+        copyAccumulator (false, Hsave, HModd); // Hsave.C -> HModd.C
+        copyAccumulator (false, Hsave, HNodd); // Hsave.C -> HNodd.C
 
         switch (mkn) {
         case 1: // n oddsized

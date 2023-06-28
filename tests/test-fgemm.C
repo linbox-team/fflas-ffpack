@@ -410,7 +410,7 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
 
-//        ok = ok && run_with_field<ModularExtended<double> >(q,b?b:45,m,n,k,nbw,iters, p, seed);
+        ok = ok && run_with_field<ModularExtended<double> >(q,b?b:45,m,n,k,nbw,iters, p, seed);
 
         ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<Modular<RecInt::ruint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
