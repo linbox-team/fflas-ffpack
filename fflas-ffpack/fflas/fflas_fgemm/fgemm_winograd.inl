@@ -199,8 +199,6 @@ namespace FFLAS { namespace Protected {
                      typename Field::Element_ptr C, const size_t ldc,
                      MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H,
                      MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & Hsave)
-                     // const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmin,
-                     // const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmax)
     {
         size_t mkn =(size_t)( (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2));
         if (mkn == 0) return;
@@ -227,15 +225,12 @@ namespace FFLAS { namespace Protected {
         MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HModd(H);
         MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HNodd(H);
 
-        //Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
         copyAccumulator(H, Hacc);
 
-        Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
+        Hacc.recLevel=-1; HModd.recLevel=-1; HNodd.recLevel=-1;
 
         HModd.Cmin = Hsave.Cmin; HModd.Cmax = Hsave.Cmax;
         HNodd.Cmin = Hsave.Cmin; HNodd.Cmax = Hsave.Cmax;
-        // HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
-        // HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
 
         switch (mkn) {
         case 1: // n oddsized
@@ -275,9 +270,6 @@ namespace FFLAS { namespace Protected {
             break;
         }
         mergeOutBounds (HModd, HNodd, Hacc, H);
-        // H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
-        // H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
-        //H.checkOut(F, m,n, C, ldc);
     }
 
     // #define NEWIP
@@ -403,18 +395,11 @@ namespace FFLAS{
         if (H.recLevel == 0){
             MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(H);
             fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
-                // // copyOutBounds (HC, H);  @ todo should replace the following 2 lines.
-                // // Not ready yet, because of API of DynamicPeeling
             copyOutBounds(HC,H);
-            // H.Outmax = HC.Outmax;
-            // H.Outmin = HC.Outmin;
             return C;
         }
 
         // Then w >0
-        // typedef typename  MMHelper<Field, MMHelperAlgo::Winograd, ModeT>::DelayedField::Element DFElt;
-        // DFElt Cmin = H.Cmin;
-        // DFElt Cmax = H.Cmax;
 
 #ifdef OLD_DYNAMIC_PEELING
 
@@ -443,7 +428,6 @@ namespace FFLAS{
         FFLASFFPACK_check(n == n2*2+nr);
         FFLASFFPACK_check(k == k2*2+kr);
 
-//        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
         Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Hsave); // Let's see if Cmin, Cmax in Hsave are still valid
 #endif
         return C;
@@ -503,12 +487,9 @@ namespace FFLAS{
             FFLAS::ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> >
             HC (F, 0, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive>(NUM_THREADS));
 #endif
-            //              MMHelper<Field, MMHelperAlgo::Classic, ModeTraits> HC(H);
 
             fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
             copyOutBounds(H,HC);
-            // H.Outmax = HC.Outmax;
-            // H.Outmin = HC.Outmin;
             return C;
         }
 
@@ -545,7 +526,6 @@ namespace FFLAS{
         FFLASFFPACK_check(n == n2*2+nr);
         FFLASFFPACK_check(k == k2*2+kr);
         MMHelper<Field, MMHelperAlgo::Winograd, ModeT> HC(H);
-        //Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC, Cmin, Cmax);
         Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC, Hsave);
 #endif
         return C;
