@@ -166,12 +166,14 @@ namespace FFLAS { /*  Traits */
     /*! ModeTraits
      */
     template <class ModeT>
-    class isDelayed : public std::false_type{};
+    class hasBounds : public std::false_type{};
         
     template <>
-    class isDelayed<ModeCategories::LazyTag> : public std::true_type{};
+    class hasBounds<ModeCategories::LazyTag> : public std::true_type{};
     template <>
-    class isDelayed<ModeCategories::DelayedTag> : public std::true_type{};
+    class hasBounds<ModeCategories::DelayedTag> : public std::true_type{};
+    template <>
+    class hasBounds<ModeCategories::DefaultBoundedTag> : public std::true_type{};
 
     template <class Field>
     struct ModeTraits {typedef typename ModeCategories::DefaultTag value;};

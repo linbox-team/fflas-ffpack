@@ -100,6 +100,7 @@ namespace FFLAS {
     struct MMHelper<Field, AlgoTrait, ModeCategories::DefaultTag, ParSeqTrait>
     {
         typedef MMHelper<Field,AlgoTrait, ModeCategories::DefaultTag,ParSeqTrait> Self_t;
+        typedef ModeCategories::DefaultTag Mode_t;
         int recLevel ;
         ParSeqTrait parseq;
 
@@ -127,6 +128,7 @@ namespace FFLAS {
     struct MMHelper<Field, AlgoTrait, ModeCategories::ConvertTo<Dest>, ParSeqTrait>
     {
         typedef MMHelper<Field,AlgoTrait, ModeCategories::ConvertTo<Dest>,ParSeqTrait> Self_t;
+        typedef ModeCategories::ConvertTo<Dest> Mode_t;
         int recLevel ;
         ParSeqTrait parseq;
 
@@ -154,6 +156,7 @@ namespace FFLAS {
     typename ParSeqTrait>
     struct MMHelper {
         typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
+        typedef ModeTrait Mode_t;
         typedef typename associatedDelayedField<const Field>::type DelayedField_t;
         typedef typename associatedDelayedField<const Field>::field DelayedField;
         typedef typename DelayedField::Element DFElt;
@@ -360,15 +363,15 @@ namespace FFLAS {
 
 
     // to be used in the future, when Winograd's algorithm will be made generic wrt the ModeTrait
-    template <class Field, class AlgoT1, class AlgoT2, class Mode1, class Mode2, class ParSeqH>
-    typename std::enable_if<FFLAS::isDelayed<Mode1>::value && FFLAS::isDelayed<Mode2>::value, void>::type
-    copyOutBounds(const MMHelper<Field,AlgoT1,Mode1, ParSeqH> &Source,
-                  MMHelper<Field,AlgoT2,Mode2, ParSeqH> & Dest){
+    template <class MMH1, class MMH2>
+    typename std::enable_if<FFLAS::hasBounds<typename MMH1::Mode_t>::value && FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    copyOutBounds(const MMH1& Source, MMH2& Dest){
             Dest.Outmax = Source.Outmax;
             Dest.Outmin = Source.Outmin;
     }
     template <class MMH1,class MMH2>
-    void copyOutBounds(const MMH1 &Source, MMH2 & Dest){}
+    typename std::enable_if<!FFLAS::hasBounds<typename MMH1::Mode_t>::value && FFLAS::hasBounds<typename MMH2::Mode_t>::value, void>::type
+    copyOutBounds(const MMH1& Source, MMH2& Dest){}
 
     template <class Field, class AlgoT, class ParSeqH>
     void mergeOutBounds (const MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> &H1,

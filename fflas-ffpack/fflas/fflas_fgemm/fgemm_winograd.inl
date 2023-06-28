@@ -496,9 +496,6 @@ namespace FFLAS{
         ///
 
         // Then w >0
-        // typedef typename  MMHelper<Field, MMHelperAlgo::Winograd, ModeT>::DelayedField::Element DFElt;
-        // DFElt Cmin = H.Cmin;
-        // DFElt Cmax = H.Cmax;
 #ifdef OLD_DYNAMIC_PEELING
 
         BLAS3::WinoPar (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);

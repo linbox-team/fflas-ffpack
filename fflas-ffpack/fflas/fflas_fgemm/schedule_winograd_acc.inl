@@ -186,7 +186,7 @@ namespace FFLAS { namespace BLAS3 {
     // 3 temps and 21 ops
     // Specialization for Delayed or Lazy fields, requiring management of bounds
     template < class Field, class FieldTrait>
-    inline  typename std::enable_if<FFLAS::isDelayed<FieldTrait>::value, void>::type
+    inline  typename std::enable_if<FFLAS::hasBounds<FieldTrait>::value, void>::type
     WinogradAcc_3_21 (const Field& F,
                       const FFLAS_TRANSPOSE ta,
                       const FFLAS_TRANSPOSE tb,
@@ -393,7 +393,7 @@ namespace FFLAS { namespace BLAS3 {
     // 3 temps and 21 ops
     // Specialization other fields not requiring management of bounds
     template < class Field, class FieldTrait>
-    inline  typename std::enable_if<!FFLAS::isDelayed<FieldTrait>::value, void>::type
+    inline  typename std::enable_if<!FFLAS::hasBounds<FieldTrait>::value, void>::type
     WinogradAcc_3_21 (const Field& F,
                       const FFLAS_TRANSPOSE ta,
                       const FFLAS_TRANSPOSE tb,
