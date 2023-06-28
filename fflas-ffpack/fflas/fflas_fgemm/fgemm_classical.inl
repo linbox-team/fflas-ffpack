@@ -226,6 +226,7 @@ namespace FFLAS {
                         for (size_t l = 0; l < k; ++l)
                             F.axpyin (*(C+i*ldc+j), *(A+l*lda+i), *(B+j*ldb+l));
         fscalin(F,m,n,alpha,C,ldc);
+
     }
     template  < class Field>
     inline void fgemm (const Field& F,

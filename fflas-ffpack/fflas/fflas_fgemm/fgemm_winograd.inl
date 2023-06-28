@@ -197,7 +197,8 @@ namespace FFLAS { namespace Protected {
                      typename Field::ConstElement_ptr B, const size_t ldb,
                      const typename Field::Element beta,
                      typename Field::Element_ptr C, const size_t ldc,
-                     MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H )
+                     MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H,
+                     MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & Hsave)
                      // const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmin,
                      // const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmax)
     {
@@ -228,11 +229,11 @@ namespace FFLAS { namespace Protected {
 
         //Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
         copyAccumulator(H, Hacc);
-        
+
         Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
 
-        //HModd.Cmin = Cmin; HModd.Cmax = Cmax;
-        //HNodd.Cmin = Cmin; HNodd.Cmax = Cmax;
+        HModd.Cmin = Hsave.Cmin; HModd.Cmax = Hsave.Cmax;
+        HNodd.Cmin = Hsave.Cmin; HNodd.Cmax = Hsave.Cmax;
         // HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
         // HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
 
@@ -430,6 +431,8 @@ namespace FFLAS{
         size_t n2 = (n >> ww) << (ww-1) ;
         size_t k2 = (k >> ww) << (ww-1) ;
 
+        MMHelper<Field, MMHelperAlgo::Winograd, ModeT> Hsave (H);
+
         Protected::WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
         size_t mr = m -2*m2;
@@ -441,7 +444,7 @@ namespace FFLAS{
         FFLASFFPACK_check(k == k2*2+kr);
 
 //        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
-        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H); // Let's see if Cmin, Cmax in H are still valid
+        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Hsave); // Let's see if Cmin, Cmax in Hsave are still valid
 #endif
         return C;
     } // fgemm
@@ -530,6 +533,8 @@ namespace FFLAS{
         size_t n2 = (n >> ww) << (ww-1) ;
         size_t k2 = (k >> ww) << (ww-1) ;
 
+        MMHelper<Field, MMHelperAlgo::Winograd, ModeT> Hsave(H);
+
         BLAS3::WinoPar (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
         size_t mr = m -2*m2;
@@ -541,7 +546,7 @@ namespace FFLAS{
         FFLASFFPACK_check(k == k2*2+kr);
         MMHelper<Field, MMHelperAlgo::Winograd, ModeT> HC(H);
         //Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC, Cmin, Cmax);
-        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC);
+        Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC, Hsave);
 #endif
         return C;
     } // fgemm
