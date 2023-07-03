@@ -86,7 +86,6 @@ bool check_MM(const Field                   & F,
     ConstElement_ptr ail,blj;
     Element_ptr D  = fflas_new (F,m,n);
     fassign(F,m,n,Cd,n,D,n);
-
     for (size_t i = 0; i < m; ++i)
         for (size_t j = 0; j < n; ++j){
             F.mulin(*(D+i*n+j),beta);
@@ -244,8 +243,8 @@ bool launch_MM_dispatch(const Field &F,
         FFLAS_TRANSPOSE ta = FflasNoTrans ;
         FFLAS_TRANSPOSE tb = FflasNoTrans ;
         if (! par) {
-            if (random()%2) ta = FflasTrans ;
-            if (random()%2) tb = FflasTrans ;
+            // if (random()%2) ta = FflasTrans ;
+            // if (random()%2) tb = FflasTrans ;
         }
 
         if (mm<0)
@@ -314,21 +313,21 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
         //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->mOne,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+        // //std::cout << k << "/24" << std::endl; ++k;
 
         Element alpha,beta ;
         NZR.random(alpha);
@@ -338,10 +337,10 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
         //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters,nbw, par, R);
         //std::cout << k << "/24" << std::endl; ++k;
-        ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters,nbw, par, R);
+         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters,nbw, par, R);
         //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->zero,iters,nbw, par, R);
-        //std::cout << k << "/24" << std::endl; ++k;
+         //std::cout << k << "/24" << std::endl; ++k;
         ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->mOne,iters,nbw, par, R);
         //std::cout << k << "/24" << std::endl; ++k;
 
@@ -405,11 +404,12 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
         ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
 #endif
+
         ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<Modular<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
         ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
-
+        
         ok = ok && run_with_field<ModularExtended<double> >(q,b?b:45,m,n,k,nbw,iters, p, seed);
 
         ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);

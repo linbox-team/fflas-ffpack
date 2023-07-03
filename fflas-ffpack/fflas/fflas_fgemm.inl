@@ -158,9 +158,12 @@ namespace FFLAS{ namespace Protected{
         return false;
     }
 
-    //Probable bug here due to overflow of int64_t
+     //Probable bug here due to overflow of int64_t
+     // returns 0 if no reduction need to be applied
+     // 1 if Op1 (P5) only need to be reduced
+     // 2 if beta*Op2 need to be reduced (for e.g. ModularExtended
     template<class Field, class Element, class AlgoT, class ParSeqTrait>
-    inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
+    inline int NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
                                            Element& Op1min, Element& Op1max,
                                            Element& Op2min, Element& Op2max, Element beta,
                                            MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
@@ -168,27 +171,40 @@ namespace FFLAS{ namespace Protected{
         // Testing if P5 need to be reduced
         Outmin =  std::min(beta*Op2min,beta*Op2max);
         Outmax =  std::max(beta*Op2min,beta*Op2max);
-        if (Op1max > WH.MaxStorableValue-Outmax ||
-            -Op1min > WH.MaxStorableValue+Outmin){
+        // std::cerr<<Op2min<<" < Op2 < "<<Op2max<<std::endl;
+        // std::cerr<<Outmin<<" < Out < "<<Outmax<<" beta = "<<beta<<std::endl;
+        // std::cerr<<"NeedDouble: Op1max = "<< Op1max<<" >? "<< WH.MaxStorableValue <<" - "<<Outmax<<" ="<<WH.MaxStorableValue-Outmax<<std::endl;
+        // std::cerr<<"            -Op1min = "<< -Op1min<<" >? "<< WH.MaxStorableValue <<" + "<<Outmin<<" ="<<WH.MaxStorableValue+Outmin<<std::endl;
+        // std::cerr<<"OP1 = "<<Op1min<<" "<<Op1max<<std::endl;
+        if (Op1max > WH.MaxStorableValue-Outmax || -Op1min > WH.MaxStorableValue+Outmin){
             Outmin += WH.FieldMin;
             Outmax += WH.FieldMax;
-            return true;
+            return 1;
         } else{
             Outmin += Op1min;
             Outmax += Op1max;
-            return false;
+            return 0;
         }
     }
 
     template<class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
-    inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
+    inline int NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
                                            Element& Op1min, Element& Op1max,
                                            Element& Op2min, Element& Op2max, Element beta,
                                            MMHelper<Field, AlgoT, ModeT, ParSeqTrait>& WH)
     {
         Outmin = WH.FieldMin;
         Outmax = WH.FieldMax;
-        return false;
+        return 0;
+    }
+    template<class Element, class AlgoT, class ParSeqTrait>
+    inline int NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
+                                           Element& Op1min, Element& Op1max,
+                                           Element& Op2min, Element& Op2max, Element beta,
+                                          MMHelper<Givaro::ModularExtended<Element>, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH){
+            Outmin = WH.FieldMin;
+            Outmax = WH.FieldMax;
+            return 2;
     }
 
     template <class Field, class AlgoT, class ParSeqTrait>

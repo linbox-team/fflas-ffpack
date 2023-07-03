@@ -206,7 +206,6 @@ namespace FFLAS { namespace BLAS3 {
         const typename MMH_t::DelayedField & DF = WH.delayedField;
 
         FFLASFFPACK_check(!DF.isZero(beta));
-
         size_t lb, cb, la, ca;
         size_t x3rd = std::max(mr,kr);
         typename Field::ConstElement_ptr A11=A, A12, A21, A22;
@@ -222,7 +221,6 @@ namespace FFLAS { namespace BLAS3 {
         } else {
             DF.assign(betadf, beta);
         }
-
         size_t ldX3;
 
         if (ta == FflasTrans) {
@@ -272,21 +270,33 @@ namespace FFLAS { namespace BLAS3 {
                  WH.Bmax-WH.Bmin,
                  0, 0);
         fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H5);
-
-        DFElt C22Min, C22Max;
-        DFElt C12Min, C12Max;
+        
+        DFElt C22Min=0, C22Max=0;
+        DFElt C12Min=0, C12Max=0;
         // This test will be optimized out
-        if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
-            freduce(F,mr,nr,X1,nr);
-            H5.initOut();
+        switch (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
+        case 2:
+                freduce(F,mr,nr,X1,nr);
+                H5.initOut();
+                C22Min = C12Min; C22Max = C12Max;
+                // C22 = P5 + beta C22 in C22
+                fadd(F,mr,nr,X1,nr,beta,C22,ldc,C22,ldc);
+                
+                // C12 = P5 + beta C12 in C12
+                fadd(F,mr,nr,X1,nr,beta,C12,ldc,C12,ldc);
+                break;
+        case 1: 
+                freduce(F,mr,nr,X1,nr);
+                H5.initOut();
+        case 0:
+                C22Min = C12Min; C22Max = C12Max;
+                // C22 = P5 + beta C22 in C22
+                fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C22,ldc,(DFEptr)C22,ldc);
+                
+                // C12 = P5 + beta C12 in C12
+                fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
+                break;
         }
-        C22Min = C12Min; C22Max = C12Max;
-
-        // C22 = P5 + beta C22 in C22
-        fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C22,ldc,(DFEptr)C22,ldc);
-
-        // C12 = P5 + beta C12 in C12
-        fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
 
         // P1 = alpha . A11 * B11 in X1
         MMH_t H1(F, WH.recLevel-1,
