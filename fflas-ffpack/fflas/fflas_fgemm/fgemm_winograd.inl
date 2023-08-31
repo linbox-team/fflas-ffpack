@@ -328,7 +328,11 @@ namespace FFLAS { namespace Protected {
             else
 #endif
             {
+#ifdef WINO_MULADD
+                BLAS3::Winograd_muladd (F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,H);
+#else
                 BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,H);
+#endif
             }
 
         }

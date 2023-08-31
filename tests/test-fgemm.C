@@ -31,7 +31,7 @@
 // #define WINOTHRESHOLD 100
 // #define OLD_DYNAMIC_PEELING
 
-
+#define WINO_MULADD
 
 #define ENABLE_CHECKER_fgemm 1
 

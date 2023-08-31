@@ -46,7 +46,7 @@
 #include "libkomp.h"
 #endif
 
-
+#define WINO_MULADD
 using namespace std;
 using namespace FFLAS;
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     //  typedef Givaro::Modular<float> Field;
     //  typedef Givaro::ModularBalanced<float> Field;
     //  typedef Givaro::ModularBalanced<double> Field;
-    // typedef Givaro::ModularBalanced<int64_t> Field;
+    //  typedef Givaro::ModularBalanced<int64_t> Field;
     //  typedef Givaro::Modular<Givaro::Integer> Field;
     typedef Field::Element Element;
 
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
                 PAR_BLOCK
                 {
                     MMHelper<Field, MMHelperAlgo::WinogradPar,ModeTraits<Field>::value,ParSeqHelper::Parallel<> >  WH (F, nrec, ParSeqHelper::Parallel<>(t));
-                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+//                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
                 }
                 if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 
