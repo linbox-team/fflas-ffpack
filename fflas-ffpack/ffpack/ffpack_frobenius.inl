@@ -93,7 +93,6 @@ namespace FFPACK { namespace Protected {
         size_t *dK = FFLAS::fflas_new<size_t>(noc*degree);
         for (size_t i=0; i<noc; ++i)
             dK[i]=0;
-
 #ifdef __FFLASFFPACK_ARITHPROG_PROFILING
         Givaro::Timer timkrylov, timelim, timsimilar, timrest;
         timkrylov.start();
@@ -128,14 +127,15 @@ namespace FFPACK { namespace Protected {
         timelim.start();
 #endif
         size_t * Pk = FFLAS::fflas_new<size_t>(N);
-        size_t * Qk = FFLAS::fflas_new<size_t>(N);
-        for (size_t i=0; i<N; ++i)
+        size_t nrows = noc*degree;
+        size_t * Qk = FFLAS::fflas_new<size_t>(nrows);
+        for (size_t i=0; i<nrows; ++i)
             Qk[i] = 0;
         for (size_t i=0; i<N; ++i)
             Pk[i] = 0;
 
             // @todo: replace by PLUQ
-        size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk);
+        size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, noc*degree, N, K, ldk, Pk, Qk);
         size_t row_idx = 0;
         size_t ii=0;
         size_t dold = degree;
@@ -198,8 +198,9 @@ namespace FFPACK { namespace Protected {
         size_t Ma = Mk;
         size_t Ncurr = R;
         size_t offset = Ncurr-1;
-        for (size_t i=Mk-1; i>=nb_full_blocks+1;  --i){
-            if (dK[i] >= 1){
+        for (size_t ip1=Mk; ip1 > nb_full_blocks;  --ip1){
+                size_t i = ip1-1;
+                if (dK[i] >= 1){
                 for (size_t j = offset+1; j<R; ++j)
                     if (!F.isZero(*(K4 + i*ldk + j))){
                         //std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
@@ -286,7 +287,6 @@ namespace FFPACK { namespace Protected {
         ldb = Ma;
         Nb = Ncurr;
         B = FFLAS::fflas_new (F, Ncurr, ldb);
-
         for (size_t j=0; j<Ma; ++j)
             FFLAS::fassign(F, Ncurr, K4+j*ldk, 1, B+j, ldb);
         FFLAS::fflas_delete (dA, dK, K4);
@@ -299,7 +299,7 @@ namespace FFPACK { namespace Protected {
                const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
                const size_t degree)
     {
-
+        if (!N) return frobeniusForm;
         typedef typename PolRing::Domain_t Field;
         typedef typename PolRing::Element Polynomial;
         const Field& F = PR.getdomain();
