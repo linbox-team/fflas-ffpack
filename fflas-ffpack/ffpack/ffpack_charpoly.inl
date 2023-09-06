@@ -65,9 +65,9 @@ namespace FFPACK {
 
         FFPACK_CHARPOLY_TAG tag = CharpTag;
         if (tag == FfpackAuto){
-            if (N < degree)
+            if (N < __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD)
                 tag = FfpackDanilevski;
-            else if (N < degree)
+            else if (N < __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD)
                 tag = FfpackLUK;
             else
                 tag = FfpackArithProgKrylovPrecond;
@@ -110,7 +110,7 @@ namespace FFPACK {
                         else
                             return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
                     }
-                                   } while (cont);
+                } while (cont);
                 return charp;
             }
             case FfpackArithProg:
