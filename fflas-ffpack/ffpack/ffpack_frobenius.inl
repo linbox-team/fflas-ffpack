@@ -164,7 +164,6 @@ namespace FFPACK { namespace Protected {
         std::cerr <<"  LU (Krylov)              : "<<timelim.usertime()<<std::endl;
         timsimilar.start();
 #endif
-
         // Selection of the last iterate of each block
 
         typename Field::Element_ptr K3 = FFLAS::fflas_new (F, Mk, N);
@@ -198,7 +197,11 @@ namespace FFPACK { namespace Protected {
         size_t Ma = Mk;
         size_t Ncurr = R;
         size_t offset = Ncurr-1;
-        for (size_t ip1=Mk; ip1 > nb_full_blocks;  --ip1){
+        // How many non-full blocks are completed :
+        //  - if no full_blocks: all of them
+        //  - if there is at least one full block, then the first non-full will be further eliminated later on and should not be pushed as completed
+        size_t last_completed = nb_full_blocks + nb_full_blocks?1:0;
+        for (size_t ip1=Mk; ip1 > last_completed;  --ip1){
                 size_t i = ip1-1;
                 if (dK[i] >= 1){
                 for (size_t j = offset+1; j<R; ++j)
