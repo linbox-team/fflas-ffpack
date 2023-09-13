@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
             }
             else{
 
-                MMHelper<Field,MMHelperAlgo::Winograd>//,
+              MMHelper<Field,MMHelperAlgo::Winograd>//,
                 //typename FieldTraits<Field>::value,
                 //ParSeqHelper::Sequential>
                 WH (F, nbw, ParSeqHelper::Sequential());
