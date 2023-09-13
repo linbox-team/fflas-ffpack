@@ -141,6 +141,14 @@ namespace FFPACK {
 
         // can force to reduce integer entries larger than M
         void precompute_cst(size_t K=0){
+
+          // Check that _pbits satisfies log(_M)/16* 2^(_pbits) * 2^16 < 2^53 (Required for correctness)
+          // => pbits <= 41 - loglog(_M)
+          if ( _pbits > 41 - log(double(_M.bitsize()))/log(2.)){
+            std::cout<<"FFLAS Error in rns_double: primes bitsize is too large ... aborting\n";
+            std::terminate();
+          }
+
             if (K!=0)
                 _ldm=K;
             else
