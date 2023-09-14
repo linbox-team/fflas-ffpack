@@ -80,7 +80,7 @@ void run_bench(size_t n, size_t primes_bits, size_t b, size_t iters, size_t seed
 	size_t bits=b;
 	int logb= log((double)n)/log(2.0);
 
-	size_t fflas_primes_bits       = (primes_bits ? primes_bits : std::min(25,41-logb));
+	size_t fflas_primes_bits       = (primes_bits ? primes_bits : 41-logb);
 	size_t fflas_primes_bits_ext   = 2* fflas_primes_bits;
 	// std::cout<<"FFLAS     primes_bitsize= "<<fflas_primes_bits<<std::endl;
 	// std::cout<<"FFLAS EXT primes_bitsize= "<<fflas_primes_bits_ext<<std::endl;
@@ -256,23 +256,22 @@ void run_bench(size_t n, size_t primes_bits, size_t b, size_t iters, size_t seed
 	    <<setw(SPC1)
 	    <<n<<" |"
 	    <<setw(SPC1)
-	    <<bits<<" |"
-	    <<setw(SPC1+5)
-	    <<fflas_primes_bits<<" |";
+	    <<bits<<" |";
+	   
 
 	//#define TIMING(x,y,z) cout<<setw(SPC2)<<std::fixed << std::setprecision(PREC)<<(x+y+z)/loop<<setw(SPC3)<<"("+to_string(x/loop)+","+to_string(y/loop)+","+to_string(z/loop)+")"<<" |";
 
-#define TIMING(x,y,z) cout<<std::fixed << std::setprecision(PREC) \
+#define TIMING(b,x,y,z) cout<<setw(SPC1)<<b<<std::fixed << std::setprecision(PREC) \
 			  <<setw(SPC3/3)<<((x/loop)*1000000.)\
 			  <<setw(SPC3/3)<<((y/loop)*(1000000./(n*n)))\
 			  <<setw(SPC3/3)<<((z/loop)*(1000000./(n*n)))<<" |";
 
 
 
-	TIMING(timeFFLASPrecomp,timeFFLASFromRNS,timeFFLASToRNS);
-	TIMING(timeFFLASPrecomp_ext,timeFFLASFromRNS_ext,timeFFLASToRNS_ext);
+	TIMING(fflas_primes_bits, timeFFLASPrecomp,timeFFLASFromRNS,timeFFLASToRNS);
+	TIMING(fflas_primes_bits_ext, timeFFLASPrecomp_ext,timeFFLASFromRNS_ext,timeFFLASToRNS_ext);
 #ifdef BECNH_FLINT
-	TIMING(timeFlintPrecomp,timeFlintFromRNS,timeFlintToRNS);
+	TIMING(flint_primes_bits,timeFlintPrecomp,timeFlintFromRNS,timeFlintToRNS);
 #endif
 	cout<<endl;
 }
@@ -303,7 +302,7 @@ int main(int argc, char** argv){
 
 
 	typedef Givaro::Modular<Givaro::Integer> Field;
-
+	
 	cout<<"### running RNS conversions benchmark ###"<<endl;
 	if (matmul)
 		cout<<"### matrix multiplication parameters are applied: rns bitsize is  (log n + 2 bitsize)"<<endl; 
@@ -312,11 +311,10 @@ int main(int argc, char** argv){
 	    <<setw(SPC1)<<"loop"<<" |"
 	    <<setw(SPC1)<<"matrix dim"<<" |"
 	    <<setw(SPC1)<<"bitsize"<<" |"
-	    <<setw(SPC1+5)<<"log2(prime)"<<" |"	
-	    <<setw(SPC3)<<"FFLAS (precomp, from, to )"<<" |"
-	    <<setw(SPC3)<<"FFLAS_EXT TO (precomp, from, to)"<<" |"
+	    <<setw(SPC3+SPC1)<<"FFLAS (log2(mi), precomp, from, to )"<<" |"
+	    <<setw(SPC3+SPC1)<<"FFLAS_EXT (log2(mi), precomp, from, to)"<<" |"
 #ifdef BECNH_FLINT
-	    <<setw(SPC3)<<"FLINT "<<" |"
+	    <<setw(SPC3)<<"FLINT (log2(mi), precomp, from, to)"<<" |"
 #endif
 	    <<endl;
 

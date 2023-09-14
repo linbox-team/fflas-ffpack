@@ -844,9 +844,8 @@ namespace FFPACK {
 #endif
 		Givaro::Timer tsplit;tsplit.start();
 		size_t mn=m*n;
-		double *Arns_tmp = FFLAS::fflas_new<double >(mn*_size*2),accTmp;
+		double *Arns_tmp = FFLAS::fflas_new<double >(mn*_size*2);
 		double* Arns_tmp2= Arns_tmp+mn;
-		double mask=double((1<<_shift)+1), scaling=1./double(1<<_shift);;
 		for (size_t i=0;i<_size;i++)
 		  for (size_t j=0;j<mn;j++){
 		    uint64_t acci= (uint64_t)Arns[i*rda+j];;

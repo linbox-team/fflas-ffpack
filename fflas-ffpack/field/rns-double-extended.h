@@ -348,22 +348,14 @@ namespace FFPACK {
         t2+=chrono.usertime();
         chrono.start();
 #endif
-        double beta=double(1<<16), mask=double(_shift+1);
-        double  acc=1,accTmp1,accTmp2;
+        double beta=double(1<<16);
+        double  acc=1;
 
         for(size_t j=0;j<_ldm;j++){
-          // split acc using Verkampt split
-          // accTmp1=acc*mask;
-          // accTmp1=accTmp1 -(accTmp1-acc);
-          // accTmp2=acc-accTmp1;
-          // _crt_in[j+i*_ldm]=(accTmp1<mask?accTmp1:accTmp2);
-          // _crt_in[j+(i+_size)*_ldm]=(accTmp1<mask?accTmp2:accTmp1);
           uint64_t acci= (uint64_t)acc;
           _crt_in[j+i*_ldm]=acci  & ((1<<_shift)-1);
           _crt_in[j+(i+_size)*_ldm]=(acci >> _shift);
-					 
           _field_rns[i].mulin(acc,beta);					
-          //std::cout<<"RNS precomp ("<<i<<") -> "<< (int64_t)_crt_in[j+i*_ldm]<<"  "<< (int64_t)_crt_in[j+(i+_size)*_ldm]<<std::endl;
 
         }
 #ifdef BENCH_RNS_PRECOMP
