@@ -858,13 +858,10 @@ namespace FFPACK {
 		Givaro::ModularExtended<double> ZZ(2UL<<48);;
 		std::cout<<"Arns:=";
     FFLAS::WriteMatrix(std::cout, ZZ, _size, mn, Arns, mn);
-    //write_field(ZZ,std::cout,Arns, _size, mn,mn,true);
 		std::cout<<"Arns1:=";
     FFLAS::WriteMatrix(std::cout, ZZ, _size, mn, Arns_tmp, 2*mn);
-    //write_field(ZZ,std::cout,Arns_tmp, _size, mn,2*mn,true);
 		std::cout<<"Arns2:=";
     FFLAS::WriteMatrix(std::cout, ZZ, _size, mn, Arns_tmp2, 2*mn);
-    //write_field(ZZ,std::cout,Arns_tmp2, _size, mn,2*mn,true);
 #endif
 		
 		integer hM= (_M-1)>>1;
@@ -881,8 +878,6 @@ namespace FFPACK {
       // compute A_beta = Ap^T x M_beta
 			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans,(int) mn*2,(int) _ldm,(int) _size, 1.0 , Arns_tmp,(int) mn*2, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm,
                    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
-    //				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads >());
-		
 		else // compute A_beta = Ap x M_Beta
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn*2, (int)_ldm, (int)_size, 1.0 , Arns_tmp, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
