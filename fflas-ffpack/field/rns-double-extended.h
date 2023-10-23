@@ -145,8 +145,6 @@ namespace FFPACK {
         std::terminate();
       }
 
-
-
 			_ldm = (_M.bitsize()/48) + ((_M.bitsize()%48)?1:0) ;
 			_invbasis.resize(_size);
 			_basisMax.resize(_size);
@@ -339,9 +337,14 @@ namespace FFPACK {
 				chrono.start();
 #endif 
 				size_t l=0;
-				for(;l<maxs;l++)
-					_crt_out[l+i*_ldm]=m0_ptr[l];
-				for(;l<_ldm;l++)
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
+        for(;l<maxs;l++)
+          _crt_out[l+i*_ldm]=m0_ptr[l];
+#else
+        for(;l<maxs;l++)
+          _crt_out[l+i*_ldm]=m0_ptr[l ^ ((sizeof(mp_limb_t)/2U) - 1U)];
+#endif
+        for(;l<_ldm;l++)
 					_crt_out[l+i*_ldm]=0.;;
 #ifdef BENCH_RNS_PRECOMP
 				chrono.stop();
@@ -381,21 +384,38 @@ namespace FFPACK {
 #endif			
 		}
 
-		// Arns must be an array of m*n*_size
-		// abs(||A||) <= maxA
-		template<typename T>
-		void init(size_t m, size_t n, double* Arns, size_t rda, const T* A, size_t lda, const integer& maxA, bool RNS_MAJOR=false) const
-		{
-			init(m,n,Arns,rda,A,lda, maxA.bitsize()/16 + (maxA.bitsize()%16?1:0),RNS_MAJOR);
-		}
+    // Arns must be an array of m*n*_size
+    // abs(||A||) <= maxA    
 
-		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
-		// void init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
-		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
-		// void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
+
+
+    void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false, const FFLAS::FFLAS_TRANSPOSE ta=FFLAS::FflasNoTrans) const;
+    void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false, const FFLAS::FFLAS_TRANSPOSE ta=FFLAS::FflasNoTrans) const;
+    void convert_bis(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false, const FFLAS::FFLAS_TRANSPOSE ta=FFLAS::FflasNoTrans) const;
+
+    // Arns must be an array of m*n*_size with  abs(||A||) <= maxA    
+    void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, const integer& maxA, bool RNS_MAJOR=false) const{
+      init(m,n,Arns,rda,A,lda, maxA.bitsize()/16 + (maxA.bitsize()%16?1:0),RNS_MAJOR, FFLAS::FflasNoTrans);
+    }
+    void init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, const integer& maxA, bool RNS_MAJOR=false) const{
+      init(m,n,Arns,rda,A,lda, maxA.bitsize()/16 + (maxA.bitsize()%16?1:0),RNS_MAJOR, FFLAS::FflasTrans);
+    }
+    void init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const{
+      init(m,n,Arns,rda,A,lda,k,RNS_MAJOR, FFLAS::FflasTrans);
+    }
+    void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const {
+      convert(m,n,gamma,A,lda,Arns,rda,RNS_MAJOR,FFLAS::FflasTrans);
+    }
+
+
 
     // reduce entries of Arns to be less than the rns basis elements
     void reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR=false) const;
+
+    template<size_t K>
+    void init(size_t m, size_t n, double* Arns, size_t rda, const RecInt::ruint<K>* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
+    template<size_t K>
+    void convert(size_t m, size_t n, integer gamma, RecInt::ruint<K>* A, size_t lda, const double* Arns, size_t rda, integer p=0,bool RNS_MAJOR=false) const;
     
 	};
 

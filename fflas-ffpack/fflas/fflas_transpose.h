@@ -291,7 +291,7 @@ namespace FFLAS {
         }
     }
 
-    /**************************************************************************/
+  /**************************************************************************/
     /*
      * Perfom transposition on the matrix A and store the result in matrix B.
      *      B[j,i] = A[i,j]     for 0 <= i < m, 0 <= j < n

@@ -117,7 +117,7 @@ namespace FFLAS {
         typename Field::ConstElement_ptr Yi = Y ;
         for (; Xi < X+n*incX; Xi+=incX, Yi += incY )
             F.convert( *Xi , *Yi);
-    }
+    } 
 
     /** fnegin
      * \f$x \gets - x\f$.

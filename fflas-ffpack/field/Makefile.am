@@ -27,6 +27,7 @@ pkgincludesubdir=$(pkgincludedir)/field
 RNS=rns.h			        \
 	rns.inl				\
 	rns-double.h			\
+	rns-common.h\
 rns-double-extended.h			\
 	rns-double-elt.h		\
 	rns-double.inl			\

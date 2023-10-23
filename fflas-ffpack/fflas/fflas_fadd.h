@@ -64,6 +64,7 @@ namespace FFLAS {
           typename Field::ConstElement_ptr B, const size_t incb,
           typename Field::Element_ptr C, const size_t incc)
     {
+
         details::fadd<Field, true>(F,N,A,inca,B,incb,C,incc
                                    , typename FieldTraits<Field>::category() );
     }

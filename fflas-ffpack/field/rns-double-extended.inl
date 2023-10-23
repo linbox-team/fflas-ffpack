@@ -730,105 +730,199 @@ namespace FFPACK {
   }
 
 
-  inline void rns_double_extended_V2::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
+  inline void rns_double_extended_V2::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR, const FFLAS::FFLAS_TRANSPOSE trans) const
   {
     if (k>_ldm){
-      FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
-      std::cerr<<"k="<<k<<" _ldm="<<_ldm<<std::endl;
+      FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_double_extended [init] -> rns basis is too small to handle integers with 2^(16*k) values ");
+      std::cerr<<"with k="<<k<<" _ldm="<<_ldm<<std::endl;
     }
-    size_t mn=m*n;
-    double *A_beta = FFLAS::fflas_new<double >(mn*k);
-    double *Arns_tmp = FFLAS::fflas_new<double >(mn*_size*2);
-    const integer* Aiter=A;
-    // split A into A_beta according to a Kronecker transform in base 2^16
-    //		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
-    
-#ifdef BENCH_RNS
-    if (m!=1 && n!=1){
-      std::cerr<<"RNS EXTENDED double (To) --> rns size ("<<_size<<") kronecker size ("<<k<<") data dim ("<<m*n<<")"<<std::endl;
-      std::cerr<<"RNS EXTENDED double  -> Numbit(M)="<<_M.bitsize()<<std::endl;
-    }
-#endif    
-    Givaro::Timer tkr; tkr.start();
-    PARFOR1D(i,m,SPLITTER(NUM_THREADS),
-             for(size_t j=0;j<n;j++){
-               size_t idx=j+i*n;
-               const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
-               const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
-               size_t l=0;
-               //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
-               size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+    const size_t mn=m*n;
+    Givaro::ZRing<double> ZD;
 
-               if (m0[0]->_mp_size >= 0)
-                 for (;l<maxs;l++)
-                   A_beta[l+idx*k]=  m0_ptr[l];
-               else
-                 for (;l<maxs;l++)
-                   A_beta[l+idx*k]= - double(m0_ptr[l]);
-               for (;l<k;l++)
-                 A_beta[l+idx*k]=  0.;
+    if (mn) {
+      // split A into A_beta according to a Kronecker transform in base 2^16
+      double *A_beta = FFLAS::fflas_new<double >(mn*k);
+      RNS_COMMON::Kronecker_base16(trans,m,n,A_beta,A,lda,k);
 
-               // 	   );
-             }
-             );
+      // Using Helper for potential parallelism -> need to be activated by hand
+      //using ParallelStrategy= FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>;
+      using ParallelStrategy= FFLAS::ParSeqHelper::Sequential;
+      FFLAS::MMHelper<Givaro::ZRing<double>, FFLAS::MMHelperAlgo::Winograd>  MatMulHelper (ZD, -1, ParallelStrategy());
 
-    tkr.stop();
-#ifdef BENCH_RNS
-    if (m!=1 && n!=1)
-      std::cerr<<"RNS EXTENDED double (To) - Kronecker : "<<tkr.usertime()<<std::endl;
+      // Pseudo reduction of the matrix entries
+      double *Arns_tmp = FFLAS::fflas_new<double >(mn*_size*2); 
+      if (RNS_MAJOR==false) // Arns = _crt_in x A_beta^T        
+        FFLAS::fgemm (ZD, FFLAS::FflasNoTrans,FFLAS::FflasTrans,2*_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns_tmp,mn,MatMulHelper);
+      else // Arns =  A_beta x _crt_in^T
+        FFLAS::fgemm (ZD, FFLAS::FflasNoTrans,FFLAS::FflasTrans,mn,2*_size,k,1.0,A_beta, k, _crt_in.data(),_ldm,0.,Arns_tmp,2*_size,MatMulHelper);
+
+
+      // Reduce the pseudo reduce matrix modulo RNS basis
+      // reduce(mn,Arns,rda,RNS_MAJOR);
+      /*
+        NEED TO MODIFY THE CODE FOR TAKING INTO ACCOUNT RNS MAJOR MODE       
+       */
+      size_t inc            = (RNS_MAJOR) ? 2*_size : 1;
+      size_t inc_input      = (RNS_MAJOR) ? _size : 1;
+      size_t real_rda       = (RNS_MAJOR) ? 1 : mn;
+      double *Arns_tmp_high = (RNS_MAJOR) ? Arns_tmp+_size: Arns_tmp+ mn*_size;
+
+
+      // Givaro::ZRing<int64_t> ZZ;
+      // int64_t * ArnsConverted = new int64_t[2*mn*_size];
+
+     
+
+      // std::cout<<"basis=[";
+      // for(size_t i=0;i<_size-1;i++)
+      //   std::cout<<(int64_t)_basis[i]<<",";
+      // std::cout<<(int64_t)_basis[_size-1]<<"]\n";
+
+      // std::cout<<"shift="<<uint64_t(1<<_shift)<<std::endl;
+
+      // FFLAS::fconvert(Givaro::ZRing<double>(),2*_size*m*n,ArnsConverted,1,Arns_tmp,1);
+      // FFLAS::WriteMatrix(std::cout<<"AA=",ZZ,m*n,2*_size, ArnsConverted, 2*_size,FFLAS::FflasSageMath)<<std::endl;
+
+
+
+      //FFLAS::fadd(_field_rns[i],mn,Arns_tmp+i*real_rda,inc,Arns_tmp+(_size+i)*real_rda,inc, Arns+i*real_rda,inc); //  -> scaling by 2^shift allow a proper modular reduction
+
+
+
+      for(size_t i=0;i<_size;i++){
+        // PG: it seems that the fscalin is buggy when called below -> use fscal + faddin instead of fscalin + fadd
+        //FFLAS::fscalin (_field_rns[i],mn, double(1<<_shift), Arns_tmp_high+i*real_rda, inc);
+        //FFLAS::fadd(_field_rns[i],mn,Arns_tmp+i*real_rda,inc, Arns_tmp_high+i*real_rda,inc, Arns+i*real_rda,inc_input);
+
+        FFLAS::fscal (_field_rns[i],mn, double(1<<_shift), Arns_tmp_high+i*real_rda, inc, Arns+i*real_rda, inc_input); // This two lines cannot be replaced with an axpy
+        FFLAS::faddin(_field_rns[i],mn, Arns_tmp+i*real_rda,inc, Arns+i*real_rda,inc_input);
+
+        // FFLAS::fconvert(Givaro::ZRing<double>(),_size*m*n,ArnsConverted,1,Arns,1);
+        // FFLAS::WriteMatrix(std::cout<<"AA"<<i<<"=",ZZ,m*n,_size, ArnsConverted, _size,FFLAS::FflasSageMath)<<std::endl;
+
+
+
+
+        FFLAS::finit (_field_rns[i],mn, Arns+i*real_rda,inc_input, Arns+i*real_rda,inc_input); //  needed to remove negative entry (i.e. kronecker keeps negative value)
+
+        //FFLAS::freduce (_field_rns[i],mn, Arns+i*real_rda,inc); // not needed this is already handled within the fscalin
+      }
+
+
+      // FFLAS::fconvert(Givaro::ZRing<double>(),_size*m*n,ArnsConverted,1,Arns,1);
+      // FFLAS::WriteMatrix(std::cout<<"A=",ZZ,m*n,_size, ArnsConverted, _size,FFLAS::FflasSageMath)<<std::endl;
+      // delete[] ArnsConverted;
+
+
+
+#ifdef CHECK_RNS // check the result
+      RNS_COMMON::check_integers_to_rns(trans, m, n, Arns, rda, A, lda, _basis, RNS_MAJOR);
 #endif
-    if (RNS_MAJOR==false) {
-      // Arns_tmp = _crt_in x A_beta^T
-      Givaro::Timer tfgemm; tfgemm.start();
-      FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,2*_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns_tmp,mn,
-                    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-      tfgemm.stop();
-#ifdef BENCH_RNS
-      if(m>1 && n>1) 	std::cerr<<"RNS EXTENDED double (To) - fgemm : "<<tfgemm.usertime()<<std::endl;
-#endif
-    }
-    else {
-      // Arns =  A_beta x _crt_in^T
-      cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size*2,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns_tmp,(int)_size*2);
-    }
-    Givaro::Timer tred; tred.start();
-    for(size_t i=0;i<_size;i++){
-      FFLAS::fscalin (_field_rns[i],mn, double(1<<_shift), Arns_tmp+(i+_size)*mn,1);
-      FFLAS::fadd(_field_rns[i],mn,Arns_tmp+(i)*mn,1,Arns_tmp+(_size+i)*mn,1, Arns+i*rda,1);
-      FFLAS::freduce (_field_rns[i],mn, Arns+i*rda,1);
-    }
-    tred.stop();
-#ifdef BENCH_RNS
-    if(m>1 && n>1) 			std::cerr<<"RNS EXTENDED double (To) - Reduce : "<<tred.usertime()<<std::endl;
-#endif
-    FFLAS::fflas_delete( A_beta);
-    FFLAS::fflas_delete( Arns_tmp);
 
+      FFLAS::fflas_delete(A_beta);
+      FFLAS::fflas_delete(Arns_tmp);
+    }
+  }
+
+  inline void rns_double_extended_V2::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
+                                              const double* Arns, size_t rda, bool RNS_MAJOR, const FFLAS::FFLAS_TRANSPOSE trans) const
+  {
+    const size_t  mn= m*n, mn2=2*mn;
+    uint64_t _mask= ((1<<_shift)-1);
+    Givaro::ZRing<double> ZD;
+    Givaro::ZRing<Givaro::Integer> ZZ;
+    if (mn) {
 #ifdef CHECK_RNS
-    bool ok=true;
-    for (size_t i=0;i<m;i++)
-      for(size_t j=0;j<n;j++)
-        for(size_t k=0;k<_size;k++){
-          ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
-          if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
-              != (int64_t) Arns[i*n+j+k*rda])
-            {
-              std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
-                       <<" != "
-                       <<(int64_t) Arns[i*n+j+k*rda]
-                       << "    -> "<<A[i*lda+j]
-                       <<std::endl;
-            }
-        }
-    std::cout<<"RNS EXTENDED double (To) ... "<<(ok?"OK":"ERROR")<<std::endl;
+      integer* Acopy=new integer[m*n];
+      FFLAS::fassign(ZZ,m,n,Acopy,n,A,lda);
 #endif
+      double *A_beta   = FFLAS::fflas_new<double>(mn2*_ldm);
+
+      // Split Arns into two matrix (lower half bit and upper half bit)
+      double *Arns_low = FFLAS::fflas_new<double >(mn2*_size);
+   
+      // Using Helper for potential parallelism -> need to be activated by hand
+      //using ParallelStrategy= FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>;
+      using ParallelStrategy= FFLAS::ParSeqHelper::Sequential;
+      FFLAS::MMHelper<Givaro::ZRing<double>, FFLAS::MMHelperAlgo::Winograd>  MatMulHelper (ZD, -1, ParallelStrategy());
+
+      if (RNS_MAJOR==false) {// compute A_beta = Arns^T x M_beta
+        double* Arns_high = Arns_low+mn;
+        for (size_t i=0;i<_size;i++)
+          for (size_t j=0;j<mn;j++){
+            int64_t acci= (int64_t)Arns[i*mn+j];
+            Arns_low [i*mn2+j] = acci  &  _mask;
+            Arns_high[i*mn2+j] = (acci >> _shift);
+          }
+        FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans, mn2, _ldm, _size, 1.0 , Arns_low, mn2, _crt_out.data(), _ldm, 0., A_beta,_ldm, MatMulHelper);
+      }
+      else { // compute A_beta = Arns x M_Beta
+        double* Arns_high = Arns_low+mn*_size;
+        for (size_t i=0;i<mn;i++)
+          for (size_t j=0;j<_size;j++){
+            uint64_t acci= (uint64_t)Arns[i*_size+j];;
+            Arns_low [i*_size+j] = acci  &  _mask;
+            Arns_high[i*_size+j] = (acci >> _shift);
+          }
+        FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mn2, _ldm, _size, 1.0 , Arns_low, _size, _crt_out.data(), _ldm, 0., A_beta, _ldm, MatMulHelper);
+      }
+
+      // std::cout<<"****\n RNS partial reconstruction:\n";
+      // std::cout<<"shift="<<_shift<<"\n";
+      // Givaro::ZRing<int64_t> ZZ;
+      // int64_t * ArnsInt = new int64_t[mn2*_size];
+      // FFLAS::fconvert(Givaro::ZRing<double>(),_size,mn2,ArnsInt,mn2,Arns_low,mn2 );
+      // std::cout<<"Arns=";
+      // FFLAS::WriteMatrix(std::cout,ZZ,_size, mn2, ArnsInt, mn2,FFLAS::FflasSageMath)<<std::endl;
+      // std::cout<<"M=";
+      // FFLAS::WriteMatrix(std::cout,Givaro::ZRing<double>(), _size,_ldm,_crt_out.data(), _ldm,FFLAS::FflasSageMath)<<std::endl;
+
+
+      // int64_t * AbetaInt = new int64_t[mn2*_ldm];
+      // FFLAS::fconvert(Givaro::ZRing<double>(),mn2,_ldm,AbetaInt,_ldm,A_beta,_ldm );
+
+      // FFLAS::WriteMatrix(std::cout,Givaro::ZRing<int64_t>(), mn2,_ldm, AbetaInt, _ldm)<<std::endl;//FFLAS::FflasSageMath)<<std::endl;
+
+      // std::cout<<"******\n";
+
+
+      // inverse kronecker of the higher bit part
+      RNS_COMMON::inverse_Kronecker_base16(trans,m,n,A_beta+mn*_ldm ,A,lda,_ldm, _M, gamma,  (1LL<<_shift));
+      //FFLAS::WriteMatrix(std::cout,Givaro::ZRing<Givaro::Integer>(),m, n, A, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl;
+
+      // inverse kronecker of the lower bit part
+      RNS_COMMON::inverse_Kronecker_base16(trans,m,n,A_beta         ,A,lda,_ldm, _M, 1);
+
+      //FFLAS::WriteMatrix(std::cout,Givaro::ZRing<Givaro::Integer>(),m, n, A, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl;
+
+
+      FFLAS::fflas_delete(A_beta);
+      FFLAS::fflas_delete(Arns_low);
+#ifdef CHECK_RNS
+      RNS_COMMON::check_rns_to_integers(trans, m, n, Arns, rda, A, lda, gamma, Acopy, n, _basis, RNS_MAJOR);
+      FFLAS::fflas_delete(Acopy);
+#endif
+
+
+
+// #ifdef CHECK_RNS
+//       bool ok=true;
+//       for (size_t i=0;i<m;i++)
+//         for(size_t j=0;j<n;j++)
+//           for(size_t k=0;k<_size;k++){
+//             int64_t _p =(int64_t) _basis[k];
+//             integer curr=A[i*lda+j] - gamma*Acopy[i*n+j];
+//             ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+//           }
+//       std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
+// #endif
+    }
+  
   }
 
 
-
-
-  inline void rns_double_extended_V2::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
-                                              const double* Arns, size_t rda, bool RNS_MAJOR) const
+  inline void rns_double_extended_V2::convert_bis(size_t m, size_t n, integer gamma, integer* A, size_t lda,
+                                              const double* Arns, size_t rda, bool RNS_MAJOR, const FFLAS::FFLAS_TRANSPOSE trans) const
 	{
 #ifdef BENCH_RNS
 	  if (m!=1 && n!=1)
@@ -853,7 +947,7 @@ namespace FFPACK {
         Arns_tmp2[i*2*mn+j] = (acci >> _shift);
 		  }
 		
-		
+    
 #ifdef RNS_DEBUG
 		Givaro::ModularExtended<double> ZZ(2UL<<48);;
 		std::cout<<"Arns:=";
@@ -889,7 +983,7 @@ namespace FFPACK {
 #endif
 
 
-#ifdef BENCH_RNS			
+#ifdef BENCH_RNS
 		if(m>1 && n>1) std::cerr<<"RNS EXTENDED double (From) - fgemm : "<<tfgemmc.usertime()<<std::endl;
 #endif
     // compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
@@ -951,7 +1045,7 @@ namespace FFPACK {
 				std::cout<<"res1:="<<res<<";\n";
 				std::cout<<"res2:="<<res2<<";\n";
 #endif
-          res+=(res2<<_shift);				
+        res+=(res2<<_shift);
 				res%=_M;
 				
 				// get the correct result according to the expected sign of A

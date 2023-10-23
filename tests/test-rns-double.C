@@ -31,6 +31,7 @@
  
 #define __FFLASFFPACK_SEQUENTIAL
 
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 
@@ -42,12 +43,13 @@
 using namespace std; 
 
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-double-extended.h"
 #include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/utils/args-parser.h"
-#include "givaro/givinteger.h"
+#include "givaro/givinteger.h" 
 #include "givaro/modular-integer.h"
 #include "givaro/zring.h"
 #include <givaro/givrns.h>
@@ -67,52 +69,142 @@ bool run_check(size_t n, size_t primes_bits, size_t b, size_t iters, size_t seed
 	Givaro::Integer p;
 
 	size_t bits=b;
+  bool ok=true;
 
   std::cout<<"Checking "; print_rns<RNS_t>();
-  std::cout<<" int bits="<<std::left<<std::setw(10)<<bits<<" mi bits="<<std::left<<std::setw(10)<<primes_bits;
-  std::cout<<" ... ";
+  std::cout<<" int bits="<<std::left<<std::setw(10)<<bits<<" mi bits="<<std::left<<std::setw(10)<<primes_bits<<std::endl;
+  Givaro::ZRing<Givaro::Integer> ZZ;
+  Givaro::ZRing<double> ZD;
+
+#define SPC  20
 
 	for (size_t loop=0;(loop<iters);loop++){
     using Field =  Givaro::Modular<Givaro::Integer>;
+    Givaro::Integer::seeding(seed);
 		Givaro::Integer::random_exact_2exp(p, bits);
+
     Field F(p);
-		Field::RandIter Rand(F,0,(uint64_t)seed);
-		Field::Element_ptr A, Acopy;
+		Field::RandIter Rand(F,seed);
+		Field::Element_ptr A,At,B;
 		A     = FFLAS::fflas_new(F,n,n);
-    Acopy = FFLAS::fflas_new(F,n,n);
+    At    = FFLAS::fflas_new(F,n,n);
+    B     = FFLAS::fflas_new(F,n,n);
+
 		FFLAS::frand(F,Rand,n,n,A,n);
-    FFLAS::fassign(F,n,n,Acopy,n,A,n);
+    Givaro::Integer shift= (p-1)/2;
+    for(size_t i=0;i<n*n;i++)
+      A[i]-=shift;
+
+
+    FFLAS::ftranspose(F,n,n,A,n,At,n);
+    FFLAS::fassign(F,n,n,A,n,B,n);
+
+
+
+    /* FFLAS::WriteMatrix(std::cout,F,n,n,A, n); */
+    /* FFLAS::WriteMatrix(std::cout,F,n,n,At, n); */
 
     Givaro::Integer rns_bound = 3*p;
 
-			// construct an RNS structure and its associated Domain
-			RNS_t RNS(rns_bound, primes_bits,false,seed);
-			typedef FFPACK::RNSInteger<RNS_t> RnsDomain;
-			RnsDomain Zrns(RNS);
-			typename RnsDomain::Element_ptr mod_A = FFLAS::fflas_new(Zrns,n,n);
-			RNS.init(n,n,mod_A._ptr,mod_A._stride,A,n,p);
-			RNS.convert(n,n,Givaro::Integer(0), Acopy, n, mod_A._ptr,mod_A._stride);
+    // construct an RNS structure and its associated Domain
+    RNS_t RNS(rns_bound, primes_bits,false,seed);
+    typedef FFPACK::RNSInteger<RNS_t> RnsDomain;
+    RnsDomain Zrns(RNS);
+    typename RnsDomain::Element_ptr mod_A  = FFLAS::fflas_new(Zrns,n,n);
+    typename RnsDomain::Element_ptr mod_At = FFLAS::fflas_new(Zrns,n,n);
+    size_t n2=n*n, s=RNS._size;
+
+    bool RNSMAJOR;
+    /**********************
+     ** check RNSMajor=false
+     **********************/
+#if 1
+    RNSMAJOR=false;
+    
+    RNS.init(n,n,mod_A._ptr,mod_A._stride,A,n,p, RNSMAJOR);
+    ok = ok and  FFPACK::RNS_COMMON::check_integers_to_rns(FFLAS::FflasNoTrans, n, n, mod_A._ptr, mod_A._stride, A, n, RNS._basis, RNSMAJOR, false);
+
+    RNS.init_transpose(n,n,mod_At._ptr,mod_At._stride,At,n,p,RNSMAJOR);
+    ok = ok and  FFPACK::RNS_COMMON::check_integers_to_rns(FFLAS::FflasTrans, n, n, mod_At._ptr, mod_At._stride, At, n, RNS._basis, RNSMAJOR, false);
+
+    ok = ok and (FFLAS::fequal(ZD,s,n2,mod_A._ptr,n2,mod_At._ptr,n2));
+
+      /* std::cout<<std::boolalpha<<ok<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZD,n2, s, mod_A._ptr, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZD,n2, s, mod_At._ptr, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+
+    RNS.convert(n,n,Givaro::Integer(0), B, n, mod_A._ptr,mod_A._stride,RNSMAJOR);
+    ok= ok and (FFLAS::fequal(ZZ,n,n,A,n,B,n));
+
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, A, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, B, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+
+    RNS.convert_transpose(n,n,Givaro::Integer(0), B, n, mod_A._ptr,mod_A._stride,RNSMAJOR);
+    ok= ok and (FFLAS::fequal(ZZ,n,n,At,n,B,n));
+
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, At, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, B, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+
+      std::cout<<std::right<<std::setw(SPC)<<"RNSMajor=false ..."  <<  (ok? "PASSED\n": "FAILED\n");
+
+#endif
+
+#if 1
+      /**********************
+       ** check RNSMajor=true
+       **********************/
+      RNSMAJOR=true;
+
+      RNS.init(n,n,mod_A._ptr,mod_A._stride,A,n,p,RNSMAJOR);
+      ok = ok and  FFPACK::RNS_COMMON::check_integers_to_rns(FFLAS::FflasNoTrans, n, n, mod_A._ptr, mod_A._stride, A, n, RNS._basis, RNSMAJOR, false);
+
+      RNS.init_transpose(n,n,mod_At._ptr,mod_At._stride,At,n,p,RNSMAJOR);
+      ok = ok and  FFPACK::RNS_COMMON::check_integers_to_rns(FFLAS::FflasTrans, n, n, mod_At._ptr, mod_At._stride, At, n, RNS._basis, RNSMAJOR, false);
+
+      ok = ok and (FFLAS::fequal(ZD,n2,s,mod_A._ptr,s,mod_At._ptr,s));
+
+      /* std::cout<<std::boolalpha<<ok<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZD,n2, s, mod_A._ptr, s)<<std::endl<<"--------------\n";;//FFLAS::FflasSageMath)<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZD,n2, s, mod_At._ptr, s)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
 
 
-      Givaro::ZRing<Givaro::Integer> ZZ;
-      if (!FFLAS::fequal(ZZ,n,n,A,n,Acopy,n)){
-        std::cout<<"FAILED\n";
-          return false;
-      }
+			RNS.convert(n,n,Givaro::Integer(0), B, n, mod_A._ptr,mod_A._stride,RNSMAJOR);
+      ok= ok and (FFLAS::fequal(ZZ,n,n,A,n,B,n));
+
+      /* std::cout<<std::boolalpha<<ok<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, A, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, B, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */ 
+      
+
+      RNS.convert_transpose(n,n,Givaro::Integer(0), B, n, mod_A._ptr,mod_A._stride,RNSMAJOR);
+      ok= ok and (FFLAS::fequal(ZZ,n,n,At,n,B,n));
+
+      /* std::cout<<std::boolalpha<<ok<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, At, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+      /* FFLAS::WriteMatrix(std::cout,ZZ,n, n, B, n)<<std::endl;//FFLAS::FflasSageMath)<<std::endl; */
+
+
+      std::cout<<std::right<<std::setw(SPC)<<"RNSMajor=true  ..."  <<  (ok? "PASSED\n": "FAILED\n");
+
+
+#endif
 
 			FFLAS::fflas_delete(mod_A);
+      FFLAS::fflas_delete(mod_At);
       FFLAS::fflas_delete(A);
-      FFLAS::fflas_delete(Acopy);
+      FFLAS::fflas_delete(At);
+      FFLAS::fflas_delete(B);
 		}
 
-  std::cout<<"PASSED\n";
-  return true;
+  std::cout<<"Test suite for rns-double ...."<<(ok?"PASSED\n":"FAILED\n");
+  if (!ok) std::cout<<"seed was "<<seed<<std::endl;
+  return ok;
 }
 
 
 
 int main(int argc, char** argv){
-	static size_t iters = 10 ;
+	static size_t iters = 1 ;
 	static unsigned long b = 512 ;
 	static unsigned long p = 20 ;
 	static size_t m = 16 ;
