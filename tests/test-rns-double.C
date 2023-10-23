@@ -227,7 +227,7 @@ int main(int argc, char** argv){
   ok = ok and run_check<FFPACK::rns_double>         (m,  p,b,iters,seed);
   ok = ok and run_check<FFPACK::rns_double_extended>(m,2*p,b,iters,seed);
 
-	return ok;
+	return !ok;
 }
 
 
