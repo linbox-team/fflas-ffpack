@@ -56,9 +56,9 @@ void run_with_field(int q, uint64_t bits, size_t n, size_t d, size_t iter, std::
     default: CT = FfpackAuto; break;
     }
     FFLAS::Timer chrono;
-    Element *A;
+    Element *A=NULL;
     double time_charp=0;
-    for (size_t i=0;i<iter;++i){
+    for (size_t i=0;i<=iter;++i){
         if (!file.empty()){
             FFLAS::ReadMatrix (file, F, n, n, A);
         }
@@ -75,7 +75,7 @@ void run_with_field(int q, uint64_t bits, size_t n, size_t d, size_t iter, std::
         FFPACK::CharPoly (R, cpol, n, A, n, CT, d);
         chrono.stop();
 
-        time_charp+=chrono.usertime();
+        if (i) time_charp+=chrono.usertime();
 
         FFLAS::fflas_delete( A);
     }
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
     if (q > 0){
         bits = Givaro::Integer(q).bitsize();
-        run_with_field<Givaro::ModularBalanced<double> >(q, bits, n , d, iter, file, variant,seed);
+        run_with_field<Givaro::Modular<double> >(q, bits, n , d, iter, file, variant,seed);
     } else
         run_with_field<Givaro::ZRing<Givaro::Integer> > (q, bits, n , d, iter, file, variant,seed);
 

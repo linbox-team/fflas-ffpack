@@ -228,6 +228,7 @@ int main(int argc, char** argv)
 
         // if ((i+1)*100 % nbit == 0)
         // 	std::cerr<<double(i+1)/nbit*100<<" % "<<std::endl;
+       seed++;
     } while (loop && passed);
     return !passed;
 }
