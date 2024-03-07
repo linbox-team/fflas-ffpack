@@ -362,14 +362,14 @@ namespace FFLAS {
            typename Field::ConstElement_ptr A, const size_t lda,
            typename Field::Element_ptr B, const size_t ldb);
 
-    /** \brief faxpy : \f$y \gets \alpha \cdot x + y\f$.
+    /** \brief faxpy : \f$Y \gets \alpha \cdot X + Y\f$.
      * @param F field
      * @param m row dimension
      * @param n column dimension
      * @param alpha scalar
-     * \param[in] X vector in \p F
+     * \param[in] X matrix in \p F
      * \param ldx leading dimension of \p X
-     * \param[in,out] Y vector in \p F
+     * \param[in,out] Y matrix in \p F
      * \param ldy leading dimension of \p Y
      */
     template<class Field>

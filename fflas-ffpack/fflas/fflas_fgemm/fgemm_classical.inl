@@ -80,9 +80,10 @@ namespace FFLAS {
         if (F.isMOne(betadf)) betadf = -F.one;
 
         size_t kmax = H.MaxDelayedDim (betadf);
+
         H.checkA(F,ta, m,k,A,lda);
         H.checkB(F,tb, k,n,B,ldb);
-        if (kmax <=  k/2 || H.Aunfit() || H.Bunfit() ){
+        if (kmax <=  k/2 || H.Aunfit() || H.Bunfit() ){ // TODO: K/2 may be too big
             // Might as well reduce inputs
             if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
                 H.initA();
@@ -207,8 +208,9 @@ namespace FFLAS {
             if (tb == FflasNoTrans)
                 for (size_t i = 0; i < m; ++i)
                     for (size_t l = 0; l < k; ++l)
-                        for (size_t j = 0; j < n; ++j)
-                            F.axpyin (*(C+i*ldc+j), *(A+i*lda+l), *(B+l*ldb+j));
+                            for (size_t j = 0; j < n; ++j)  {
+                                    F.axpyin (*(C+i*ldc+j), *(A+i*lda+l), *(B+l*ldb+j));
+                            }
             else
                 for (size_t i = 0; i < m; ++i)
                     for (size_t j = 0; j < n; ++j)
