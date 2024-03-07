@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Coypright (c) 2011 FFLAS-FFPACK
 # written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 # adapted from LinBox configuration
