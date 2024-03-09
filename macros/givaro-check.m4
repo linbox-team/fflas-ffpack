@@ -34,7 +34,7 @@ AC_DEFUN([FF_CHECK_GIVARO],
 [
 
 AC_ARG_WITH(givaro,
-[AC_HELP_STRING([--with-givaro=<path>|yes], [Use Givaro library. This library is mandatory for
+[AS_HELP_STRING([--with-givaro=<path>|yes],[Use Givaro library. This library is mandatory for
                            LinBox compilation. If argument is yes or <empty>
 			   that means the library is reachable with the standard
 			   search path (/usr or /usr/local). Otherwise you give
@@ -76,11 +76,8 @@ if test -r "$GIVARO_HOME/include/givaro/givconfig.h"; then
 	LIBS="${BACKUP_LIBS} ${GIVARO_LIBS}"
 	LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$givaro_lib_path"
 	export LD_RUN_PATH
-	AC_TRY_LINK(
-	[#include <givaro/givinteger.h>],
-	[Givaro::Integer a;],
-	[
-	AC_TRY_RUN(
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <givaro/givinteger.h>]], [[Givaro::Integer a;]])],[
+	_au_m4_changequote([,])AC_TRY_RUN(
 	[#include <givaro/givconfig.h>
 	 int main () { if (GIVARO_VERSION >= $version_min && GIVARO_VERSION < $version_max) return 0; else return -1; /* old version of Givaro are defined as hexa 0x03yyzz*/ }
 	],[
@@ -96,8 +93,7 @@ if test -r "$GIVARO_HOME/include/givaro/givconfig.h"; then
 
 	break
 	])
-	],
-	[
+	],[
 	givaro_found="yes"
 	givaro_checked="$checked $GIVARO_HOME"
 #unset GIVARO_CFLAGS
@@ -156,9 +152,7 @@ AC_DEFUN([FF_CHECK_GIVARO_USABILITY],
 	LIBS="${BACKUP_LIBS} ${GIVARO_LIBS}"
     dnl try to compile a small example
     AC_MSG_CHECKING([for GIVARO usability])
-    AC_TRY_LINK([#include <givaro/givinteger.h>], [Givaro::Integer a;],
-                [AC_MSG_RESULT(yes)],
-                [AC_MSG_RESULT(no)
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <givaro/givinteger.h>]], [[Givaro::Integer a;]])],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
                  AC_MSG_ERROR(The Givaro library could not be used with the compiler and the flags set up by the configure script)
                 ])
     dnl restore backu

@@ -31,7 +31,7 @@ AC_DEFUN([FF_MISC],
 [
 
 AC_ARG_WITH(default,
-[AC_HELP_STRING([--with-default=<path>], [Add <path> to the default path for external package
+[AS_HELP_STRING([--with-default=<path>],[Add <path> to the default path for external package
   		        checking. Set as default with /usr and /usr/local.
 ])],
 	    [if test "$withval" = yes ; then
@@ -49,7 +49,7 @@ AC_ARG_WITH(default,
 
 
 AC_ARG_WITH(all,
-[AC_HELP_STRING([--with-all= <path>|yes|no], [Use all external packages. If the argument is no,
+[AS_HELP_STRING([--with-all= <path>|yes|no],[Use all external packages. If the argument is no,
   	      		   you not sure that all libraries are reachable with
 			   the default path. If the argument is yes or <empty>,
 			   that means that all libraries are reachable with the
