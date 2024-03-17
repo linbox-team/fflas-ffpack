@@ -65,7 +65,7 @@ int main () {
     typedef FIELD Field;
     Field F(17);
     typedef Field::Element Element ;
-    size_t n=512, nmax=4000, prec=512, nbest=0, count=0;
+    size_t n=512, nmax=10000, prec=512, nbest=0, count=0;
     TTimer chrono;
     bool bound=false;
 

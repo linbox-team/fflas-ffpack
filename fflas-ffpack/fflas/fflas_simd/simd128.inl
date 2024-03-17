@@ -105,7 +105,7 @@ Simd128_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_s
 
 #include "simd128_int16.inl"
 #include "simd128_int32.inl"
-#ifdef __x86_64__
+#if defined( __x86_64__) or defined(__aarch64__)
 #include "simd128_int64.inl"
 #endif
 #endif //#ifdef SIMD_INT

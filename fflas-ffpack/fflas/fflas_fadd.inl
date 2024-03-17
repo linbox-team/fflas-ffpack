@@ -353,7 +353,7 @@ namespace FFLAS { namespace details {
          )
     {
         if (inca == 1 && incb == 1 && incc == 1) {
-            for (size_t i=0; i<N; i++) {
+          for (size_t i=0; i<N; i++) {
                 if (ADD)
                     F.add (C[i], A[i], B[i]);
                 else
@@ -367,7 +367,7 @@ namespace FFLAS { namespace details {
                 if (ADD)
                     F.add (*Ci, *Ai, *Bi);
                 else
-                    F.add (*Ci, *Ai, *Bi);
+                    F.add (*Ci, *Ai, *Bi);            
         }
     }
 
@@ -397,7 +397,7 @@ namespace FFLAS { namespace details {
           typename Field::Element_ptr C, const size_t incc
           , FieldCategories::UnparametricTag
          )
-    {
+    {      
         if (inca == 1 && incb == 1 && incc == 1) {
             if (ADD)
                 FFLAS::vectorised::add(C,A,B,N);

@@ -425,7 +425,8 @@ static const char* EXT_BLAS_DIAG         (CBLAS_DIAG t)      { if (t == CblasUni
 // define external link to LAPACK routines
 extern "C" {
     //!@bug we should also allow lapacke from MLK
-    void dgetrf_ (const CBLAS_INT *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *, CBLAS_INT *);
+  void dgetrf_ (const CBLAS_INT *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *, CBLAS_INT *);
+  void sgetrf_ (const CBLAS_INT *, const CBLAS_INT *, float *, const CBLAS_INT *, CBLAS_INT *, CBLAS_INT *);
     void dgetri_ (const CBLAS_INT *, double *, const CBLAS_INT *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *);
     void dtrtri_ (const char *, const char *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *);
     void dswap_ (const CBLAS_INT *, double *, const CBLAS_INT *, double *, const CBLAS_INT *);
@@ -447,13 +448,23 @@ extern "C" {
     // return A=P.L.U (L unitary) with ColMajor
     // return A=L.U.P (U unitary) with RowMajor
     //! @bug Order is not used. we should use ATLAS/interfaces/lapack/C/src/clapack_dgetrf.c or similar
-    inline CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER, const CBLAS_INT M, const CBLAS_INT N,
-                                    double *A, const CBLAS_INT lda, CBLAS_INT *ipiv)
-    {
-        CBLAS_INT info;
-        dgetrf_ ( &M, &N, A, &lda, ipiv, &info);
-        return info;
-    }
+  inline CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER, const CBLAS_INT M, const CBLAS_INT N,
+                                  double *A, const CBLAS_INT lda, CBLAS_INT *ipiv)
+  {
+    CBLAS_INT info;
+    dgetrf_ ( &M, &N, A, &lda, ipiv, &info);
+    return info;
+  }
+
+  inline CBLAS_INT clapack_sgetrf(const blas_enum CBLAS_ORDER, const CBLAS_INT M, const CBLAS_INT N,
+                                  float *A, const CBLAS_INT lda, CBLAS_INT *ipiv)
+  {
+    CBLAS_INT info;
+    sgetrf_ ( &M, &N, A, &lda, ipiv, &info);
+    return info;
+  }
+
+
 
     inline CBLAS_INT clapack_dgetri(const blas_enum CBLAS_ORDER, const CBLAS_INT N, double *A,
                                     const CBLAS_INT lda, const CBLAS_INT *ipiv)
@@ -517,13 +528,12 @@ extern "C" {
 extern "C" {
     // LAPACK routines
 
-    CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER Order, const CBLAS_INT M, const CBLAS_INT N,
-                             double *A, const CBLAS_INT lda, CBLAS_INT *ipiv);
+  CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER Order, const CBLAS_INT M, const CBLAS_INT N,
+                           double *A, const CBLAS_INT lda, CBLAS_INT *ipiv);
     CBLAS_INT clapack_dgetri(const blas_enum CBLAS_ORDER Order, const CBLAS_INT N, double *A,
                              const CBLAS_INT lda, const CBLAS_INT *ipiv);
     CBLAS_INT clapack_dtrtri(const blas_enum CBLAS_ORDER Order,const blas_enum CBLAS_UPLO Uplo,
                              const blas_enum CBLAS_DIAG Diag,const CBLAS_INT N, double *A, const CBLAS_INT lda);
-
 }
 #endif // CLAPACK ?
 

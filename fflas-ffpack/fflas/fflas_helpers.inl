@@ -195,7 +195,7 @@ namespace FFLAS {
         }
         bool Aunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Amin),Amax));}
         bool Bunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Bmin),Bmax));}
-        void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
+        void setOutBounds(const uint64_t k, const DFElt alpha, const DFElt beta)
         {
             if (beta<0){
                 Outmin = beta*Cmax;
