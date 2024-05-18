@@ -10,7 +10,7 @@ on:
 
 env:
   # Ubuntu packages to install so that the projects' "make dist" can succeed
-  DIST_PREREQ:      libtool libopenblas-dev libgmp-dev libgivaro-dev
+  DIST_PREREQ:      libopenblas-dev libgmp-dev
   # Name of this project in the Sage distribution
   SPKG:             fflas_ffpack
 
@@ -33,10 +33,15 @@ jobs:
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
-
+          wget https://ftpmirror.gnu.org/libtool/libtool-2.4.7.tar.gz
+          tar xfz libtool-2.4.7.tar.gz
+          cd libtool-2.4.7
+          ./configure --prefix=${{ env.PREFIX }}
+          make install
       - name: Run make dist, prepare upstream artifact
         run: |
-          (cd build/pkgs/givaro/src && autoreconf -fi && ./configure --prefix=${{ env.PREFIX }} && make -j5 && make install) \
+          export PATH="${{ env.PREFIX }}/bin:$PATH" \
+          && (cd build/pkgs/givaro/src && autoreconf -fi && ./configure --prefix=${{ env.PREFIX }} && make -j5 && make install) \
           && export PKG_CONFIG_PATH="${{ env.PREFIX }}/lib/pkgconfig:$PKG_CONFIG_PATH" \
           && (cd build/pkgs/${{ env.SPKG }}/src && autoreconf -fi && ./configure --prefix=${{ env.PREFIX }} && make -j5 && make -j5 distcheck) \
           && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/*.tar.gz upstream/ \
