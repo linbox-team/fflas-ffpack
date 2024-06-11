@@ -45,10 +45,12 @@
 // #include "fflas_fgemm/bini.inl"
 
 
-#ifndef NEWWINO
-#define NEWWINO
-#endif
+// #ifndef NEWWINO
+// #define NEWWINO
+// #endif
 
+#undef NEWWINO
+#define LASTACCIP
 //#define OLDWINO
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -345,6 +347,8 @@ namespace FFLAS { namespace Protected {
 
 #elif defined(NEWWINO)
             BLAS3::WinogradAcc_3_21(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,H);
+#elif defined(LASTACCIP)
+            BLAS3::WinogradAcc_IP(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,H);
 #elif defined(OLDWINO)
             BLAS3::WinogradAcc_3_23(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,H);
 #elif defined(NEWACC)

@@ -389,6 +389,202 @@ namespace FFLAS { namespace BLAS3 {
         WH.Outmax = max4 (U1Max, H3.Outmax, U6Max, U7Max);
     } // WinogradAcc
 
+    // 3 temps and 21 ops
+    template < class Field, class FieldTrait>
+    inline void WinogradAcc_IP (const Field& F,
+                                const FFLAS_TRANSPOSE ta,
+                                const FFLAS_TRANSPOSE tb,
+                                const size_t mr, const size_t nr, const size_t kr,
+                                const typename Field::Element alpha,
+                                typename Field::ConstElement_ptr A,const size_t lda,
+                                typename Field::ConstElement_ptr B,const size_t ldb,
+                                const typename Field::Element  beta,
+                                typename Field::Element_ptr C, const size_t ldc,
+                                MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
+            )
+    {
+        typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
+        typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
+        typedef typename  MMH_t::DelayedField::ConstElement_ptr DFCEptr;
+        typedef typename  MMH_t::DelayedField::Element DFElt;
+
+        const typename MMH_t::DelayedField & DF = WH.delayedField;
+
+        FFLASFFPACK_check(!DF.isZero(beta));
+
+        size_t lb, cb, la, ca;
+        typename Field::ConstElement_ptr A11=A, A12, A21, A22;
+        typename Field::ConstElement_ptr B11=B, B12, B21, B22;
+        typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
+
+        typename Field::Element mbeta,malpha;
+        F.neg(mbeta,beta);
+        F.neg(malpha,alpha);
+        DFElt betadf,mbetadf;
+        DFElt alphadf,malphadf;
+        DF.init(betadf);
+        DF.init(mbetadf);
+        if (F.isMOne(beta)) {
+            DF.assign(betadf, DF.mOne);
+            DF.assign(mbetadf, DF.one);
+        } else if (F.isOne(beta)){
+            DF.assign(betadf,DF.one);    
+            DF.assign(mbetadf,DF.mOne);    
+        }else{
+            DF.assign (betadf, beta);
+            DF.neg (mbetadf, beta);
+        }
+        if (F.isMOne(alpha)) {
+            DF.assign(alphadf, DF.mOne);
+            DF.assign(malphadf, DF.one);
+        } else if (F.isOne(alpha)){
+            DF.assign(alphadf,DF.one);    
+            DF.assign(malphadf,DF.mOne);    
+        }else{
+            DF.assign (alphadf, beta);
+            DF.neg (malphadf, beta);
+        }
+
+        if (ta == FflasTrans) {
+            A21 = A + mr;
+            A12 = A + kr*lda;
+            A22 = A12 + mr;
+            la = kr;
+            ca = mr;
+        } else { // ta == FflasNoTrans
+            A12 = A + kr;
+            A21 = A + mr*lda;
+            A22 = A21 + kr;
+            la = mr;
+            ca = kr;
+        }
+        if (tb == FflasTrans) {
+            B21 = B + kr;
+            B12 = B + nr*ldb;
+            B22 = B12 + kr;
+            lb = nr;
+            cb = kr;
+        } else { // ta == FflasNoTrans
+            B12 = B + nr;
+            B21 = B + kr*ldb;
+            B22 = B21 + nr;
+            lb = kr;
+            cb = nr;
+        }
+
+        
+        // S1 = A21 - A11 in A21
+        fsubin (DF, la, ca, (DFCEptr) A11, lda, (DFEptr) A21, lda);
+        // T1 = B12 - B22 in B12
+        fsubin (DF, lb, cb, (DFCEptr) B22, ldb, (DFEptr) B12, ldb);
+        // C21 = C21 - C22 in C21
+        fsubin (DF, mr, nr, (DFCEptr) C22, ldc, (DFEptr) C21, ldc);
+        // P1 = alpha . S1*T1 + beta C22  in C22
+        MMH_t H1(F, WH.recLevel-1,
+                 -(WH.Amax-WH.Amin), WH.Amax-WH.Amin,
+                 -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin,
+                 -(WH.Cmax-WH.Cmin), WH.Cmax-WH.Cmin );
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A21, lda, B12, ldb, beta, C22, nr, H1);
+
+        // S2 = S1 + A22 in A21
+        faddin (DF, la, ca, (DFCEptr) A22, lda, (DFEptr) A22, lda);
+        // T2 = B12 - B11 in B12
+        fsubin (DF, lb, cb, (DFCEptr) B11, ldb, (DFEptr) B12, ldb);
+
+        //TODO
+        // DFElt C22Min, C22Max;
+        // DFElt C12Min, C12Max;
+        // // This test will be optimized out
+        //DFElt U1Min, U1Max;
+        //if (Protected::NeedPreAddReduction (U1Min,U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
+        //     freduce(F,mr,nr,X1,nr);
+        //     freduce(F,mr,nr,C11,ldc);
+        // }
+
+        // C12 = C22 - beta C12  in C12
+        fadd (DF,mr,nr,(DFCEptr)C22,ldc,mbetadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
+        // P2 = - alpha . S2 * T2 +  C22  in C22
+        MMH_t H2(F, WH.recLevel-1,
+                 2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin,
+                 WH.Bmin-2*WH.Bmax, WH.Bmax-2*WH.Bmin,
+                 H1.Outmin, H1.Outmax);
+        fgemm (F, ta, tb, mr, nr, kr, malpha, A21, lda, B12, ldb, F.one, C22, ldc, H2);
+
+        // C11 = C22 - beta .  C11  in C11
+        fadd (DF, mr, nr, (DFCEptr) C22, ldc, mbetadf, (DFCEptr) C11, ldc, (DFEptr)C11,ldc);
+        // P3 = alpha . A11 * B11 +  C22  in C22
+        MMH_t H3(F, WH.recLevel-1,
+                 WH.Amin, WH.Amax,
+                 WH.Bmin, WH.Bmax,
+                 H2.Outmin, H2.Outmax);
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.one, C22, ldc, H3);
+        // C11 =  C11 - C22 in C11
+        fsubin (DF, mr, nr, (DFCEptr) C22, ldc, (DFEptr) C11, ldc);
+        // C21 = C22 + beta .  C21  in C11
+        fadd (DF, mr, nr, (DFCEptr) C22, ldc, betadf, (DFCEptr) C21, ldc, (DFEptr)C21,ldc);
+        // T3 = T2 + B21 in B12
+        faddin (DF, lb, cb, (DFCEptr) B21, ldb, (DFEptr) B12, ldb);
+        // P4 = alpha . A22 * T3 +  C21  in C21
+        MMH_t H4(F, WH.recLevel-1,
+                 WH.Amin, WH.Amax,
+                 2*WH.Bmin-2*2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin,
+                 H3.Outmin, H3.Outmax); // TODO
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, B12, ldb, F.one, C21, ldc, H4);
+        // T4 = T3 + B22 - B21 in B12
+        faddin (DF, lb, cb, (DFCEptr) B22, ldb, (DFEptr) B12, ldb);
+        fsubin (DF, lb, cb, (DFCEptr) B21, ldb, (DFEptr) B12, ldb);
+        // S3 =  S2 - A12 in A21
+        fsubin (DF, la, ca, (DFCEptr) A12, lda, (DFEptr) A21, lda);
+        // P5 = malpha . S3 * B22 -  C12  in C12
+        MMH_t H5(F, WH.recLevel-1,
+                 WH.Amin, WH.Amax,
+                 2*WH.Bmin-2*2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin,
+                 WH.Cmin, WH.Cmax); // TODO
+        fgemm (F, ta, tb, mr, nr, kr, malpha, A21, lda, B22, ldb, F.mOne, C12, ldc, H5);
+        // S4 =  S3 + A12 + A11 in A21
+        faddin (DF, la, ca, (DFCEptr) A12, lda, (DFEptr) A21, lda);
+        faddin (DF, la, ca, (DFCEptr) A11, lda, (DFEptr) A21, lda);
+        // P6 = malpha . S4 * T4 +  C22  in C12
+        MMH_t H6(F, WH.recLevel-1,
+                 2*WH.Amin, 2*WH.Amax,
+                 WH.Bmin-WH.Bmax, WH.Bmax-WH.Bmin,
+                 H3.Outmin, H3.Outmax); // TODO
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A21, lda, B12, ldb, F.one, C22, ldc, H6);
+        // C12 =  C12 + C22 in C12
+        faddin (DF, mr, nr, (DFCEptr) C22, ldc, (DFEptr) C12, ldc);
+        // B12 = T4 + B11 
+        faddin (DF, lb, cb, (DFCEptr) B11, ldb, (DFEptr) B12, ldb);
+        // A21 =  S4 - A22 in A21
+        fsubin (DF, la, ca, (DFCEptr) A12, lda, (DFEptr) A21, lda);
+        // P6 = alpha . A12 * B21 - C11  in C12
+        MMH_t H7(F, WH.recLevel-1,
+                 WH.Amin, WH.Amax,
+                 WH.Bmin, WH.Bmax,
+                 H3.Outmin, H3.Outmax); 
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A21, lda, B12, ldb, F.mOne, C11, ldc, H7);
+        
+        // // U7 =  U3 + C22 in C22
+        // DFElt U7Min, U7Max;
+        // if (Protected::NeedPreAddReduction (U7Min, U7Max, H7.Outmin, H7.Outmax, C22Min, C22Max, WH)){
+        //     freduce(F,mr,nr,X1,nr);
+        //     freduce(F,mr,nr,C22,ldc);
+        // }
+        // faddin(DF,mr,nr,(DFCEptr)X1,nr,(DFEptr)C22,ldc);
+
+        // // U6 = U3 - P4 in C21
+        // DFElt U6Min, U6Max;
+        // if (Protected::NeedPreSubReduction(U6Min, U6Max, H7.Outmin, H7.Outmax, H4.Outmin, H4.Outmax, WH)){
+        //     freduce(F,mr,nr,X1,nr);
+        //     freduce(F,mr,nr,C21,ldc);
+        // }
+        // fsub(DF,mr,nr,(DFCEptr)X1,nr,(DFCEptr)C21,ldc,(DFEptr)C21,ldc);
+
+
+        // Updating WH with Outmin, Outmax of the result
+        //TODO
+        // WH.Outmin = min4 (U1Min, H3.Outmin, U6Min, U7Min);
+        // WH.Outmax = max4 (U1Max, H3.Outmax, U6Max, U7Max);
+    } // WinogradAcc
 
     // 2 temps and 24 ops
     // TODO: Add check for modular reductions before final additions
