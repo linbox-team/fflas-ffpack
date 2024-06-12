@@ -471,25 +471,40 @@ namespace FFLAS { namespace BLAS3 {
             lb = kr;
             cb = nr;
         }
+        // std::cerr<<std::endl;
+        // WriteMatrix(std::cerr<<"A = "<<std::endl, F, 2*mr, 2*kr, A, lda);
+        // WriteMatrix(std::cerr<<"B = "<<std::endl, F, 2*kr, 2*nr, B, ldb);
+        // WriteMatrix(std::cerr<<"C = "<<std::endl, F, 2*mr, 2*nr, C, ldc);
 
+        // WriteMatrix(std::cerr<<"A = ", F, 2*mr, 2*kr, A, lda, FFLAS::FflasSageMath);
+        // WriteMatrix(std::cerr<<"B = ", F, 2*kr, 2*nr, B, ldb, FFLAS::FflasSageMath);
+        // WriteMatrix(std::cerr<<"C = ", F, 2*mr, 2*nr, C, ldc, FFLAS::FflasSageMath);
         
         // S1 = A21 - A11 in A21
         fsubin (DF, la, ca, (DFCEptr) A11, lda, (DFEptr) A21, lda);
+        // WriteMatrix(std::cerr<<"S1 = A21-A11"<<std::endl, F, mr, kr, A21, lda);
         // T1 = B12 - B22 in B12
         fsubin (DF, lb, cb, (DFCEptr) B22, ldb, (DFEptr) B12, ldb);
+        // WriteMatrix(std::cerr<<"T1 = B12-B22"<<std::endl, F, kr, nr, B12, ldb);
         // C21 = C21 - C22 in C21
         fsubin (DF, mr, nr, (DFCEptr) C22, ldc, (DFEptr) C21, ldc);
+        // WriteMatrix(std::cerr<<"C21 = C21-C22"<<std::endl, F, mr, nr, C21, ldc);
         // P1 = alpha . S1*T1 + beta C22  in C22
         MMH_t H1(F, WH.recLevel-1,
                  -(WH.Amax-WH.Amin), WH.Amax-WH.Amin,
                  -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin,
                  -(WH.Cmax-WH.Cmin), WH.Cmax-WH.Cmin );
-        fgemm (F, ta, tb, mr, nr, kr, alpha, A21, lda, B12, ldb, beta, C22, nr, H1);
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A21, lda, B12, ldb, beta, C22, ldc, H1);
+        // WriteMatrix(std::cerr<<"P1 = S1*T1 + C22"<<std::endl, F, mr, nr, C22, ldc);
 
         // S2 = S1 + A22 in A21
-        faddin (DF, la, ca, (DFCEptr) A22, lda, (DFEptr) A22, lda);
-        // T2 = B12 - B11 in B12
+        faddin (DF, la, ca, (DFCEptr) A22, lda, (DFEptr) A21, lda);
+        // WriteMatrix(std::cerr<<"S1="<<std::endl, F, mr, kr, A21, lda);
+        // WriteMatrix(std::cerr<<"A22="<<std::endl, F, mr, kr, A22, lda);
+        // WriteMatrix(std::cerr<<"S2 = S1+A22"<<std::endl, F, mr, kr, A21, lda);
+        // T2 = T1 - B11 in B12
         fsubin (DF, lb, cb, (DFCEptr) B11, ldb, (DFEptr) B12, ldb);
+        // WriteMatrix(std::cerr<<"T2 = T1-B11"<<std::endl, F, kr, nr, B12, ldb);
 
         //TODO
         // DFElt C22Min, C22Max;
@@ -503,33 +518,41 @@ namespace FFLAS { namespace BLAS3 {
 
         // C12 = C22 - beta C12  in C12
         fadd (DF,mr,nr,(DFCEptr)C22,ldc,mbetadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
-        // P2 = - alpha . S2 * T2 +  C22  in C22
+        // WriteMatrix(std::cerr<<"C12 = C22 - beta C12"<<std::endl, F, mr, nr, C12, ldc);
+      // P2 = - alpha . S2 * T2 +  C22  in C22
         MMH_t H2(F, WH.recLevel-1,
                  2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin,
                  WH.Bmin-2*WH.Bmax, WH.Bmax-2*WH.Bmin,
                  H1.Outmin, H1.Outmax);
         fgemm (F, ta, tb, mr, nr, kr, malpha, A21, lda, B12, ldb, F.one, C22, ldc, H2);
+        // WriteMatrix(std::cerr<<"P2 = -S2*T2 + C22"<<std::endl, F, mr, nr, C22, ldc);
 
         // C11 = C22 - beta .  C11  in C11
         fadd (DF, mr, nr, (DFCEptr) C22, ldc, mbetadf, (DFCEptr) C11, ldc, (DFEptr)C11,ldc);
-        // P3 = alpha . A11 * B11 +  C22  in C22
+        // WriteMatrix(std::cerr<<"C11 = C22- beta C11"<<std::endl, F, mr, nr, C11, ldc);
+      // P3 = alpha . A11 * B11 +  C22  in C22
         MMH_t H3(F, WH.recLevel-1,
                  WH.Amin, WH.Amax,
                  WH.Bmin, WH.Bmax,
                  H2.Outmin, H2.Outmax);
         fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.one, C22, ldc, H3);
+        // WriteMatrix(std::cerr<<"P3 = A11 *B11 + C22"<<std::endl, F, mr, nr, C22, ldc);
         // C11 =  C11 - C22 in C11
         fsubin (DF, mr, nr, (DFCEptr) C22, ldc, (DFEptr) C11, ldc);
-        // C21 = C22 + beta .  C21  in C11
+        // WriteMatrix(std::cerr<<"C11 = C11 - C22"<<std::endl, F, mr, nr, C11, ldc);
+       // C21 = C22 + beta .  C21  in C11
         fadd (DF, mr, nr, (DFCEptr) C22, ldc, betadf, (DFCEptr) C21, ldc, (DFEptr)C21,ldc);
+        // WriteMatrix(std::cerr<<"C21 = C22 + beta C21"<<std::endl, F, mr, nr, C21, ldc);
         // T3 = T2 + B21 in B12
         faddin (DF, lb, cb, (DFCEptr) B21, ldb, (DFEptr) B12, ldb);
-        // P4 = alpha . A22 * T3 +  C21  in C21
+        // WriteMatrix(std::cerr<<"T3 = T2 + B21"<<std::endl, F, kr, nr, B12, ldb);
+    // P4 = alpha . A22 * T3 +  C21  in C21
         MMH_t H4(F, WH.recLevel-1,
                  WH.Amin, WH.Amax,
                  2*WH.Bmin-2*2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin,
                  H3.Outmin, H3.Outmax); // TODO
         fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, B12, ldb, F.one, C21, ldc, H4);
+        // WriteMatrix(std::cerr<<"P4 = A22 * T3 + C21"<<std::endl, F, mr, nr, C21, ldc);
         // T4 = T3 + B22 - B21 in B12
         faddin (DF, lb, cb, (DFCEptr) B22, ldb, (DFEptr) B12, ldb);
         fsubin (DF, lb, cb, (DFCEptr) B21, ldb, (DFEptr) B12, ldb);
@@ -555,13 +578,13 @@ namespace FFLAS { namespace BLAS3 {
         // B12 = T4 + B11 
         faddin (DF, lb, cb, (DFCEptr) B11, ldb, (DFEptr) B12, ldb);
         // A21 =  S4 - A22 in A21
-        fsubin (DF, la, ca, (DFCEptr) A12, lda, (DFEptr) A21, lda);
+        fsubin (DF, la, ca, (DFCEptr) A22, lda, (DFEptr) A21, lda);
         // P6 = alpha . A12 * B21 - C11  in C12
         MMH_t H7(F, WH.recLevel-1,
                  WH.Amin, WH.Amax,
                  WH.Bmin, WH.Bmax,
                  H3.Outmin, H3.Outmax); 
-        fgemm (F, ta, tb, mr, nr, kr, alpha, A21, lda, B12, ldb, F.mOne, C11, ldc, H7);
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.mOne, C11, ldc, H7);
         
         // // U7 =  U3 + C22 in C22
         // DFElt U7Min, U7Max;
