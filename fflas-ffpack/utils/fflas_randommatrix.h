@@ -467,6 +467,297 @@ namespace FFPACK{
         FFLAS::fflas_delete (randcols,randrows);
     }
 
+    // O(l*len(L))
+    // id = true if we consider the identity, else False
+    inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t l, size_t* L, size_t length, bool id) {
+        valid_moves->clear();
+
+        // Base case: Identity
+        if (id) {
+            valid_moves->push_back(l);
+        }
+
+        // Compute all the empty columns/lines
+        for (size_t i = 0; i < l; ++i) {
+            if (std::find(L, L + length, i) == L + length) {
+                valid_moves->push_back(i);
+            }
+        }
+    }
+
+    // O(1)
+    size_t valuate(int ti, int r, int n, int h, int ih, int i, int Is_pivot, int nb_pivot_bf_i) {
+        // Compute the valuation of a given leading submatrix ti
+        if (i <= ih) {
+            return ti + std::min(i + 1 - nb_pivot_bf_i, r - h);
+        } else {
+            return ti + std::min(i + 1 - nb_pivot_bf_i, r - nb_pivot_bf_i) +
+                       std::min(n - (i + 1) - r + nb_pivot_bf_i, nb_pivot_bf_i - h - Is_pivot);
+        }
+    }
+
+    /** @brief genenration of an Rank Profile Matrix randomly
+     * @param n        Dimension
+     * @param r        rank of the n*n matrix
+     * @param t        quasi-separability order
+     * @param rows
+     * @param cols
+    */
+    void RandomLTQSRankProfileMatrix_Tom(size_t n, size_t r, size_t t, size_t* rows, size_t* cols) {
+
+        if (r <= 0 || n <= 0 || t <= 0) {
+            std::cout << "care, all the arguments must be positive" << std::endl;
+            return;
+        }
+
+        if (r >= n) {
+            std::cout << "care, you called the function with invalid arguments : r >= n IMPOSSIBLE" << std::endl;
+            return;
+        }
+
+        if (t > r) {
+            std::cout << "care, you called the function with invalid arguments : t >= r IMPOSSIBLE" << std::endl;
+            return;
+        }
+
+        if (r + t > n) {
+            std::cout << "care, you called the function with invalid arguments : r+t > n IMPOSSIBLE" << std::endl;
+            return;
+        }
+
+        /// Initialisation
+        //std::vector<size_t> H(n - 1, 0);
+        //std::vector<size_t> T(n - 1, 0);
+        //std::vector<size_t> nb_pivot_before_index(n - 1, 0);
+
+        size_t* H = FFLAS::fflas_new<size_t>(n-1);
+        size_t* T = FFLAS::fflas_new<size_t>(n-1);
+        size_t* nb_pivot_before_index = FFLAS::fflas_new<size_t>(n-1);
+
+        for (size_t i = 0; i<n-1; ++i) {
+            H[i]=0;
+            T[i]=0;
+        }
+
+        RandomIndexSubset(n-1,r,rows);
+        std::sort(rows, rows + r);
+
+        for (size_t i = 0; i < r; ++i) {
+            cols[i] = n - rows[i] - 2;
+            T[rows[i]] = 1;
+            H[rows[i]] = 1;
+        }
+
+        //debug
+        //std::cout << "Init rows: ";
+        //for (size_t i = 0; i < r; ++i) {
+        //    std::cout << rows[i] << " ";
+        //}
+        //std::cout << std::endl;
+
+        //debug
+        //std::cout << "Init cols: ";
+        //for (size_t i = 0; i < r; ++i) {
+        //    std::cout << cols[i] << " ";
+        //}
+        //std::cout << std::endl;
+
+        nb_pivot_before_index[0] = H[0];
+        for (size_t i = 1; i < n - 1; ++i) {
+            nb_pivot_before_index[i] = nb_pivot_before_index[i - 1] + H[i];
+        }
+
+        //debug
+        //std::cout << "Init T: ";
+        //for (size_t i = 0; i < n-1; ++i) {
+        //    std::cout << T[i] << " ";
+        //}
+        //std::cout << std::endl;
+
+        //debug
+        //std::cout << "Init H: ";
+        //for (size_t i = 0; i < n-1; ++i) {
+        //    std::cout << H[i] << " ";
+        //}
+        //std::cout << std::endl;
+
+        //debug
+        //std::cout << "Init nb p bf index: ";
+        //for (size_t i = 0; i < n-1; ++i) {
+        //    std::cout << nb_pivot_before_index[i] << " ";
+        //}
+        //std::cout << std::endl;
+
+        /// loop initialisation
+        size_t loop = 0;
+        std::vector<size_t> valid_moves_left, valid_moves_up;
+        int h = 0;
+        int prev_h = -1;
+
+        while ((size_t) h < r) {
+
+            int up_or_left = RandInt(0,2);
+
+            size_t prev_i = rows[h];
+            size_t prev_j = cols[h];
+
+            size_t new_i = prev_i;
+            size_t new_j = prev_j;
+
+            /// computating valid_moves
+            if (prev_h != h) {
+                compute_valid_moves(& valid_moves_left, prev_j, cols, r,true);
+                compute_valid_moves(& valid_moves_up, prev_i, rows, r,false);
+            }
+
+            //debug
+            //std::cout << "up: ";
+            //for (size_t i = 0; i < valid_moves_up.size(); ++i) {
+            //    std::cout << valid_moves_up[i] << " ";
+            //}
+            //std::cout << std::endl;
+            //debug
+            //std::cout << "left: ";
+            //for (size_t i = 0; i < valid_moves_left.size(); ++i) {
+            //    std::cout << valid_moves_left[i] << " ";
+            //}
+            //std::cout << std::endl;
+
+            if (up_or_left == 0 && valid_moves_left.empty()) {
+                up_or_left = 1;
+            }
+            if (up_or_left == 1 && valid_moves_up.empty()) {
+                up_or_left = 0;
+            }
+
+            /// choose and make the chosen move
+            if (up_or_left == 0) {
+                new_j = valid_moves_left[RandInt(0,valid_moves_left.size())];
+                cols[h] = new_j;
+
+                for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
+                    T[k] += 1;
+                }
+            } else {
+                new_i = valid_moves_up[RandInt(0,valid_moves_up.size())];
+                rows[h] = new_i;
+
+                for (size_t k = new_i; k < prev_i; ++k) {
+                    T[k] += 1;
+                    nb_pivot_before_index[k] += 1;
+                }
+            }
+
+            /// valutation
+            bool undo = true;
+            for (size_t k = 0; k < n - 1; ++k) {
+                if (valuate(T[k], r, n, h + 1, prev_i, k, H[k], nb_pivot_before_index[k]) >= t) {
+                    undo = false;
+                    break;
+                }
+            }
+
+            /// limit testing
+            size_t klim = 0;
+            if (!undo) {
+                for (size_t k = 0; k < n - 1; ++k) {
+                    if (T[k] > t) {
+                        undo = true;
+                        klim = k;
+                        break;
+                    }
+                }
+            }
+
+            /// undo
+            if (undo) {
+                if (up_or_left == 1) {
+                    rows[h] = prev_i;
+                    valid_moves_up.erase(std::find(valid_moves_up.begin(), valid_moves_up.end(), new_i));
+
+                    for (size_t k = new_i; k < prev_i; ++k) {
+                        T[k] -= 1;
+                        nb_pivot_before_index[k] -= 1;
+                    }
+                    //if (klim != 0) {
+                    //    size_t imax = klim;
+                    //    for (size_t i = 0; i<=imax; ++i) {
+                    //        auto it = std::find(valid_moves_up.begin(), valid_moves_up.end(), i);
+                    //        if (it != valid_moves_up.end()){
+                    //            valid_moves_up.erase(it);
+                    //        }
+                    //    }
+                    //}
+                    if (klim != 0) {
+                        size_t imax = klim;
+                        for (auto it = valid_moves_up.begin(); it != valid_moves_up.end(); ){
+                            if (*it <= imax) {
+                                it = valid_moves_up.erase(it);
+                            }
+                            else {
+                                ++it;
+                            }
+                        }
+                    }
+                } else {
+                    cols[h] = prev_j;
+                    valid_moves_left.erase(std::find(valid_moves_left.begin(), valid_moves_left.end(), new_j));
+
+                    for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
+                        T[k] -= 1;
+                    }
+                    //if (klim != 0) {
+                    //    size_t jmax = n-klim-2;
+                    //    for (size_t j = 0; j<=jmax; ++j) {
+                    //        auto it = std::find(valid_moves_left.begin(), valid_moves_left.end(), j);
+                    //        if (it != valid_moves_left.end()){
+                    //            valid_moves_left.erase(it);
+                    //        }
+                    //    }
+                    //}
+                    if (klim != 0) {
+                        size_t jmax = n-klim-2;
+                        for (auto it = valid_moves_left.begin(); it != valid_moves_left.end(); ){
+                            if (*it <= jmax) {
+                                it = valid_moves_left.erase(it);
+                            }
+                            else {
+                                ++it;
+                            }
+                        }
+                    }
+                }
+
+                ++loop;
+                if (prev_h != h) {
+                    prev_h = h;
+                };
+                continue;
+            }
+
+            //debug
+            //std::cout << "new rows: ";
+            //for (size_t i = 0; i < r; ++i) {
+            //    std::cout << rows[i] << " ";
+            //}
+            //std::cout << std::endl;
+            //debug
+            //std::cout << "new cols: ";
+            //for (size_t i = 0; i < r; ++i) {
+            //    std::cout << cols[i] << " ";
+            //}
+            //std::cout << std::endl;
+            //std::cout << std::endl;
+            /// set up for next loop turn
+            ++loop;
+            ++h;
+        }
+        FFLAS::fflas_delete (H);
+        FFLAS::fflas_delete (T);
+        FFLAS::fflas_delete(nb_pivot_before_index);
+    }
+
+
     /** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
@@ -775,7 +1066,7 @@ namespace FFPACK{
         size_t * pivot_r = FFLAS::fflas_new<size_t> (r);
         size_t * pivot_c = FFLAS::fflas_new<size_t> (r);
 
-        RandomLTQSRankProfileMatrix (n, r, t, pivot_r, pivot_c);
+        RandomLTQSRankProfileMatrix_Tom (n, r, t, pivot_r, pivot_c);
         // typename Field::Element_ptr R =FFLAS::fflas_new(F,n,n);
         // getLTBruhatGen(F, n, r, pivot_r, pivot_c, R, n);
         // FFLAS:: WriteMatrix (std::cerr<<"R = "<<std::endl,F,n,n,R,n);
