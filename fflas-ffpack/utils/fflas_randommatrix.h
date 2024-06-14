@@ -469,17 +469,25 @@ namespace FFPACK{
 
     // O(l*len(L))
     // id = true if we consider the identity, else False
-    inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t l, size_t* L, size_t length, bool id) {
+    inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t* start_up, size_t l, size_t* L, size_t lengthL, int llim, size_t m, size_t* M, size_t lengthM, int mlim) {
         valid_moves->clear();
 
         // Base case: Identity
-        if (id) {
-            valid_moves->push_back(l);
-        }
+        valid_moves->push_back(l);
 
         // Compute all the empty columns/lines
-        for (size_t i = 0; i < l; ++i) {
-            if (std::find(L, L + length, i) == L + length) {
+        for (size_t j = (size_t) llim+1; j < l; ++j) {
+            if (std::find(L, L + lengthL, j) == L + lengthL) {
+                valid_moves->push_back(j);
+            }
+        }
+
+        *start_up = valid_moves->size();
+
+        //std::cout << mlim << "//" << m << std::endl;
+        for (size_t i = (size_t) mlim+1; i < m; ++i) {
+            //std::cout << i << (std::find(M, M + lengthM, i) == M + lengthM) << std::endl;
+            if (std::find(M, M + lengthM, i) == M + lengthM) {
                 valid_moves->push_back(i);
             }
         }
@@ -526,9 +534,6 @@ namespace FFPACK{
         }
 
         /// Initialisation
-        //std::vector<size_t> H(n - 1, 0);
-        //std::vector<size_t> T(n - 1, 0);
-        //std::vector<size_t> nb_pivot_before_index(n - 1, 0);
 
         size_t* H = FFLAS::fflas_new<size_t>(n-1);
         size_t* T = FFLAS::fflas_new<size_t>(n-1);
@@ -548,98 +553,71 @@ namespace FFPACK{
             H[rows[i]] = 1;
         }
 
-        //debug
-        //std::cout << "Init rows: ";
-        //for (size_t i = 0; i < r; ++i) {
-        //    std::cout << rows[i] << " ";
-        //}
-        //std::cout << std::endl;
-
-        //debug
-        //std::cout << "Init cols: ";
-        //for (size_t i = 0; i < r; ++i) {
-        //    std::cout << cols[i] << " ";
-        //}
-        //std::cout << std::endl;
 
         nb_pivot_before_index[0] = H[0];
         for (size_t i = 1; i < n - 1; ++i) {
             nb_pivot_before_index[i] = nb_pivot_before_index[i - 1] + H[i];
         }
 
-        //debug
-        //std::cout << "Init T: ";
-        //for (size_t i = 0; i < n-1; ++i) {
-        //    std::cout << T[i] << " ";
-        //}
-        //std::cout << std::endl;
-
-        //debug
-        //std::cout << "Init H: ";
-        //for (size_t i = 0; i < n-1; ++i) {
-        //    std::cout << H[i] << " ";
-        //}
-        //std::cout << std::endl;
-
-        //debug
-        //std::cout << "Init nb p bf index: ";
-        //for (size_t i = 0; i < n-1; ++i) {
-        //    std::cout << nb_pivot_before_index[i] << " ";
-        //}
-        //std::cout << std::endl;
-
         /// loop initialisation
         size_t loop = 0;
-        std::vector<size_t> valid_moves_left, valid_moves_up;
+        std::vector<size_t> valid_moves;
+        size_t start_up;
+        int ilim, jlim;
         int h = 0;
         int prev_h = -1;
 
         while ((size_t) h < r) {
-
-            int up_or_left = RandInt(0,2);
-
+            //std::cout << h << std::endl;
             size_t prev_i = rows[h];
             size_t prev_j = cols[h];
 
             size_t new_i = prev_i;
             size_t new_j = prev_j;
 
+
             /// computating valid_moves
             if (prev_h != h) {
-                compute_valid_moves(& valid_moves_left, prev_j, cols, r,true);
-                compute_valid_moves(& valid_moves_up, prev_i, rows, r,false);
-            }
-
-            //debug
-            //std::cout << "up: ";
-            //for (size_t i = 0; i < valid_moves_up.size(); ++i) {
-            //    std::cout << valid_moves_up[i] << " ";
-            //}
-            //std::cout << std::endl;
-            //debug
-            //std::cout << "left: ";
-            //for (size_t i = 0; i < valid_moves_left.size(); ++i) {
-            //    std::cout << valid_moves_left[i] << " ";
-            //}
-            //std::cout << std::endl;
-
-            if (up_or_left == 0 && valid_moves_left.empty()) {
-                up_or_left = 1;
-            }
-            if (up_or_left == 1 && valid_moves_up.empty()) {
-                up_or_left = 0;
+                ilim = -1;
+                jlim = -1;
+                int k = rows[h]+1;
+                while ((size_t) k <= n-2) {
+                    if (T[k] == t) {
+                        jlim = n-k-2;
+                        break;
+                    }
+                    ++k;
+                }
+                k = rows[h]-1;
+                while (k >= 0) {
+                    if (T[k] == t) {
+                        ilim = k;
+                        break;
+                    }
+                    --k;
+                }
+                //std::cout << "ilim" << ilim << std::endl;
+                compute_valid_moves(& valid_moves, & start_up, prev_j, cols, r, jlim, prev_i, rows, r, ilim);
             }
 
             /// choose and make the chosen move
-            if (up_or_left == 0) {
-                new_j = valid_moves_left[RandInt(0,valid_moves_left.size())];
+            size_t rand_index;
+            if (valid_moves.size()>1){
+                rand_index = RandInt(0, valid_moves.size());
+            }
+            else {
+                rand_index = 0;
+            }
+
+            if (rand_index < start_up) {
+                new_j = valid_moves[rand_index];
                 cols[h] = new_j;
 
                 for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
                     T[k] += 1;
                 }
             } else {
-                new_i = valid_moves_up[RandInt(0,valid_moves_up.size())];
+                new_i = valid_moves[rand_index];
                 rows[h] = new_i;
 
                 for (size_t k = new_i; k < prev_i; ++k) {
@@ -657,74 +635,22 @@ namespace FFPACK{
                 }
             }
 
-            /// limit testing
-            size_t klim = 0;
-            if (!undo) {
-                for (size_t k = 0; k < n - 1; ++k) {
-                    if (T[k] > t) {
-                        undo = true;
-                        klim = k;
-                        break;
-                    }
-                }
-            }
-
             /// undo
             if (undo) {
-                if (up_or_left == 1) {
+                if (rand_index >= start_up) {
                     rows[h] = prev_i;
-                    valid_moves_up.erase(std::find(valid_moves_up.begin(), valid_moves_up.end(), new_i));
+                    valid_moves.erase(valid_moves.begin()+rand_index);
 
                     for (size_t k = new_i; k < prev_i; ++k) {
                         T[k] -= 1;
                         nb_pivot_before_index[k] -= 1;
                     }
-                    //if (klim != 0) {
-                    //    size_t imax = klim;
-                    //    for (size_t i = 0; i<=imax; ++i) {
-                    //        auto it = std::find(valid_moves_up.begin(), valid_moves_up.end(), i);
-                    //        if (it != valid_moves_up.end()){
-                    //            valid_moves_up.erase(it);
-                    //        }
-                    //    }
-                    //}
-                    if (klim != 0) {
-                        size_t imax = klim;
-                        for (auto it = valid_moves_up.begin(); it != valid_moves_up.end(); ){
-                            if (*it <= imax) {
-                                it = valid_moves_up.erase(it);
-                            }
-                            else {
-                                ++it;
-                            }
-                        }
-                    }
                 } else {
                     cols[h] = prev_j;
-                    valid_moves_left.erase(std::find(valid_moves_left.begin(), valid_moves_left.end(), new_j));
-
+                    valid_moves.erase(valid_moves.begin()+rand_index);
+                    start_up--;
                     for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
                         T[k] -= 1;
-                    }
-                    //if (klim != 0) {
-                    //    size_t jmax = n-klim-2;
-                    //    for (size_t j = 0; j<=jmax; ++j) {
-                    //        auto it = std::find(valid_moves_left.begin(), valid_moves_left.end(), j);
-                    //        if (it != valid_moves_left.end()){
-                    //            valid_moves_left.erase(it);
-                    //        }
-                    //    }
-                    //}
-                    if (klim != 0) {
-                        size_t jmax = n-klim-2;
-                        for (auto it = valid_moves_left.begin(); it != valid_moves_left.end(); ){
-                            if (*it <= jmax) {
-                                it = valid_moves_left.erase(it);
-                            }
-                            else {
-                                ++it;
-                            }
-                        }
                     }
                 }
 
@@ -736,18 +662,7 @@ namespace FFPACK{
             }
 
             //debug
-            //std::cout << "new rows: ";
-            //for (size_t i = 0; i < r; ++i) {
-            //    std::cout << rows[i] << " ";
-            //}
-            //std::cout << std::endl;
-            //debug
-            //std::cout << "new cols: ";
-            //for (size_t i = 0; i < r; ++i) {
-            //    std::cout << cols[i] << " ";
-            //}
-            //std::cout << std::endl;
-            //std::cout << std::endl;
+
             /// set up for next loop turn
             ++loop;
             ++h;
