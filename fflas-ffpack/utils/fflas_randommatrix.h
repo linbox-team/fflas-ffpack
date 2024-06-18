@@ -494,14 +494,10 @@ namespace FFPACK{
     }
 
     // O(1)
-    size_t valuate(int ti, int r, int n, int h, int ih, int i, int Is_pivot, int nb_pivot_bf_i) {
+    size_t valuate(int ti, int r, int n, int i, int Is_pivot_not_moved, int nb_pivot_bf_i, int nb_pivot_after_i_not_moved, int nb_pivot_before_i_not_moved) {
         // Compute the valuation of a given leading submatrix ti
-        if (i <= ih) {
-            return ti + std::min(i + 1 - nb_pivot_bf_i, r - h);
-        } else {
-            return ti + std::min(i + 1 - nb_pivot_bf_i, r - nb_pivot_bf_i) +
-                       std::min(n - (i + 1) - r + nb_pivot_bf_i, nb_pivot_bf_i - h - Is_pivot);
-        }
+            return ti + std::min(i + 1 - nb_pivot_bf_i, nb_pivot_after_i_not_moved - Is_pivot_not_moved) +
+                        std::min((n-1) - (i + 1) - r + nb_pivot_bf_i, nb_pivot_before_i_not_moved - Is_pivot_not_moved);
     }
 
     /** @brief genenration of an Rank Profile Matrix randomly
@@ -538,6 +534,8 @@ namespace FFPACK{
         size_t* H = FFLAS::fflas_new<size_t>(n-1);
         size_t* T = FFLAS::fflas_new<size_t>(n-1);
         size_t* nb_pivot_before_index = FFLAS::fflas_new<size_t>(n-1);
+        size_t* nb_pivot_before_index_not_moved = FFLAS::fflas_new<size_t>(n-1);  
+        size_t* nb_pivot_after_index_not_moved = FFLAS::fflas_new<size_t>(n-1);
 
         for (size_t i = 0; i<n-1; ++i) {
             H[i]=0;
@@ -545,7 +543,6 @@ namespace FFPACK{
         }
 
         RandomIndexSubset(n-1,r,rows);
-        std::sort(rows, rows + r);
 
         for (size_t i = 0; i < r; ++i) {
             cols[i] = n - rows[i] - 2;
@@ -555,8 +552,12 @@ namespace FFPACK{
 
 
         nb_pivot_before_index[0] = H[0];
+        nb_pivot_after_index_not_moved[0]=r;
+        nb_pivot_before_index_not_moved[0]=H[0];
         for (size_t i = 1; i < n - 1; ++i) {
             nb_pivot_before_index[i] = nb_pivot_before_index[i - 1] + H[i];
+            nb_pivot_after_index_not_moved[i] = r-nb_pivot_before_index[i-1];
+            nb_pivot_before_index_not_moved[i] = nb_pivot_before_index[i];
         }
 
         /// loop initialisation
@@ -626,10 +627,21 @@ namespace FFPACK{
                 }
             }
 
+            for (size_t k = 0; k<n-1; k++){
+                if (k <= prev_i) {
+                    nb_pivot_after_index_not_moved[k]--;
+                }
+                if (k >= prev_i) {
+                    nb_pivot_before_index_not_moved[k]--;
+                }
+            }
+
+            H[prev_i] = 0;
+
             /// valutation
             bool undo = true;
             for (size_t k = 0; k < n - 1; ++k) {
-                if (valuate(T[k], r, n, h + 1, prev_i, k, H[k], nb_pivot_before_index[k]) >= t) {
+                if (valuate(T[k], r, n, k, H[k], nb_pivot_before_index[k], nb_pivot_after_index_not_moved[k], nb_pivot_before_index_not_moved[k]) >= t) {
                     undo = false;
                     break;
                 }
@@ -654,10 +666,22 @@ namespace FFPACK{
                     }
                 }
 
+                for (size_t k = 0; k<n-1; k++){
+                    if (k <= prev_i) {
+                        nb_pivot_after_index_not_moved[k]--;
+                    }
+                    if (k >= prev_i) {
+                        nb_pivot_before_index_not_moved[k]--;
+                    }
+                }
+
+                H[prev_i] = 0;
+
                 ++loop;
                 if (prev_h != h) {
                     prev_h = h;
-                };
+                }
+
                 continue;
             }
 
