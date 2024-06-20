@@ -467,8 +467,8 @@ namespace FFPACK{
         FFLAS::fflas_delete (randcols,randrows);
     }
 
-    // O(l*len(L))
-    // id = true if we consider the identity, else False
+    // O(l*len(L)+M*len(M))
+    // compute all the valid moves in the array valid_moves depending on the free areas described in L and M 
     inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t* start_up, size_t l, size_t* L, size_t lengthL, int llim, size_t m, size_t* M, size_t lengthM, int mlim) {
         valid_moves->clear();
 
@@ -482,11 +482,10 @@ namespace FFPACK{
             }
         }
 
+        // start_up point where the valid moves change direction
         *start_up = valid_moves->size();
 
-        //std::cout << mlim << "//" << m << std::endl;
         for (size_t i = (size_t) mlim+1; i < m; ++i) {
-            //std::cout << i << (std::find(M, M + lengthM, i) == M + lengthM) << std::endl;
             if (std::find(M, M + lengthM, i) == M + lengthM) {
                 valid_moves->push_back(i);
             }
@@ -533,9 +532,9 @@ namespace FFPACK{
 
         size_t* H = FFLAS::fflas_new<size_t>(n-1);
         size_t* T = FFLAS::fflas_new<size_t>(n-1);
-        size_t* nb_pivot_before_index = FFLAS::fflas_new<size_t>(n-1);
-        size_t* nb_pivot_after_index = FFLAS::fflas_new<size_t>(n-1);
-        size_t* nb_pivot_before_index_not_moved = FFLAS::fflas_new<size_t>(n-1);  
+        size_t* nb_pivot_before_index = FFLAS::fflas_new<size_t>(n-1); // pivots that are on lines before line i
+        size_t* nb_pivot_after_index = FFLAS::fflas_new<size_t>(n-1); // pivots that are on columns before the last column of the line i
+        size_t* nb_pivot_before_index_not_moved = FFLAS::fflas_new<size_t>(n-1);  // same idea with pivots that didn't move yet
         size_t* nb_pivot_after_index_not_moved = FFLAS::fflas_new<size_t>(n-1);
 
         for (size_t i = 0; i<n-1; ++i) {
@@ -572,7 +571,6 @@ namespace FFPACK{
         int prev_h = -1;
 
         while ((size_t) h < r) {
-            //std::cout << h << std::endl;
             size_t prev_i = rows[h];
             size_t prev_j = cols[h];
 
@@ -582,6 +580,7 @@ namespace FFPACK{
 
             /// computating valid_moves
             if (prev_h != h) {
+                // compute impossible ones (those which make the configuration having a greater t than asked)
                 ilim = -1;
                 jlim = -1;
                 int k = rows[h]+1;
@@ -600,7 +599,6 @@ namespace FFPACK{
                     }
                     --k;
                 }
-                //std::cout << "ilim" << ilim << std::endl;
                 compute_valid_moves(& valid_moves, & start_up, prev_j, cols, r, jlim, prev_i, rows, r, ilim);
             }
 
@@ -616,7 +614,7 @@ namespace FFPACK{
             if (rand_index < start_up) {
                 new_j = valid_moves[rand_index];
                 cols[h] = new_j;
-
+                // updates of the arrays for the valuation function
                 for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
                     T[k] += 1;
                     nb_pivot_after_index[k] += 1;
@@ -624,13 +622,14 @@ namespace FFPACK{
             } else {
                 new_i = valid_moves[rand_index];
                 rows[h] = new_i;
-
+                // updates of the arrays for the valuation function
                 for (size_t k = new_i; k < prev_i; ++k) {
                     T[k] += 1;
                     nb_pivot_before_index[k] += 1;
                 }
             }
 
+            // updates of the arrays for the valuation function
             for (size_t k = 0; k<n-1; k++){
                 if (k <= prev_i) {
                     nb_pivot_after_index_not_moved[k]--;
@@ -651,19 +650,22 @@ namespace FFPACK{
                 }
             }
 
-            /// undo
+            /// undo if needed
             if (undo) {
                 if (rand_index >= start_up) {
+                    // undo the move and erase it from the valid moves
                     rows[h] = prev_i;
                     valid_moves.erase(valid_moves.begin()+rand_index);
-
+                    // undo of the arrays for valuation func
                     for (size_t k = new_i; k < prev_i; ++k) {
                         T[k] -= 1;
                         nb_pivot_before_index[k] -= 1;
                     }
                 } else {
+                    // undo the move and erase it from the valid moves
                     cols[h] = prev_j;
                     valid_moves.erase(valid_moves.begin()+rand_index);
+                    // undo of the arrays for valuation func
                     start_up--;
                     for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
                         T[k] -= 1;
@@ -671,6 +673,7 @@ namespace FFPACK{
                     }
                 }
 
+                // undo of the arrays for valuation func
                 for (size_t k = 0; k<n-1; k++){
                     if (k <= prev_i) {
                         nb_pivot_after_index_not_moved[k]--;
@@ -686,11 +689,9 @@ namespace FFPACK{
                 if (prev_h != h) {
                     prev_h = h;
                 }
-
+                // let's try another move
                 continue;
             }
-
-            //debug
 
             /// set up for next loop turn
             ++loop;
