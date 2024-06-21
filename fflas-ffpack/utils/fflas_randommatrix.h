@@ -493,6 +493,7 @@ namespace FFPACK{
     }
 
     // O(1)
+    // estimate what rank a submatrix is able to reach given the current configuration of the algorithm
     size_t valuate(int ti, int r, int n, int i, int Is_pivot_not_moved,int nb_pivot_after_i, int nb_pivot_bf_i, int nb_pivot_after_i_not_moved, int nb_pivot_before_i_not_moved) {
         // Compute the valuation of a given leading submatrix ti
             return ti + std::min(i + 1 - nb_pivot_bf_i, nb_pivot_after_i_not_moved - Is_pivot_not_moved) +
