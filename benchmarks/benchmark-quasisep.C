@@ -49,18 +49,35 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     Element_ptr A, TS;
 
     double time_gen = 0, time_cbxts =0;
-    double time_RPMGen = 0;
+    double time_RPMGen_Tom = 0, time_RPMGen = 0;
     for (size_t i=0;i<iter;++i){
 
-        size_t * rows = FFLAS::fflas_new<size_t> (r);
-        size_t * cols = FFLAS::fflas_new<size_t> (r);
+        size_t * rows1 = FFLAS::fflas_new<size_t> (r);
+        size_t * cols1 = FFLAS::fflas_new<size_t> (r);
+        
+        if (r < 2000) {
+            chrono.clear();
+            chrono.start();
+            RandomLTQSRankProfileMatrix (n, r, t, rows1, cols1);
+            chrono.stop();
+
+            time_RPMGen += chrono.usertime();
+        }
+        else {
+            time_RPMGen = -1;
+        }
+
+        size_t * rows2 = FFLAS::fflas_new<size_t> (r);
+        size_t * cols2 = FFLAS::fflas_new<size_t> (r);
 
         chrono.clear();
         chrono.start();
-        RandomLTQSRankProfileMatrix_Tom (n, r, t, rows, cols);
+        RandomLTQSRankProfileMatrix_Tom (n, r, t, rows2, cols2);
         chrono.stop();
 
-        time_RPMGen += chrono.usertime();
+        time_RPMGen_Tom += chrono.usertime();
+
+        FFLAS::fflas_delete(rows1, rows2, cols1, cols2);
 
         A = FFLAS::fflas_new (F, n, n);
         size_t lda=n;
@@ -116,7 +133,8 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     // -----------
     // Standard output for benchmark - Alexis Breust 2014/11/14
     // std::cout << "Time: " << (time_gen + time_cbxts) / double(iter)  << " Gfops: Irrelevant (Generator) Specific times: " << time_gen / double(iter)<<" (for construction)" << time_cbxts / double(iter)<<" (for CB x TS)" ;
-    std::cout << "Time : " << time_RPMGen / double(iter) << std::endl;
+    std::cout << "Time_stand : " << time_RPMGen / double(iter) << std::endl;
+    std::cout << "Time_Tom : " << time_RPMGen_Tom / double(iter) << std::endl;
 }
 
 int main(int argc, char** argv) {
