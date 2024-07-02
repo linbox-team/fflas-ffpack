@@ -469,7 +469,7 @@ namespace FFPACK{
 
     // O(l*len(L)+M*len(M))
     // compute all the valid moves in the array valid_moves depending on the free areas described in L and M 
-    inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t* start_up, size_t l, size_t* L, size_t lengthL, int llim, size_t m, size_t* M, size_t lengthM, int mlim) {
+    inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t* start_up, size_t l, size_t* L, size_t lengthL, int llim, size_t m, size_t* M, size_t lengthM, int mlim, std::vector<bool> availrows, std::vector<bool> availcols) {
         valid_moves->clear();
 
         // Base case: Identity
@@ -477,7 +477,7 @@ namespace FFPACK{
 
         // Compute all the empty columns/lines
         for (size_t j = (size_t) llim+1; j < l; ++j) {
-            if (std::find(L, L + lengthL, j) == L + lengthL) {
+            if (availcols[j]) {
                 valid_moves->push_back(j);
             }
         }
@@ -486,7 +486,7 @@ namespace FFPACK{
         *start_up = valid_moves->size();
 
         for (size_t i = (size_t) mlim+1; i < m; ++i) {
-            if (std::find(M, M + lengthM, i) == M + lengthM) {
+            if (availrows[i]) {
                 valid_moves->push_back(i);
             }
         }
@@ -538,6 +538,9 @@ namespace FFPACK{
         size_t* nb_pivot_before_index_not_moved = FFLAS::fflas_new<size_t>(n-1);  // same idea with pivots that didn't move yet
         size_t* nb_pivot_after_index_not_moved = FFLAS::fflas_new<size_t>(n-1);
 
+        std::vector<bool> availablerows (n-1, true); // indicate wether the row i is available or not
+        std::vector<bool> availablecols (n-1, true); // same idea with col j
+
         for (size_t i = 0; i<n-1; ++i) {
             H[i]=0;
             T[i]=0;
@@ -549,6 +552,9 @@ namespace FFPACK{
             cols[i] = n - rows[i] - 2;
             T[rows[i]] = 1;
             H[rows[i]] = 1;
+
+            availablerows[rows[i]] = false;
+            availablecols[cols[i]] = false;
         }
 
 
@@ -580,6 +586,7 @@ namespace FFPACK{
 
 
             /// computating valid_moves
+            // complex : 2n
             if (prev_h != h) {
                 // compute impossible ones (those which make the configuration having a greater t than asked)
                 ilim = -1;
@@ -600,7 +607,7 @@ namespace FFPACK{
                     }
                     --k;
                 }
-                compute_valid_moves(& valid_moves, & start_up, prev_j, cols, r, jlim, prev_i, rows, r, ilim);
+                compute_valid_moves(& valid_moves, & start_up, prev_j, cols, r, jlim, prev_i, rows, r, ilim, availablerows, availablecols);
             }
 
             /// choose and make the chosen move
@@ -631,6 +638,7 @@ namespace FFPACK{
             }
 
             // updates of the arrays for the valuation function
+            // O(n)
             for (size_t k = 0; k<n-1; k++){
                 if (k <= prev_i) {
                     nb_pivot_after_index_not_moved[k]--;
@@ -643,6 +651,7 @@ namespace FFPACK{
             H[prev_i] = 0;
 
             /// valutation
+            // O(n)
             bool undo = true;
             for (size_t k = 0; k < n - 1; ++k) {
                 if (valuate(T[k], r, n, k, H[k], nb_pivot_after_index[k], nb_pivot_before_index[k], nb_pivot_after_index_not_moved[k], nb_pivot_before_index_not_moved[k]) >= t) {
@@ -675,6 +684,7 @@ namespace FFPACK{
                 }
 
                 // undo of the arrays for valuation func
+                // O(n)
                 for (size_t k = 0; k<n-1; k++){
                     if (k <= prev_i) {
                         nb_pivot_after_index_not_moved[k]--;
@@ -695,12 +705,23 @@ namespace FFPACK{
             }
 
             /// set up for next loop turn
+            if (prev_j != new_j){
+                availablecols[prev_j] = true;
+                availablecols[new_j] = false;
+            }
+            else if (prev_i != new_i){
+                availablerows[prev_i] = true;
+                availablerows[new_i] = false;
+            }
             ++loop;
             ++h;
         }
         FFLAS::fflas_delete (H);
         FFLAS::fflas_delete (T);
         FFLAS::fflas_delete(nb_pivot_before_index);
+        FFLAS::fflas_delete(nb_pivot_after_index);
+        FFLAS::fflas_delete(nb_pivot_before_index_not_moved);
+        FFLAS::fflas_delete(nb_pivot_after_index_not_moved);
     }
 
 
