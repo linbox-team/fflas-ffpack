@@ -402,21 +402,25 @@ inline void RRxRR (const Field& Fi,
 /// @brief (algo 6) add two matrices stored as rank revealing factorization
 /// @tparam Field 
 /// @param Fi 
-/// @param LA       size (m*r_A) transpose
-/// @param UA       size r_A*n
 /// @param r_A 
-/// @param LB       size (m*r_b) transpose
-/// @param UB       size r_b*n
 /// @param r_b 
 /// @param m 
 /// @param n 
+/// @param LA       size (m*r_A) transpose
+/// @param UA       size r_A*n
+/// @param LB       size (m*r_b) transpose
+/// @param UB       size r_b*n
+/// @param ldLA     leading dimension of LA
+/// @param ldUA     leading dimension of UA
+/// @param ldLB     leading dimension of LB
+/// @param ldUB     leading dimension of UB
 template<class Field>
 inline void RRaddRR (const Field& Fi,
-            const size_t* LA, const size_t* UA,
-            size_t r_A,
-            const size_t* LB, const size_t* UB,
-            size_t r_b, 
-            size_t m, size_t n)
+            size_t r_A, size_t r_b, size_t m, size_t n,
+            typename Field::ConstElement_ptr LA, size_t ldLA,
+            typename Field::ConstElement_ptr UA, size_t ldUA,
+            typename Field::ConstElement_ptr LB, size_t ldLB,
+            typename Field::ConstElement_ptr UB, size_t ldUB)
     {
         // X < [LA LB]
 
@@ -433,19 +437,18 @@ inline void RRaddRR (const Field& Fi,
 /// @brief (algo 7) Adds a quasiseparable matrix in RRR representation and a rank revealing factorization.
 /// @tparam Field 
 /// @param Fi 
-/// @param A 
-/// @param s 
-/// @param LB 
-/// @param UB 
-/// @param r_b 
-/// @param n 
+/// @param s        order of quasiseparability of A
+/// @param r_b      rank of b
+/// @param n        dimension of A and B
+/// @param A        size n*n in RRR representation
+/// @param LB       size n*r_b
+/// @param UB       size r_b*n 
 template<class Field>
 inline void RRRaddRR (const Field& Fi,
-            const RRRrep<Field> A,
-            size_t s,
-            const size_t* LB, const size_t* UB,
-            size_t r_b, 
-            size_t n)
+            size_t s, size_t r_b, size_t n,
+            const RRRrep<Field>& A,
+            typename Field::ConstElement_ptr LB, size_t ldLB,
+            typename Field::ConstElement_ptr UB, size_t ldUB)
     {
         //TODO
     }
@@ -453,56 +456,142 @@ inline void RRRaddRR (const Field& Fi,
 /// @brief (algo 8) Multiplies a quasiseparable matric in RRR representation with a tall and skinny matrix
 /// @tparam Field 
 /// @param Fi 
-/// @param A        size n*n in RRR representation
 /// @param s        order of quasisep of A
-/// @param B        size n*t 
 /// @param t 
 /// @param n 
+/// @param A        size n*n in RRR representation
+/// @param B        size n*t 
+/// @param ldB      leading dimension of B
+/// @param C        size n*t
+/// @param ldC      leading dimension of C
 template<class Field>
-inline void RRRxTS (const Field& Fi,
-            const RRRrep<Field> A,
-            size_t s,
-            typename Field::Element_ptr B,
-            size_t t, 
-            size_t n)
+inline void RRRxTSrec (const Field& Fi,
+            size_t s, size_t n, size_t t,
+            const Node<Field>& nodeA,
+            typename Field::ConstElement_ptr B, size_t ldB,
+            typename Field::ConstElement_ptr C, size_t ldC)
     {
         if (n<=s+t){
-            // return RRRExp(A)xB comment on multiplie?
+            typename Field::Element_ptr Adense = fflas_new (Fi, n, n);
+            RRRExpandrec(Fi, nodeA, Adense, n);
+            fgemm(Fi, 
+                FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                n, t, n,
+                1,
+                Adense, n,
+                B, ldB,
+                0,
+                C, ldC);
+
+            return;
         }
 
+        size_t N1 = nodeA.size_N1;
+        size_t N2 = nodeA.size_N2;
+
+        // split the matrices as    [C1] = [A11 A12] [B1]
+        //                          [C2] = [A12 A22] [B2]
+        typename Field::Element_ptr C1 = C;
+        typename Field::Element_ptr C2 = C1 + N1*ldC;
+
+        typename Field::Element_ptr B1 = B;
+        typename Field::Element_ptr B2 = B1 + N1*ldB;
+
         // C1 < RRRxTS(A11,B1)
+        RRRxTSrec(Fi, s, N1, t, nodeA.left, B1, ldB, C1, ldC);
 
         // C2 < RRRxTS(A22,B2)
+        RRRxTSrec(Fi, s, N2, t, nodeA.right, B2, ldB, C2, ldC);
 
-        // X < RA12 x B2 comment on multiplie ?
+        // X < RA12 x B2
+        // X of size ru*t
+        typename Field::Element_ptr X = fflas_new (Fi, nodeA.ru, t);
+        fgemm(Fi,
+            FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            nodeA.ru, N2, t,
+            1,
+            nodeA.U_u, N2,
+            B2, ldB,
+            0,
+            X, t);
 
         // C1 < C1 + LA12 x X
+        fgemm(Fi,
+            FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            N1, nodeA.ru, t,
+            1,
+            nodeA.L_u, nodeA.ru,
+            X, t,
+            1,
+            C1, ldC);
 
         // Y < RA21 x B1
+        typename Field::Element_ptr Y = fflas_new (Fi, nodeA.rl, t);
+        fgemm(Fi,
+            FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            nodeA.rl, N1, t,
+            1,
+            nodeA.U_l, N1,
+            B1, ldB,
+            0,
+            Y, t);
 
         // C2 < C2 + LA21 x Y
+        fgemm(Fi,
+            FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            N2, nodeA.rl, t,
+            1,
+            nodeA.L_l, nodeA.rl,
+            Y, t,
+            1,
+            C2, ldC);
 
-        // return C =   [C1]
-        //              [C2]
+        // C =   [C1]
+        //       [C2]
     }
 
-
-/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+/// @brief (algo 8) Multiplies a quasiseparable matric in RRR representation with a tall and skinny matrix
 /// @tparam Field 
 /// @param Fi 
-/// @param A        size n*n in a RRR representation
+/// @param s        order of quasisep of A
+/// @param t 
+/// @param n 
+/// @param A        size n*n in RRR representation
+/// @param B        size n*t 
+/// @param ldB      leading dimension of B
+/// @param C        size n*t
+/// @param ldC      leading dimension of C
+template<class Field>
+inline void RRRxTS (const Field& Fi,
+            size_t s, size_t n, size_t t,
+            const RRRrep<Field>& A,
+            typename Field::ConstElement_ptr B, size_t ldB,
+            typename Field::ConstElement_ptr C, size_t ldC)
+    {
+        RRRxTSrec(Fi, s, n, t, A.getroot(), B, ldB, C, ldC);
+    }
+
+/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+///                 Compute C = A*B
+/// @tparam Field 
+/// @param Fi
 /// @param s        order of QS of A
-/// @param n        
-/// @param LB       size n*r_b (transpose ?)
+/// @param n   
+/// @param r_b      rank of B
+/// @param m  
+/// @param A        size n*n in a RRR representation     
+/// @param LB       size n*r_b
 /// @param UB       size r_b*m
-/// @param r_b 
-/// @param m 
+/// @param ldLB     leading dimension of LB
+/// @param ldUB     leading dimension of UB
 template<class Field>
 inline void RRRxRR (const Field& Fi,
-            const RRRrep<Field> A,
-            size_t s, size_t n,
-            const size_t* LB, const size_t* UB,
-            size_t r_b, size_t m)
+            size_t s, size_t n, size_t r_b, size_t m,
+            const RRRrep<Field>& A,
+            typename Field::ConstElement_ptr LB, size_t ldLB,
+            typename Field::ConstElement_ptr UB, size_t ldUB,
+            typename Field::Element_ptr LC, size_t ldLC,
+            typename Field::Element_ptr UC, size_t ldUC)
     {
         // X < RRRxTS(A,LB)
 
@@ -516,18 +605,16 @@ inline void RRRxRR (const Field& Fi,
 /// @brief multiplies two QS matrices (algo 10)
 /// @tparam Field 
 /// @param Fi 
-/// @param A        size n*n
 /// @param s        order of QS of A
-/// @param B        size n*n
 /// @param t        order of QS of B
 /// @param n 
+/// @param A        size n*n
+/// @param B        size n*n
 template<class Field>
 inline void RRRxRRR (const Field& Fi,
-            const RRRrep<Field> A,
-            size_t s,
-            const RRRrep<Field> B,
-            size_t t,
-            size_t n)
+            size_t s,size_t t, size_t n,
+            const RRRrep<Field>& A,
+            const RRRrep<Field>& B)
     {
         if (n<= s+t){
             //return RRRExpand(A) x RRRExpand(B)
@@ -562,17 +649,20 @@ inline void RRRxRRR (const Field& Fi,
     }
 
 
-
+/// @brief Compute the inverse in RRR representation
+/// @tparam Field 
+/// @param Fi 
+/// @param A    in RRR representation
 template<class Field>
 inline void RRRinvert (const Field& Fi,
-            const RRRrep<Field> A)
+            const RRRrep<Field>& A)
     {
         RRRinvertrec(Fi, A);
     }
 
 template<class Field>
 inline void RRRinvertrec (const Field& Fi,
-            const Node<Field> A)
+            const Node<Field>& A)
     {
         if (!A.left){
             // Y < RRRExpand(A)
