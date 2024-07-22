@@ -31,10 +31,10 @@ bool test_compression  (const Field & F, size_t n, size_t t,
                         typename Field::Element_ptr A, size_t lda)
 {
     typename  Field::Element_ptr Acheck = fflas_new (F, n, n);
-    
-    RRRrep<Field> RRRA = PLUQRRRGen<Field>(F, n, t, A, lda);
-    std::cout << "ici" << std::endl;
-    RRRExpand<Field>(F, RRRA, Acheck, n);
+
+    RRRrep<Field>* RRRA = PLUQRRRGen<Field>(F, n, t, A, lda);
+
+    RRRExpand<Field>(F, *RRRA, Acheck, n);
 
     bool ok = fequal (F, n, n, A, lda, Acheck, n);
     if ( !ok )
@@ -44,7 +44,7 @@ bool test_compression  (const Field & F, size_t n, size_t t,
             WriteMatrix(std::cout << "A = " << std::endl, F, n, n, A, lda);
             WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
         }
-    
+
     FFLAS::fflas_delete(Acheck);
 
     return ok;
@@ -56,6 +56,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     typedef typename Field::Element_ptr Element_ptr;
     Element_ptr A1 = fflas_new(F,n,n);
 
+    /* For the moment it's only tested with the matrix full of 0 (order of quasisep 0)*/
     fzero(F, n, n, A1, n);
 
     bool ok = true;
@@ -134,6 +135,7 @@ int main(int argc, char** argv)
     bool ok=true;
     do{
         std::cerr<<"with seed = "<<seed<<std::endl;
+        std::cerr<<"tests with matrix full of 0"<<std::endl;
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);

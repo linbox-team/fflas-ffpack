@@ -21,25 +21,27 @@ public:
     Node* left;
     Node* right;
 
-    Node(typename Field::Element_ptr U_u, typename Field::Element_ptr L_u, size_t ru, typename Field::Element_ptr U_l, typename Field::Element_ptr L_l, size_t rl, size_t N1, size_t N2, Node* left, Node* right)
+    Node(   typename Field::Element_ptr U_u, typename Field::Element_ptr L_u, size_t ru,
+            typename Field::Element_ptr U_l, typename Field::Element_ptr L_l, size_t rl,
+            size_t N1, size_t N2, Node* left, Node* right)
         : U_u(U_u), L_u(L_u), ru(ru), U_l(U_l), L_l(L_l), rl(rl), size_N1(N1), size_N2(N2), left(left), right(right) {}
 
     Node(typename Field::Element_ptr leaf, size_t N)
-        : U_u(leaf), size_N1(N) {}
+        : U_u(leaf), L_u(nullptr), ru(0), U_l(nullptr), L_l(nullptr), rl(0), size_N1(N), size_N2(0), left(nullptr), right(nullptr) {}
 
     ~Node() {
-        delete[] U_u;
+        FFLAS::fflas_delete(U_u);
         
         if (L_u) {
-            delete[] L_u;
+            FFLAS::fflas_delete(L_u);
         }
 
         if (U_l) {
-            delete[] U_l;
+            FFLAS::fflas_delete(U_l);
         }
 
         if (L_l) {
-            delete[] L_l;
+            FFLAS::fflas_delete(L_l);
         }
     }
 };
@@ -146,12 +148,12 @@ public:
 /// @param lda 
 /// @return the root of the RRR representation of A
 template<class Field>
-inline Node<Field> PLUQRRRGen_rec (const Field& Fi,
+inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
             const size_t N, const size_t s,
             typename Field::Element_ptr A, const size_t lda)
     {
         if (N/2 < s) {
-            return Node<Field>(A, N);
+            return new Node<Field>(A, N);
         }
 
         size_t N1 = N/2;
@@ -244,24 +246,22 @@ inline Node<Field> PLUQRRRGen_rec (const Field& Fi,
         FFLAS::fflas_delete(P_u,Q_u,P_l,Q_l);
 
         // recursion on A11 and A22        
-        Node<Field> left = PLUQRRRGen_rec(Fi,
+        Node<Field>* left = PLUQRRRGen_rec(Fi,
                                     N1, s,
                                     A11, lda);
-        Node<Field> right = PLUQRRRGen_rec(Fi,
+        Node<Field>* right = PLUQRRRGen_rec(Fi,
                                     N2, s,
                                     A22, lda);
 
-        Node<Field> node = Node<Field>( U_u,
-                                        L_u,
-                                        r_u,
-                                        U_l,
-                                        L_l,
-                                        r_l,
-                                        N1, N2,
-                                        &left, 
-                                        &right);
-
-        return node;
+        return new Node<Field>( U_u,
+                                L_u,
+                                r_u,
+                                U_l,
+                                L_l,
+                                r_l,
+                                N1, N2,
+                                left, 
+                                right);
     }
 
 /// @brief RRR Generator API
@@ -273,25 +273,26 @@ inline Node<Field> PLUQRRRGen_rec (const Field& Fi,
 /// @param lda 
 /// @return the RRR representation of A
 template<class Field>
-inline RRRrep<Field> PLUQRRRGen (const Field& Fi,
+inline RRRrep<Field>* PLUQRRRGen (const Field& Fi,
             const size_t N, const size_t s,
             typename Field::Element_ptr A, const size_t lda)
     {
         if (s == 0) {
-            std::cout << "Matrice nulle" << std::endl;
-            Node<Field> root = Node<Field>(A, N);
-            return RRRrep(&root, lda);
+            Node<Field>* root = new Node<Field>(A, N);
+            RRRrep<Field>* RRRA = new RRRrep<Field>(root, lda);
+            return RRRA;
         }
 
         if (N/2 < s) {
             std::cout << "Impoossible to generate an RRR representation, the given order of quasiseparability is too high" << std::endl;
-            Node<Field> root = PLUQRRRGen_rec(Fi, N, s, A, lda);
-            return RRRrep(&root, lda);
+            Node<Field>* root = PLUQRRRGen_rec(Fi, N, s, A, lda);
+
+            return new RRRrep<Field>(root, lda);
         }
 
         else {
-            Node<Field> root = PLUQRRRGen_rec(Fi, N, s, A, lda);
-            return RRRrep(&root, lda);
+            Node<Field>* root = PLUQRRRGen_rec(Fi, N, s, A, lda);
+            return new RRRrep<Field>(root, lda);
         }
     }
 
@@ -307,7 +308,9 @@ inline void RRRExpandrec (const Field& Fi,
             typename Field::Element_ptr B, const size_t ldb)
     {
         if (nodeA.left == nullptr){
-            B = nodeA.U_u;
+            size_t N = nodeA.size_N1;
+            FFLAS::fassign(Fi, N, N, nodeA.U_u, N, B, ldb);
+            return;
         }
 
         size_t N1 = nodeA.size_N1;
@@ -359,11 +362,11 @@ inline void RRRExpand (const Field& Fi,
             return;
         }
 
-        if ( RRRA.getroot()->left == nullptr){
-            B = RRRA.getroot()->U_u;
-        }
+        Node<Field>* root = RRRA.getroot();
+        
+        RRRExpandrec<Field>(Fi, *root, B, ldb);
 
-        RRRExpandrec<Field>(Fi, *RRRA.getroot(), B, ldb);
+        return;
         
     }
 
