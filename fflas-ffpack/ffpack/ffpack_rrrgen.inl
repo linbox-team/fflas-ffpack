@@ -10,16 +10,16 @@ namespace FFPACK{
 template<class Field>
 class Node {
 public:
-    typename Field::Element_ptr U_u;
-    typename Field::Element_ptr L_u;
-    size_t ru;
-    typename Field::Element_ptr U_l;
-    typename Field::Element_ptr L_l;
-    size_t rl;
-    size_t size_N1;
-    size_t size_N2;
-    Node* left;
-    Node* right;
+    typename Field::Element_ptr U_u;    // UQ from PLUQ on submatrix up right (ru*N2)
+    typename Field::Element_ptr L_u;    // PL from PLUQ on submatrix up right (N1*r1)
+    size_t ru;                          // rank of submatrix up right
+    typename Field::Element_ptr U_l;    // UQ from PLUQ on submatrix down left (rl*N1)
+    typename Field::Element_ptr L_l;    // PL from PLUQ on submatrix down left (rl*N2)
+    size_t rl;                          // rank of submatrix down left
+    size_t size_N1;                     // size of N/2 (N is the size of the matrix represented by the node)
+    size_t size_N2;                     // size of N-N1
+    Node* left;                         // recursively pointing on the same representation of the up left submatrix
+    Node* right;                        // recursively pointing on the same representation of the down right submatrix
 
     Node(   typename Field::Element_ptr U_u, typename Field::Element_ptr L_u, size_t ru,
             typename Field::Element_ptr U_l, typename Field::Element_ptr L_l, size_t rl,
@@ -142,8 +142,8 @@ public:
 /// @brief RRR Generator recursive part
 /// @tparam Field 
 /// @param Fi 
-/// @param N 
-/// @param s 
+/// @param N    size of A
+/// @param s    quasiseparability order
 /// @param A 
 /// @param lda 
 /// @return the root of the RRR representation of A
@@ -267,8 +267,8 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 /// @brief RRR Generator API
 /// @tparam Field 
 /// @param Fi 
-/// @param N 
-/// @param s 
+/// @param N    size of A
+/// @param s    order of quasiseparability
 /// @param A 
 /// @param lda 
 /// @return the RRR representation of A
