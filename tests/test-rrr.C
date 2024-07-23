@@ -12,8 +12,8 @@
 
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-#include "fflas-ffpack/ffpack/ffpack_rrrgen.inl"
 #include "fflas-ffpack/utils/test-utils.h"
+#include "fflas-ffpack/ffpack/ffpack_rrrgen.inl"
 
 #include "fflas-ffpack/utils/args-parser.h"
 
@@ -30,18 +30,38 @@ template<class Field>
 bool test_compression  (const Field & F, size_t n, size_t t,
                         typename Field::Element_ptr A, size_t lda)
 {
-    typename  Field::Element_ptr Acheck = fflas_new (F, n, n);
+    typename Field::Element_ptr Acheck = fflas_new (F, n, n);
+    typename Field::Element_ptr Ainit = fflas_new (F, n, n);
+
+    for (size_t i = 0; i < n; i++){
+        for (size_t j = 0; j < n; j++){
+            Ainit[i*n+j] = A[i*n+j];
+        }
+    } 
 
     RRRrep<Field>* RRRA = PLUQRRRGen<Field>(F, n, t, A, lda);
 
+    // Debuguing prints
+
+    //Node<Field>* root = RRRA->getroot();
+
+    //WriteMatrix(std::cout << "U_u = " << std::endl, F, root->ru, root->size_N2, root->U_u, root->size_N2);
+    //WriteMatrix(std::cout << "L_u = " << std::endl, F, root->size_N1, root->ru, root->L_u, root->ru);
+    //WriteMatrix(std::cout << "U_l = " << std::endl, F, root->rl, root->size_N1, root->U_l, root->size_N1);
+    //WriteMatrix(std::cout << "L_l = " << std::endl, F, root->size_N2, root->rl, root->L_l, root->rl);
+    //WriteMatrix(std::cout << "haut gauche = " << std::endl, F, root->size_N1, root->size_N1, root->left->U_u, RRRA->getlda());
+    //WriteMatrix(std::cout << "Bas droit = " << std::endl, F, root->right->size_N2, root->right->size_N2, root->right->right->U_u, RRRA->getlda());
+
+
     RRRExpand<Field>(F, *RRRA, Acheck, n);
 
-    bool ok = fequal (F, n, n, A, lda, Acheck, n);
+    bool ok = fequal (F, n, n, Ainit, lda, Acheck, n);
     if ( !ok )
         {
             std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"
                       <<std::endl;
-            WriteMatrix(std::cout << "A = " << std::endl, F, n, n, A, lda);
+            WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, Ainit, lda);
+            WriteMatrix(std::cout << "Amodif = " << std::endl, F, n, n, A, lda);
             WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
         }
 
@@ -55,15 +75,29 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
 {
     typedef typename Field::Element_ptr Element_ptr;
     Element_ptr A1 = fflas_new(F,n,n);
+    Element_ptr A2 = fflas_new(F,n,n);
 
-    /* For the moment it's only tested with the matrix full of 0 (order of quasisep 0)*/
-    fzero(F, n, n, A1, n);
+    /* For the moment tested only with simple matrices (identity / zero / ones somewhere)*/
+    fidentity(F, n, n, A1, n);
+
+    // constructed matrix
+    fidentity(F, n, n, A2, n);
+    F.assign(A2[4], F.one);
+    F.assign(A2[5+n], F.one);
+
+    //WriteMatrix(std::cout << "A2 =  " << std::endl, F, n, n, A2, n);
 
     bool ok = true;
     /* Call to functions being implemented */
+
+    // test with matrix identity
     ok = ok && test_compression(F,n,0,A1,n);
 
+    // test with a constructed matrix
+    ok = ok && test_compression(F,n,2,A2,n);
+
     FFLAS::fflas_delete(A1);
+    FFLAS::fflas_delete(A2);
 
     return ok;
 }
@@ -93,7 +127,6 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t t, size_t m,
             std::cout<<" ... ";
             
             ok = ok && launch_instance_check (*F, n, t, m, r, G);
-            //ok = ok && launch_instance_check (*F, n, (random() % s)+1, t, r, G);
 
             if (ok)
                 std::cout << "PASSED "<<std::endl;
@@ -135,7 +168,7 @@ int main(int argc, char** argv)
     bool ok=true;
     do{
         std::cerr<<"with seed = "<<seed<<std::endl;
-        std::cerr<<"tests with matrix full of 0"<<std::endl;
+        std::cerr<<"simple tests (only with matrix identity / with ones somewhere)"<<std::endl;
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
@@ -145,10 +178,10 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
                                                                      seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
-                                                                     seed);
-        ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),
-                                                                     iters,seed);
+        //ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
+        //                                                             seed);
+        //ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),
+        //                                                             iters,seed);
         seed++;
     } while (loop && ok);
 

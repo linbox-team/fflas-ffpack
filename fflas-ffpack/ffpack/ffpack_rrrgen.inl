@@ -152,7 +152,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
             const size_t N, const size_t s,
             typename Field::Element_ptr A, const size_t lda)
     {
-        if (N/2 < s) {
+        if (N/2 <= s) {
             return new Node<Field>(A, N);
         }
 
@@ -191,17 +191,17 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
                         FFLAS::FflasNonUnit,
                         N1, N2, r_u,
                         A12, lda,
-                        L_u, N1,
+                        L_u, r_u,
                         true);
 
         // apply the permutations (P on L and Q on U)
         applyP<Field>(Fi,
                 FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-                r_u, 0, N1,
-                L_u, N1, P_u);
+                r_u, 0, r_u,
+                L_u, r_u, P_u);
         applyP<Field>(Fi,
                 FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                r_u, 0, N2,
+                r_u, 0, r_u,
                 U_u, N2, Q_u);
 
         //////////////// PLUQ factorisation for A21
@@ -210,7 +210,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 
         size_t r_l = PLUQ(Fi, FFLAS::FflasNonUnit,
                             N2, N1,
-                            A12, lda,
+                            A21, lda,
                             P_l, Q_l);
 
         typename Field::Element_ptr U_l = FFLAS::fflas_new(Fi, r_l, N1);
@@ -230,22 +230,22 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
                         FFLAS::FflasNonUnit,
                         N2, N1, r_l,
                         A21, lda,
-                        L_l, N2,
+                        L_l, r_l,
                         true);
 
         // apply the permutations (P on L and Q on U)  
         applyP<Field>(Fi,
                 FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-                r_l, 0, N2,
-                L_l, N2, P_l);
+                r_l, 0, r_l,
+                L_l, r_l, P_l);
         applyP<Field>(Fi,
                 FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                r_l, 0, N1,
+                r_l, 0, r_l,
                 U_l, N1, Q_l);
 
         FFLAS::fflas_delete(P_u,Q_u,P_l,Q_l);
 
-        // recursion on A11 and A22        
+        // recursion on A11 and A22   
         Node<Field>* left = PLUQRRRGen_rec(Fi,
                                     N1, s,
                                     A11, lda);
@@ -285,14 +285,13 @@ inline RRRrep<Field>* PLUQRRRGen (const Field& Fi,
 
         if (N/2 < s) {
             std::cout << "Impoossible to generate an RRR representation, the given order of quasiseparability is too high" << std::endl;
-            Node<Field>* root = PLUQRRRGen_rec(Fi, N, s, A, lda);
-
-            return new RRRrep<Field>(root, lda);
+            return nullptr;
         }
 
         else {
             Node<Field>* root = PLUQRRRGen_rec(Fi, N, s, A, lda);
-            return new RRRrep<Field>(root, lda);
+            RRRrep<Field>* RRRA = new RRRrep<Field>(root, lda);
+            return RRRA;
         }
     }
 
@@ -309,7 +308,7 @@ inline void RRRExpandrec (const Field& Fi,
     {
         if (nodeA.left == nullptr){
             size_t N = nodeA.size_N1;
-            FFLAS::fassign(Fi, N, N, nodeA.U_u, N, B, ldb);
+            FFLAS::fassign(Fi, N, N, nodeA.U_u, ldb, B, ldb);
             return;
         }
 
@@ -332,18 +331,18 @@ inline void RRRExpandrec (const Field& Fi,
         // B12 < L_u * U_u
         fgemm(Fi,
             FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-            N1, N2, nodeA.ru, 1,
+            N1, N2, nodeA.ru, Fi.one,
             nodeA.L_u, nodeA.ru,
             nodeA.U_u, N2,
-            0, B12, ldb);
+            Fi.zero, B12, ldb);
 
         // B21 < L_l * U_l
         fgemm(Fi,
             FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-            N2, N1, nodeA.rl, 1,
+            N2, N1, nodeA.rl, Fi.one,
             nodeA.L_l, nodeA.rl,
             nodeA.U_l, N1,
-            0, B21, ldb);
+            Fi.zero, B21, ldb);
     }
 
 /// @brief  (algo 4) Compute the dense matrix of RRR(A) in B
