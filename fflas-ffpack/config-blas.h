@@ -299,7 +299,7 @@ extern "C" {
        else
            ssyrk_ (EXT_BLAS_UPLO (Uplo), EXT_BLAS_TRANSPOSE(Trans), &N, &K, &alpha, A, &lda, &beta, C, &ldc);
     }
-    void cblas_dsyrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
+    static inline void cblas_dsyrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
                  const enum CBLAS_TRANSPOSE Trans, const int N, const int K,
                  const double alpha, const double *A, const int lda,
                      const double beta, double *C, const int ldc){
