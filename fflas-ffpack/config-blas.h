@@ -128,6 +128,8 @@ extern "C" {
     void strmm_ (const char*, const char*, const char*, const char*, const int*, const int*, const float*, const float*, const int*, float*, const int*);
     void sgemm_ (const char*, const char*, const int*, const int*, const int*, const float*, const float*, const int*, const float*, const int*, const float*, float*, const int*);
     void dgemm_ (const char*, const char*, const int*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
+    void ssyrk_ (const char*, const char*, const int*, const int*, const float*, const float*, const int*, const float*, float*, const int*);
+    void dsyrk_ (const char*, const char*, const int*, const int*, const double*, const double*, const int*, const double*, double*, const int*);
 }
 
 // define C wrappers
@@ -293,18 +295,18 @@ extern "C" {
                               const float alpha, const float *A, const int lda,
                               const float beta, float *C, const int ldc){
        if (Order == CblasRowMajor)
-           ssyrk_ (EXT_BLAS_UPLO_tr(Uplo), EXT_BLAS_TRANSPOSE(Trans), N, K, alpha, A, lda, beta, C, ldc); // @TODO check this
+           ssyrk_ (EXT_BLAS_UPLO_tr(Uplo), EXT_BLAS_TRANSPOSE(Trans), &N, &K, &alpha, A, &lda, &beta, C, &ldc); // @TODO check this
        else
-           ssyrk_ (EXT_BLAS_UPLO (Uplo), EXT_BLAS_TRANSPOSE(Trans), N, K, alpha, A, lda, beta, C, ldc);
+           ssyrk_ (EXT_BLAS_UPLO (Uplo), EXT_BLAS_TRANSPOSE(Trans), &N, &K, &alpha, A, &lda, &beta, C, &ldc);
     }
     void cblas_dsyrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
                  const enum CBLAS_TRANSPOSE Trans, const int N, const int K,
                  const double alpha, const double *A, const int lda,
                      const double beta, double *C, const int ldc){
         if (Order == CblasRowMajor)
-            dsyrk_ (EXT_BLAS_UPLO_tr(Uplo), EXT_BLAS_TRANSPOSE(Trans), N, K, alpha, A, lda, beta, C, ldc); // @TODO check this
+            dsyrk_ (EXT_BLAS_UPLO_tr(Uplo), EXT_BLAS_TRANSPOSE(Trans), &N, &K, &alpha, A, &lda, &beta, C, &ldc); // @TODO check this
         else
-            dsyrk_ (EXT_BLAS_UPLO (Uplo), EXT_BLAS_TRANSPOSE(Trans), N, K, alpha, A, lda, beta, C, ldc);
+            dsyrk_ (EXT_BLAS_UPLO (Uplo), EXT_BLAS_TRANSPOSE(Trans), &N, &K, &alpha, A, &lda, &beta, C, &ldc);
     }
 
 }
