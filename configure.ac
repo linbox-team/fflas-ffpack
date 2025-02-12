@@ -21,11 +21,10 @@
 # ========LICENCE========
 #/
 
-AC_PREREQ([2.67])
+AC_PREREQ([2.71])
 
 
-AC_INIT([FFLAS-FFPACK], [2.5.1],[ffpack-devel@googlegroups.com],[fflas-ffpack],
-		[https://github.com/linbox-team/fflas-ffpack])
+AC_INIT([FFLAS-FFPACK],[2.5.1],[ffpack-devel@googlegroups.com],[fflas-ffpack],[https://github.com/linbox-team/fflas-ffpack])
 
 
 AC_CONFIG_MACRO_DIR([macros])
@@ -50,12 +49,10 @@ AC_PROG_CXX
 AM_PROG_AR
 
 # Libtool
-AC_PROG_LIBTOOL
+LT_INIT
 LT_PREREQ([2.4.3])
 LT_INIT
 
-# Look for headers
-AC_HEADER_STDC
 AC_CHECK_HEADERS([float.h limits.h stddef.h stdlib.h string.h sys/time.h stdint.h pthread.h])
 
 #

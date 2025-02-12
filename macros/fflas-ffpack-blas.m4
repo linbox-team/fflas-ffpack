@@ -26,8 +26,7 @@ dnl Defines HAVE_LAPACK,  HAVE_CLAPACK,  HAVE_BLAS,  HAVE_CBLAS if available
 
 AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 		[ AC_ARG_WITH(blas-cflags,
-			[AC_HELP_STRING([--with-blas-cflags=<cflags>],
-				[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
+			[AS_HELP_STRING([--with-blas-cflags=<cflags>],[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
 			])
                 BLAS_CFLAGS="$with_blas_cflags"
 		AC_SUBST(BLAS_CFLAGS)
@@ -37,8 +36,7 @@ AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 dnl
 AC_DEFUN([FF_CHECK_BLAS_LIBS],
 		[ AC_ARG_WITH(blas-libs,
-			[AC_HELP_STRING([--with-blas-libs=<libs>],
-				[ LIBS for BLAS/LAPACK (i.e. -L/path/to/toto-blas -ltoto-blas) ])
+			[AS_HELP_STRING([--with-blas-libs=<libs>],[ LIBS for BLAS/LAPACK (i.e. -L/path/to/toto-blas -ltoto-blas) ])
 			])
 		BLAS_LIBS="$with_blas_libs"
 		AC_SUBST(BLAS_LIBS)
@@ -63,15 +61,14 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
                 dnl is there user CBLAS accessible ?
 		AC_MSG_CHECKING(for BLAS)
 
-		AC_TRY_RUN([ ${CODE_CBLAS} ],[
+		AC_RUN_IFELSE([AC_LANG_SOURCE([[ ${CODE_CBLAS} ]])],[
 				blas_found="yes"
                                 is_cblas="yes"
                                 AC_MSG_RESULT(found CBLAS)
 				],[
                                 dnl No, then checking for Fortran BLAS
-                                AC_TRY_RUN(
-                                  [ ${CODE_FBLAS} ],
-                                   [ blas_found="yes"
+                                AC_RUN_IFELSE([AC_LANG_SOURCE([[ ${CODE_FBLAS} ]])], [
+                                     blas_found="yes"
                                      is_cblas="no"
                                      AC_MSG_RESULT(found Fortran BLAS)
                                    ],[
@@ -79,8 +76,7 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
                                      BLAS_LIBS="${BLAS_LIBS} -lopenblas -lpthread"
                                      AS_CASE([$CCNAM], [gcc*], [BLAS_LIBS="${BLAS_LIBS} -lgfortran"])
                                      LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
-				     AC_TRY_RUN(
-					[ ${CODE_CBLAS} ],[
+				     AC_RUN_IFELSE([AC_LANG_SOURCE([[ ${CODE_CBLAS} ]])],[
                                         AC_MSG_RESULT(found OpenBLAS)
 					blas_found="yes"
                                         is_cblas="yes"
@@ -94,19 +90,19 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 			                AC_MSG_RESULT(cross compiling)
 					blas_cross="yes"
 					AC_SUBST(BLAS_LIBS)
-					])
+					],[],[])
                                         ],[
 		                       blas_found="yes"
                                        is_cblas="no"
 			               AC_MSG_RESULT(cross compiling)
 				       blas_cross="yes"
-                                   ])
+                                   ],[],[])
 				],[
 				blas_found="yes"
 		                AC_MSG_RESULT(cross compiling)
                                 is_cblas="yes"
 				blas_cross="yes"
-				])
+				],[],[])
 
 		AS_IF([ test "x$blas_found" = "xyes" ],
 				[
@@ -162,12 +158,8 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${BLAS_CFLAGS}  -I. -I.. -I${srcdir} -I${srcdir}/flas-ffpack ${GIVARO_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
-		AC_TRY_RUN(
-			[ ${CODE_CLAPACK} ],
-			[ dgetrf_found="yes" ],
-			[ dgetrf_problem="problem" ],
-			[ dgetrf_found="" ]
-		)
+		AC_RUN_IFELSE([AC_LANG_SOURCE([[ ${CODE_CLAPACK} ]])],[ dgetrf_found="yes" ],[ dgetrf_problem="problem" ],[ dgetrf_found="" 
+		])
 
 		AS_IF([ test "${dgetrf_found}" = "yes"],
 			[
@@ -177,12 +169,8 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 				HAVE_LAPACK=yes
 			],
 			[
-				AC_TRY_RUN(
-					[  ${CODE_LAPACK} ],
-					[ dgetrf_found="yes"],
-					[ dgetrf_problem="$problem"],
-					[ dgetrf_found="" ]
-				)
+				AC_RUN_IFELSE([AC_LANG_SOURCE([[  ${CODE_LAPACK} ]])],[ dgetrf_found="yes"],[ dgetrf_problem="$problem"],[ dgetrf_found="" 
+				])
 				AS_IF([ test "x${dgetrf_found}" = "xyes"],
 					[
 						AC_SUBST(LAPACK_LIBS)
@@ -208,8 +196,7 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 
 AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 		[ AC_ARG_WITH(openblas-num-threads,
-			[AC_HELP_STRING([--with-openblas-num-threads=<num-threads>],
-				[ Set the number of threads given to OpenBLAS])
+			[AS_HELP_STRING([--with-openblas-num-threads=<num-threads>],[ Set the number of threads given to OpenBLAS])
 				])
 		dnl testing if we are using openblas
 		BACKUP_CXXFLAGS=${CXXFLAGS}
@@ -222,12 +209,8 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${BLAS_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
-		AC_TRY_RUN(
-			[ ${CODE_OPENBLAS} ],
-			[ openblas_found="yes" ],
-			[ openblas_problem="problem" ],
-			[ openblas_found="" ]
-		)
+		AC_RUN_IFELSE([AC_LANG_SOURCE([[ ${CODE_OPENBLAS} ]])],[ openblas_found="yes" ],[ openblas_problem="problem" ],[ openblas_found="" 
+		])
 
 		AS_IF([test "x$openblas_found" = "xyes"],
 		      [
