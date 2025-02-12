@@ -106,12 +106,11 @@ namespace FFLAS {
 
     // C = A + a B
     template <class Field>
-    void
-    fadd (const Field& F, const size_t N,
-          typename Field::ConstElement_ptr A, const size_t inca,
-          const typename Field::Element alpha,
-          typename Field::ConstElement_ptr B, const size_t incb,
-          typename Field::Element_ptr C, const size_t incc)
+    void fadd (const Field& F, const size_t N,
+               typename Field::ConstElement_ptr A, const size_t inca,
+               const typename Field::Element alpha,
+               typename Field::ConstElement_ptr B, const size_t incb,
+               typename Field::Element_ptr C, const size_t incc)
     {
         if (C == A && inca == incc)
             return faxpy(F,N,alpha,B,incb,C,incc);
@@ -125,9 +124,10 @@ namespace FFLAS {
 
         if (inca == 1 && incb == 1 && incc == 1) {
             for (size_t i = 0 ; i < N ; ++i) {
-                //!@todo optimise here
-                F.mul(C[i],alpha,B[i]);
-                F.addin(C[i],A[i]);
+                    //!@todo optimise here
+                    F.axpy (C[i], alpha, B[i], A[i]);
+                // F.mul(C[i],alpha,B[i]);
+                // F.addin(C[i],A[i]);
             }
             return;
         }
@@ -302,21 +302,26 @@ namespace FFLAS {
             return faxpy(F,M,N,alpha,B,ldb,C,ldc);
         if (F.isOne(alpha))
             return fadd(F,M,N,A,lda,B,ldb,C,ldc);
-        if (F.isMOne(alpha))
+        if (F.isMOne(alpha)){
             return fsub(F,M,N,A,lda,B,ldb,C,ldc);
+        }
         if (F.isZero(alpha))
             return fassign(F,M,N,A,lda,C,ldc);
 
         if (N == lda && N == ldb && N == ldc)
             return fadd(F,M*N,A,1,alpha,B,1,C,1);
-
+//TODO: use level 1 row by row when lda!=n
         typename Field::ConstElement_ptr Ai = A, Bi = B;
         typename Field::Element_ptr Ci = C;
-        for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-            for (size_t i=0; i<N; i++) {
-                F.mul(Ci[i],alpha,Bi[i]);
-                F.addin (Ci[i], Ai[i]);
-            }
+        for (size_t i =0; i<M; ++i, Ai+=lda, Bi+=ldb, Ci+=ldc)
+            fadd (F, N, Ai, 1, alpha, Bi, 1, Ci, 1);
+       // typename Field::ConstElement_ptr Ai = A, Bi = B;
+        // typename Field::Element_ptr Ci = C;
+        // for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
+        //     for (size_t i=0; i<N; i++) {
+        //         F.mul(Ci[i],alpha,Bi[i]);
+        //         F.addin (Ci[i], Ai[i]);
+        //     }
     }
 
 
