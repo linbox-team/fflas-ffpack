@@ -273,7 +273,7 @@ namespace FFLAS { namespace details {
     inline void
     fscalin (const Field& F, const size_t n, const typename Field::Element a,
              typename Field::Element_ptr X, const size_t incX, FC)
-    {
+    {  
         if (F.isOne(a))
             return ;
 
@@ -344,7 +344,7 @@ namespace FFLAS {
     fscalin (const Field& F, const size_t n, const typename Field::Element a,
              typename Field::Element_ptr X, const size_t incX)
     {
-        details::fscalin(F,n,a,X,incX,typename FieldTraits<Field>::category());
+      details::fscalin(F,n,a,X,incX,typename FieldTraits<Field>::category());
     }
 
     template<class Field>
