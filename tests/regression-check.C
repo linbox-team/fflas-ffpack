@@ -120,6 +120,28 @@ bool gf2ModularBalanced(){
     return true;
 }
 
+bool charpolyArithProg(){
+
+    Modular<double> F(37);
+    Poly1Dom<Modular<double> >PolRing(F,'X');
+
+    // Reading the matrix from a file
+    double* A;
+    size_t m, n;
+    std::string file("data/regression_charpoly.sms");
+    ReadMatrix(file.c_str(), F, m, n, A);
+    // here m=n=35
+    Poly1Dom<Modular<double> >::Element charp(n+1);
+
+    CharPoly(PolRing, charp, n, A, n);
+
+    fflas_delete(A);
+    bool pass = F.isOne(charp[n]);
+    for (size_t i = 0; i<n; i++)
+            pass = pass && (F.isZero(charp[i]));
+    if (!pass) std::cerr<<"charpolyArithProg FAILED"<<std::endl;
+    return pass;
+}
 
 int main() {
     bool pass = true ;
@@ -129,6 +151,7 @@ int main() {
     pass = pass && checkZeroDimCharpoly();
     pass = pass && checkZeroDimMinPoly();
     pass = pass && gf2ModularBalanced();
+    pass = pass && charpolyArithProg();
     return !pass;
 }
 
