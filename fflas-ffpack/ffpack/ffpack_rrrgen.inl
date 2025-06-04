@@ -11,7 +11,7 @@ template<class Field>
 class Node {
 public:
     typename Field::Element_ptr U_u;    // UQ from PLUQ on submatrix up right (ru*N2)
-    typename Field::Element_ptr L_u;    // PL from PLUQ on submatrix up right (N1*r1)
+    typename Field::Element_ptr L_u;    // PL from PLUQ on submatrix up right (N1*ru)
     size_t ru;                          // rank of submatrix up right
     typename Field::Element_ptr U_l;    // UQ from PLUQ on submatrix down left (rl*N1)
     typename Field::Element_ptr L_l;    // PL from PLUQ on submatrix down left (rl*N2)
@@ -188,7 +188,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 
         // extraction of L_u
         getTriangular<Field>(Fi, FFLAS::FflasLower,
-                        FFLAS::FflasNonUnit,
+                        FFLAS::FflasUnit,
                         N1, N2, r_u,
                         A12, lda,
                         L_u, r_u,
@@ -227,7 +227,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 
         // extraction of L_l
         getTriangular<Field>(Fi, FFLAS::FflasLower,
-                        FFLAS::FflasNonUnit,
+                        FFLAS::FflasUnit,
                         N2, N1, r_l,
                         A21, lda,
                         L_l, r_l,
@@ -284,7 +284,7 @@ inline RRRrep<Field>* PLUQRRRGen (const Field& Fi,
         }
 
         if (N/2 < s) {
-            std::cout << "Impoossible to generate an RRR representation, the given order of quasiseparability is too high" << std::endl;
+            std::cout << "Impossible to generate an RRR representation, the given order of quasiseparability is too high" << std::endl;
             return nullptr;
         }
 
@@ -322,6 +322,7 @@ inline void RRRExpandrec (const Field& Fi,
         typename Field::Element_ptr B21 = B + ldb*N1;
         typename Field::Element_ptr B22 = B21 + N1;
 
+        
         // B11 < RRRExpand(A11)
         RRRExpandrec<Field>(Fi, *nodeA.left, B11, ldb);
 
@@ -336,6 +337,7 @@ inline void RRRExpandrec (const Field& Fi,
             nodeA.U_u, N2,
             Fi.zero, B12, ldb);
 
+        
         // B21 < L_l * U_l
         fgemm(Fi,
             FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
@@ -343,6 +345,8 @@ inline void RRRExpandrec (const Field& Fi,
             nodeA.L_l, nodeA.rl,
             nodeA.U_l, N1,
             Fi.zero, B21, ldb);
+
+        
     }
 
 /// @brief  (algo 4) Compute the dense matrix of RRR(A) in B
