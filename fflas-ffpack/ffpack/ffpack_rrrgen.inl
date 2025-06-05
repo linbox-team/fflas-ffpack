@@ -196,7 +196,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 
         // apply the permutations (P on L and Q on U)
         applyP<Field>(Fi,
-                FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+                FFLAS::FflasLeft, FFLAS::FflasTrans,
                 r_u, 0, r_u,
                 L_u, r_u, P_u);
         applyP<Field>(Fi,
@@ -235,7 +235,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 
         // apply the permutations (P on L and Q on U)  
         applyP<Field>(Fi,
-                FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+                FFLAS::FflasLeft, FFLAS::FflasTrans,
                 r_l, 0, r_l,
                 L_l, r_l, P_l);
         applyP<Field>(Fi,
@@ -378,7 +378,7 @@ inline void RRRExpand (const Field& Fi,
 /// @param Fi 
 /// @param r_A 
 /// @param m
-/// @param r_b 
+/// @param r_B 
 /// @param n 
 /// @param k 
 /// @param LA       size m*r_A
@@ -387,21 +387,64 @@ inline void RRRExpand (const Field& Fi,
 /// @param UB       size r_B*n 
 /// @param lda      leading dimension of A
 /// @param ldb      leading dimension of B
-/// @param ldc      leading dimension of C
 template<class Field>
 inline void RRxRR (const Field& Fi,
-            size_t r_A, size_t m, size_t r_b, size_t n, size_t k,
+            size_t r_A, size_t m, size_t r_B, size_t n, size_t k,
             typename Field::ConstElement_ptr LA, size_t ldLA, 
             typename Field::ConstElement_ptr UA, size_t ldUA,
             typename Field::ConstElement_ptr LB, size_t ldLB,
             typename Field::ConstElement_ptr UB, size_t ldUB)
     {
         // X < UA * LB
-
+        typename Field::Element_ptr X = FFLAS::fflas_new(Fi, r_A, r_B);
+        fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            r_A, n, k, Fi.one,
+            UA, k,
+            LB, r_B,
+            Fi.zero, X, r_B);
+        
         // LX,RX < facto(X)
 
-        // LC < LA*LX
+        size_t* P_X = FFLAS::fflas_new<size_t>(r_A);
+        size_t* Q_X = FFLAS::fflas_new<size_t>(r_B);
 
+        size_t r_X = PLUQ(Fi, FFLAS::FflasNonUnit,
+                            r_A, r_B,
+                            X, r_B,
+                            P_X, Q_X);
+
+        typename Field::Element_ptr R_X = FFLAS::fflas_new(Fi, r_X, r_B);
+        typename Field::Element_ptr L_X = FFLAS::fflas_new(Fi, r_A, r_X);
+
+        // extraction of R_X
+        getTriangular<Field>(Fi, FFLAS::FflasUpper,
+                        FFLAS::FflasNonUnit,
+                        r_A, r_B, r_X,
+                        X, r_B,
+                        R_X, r_B,
+                        true);
+
+        // extraction of L_X
+        getTriangular<Field>(Fi, FFLAS::FflasLower,
+                        FFLAS::FflasUnit,
+                        r_A, r_B, r_X,
+                        X, r_B,
+                        L_X, r_X,
+                        true);
+
+        // apply the permutations (P on L_X and Q on R_X)
+        applyP<Field>(Fi,
+                FFLAS::FflasLeft, FFLAS::FflasTrans,
+                r_X, 0, r_X,
+                L_X, r_X, P_X);
+        applyP<Field>(Fi,
+                FFLAS::FflasRight, FFLAS::FflasNoTrans,
+                r_X, 0, r_X,
+                R_X,r_B, Q_X);
+
+        // LC < LA*LX
+        typename Field::Element_ptr R_C = FFLAS::fflas_new(Fi, m, r_X);
+        typename Field::Element_ptr L_C = FFLAS::fflas_new(Fi, r_X, n);
         // RC < RX*RB
     }
 
@@ -409,20 +452,20 @@ inline void RRxRR (const Field& Fi,
 /// @tparam Field 
 /// @param Fi 
 /// @param r_A 
-/// @param r_b 
+/// @param r_B 
 /// @param m 
 /// @param n 
 /// @param LA       size (m*r_A) transpose
 /// @param UA       size r_A*n
-/// @param LB       size (m*r_b) transpose
-/// @param UB       size r_b*n
+/// @param LB       size (m*r_B) transpose
+/// @param UB       size r_B*n
 /// @param ldLA     leading dimension of LA
 /// @param ldUA     leading dimension of UA
 /// @param ldLB     leading dimension of LB
 /// @param ldUB     leading dimension of UB
 template<class Field>
 inline void RRaddRR (const Field& Fi,
-            size_t r_A, size_t r_b, size_t m, size_t n,
+            size_t r_A, size_t r_B, size_t m, size_t n,
             typename Field::ConstElement_ptr LA, size_t ldLA,
             typename Field::ConstElement_ptr UA, size_t ldUA,
             typename Field::ConstElement_ptr LB, size_t ldLB,
@@ -444,14 +487,14 @@ inline void RRaddRR (const Field& Fi,
 /// @tparam Field 
 /// @param Fi 
 /// @param s        order of quasiseparability of A
-/// @param r_b      rank of b
+/// @param r_B      rank of b
 /// @param n        dimension of A and B
 /// @param A        size n*n in RRR representation
-/// @param LB       size n*r_b
-/// @param UB       size r_b*n 
+/// @param LB       size n*r_B
+/// @param UB       size r_B*n 
 template<class Field>
 inline void RRRaddRR (const Field& Fi,
-            size_t s, size_t r_b, size_t n,
+            size_t s, size_t r_B, size_t n,
             const RRRrep<Field>& A,
             typename Field::ConstElement_ptr LB, size_t ldLB,
             typename Field::ConstElement_ptr UB, size_t ldUB)
@@ -583,16 +626,16 @@ inline void RRRxTS (const Field& Fi,
 /// @param Fi
 /// @param s        order of QS of A
 /// @param n   
-/// @param r_b      rank of B
+/// @param r_B      rank of B
 /// @param m  
 /// @param A        size n*n in a RRR representation     
-/// @param LB       size n*r_b
-/// @param UB       size r_b*m
+/// @param LB       size n*r_B
+/// @param UB       size r_B*m
 /// @param ldLB     leading dimension of LB
 /// @param ldUB     leading dimension of UB
 template<class Field>
 inline void RRRxRR (const Field& Fi,
-            size_t s, size_t n, size_t r_b, size_t m,
+            size_t s, size_t n, size_t r_B, size_t m,
             const RRRrep<Field>& A,
             typename Field::ConstElement_ptr LB, size_t ldLB,
             typename Field::ConstElement_ptr UB, size_t ldUB,

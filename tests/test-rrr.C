@@ -142,8 +142,8 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=13;
-    size_t t=3;
+    size_t n=7;
+    size_t t=2;
     size_t m=42;
     size_t r = 40;
     int iters=3;
@@ -178,9 +178,9 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
                                                                      seed); // Valgrind does not like this one 
         ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
-        //ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
+        // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
         //                                                             seed);
-        //ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),
+        // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),
         //                                                             iters,seed);
         seed++;
     } while (loop && ok);
