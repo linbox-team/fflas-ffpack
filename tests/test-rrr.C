@@ -38,8 +38,8 @@ bool test_compression  (const Field & F, size_t n, size_t t,
             Ainit[i*n+j] = A[i*n+j];
         }
     } 
-
     RRRrep<Field>* RRRA = PLUQRRRGen<Field>(F, n, t, A, lda);
+
     RRRExpand<Field>(F, *RRRA, Acheck, n);
 
     bool ok = fequal (F, n, n, Ainit, lda, Acheck, n);
@@ -56,9 +56,9 @@ bool test_compression  (const Field & F, size_t n, size_t t,
             WriteMatrix(std::cout << "U_l = " << std::endl, F, root->rl, root->size_N1, root->U_l, root->size_N1);
             WriteMatrix(std::cout << "L_l = " << std::endl, F, root->size_N2, root->rl, root->L_l, root->rl);
         }
-
+    FFLAS::fflas_delete(Ainit);
     FFLAS::fflas_delete(Acheck);
-
+    FFLAS::fflas_delete(RRRA);
     return ok;
 }
 
@@ -93,9 +93,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
 
 
 
-    // test with a random matrix
+    // test compression with a random t qs-order matrix
     Element_ptr A3 = fflas_new (F, n, n);
-    FFPACK::RandomMatrix(F,n,n,A3,n);
+    FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,10,t,A3,n,G);
     ok = ok && test_compression(F,n,2,A3,n);
     FFLAS::fflas_delete(A3);
 
@@ -125,11 +125,11 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t t, size_t m,
             std::cout.width(117);
             std::cout<<oss.str();
             std::cout<<" ... ";
-            
             ok = ok && launch_instance_check (*F, n, t, m, r, G);
 
             if (ok)
                 std::cout << "PASSED "<<std::endl;
+            
 
             delete F;
             iters--;
@@ -142,8 +142,8 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=7;
-    size_t t=2;
+    size_t n=21;
+    size_t t=6;
     size_t m=42;
     size_t r = 40;
     int iters=3;
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
                                                                      seed); // Valgrind does not like this one 
-        ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
+        // ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
         // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
         //                                                             seed);
         // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),

@@ -46,6 +46,81 @@ public:
     }
 };
 
+/// @brief  PLUQfact Class for easier representation and use. 
+///         A = PxLxUxQ. A (nxm) rank r
+template<class Field>
+class PLUQfact {
+public:
+    const Field& Fi,
+    size_t n;                           // size of lines of original matrix 
+    size_t m;                           // size of columns of original matrix
+    size_t r;                           // rank of the original matrix
+    typename Field::Element_ptr PL;     // PL from PLUQ (n,r)
+    size_t ldPL;                        
+    typename Field::Element_ptr UQ;     // UQ from PLUQ (r*m)
+    size_t ldUQ;                        
+    
+
+    PLUQfact(const Field& Fi, size_t n, size_t m, size_t r,
+            typename Field::Element_ptr PL, size_t ldPL, 
+            typename Field::Element_ptr UQ,size_t ldUQ)
+        : n(n), m(m), r(r), PL(PL), ldPL(ldPL) UQ(UQ), ldUQ(ldUQ) {}
+    
+    PLUQfact(const Field& Fi, size_t n_A, size_t m_A, typename Field::Element_ptr A, size_t ldA){
+        //TODO : create the PLUQ fact from the original matrix
+        n = n_A;
+        m = m_A;
+        size_t* P = FFLAS::fflas_new<size_t>(n);
+        size_t* Q = FFLAS::fflas_new<size_t>(m);
+
+        r = PLUQ(Fi, FFLAS::FflasNonUnit,
+                            n, m,
+                            A, lda,
+                            P, Q);
+        
+
+        //not ended yet 
+        P = FFLAS::fflas_new(Fi, r_u, N2);
+        Q = FFLAS::fflas_new(Fi, N1, r_u);
+
+        // extraction of U_u
+        getTriangular<Field>(Fi, FFLAS::FflasUpper,
+                        FFLAS::FflasNonUnit,
+                        N1, N2, r_u,
+                        A12, lda,
+                        U_u, N2,
+                        true);
+
+        // extraction of L_u
+        getTriangular<Field>(Fi, FFLAS::FflasLower,
+                        FFLAS::FflasUnit,
+                        N1, N2, r_u,
+                        A12, lda,
+                        L_u, r_u,
+                        true);
+
+        // apply the permutations (P on L and Q on U)
+        applyP<Field>(Fi,
+                FFLAS::FflasLeft, FFLAS::FflasTrans,
+                r_u, 0, N1,
+                L_u, r_u, P_u);
+        
+
+        applyP<Field>(Fi,
+                FFLAS::FflasRight, FFLAS::FflasNoTrans,
+                r_u, 0, N2,
+                U_u, N2, Q_u);
+
+    }
+    
+
+    ~PLUQfact() {
+        FFLAS::fflas_delete(PL);
+        FFLAS::fflas_delete(UQ);
+    }
+};
+
+
 /// @brief Class for the RRRrep ( a tree of nodes )
 template<class Field>
 class RRRrep {
@@ -197,22 +272,26 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
         // apply the permutations (P on L and Q on U)
         applyP<Field>(Fi,
                 FFLAS::FflasLeft, FFLAS::FflasTrans,
-                r_u, 0, r_u,
+                r_u, 0, N1,
                 L_u, r_u, P_u);
+        
+
         applyP<Field>(Fi,
                 FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                r_u, 0, r_u,
+                r_u, 0, N2,
                 U_u, N2, Q_u);
+
 
         //////////////// PLUQ factorisation for A21
         size_t* P_l = FFLAS::fflas_new<size_t>(N2);
         size_t* Q_l = FFLAS::fflas_new<size_t>(N1);
 
+
         size_t r_l = PLUQ(Fi, FFLAS::FflasNonUnit,
                             N2, N1,
                             A21, lda,
                             P_l, Q_l);
-
+    
         typename Field::Element_ptr U_l = FFLAS::fflas_new(Fi, r_l, N1);
         typename Field::Element_ptr L_l = FFLAS::fflas_new(Fi, N2, r_l);
 
@@ -232,16 +311,18 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
                         A21, lda,
                         L_l, r_l,
                         true);
-
         // apply the permutations (P on L and Q on U)  
+
         applyP<Field>(Fi,
                 FFLAS::FflasLeft, FFLAS::FflasTrans,
-                r_l, 0, r_l,
+                r_l, 0, N2,
                 L_l, r_l, P_l);
+
         applyP<Field>(Fi,
                 FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                r_l, 0, r_l,
+                r_l, 0, N1,
                 U_l, N1, Q_l);
+
 
         FFLAS::fflas_delete(P_u,Q_u,P_l,Q_l);
 
@@ -253,15 +334,10 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
                                     N2, s,
                                     A22, lda);
 
-        return new Node<Field>( U_u,
-                                L_u,
-                                r_u,
-                                U_l,
-                                L_l,
-                                r_l,
+        return new Node<Field>( U_u, L_u, r_u,
+                                U_l, L_l, r_l,
                                 N1, N2,
-                                left, 
-                                right);
+                                left, right);
     }
 
 /// @brief RRR Generator API
@@ -273,9 +349,7 @@ inline Node<Field>* PLUQRRRGen_rec (const Field& Fi,
 /// @param lda 
 /// @return the RRR representation of A
 template<class Field>
-inline RRRrep<Field>* PLUQRRRGen (const Field& Fi,
-            const size_t N, const size_t s,
-            typename Field::Element_ptr A, const size_t lda)
+inline RRRrep<Field>* PLUQRRRGen (const Field& Fi, const size_t N, const size_t s, typename Field::Element_ptr A, const size_t lda)
     {
         if (s == 0) {
             Node<Field>* root = new Node<Field>(A, N);
@@ -387,20 +461,25 @@ inline void RRRExpand (const Field& Fi,
 /// @param UB       size r_B*n 
 /// @param lda      leading dimension of A
 /// @param ldb      leading dimension of B
+/// @param LC       size m*r_C don't need to be initialized   
+/// @param RC       size r_C*n don't need to be initialized
+/// @param r_C      
+
 template<class Field>
 inline void RRxRR (const Field& Fi,
             size_t r_A, size_t m, size_t r_B, size_t n, size_t k,
             typename Field::ConstElement_ptr LA, size_t ldLA, 
             typename Field::ConstElement_ptr UA, size_t ldUA,
             typename Field::ConstElement_ptr LB, size_t ldLB,
-            typename Field::ConstElement_ptr UB, size_t ldUB)
+            typename Field::ConstElement_ptr UB, size_t ldUB,
+            typename Field::Element_ptr& L_C, typename Field::Element_ptr& R_C,size_t& r_C )
     {
         // X < UA * LB
         typename Field::Element_ptr X = FFLAS::fflas_new(Fi, r_A, r_B);
         fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-            r_A, n, k, Fi.one,
-            UA, k,
-            LB, r_B,
+            r_A, r_B, k, Fi.one,
+            UA, ldUA,
+            LB, ldLB,
             Fi.zero, X, r_B);
         
         // LX,RX < facto(X)
@@ -435,17 +514,31 @@ inline void RRxRR (const Field& Fi,
         // apply the permutations (P on L_X and Q on R_X)
         applyP<Field>(Fi,
                 FFLAS::FflasLeft, FFLAS::FflasTrans,
-                r_X, 0, r_X,
+                r_X, 0, r_A,
                 L_X, r_X, P_X);
-        applyP<Field>(Fi,
+        
+                applyP<Field>(Fi,
                 FFLAS::FflasRight, FFLAS::FflasNoTrans,
-                r_X, 0, r_X,
+                r_X, 0, r_B,
                 R_X,r_B, Q_X);
-
+        
         // LC < LA*LX
-        typename Field::Element_ptr R_C = FFLAS::fflas_new(Fi, m, r_X);
-        typename Field::Element_ptr L_C = FFLAS::fflas_new(Fi, r_X, n);
+        L_C = FFLAS::fflas_new(Fi, m, r_X);
+        fgemm(Fi,
+            FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            m, r_X, r_A, Fi.one,
+            LA, ldLA,
+            L_X,r_X,
+            Fi.zero, L_C, r_X);
+
         // RC < RX*RB
+        R_C = FFLAS::fflas_new(Fi, r_X, n);
+        fgemm(Fi,
+            FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            r_X, n, r_B, Fi.one,
+            R_X, r_B,
+            UB, ldUB,
+            Fi.zero, L_C, r_X);
     }
 
 /// @brief (algo 6) add two matrices stored as rank revealing factorization
@@ -472,7 +565,7 @@ inline void RRaddRR (const Field& Fi,
             typename Field::ConstElement_ptr UB, size_t ldUB)
     {
         // X < [LA LB]
-
+        
         // Y <  [RA]
         //      [RB]
 
