@@ -58,7 +58,7 @@ bool test_compression  (const Field & F, size_t n, size_t t,
         }
     FFLAS::fflas_delete(Ainit);
     FFLAS::fflas_delete(Acheck);
-    FFLAS::fflas_delete(RRRA);
+    delete RRRA;
     return ok;
 }
 
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
     size_t m=42;
     size_t r = 10;
     int iters=3;
-    bool loop=true;
+    bool loop=false;
     uint64_t seed = getSeed();
 
     Argument as[] = {
