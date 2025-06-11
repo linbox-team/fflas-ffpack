@@ -523,48 +523,72 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
 /// @brief multiplies two QS matrices (algo 10)
 /// @tparam Field 
 /// @param Fi 
-/// @param s        order of QS of A
-/// @param t        order of QS of B
-/// @param n 
 /// @param A        size n*n
 /// @param B        size n*n
 template<class Field>
-inline void RRRxRRR (const Field& Fi,
-            size_t s,size_t t, size_t n,
-            const RRRgen<Field>& A,
-            const RRRgen<Field>& B)
-    {
-        if (n<= s+t){
+inline RRRgen<Field>* RRRxRRR (const Field& Fi,
+            const RRRgen<Field>* A,
+            const RRRgen<Field>* B)
+    {   
+        size_t n = A->size_N1+A->size_N2;
+        if (n<= A->t+B->t){
             //return RRRExpand(A) x RRRExpand(B)
+            typename Field::Element_ptr A_expanded = fflas_new (Fi, n, n);
+            typename Field::Element_ptr B_expanded = fflas_new (Fi, n, n);
+            typename Field::Element_ptr C = fflas_new (Fi, n, n);
+            fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                n, n, n,
+                Fi.one, A_expanded, n,
+                B_expanded, n,
+                0, C, n);
+            FFLAS::fflas_delete(A_expanded);
+            FFLAS::fflas_delete(B_expanded);
+            RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t);
+            FFLAS::fflas_delete(C);
+            return D;
         }
 
-        // C11 < RRRxRRR(A11,B11)
-        
-        // C22 < RRxRRR(A22,B22)
+        else {
+            // C11 < RRRxRRR(A11,B11)
+            RRRgen<Field>* C11 = RRRxRRR(Fi,A->left,B->left);
 
-        // X < RRxRR(A12,B21)
+            // C22 < RRxRRR(A22,B22)
+            RRRgen<Field>* C22 = RRRxRRR(Fi,A->right,B->right);
 
-        // Y < RRxRR(A21,B12)
+            // X < RRxRR(A12,B21)
+            RRgen<Field>* X = RRxRR(Fi,A->LU_right,B->LU_left);
 
-        // C11 < RRR+RR(C11,X)
+            // Y < RRxRR(A21,B12)
+            RRgen<Field>* Y = RRxRR(Fi,A->LU_left,B->LU_right);
 
-        // C22 < RRR+RR(C22,Y)
+            // C11 < RRR+RR(C11,X)
+            C11 = RRRaddRR(Fi,C11,X);
 
-        // LX < RRRxTS(A11,LB12) ; RX < RB12
+            // C22 < RRR+RR(C22,Y)
+            C22 = RRRaddRR(Fi,C22,Y);
 
-        // LY < LA12 ; RY < TSxRRR(RA12,B22) ATTENTION ON APPLIQUE à GAUCHE
+            // LX < RRRxTS(A11,LB12) ; RX < RB12
+            typename Field::Element_ptr LX = fflas_new (Fi, A->size_N1, B->LU_right->r);
+            RRRxTS(Fi,A->size_N1,B->LU_right->r,A->left,B->LU_right->UQ,B->LU_right->ldUQ,LX,r);
+            
+            typename Field::Element_ptr RX = fflas_new (Fi, B->LU_right->r, A->size_N2);
+            fassign(Fi,size_N1,size_N2,B->LU_right->UQ,B->LU_right->ldUQ,RX,A->size_N2);
 
-        // C12 < RR+RR(X,Y)
+            // LY < LA12 ; RY < TSxRRR(RA12,B22) ATTENTION ON APPLIQUE à GAUCHE
 
-        // LX < RRRxTS(A11,LB21) ; RX <  RB21
+            // C12 < RR+RR(X,Y)
 
-        // LY < LA21 ; RY < TSxRRR(RA21,B22)
+            // LX < RRRxTS(A11,LB21) ; RX <  RB21
 
-        // C21 < RR+RR(X,Y)
+            // LY < LA21 ; RY < TSxRRR(RA21,B22)
 
-        // RETURN C =   [C11    C12]
-        //              [C12    C21]
-    }
+            // C21 < RR+RR(X,Y)
+
+            // RETURN C =   [C11    C12]
+            //              [C12    C21]
+        }
+
+        }
 
 
 /// @brief Compute the inverse in RRR representation
