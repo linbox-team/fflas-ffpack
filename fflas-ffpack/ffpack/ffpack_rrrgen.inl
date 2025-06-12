@@ -19,10 +19,47 @@ public:
     size_t ldUQ;                        
     
 
-    RRgen(const Field& Fi, size_t n, size_t m, size_t r,
-            typename Field::Element_ptr PL, size_t ldPL, 
-            typename Field::Element_ptr UQ,size_t ldUQ)
-        : n(n), m(m), r(r), PL(PL), ldPL(ldPL), UQ(UQ), ldUQ(ldUQ) {}
+    // RRgen(const Field& Fi, size_t n, size_t m, size_t r,
+    //         typename Field::Element_ptr PL, size_t ldPL, 
+    //         typename Field::Element_ptr UQ,size_t ldUQ)
+    //     : n(n), m(m), r(r), PL(PL), ldPL(ldPL), UQ(UQ), ldUQ(ldUQ) {}
+    RRgen(const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
+        typename Field::Element_ptr PL_A, size_t ldPL_A, 
+        typename Field::Element_ptr UQ_A,size_t ldUQ_A){
+        n = n_A;
+        m = m_A;
+        r = r_A;
+        PL = FFLAS::fflas_new(Fi, n_A, r_A);
+        FFLAS::fassign(Fi,n_A,r_A,PL,r_A,PL_A,ldPL_A);
+        if (UQ_A){
+            UQ = FFLAS::fflas_new(Fi, r_A, m_A);
+            FFLAS::fassign(Fi,r_A,m_A,UQ,m_A,UQ_A,ldUQ_A);
+        }
+        else {
+            UQ = UQ_A;
+        }
+        ldUQ = ldUQ_A;
+        ldPL = ldPL_A;
+    }
+    
+    RRgen(const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
+        typename Field::Element_ptr PL_A, size_t ldPL_A, 
+        typename Field::Element_ptr UQ_A,size_t ldUQ_A, bool noCopy){
+        
+        if (noCopy){
+            n = n_A;
+            m = m_A;
+            r = r_A;
+            ldPL = ldPL_A;
+            ldUQ = ldUQ_A;
+            PL = PL_A;
+            UQ = UQ_A;
+        }
+        else{
+            RRgen(Fi,n_A, m_A, r_A, PL_A, ldPL_A, UQ_A, ldUQ_A);
+        }
+    }
+    
     
     RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::Element_ptr A, size_t ldA){
         n = n_A;
@@ -211,13 +248,13 @@ inline void RRRExpand (const Field& Fi,
 
 
 
-/// @brief (algo 5) multiplies two matrices stored as rank revealing factorization.
+/// @brief (algo 5) multiplies two matrices stored as rank revealing factorization. C = minus ? -1 : 1 A*B
 /// @tparam Field 
 /// @param Fi 
 /// @param A stored with an RRgen
 /// @param B stored with an RRgen
 template<class Field>
-inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B)
+inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B, bool minus)
     {   
         size_t m = B->size_N2;
         size_t n = A->size_N1;
@@ -275,8 +312,8 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B)
         typename Field::Element_ptr L_C = FFLAS::fflas_new(Fi, m, r_X);
         fgemm(Fi,
             FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-            m, r_X, A->r, Fi.one,
-            A->PL, A->ldPL,
+            m, r_X, A->r, 
+            minus ? Fi.mOne : Fi.one, A->PL, A->ldPL,
             L_X,r_X,
             Fi.zero, L_C, r_X);
 
@@ -294,8 +331,18 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B)
         FFLAS::fflas_delete(Q_X);
         FFLAS::fflas_delete(P_X);
 
-        return new RRgen(Fi,m,n,r_X,L_C,r_X,R_C,n); 
+        return new RRgen(Fi,m,n,r_X,L_C,r_X,R_C,n,true); 
     }
+/// @brief (algo 5) multiplies two matrices stored as rank revealing factorization.
+/// @tparam Field 
+/// @param Fi 
+/// @param A stored with an RRgen
+/// @param B stored with an RRgen
+template<class Field>
+inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B){
+    return RRxRR (Fi, A, B, false);
+}
+
 
 /// @brief (algo 6) add two matrices stored as rank revealing factorization
 /// @tparam Field 
@@ -576,14 +623,51 @@ inline void TSxRRR (const Field& Fi, size_t n, size_t t,
     }
 
 
+
 /// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
-///                 Computes C = A*B
+///                 Computes C = A*B if minus == false , else computes C = -A*B
 /// @tparam Field 
 /// @param Fi
 /// @param A        size n*n in a RRR representation     
 /// @param B        size n*m in RR representation
 template<class Field>
-inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<Field>* B)
+inline RRgen<Field>* RRxRRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<Field>* B,bool minus)
+    {
+        // X < TSxRRR(RB,A)
+        size_t n = A->size_N1+A->size_N2;
+        typename Field::Element_ptr X = fflas_new (Fi, B->r, n);
+        TSxRRR(Fi,n,B->r,B->UQ,B->ldUQ,A,X,n);
+
+        // (LX, RX) < RRF(X)
+        RRgen<Field>* RR_X = new RRgen(Fi,  B->r,  n,  X,  n);
+
+        // RD < RX
+        typename Field::Element_ptr UQ_D = fflas_new (Fi, RR_X->r, n);
+        fassign(Fi,RR_X->r,n,RR_X->UQ,RR_X->ldUQ,UQ_D,n);
+
+        // LD < (minus ? (-1) : 1) LBxLX 
+        typename Field::Element_ptr PL_D = fflas_new (Fi, B->m, RR_X->r);
+        fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                B->m, RR_X->r, B->r,
+                minus ? Fi.mOne : Fi.one , B->PL, B->ldPL,
+                RR_X->PL, RR_X->ldPL,
+                Fi.zero, PL_D, RR_X->r);
+        
+
+        RRgen<Field>* D = new RRgen(Fi,B->m,n,RR_X->r,PL_D,RR_X->ldPL,UQ_D,B->m,true);
+        delete RR_X;
+        return D;
+
+    }
+
+/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+///                 Computes C = A*B if minus == false , else computes C = -A*B
+/// @tparam Field 
+/// @param Fi
+/// @param A        size n*n in a RRR representation     
+/// @param B        size n*m in RR representation
+template<class Field>
+inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<Field>* B,bool minus)
     {
         // X < RRRxTS(A,LB)
         size_t n = A->size_N1+A->size_N2;
@@ -597,20 +681,42 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
         typename Field::Element_ptr PL_D = fflas_new (Fi, n, RR_X->r);
         fassign(Fi,n,RR_X->r,RR_X->PL,RR_X->ldPL,PL_D,RR_X->r);
 
-        // RD < RX x RB
+        // RD < (minus ? (-1) : 1) RX x RB
         typename Field::Element_ptr UQ_D = fflas_new (Fi, RR_X->r, B->m);
         fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                 RR_X->r, B->m, B->r,
-                Fi.one, RR_X->UQ, RR_X->ldUQ,
+                minus ? Fi.mOne : Fi.one , RR_X->UQ, RR_X->ldUQ,
                 B->UQ, B->ldUQ,
-                0, UQ_D, RR_X->r);
+                Fi.zero, UQ_D, RR_X->r);
         
 
-        RRgen<Field>* D = new RRgen(Fi,n,B->m,RR_X->r,PL_D,RR_X->ldPL,UQ_D,B->m);
+        RRgen<Field>* D = new RRgen(Fi,n,B->m,RR_X->r,PL_D,RR_X->ldPL,UQ_D,B->m,true);
         delete RR_X;
         return D;
 
     }
+
+
+/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+///                 Computes C = A*B
+/// @tparam Field 
+/// @param Fi
+/// @param A        size n*n in a RRR representation     
+/// @param B        size n*m in RR representation
+template<class Field>
+inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<Field>* B){
+    return RRRxRR(Fi,A,B,false);
+}
+/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+///                 Computes C = A*B
+/// @tparam Field 
+/// @param Fi
+/// @param A        size n*n in a RRR representation     
+/// @param B        size n*m in RR representation
+template<class Field>
+inline RRgen<Field>* RRxRRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<Field>* B){
+    return RRxRRR(Fi,A,B,false);
+}
 
 /// @brief multiplies two QS matrices (algo 10)
 /// @tparam Field 
@@ -618,109 +724,105 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
 /// @param A        size n*n
 /// @param B        size n*n
 template<class Field>
-inline RRRgen<Field>* RRRxRRR (const Field& Fi,
-            const RRRgen<Field>* A,
-            const RRRgen<Field>* B)
-    {   
-        size_t n = A->size_N1+A->size_N2;
-        if (n<= A->t+B->t){
-            //return RRRExpand(A) x RRRExpand(B)
-            typename Field::Element_ptr A_expanded = fflas_new (Fi, n, n);
-            typename Field::Element_ptr B_expanded = fflas_new (Fi, n, n);
-            typename Field::Element_ptr C = fflas_new (Fi, n, n);
-            fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                n, n, n,
-                Fi.one, A_expanded, n,
-                B_expanded, n,
-                0, C, n);
-            FFLAS::fflas_delete(A_expanded);
-            FFLAS::fflas_delete(B_expanded);
-            RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t+B->t);
-            FFLAS::fflas_delete(C);
-            return D;
-        }
+inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RRRgen<Field>* B){   
+    size_t n = A->size_N1+A->size_N2;
+    if (n<= A->t+B->t){
+        //return RRRExpand(A) x RRRExpand(B)
+        typename Field::Element_ptr A_expanded = fflas_new (Fi, n, n);
+        typename Field::Element_ptr B_expanded = fflas_new (Fi, n, n);
+        typename Field::Element_ptr C = fflas_new (Fi, n, n);
+        fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            n, n, n,
+            Fi.one, A_expanded, n,
+            B_expanded, n,
+            0, C, n);
+        FFLAS::fflas_delete(A_expanded);
+        FFLAS::fflas_delete(B_expanded);
+        RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t+B->t);
+        FFLAS::fflas_delete(C);
+        return D;
+    }
 
-        else {
-            // C11 < RRRxRRR(A11,B11)
-            RRRgen<Field>* C11 = RRRxRRR(Fi,A->left,B->left);
+    else {
+        // C11 < RRRxRRR(A11,B11)
+        RRRgen<Field>* C11 = RRRxRRR(Fi,A->left,B->left);
 
-            // C22 < RRxRRR(A22,B22)
-            RRRgen<Field>* C22 = RRRxRRR(Fi,A->right,B->right);
+        // C22 < RRxRRR(A22,B22)
+        RRRgen<Field>* C22 = RRRxRRR(Fi,A->right,B->right);
 
-            // X < RRxRR(A12,B21)
-            RRgen<Field>* X = RRxRR(Fi,A->LU_right,B->LU_left);
+        // X < RRxRR(A12,B21)
+        RRgen<Field>* X = RRxRR(Fi,A->LU_right,B->LU_left);
 
-            // Y < RRxRR(A21,B12)
-            RRgen<Field>* Y = RRxRR(Fi,A->LU_left,B->LU_right);
+        // Y < RRxRR(A21,B12)
+        RRgen<Field>* Y = RRxRR(Fi,A->LU_left,B->LU_right);
 
-            // C11 < RRR+RR(C11,X)
-            C11 = RRRaddRR(Fi,C11,X);
+        // C11 < RRR+RR(C11,X)
+        C11 = RRRaddRR(Fi,C11,X);
 
-            // C22 < RRR+RR(C22,Y)
-            C22 = RRRaddRR(Fi,C22,Y);
-            
-            delete X;
-            delete Y;
+        // C22 < RRR+RR(C22,Y)
+        C22 = RRRaddRR(Fi,C22,Y);
+        
+        delete X;
+        delete Y;
 
-            // LX < RRRxTS(A11,LB12) ; RX < RB12
-            typename Field::Element_ptr LX = fflas_new (Fi, A->size_N1, B->LU_right->r);
-            RRRxTS(Fi,A->size_N1,B->LU_right->r,A->left,B->LU_right->PL,B->LU_right->ldPL,LX,B->LU_right->r);
-            
-            typename Field::Element_ptr RX = fflas_new (Fi, B->LU_right->r, B->size_N2);
-            fassign(Fi,B->LU_right->r,B->size_N2,
-                B->LU_right->UQ,B->LU_right->ldUQ,
-                RX,B->size_N2);
+        // LX < RRRxTS(A11,LB12) ; RX < RB12
+        typename Field::Element_ptr LX = fflas_new (Fi, A->size_N1, B->LU_right->r);
+        RRRxTS(Fi,A->size_N1,B->LU_right->r,A->left,B->LU_right->PL,B->LU_right->ldPL,LX,B->LU_right->r);
+        
+        typename Field::Element_ptr RX = fflas_new (Fi, B->LU_right->r, B->size_N2);
+        fassign(Fi,B->LU_right->r,B->size_N2,
+            B->LU_right->UQ,B->LU_right->ldUQ,
+            RX,B->size_N2);
 
-            // LY < LA12 ; RY < TSxRRR(RA12,B22) 
-            typename Field::Element_ptr LY = fflas_new (Fi, A->size_N1, A->LU_right->r);
-            fassign(Fi,A->size_N1,A->LU_right->r,
-                A->LU_right->PL,A->LU_right->ldPL,
-                LY,A->LU_right->r);
-            
-            typename Field::Element_ptr RY = fflas_new (Fi, A->LU_right->r, B->size_N2);
-            TSxRRR(Fi,B->size_N2,A->LU_right->r,A->LU_right->UQ,A->LU_right->ldUQ,B->right,RY,B->size_N2);
-            
-            X = new RRgen(Fi, A->size_N1, B->size_N2,B->LU_right->r,LX,B->LU_right->r,RX,B->size_N2);
-            Y = new RRgen(Fi, A->size_N1, B->size_N2,A->LU_right->r,LY,A->LU_right->r,RY,B->size_N2);
+        // LY < LA12 ; RY < TSxRRR(RA12,B22) 
+        typename Field::Element_ptr LY = fflas_new (Fi, A->size_N1, A->LU_right->r);
+        fassign(Fi,A->size_N1,A->LU_right->r,
+            A->LU_right->PL,A->LU_right->ldPL,
+            LY,A->LU_right->r);
+        
+        typename Field::Element_ptr RY = fflas_new (Fi, A->LU_right->r, B->size_N2);
+        TSxRRR(Fi,B->size_N2,A->LU_right->r,A->LU_right->UQ,A->LU_right->ldUQ,B->right,RY,B->size_N2);
+        
+        X = new RRgen(Fi, A->size_N1, B->size_N2,B->LU_right->r,LX,B->LU_right->r,RX,B->size_N2,true);
+        Y = new RRgen(Fi, A->size_N1, B->size_N2,A->LU_right->r,LY,A->LU_right->r,RY,B->size_N2,true);
 
-            // C12 < RR+RR(X,Y)
-            RRgen<Field> C12 = RRaddRR(Fi,X,Y);
-            delete X;
-            delete Y;
+        // C12 < RR+RR(X,Y)
+        RRgen<Field> C12 = RRaddRR(Fi,X,Y);
+        delete X;
+        delete Y;
 
-            // LX < RRRxTS(A22,LB21) ; RX <  RB21
-            LX = fflas_new (Fi, A->size_N2, B->LU_left->r);
-            RRRxTS(Fi,A->size_N2,B->LU_left->r,A->right,B->LU_left->PL,B->LU_left->ldPL,LX,B->LU_left->r);
-            
-            RX = fflas_new (Fi, B->LU_left->r, B->size_N1);
-            fassign(Fi,B->LU_left->r,B->size_N1,
-                B->LU_left->UQ,B->LU_left->ldUQ,
-                RX,B->size_N1);
+        // LX < RRRxTS(A22,LB21) ; RX <  RB21
+        LX = fflas_new (Fi, A->size_N2, B->LU_left->r);
+        RRRxTS(Fi,A->size_N2,B->LU_left->r,A->right,B->LU_left->PL,B->LU_left->ldPL,LX,B->LU_left->r);
+        
+        RX = fflas_new (Fi, B->LU_left->r, B->size_N1);
+        fassign(Fi,B->LU_left->r,B->size_N1,
+            B->LU_left->UQ,B->LU_left->ldUQ,
+            RX,B->size_N1);
 
-            // LY < LA21 ; RY < TSxRRR(RA21,B11)
-            LY = fflas_new (Fi, A->size_N2, A->LU_left->r);
-            fassign(Fi,A->size_N2,A->LU_left->r,
-                A->LU_left->PL,A->LU_left->ldPL,
-                LY,A->LU_left->r);
-            
-            RY = fflas_new (Fi, A->LU_left->r, B->size_N1);
-            TSxRRR(Fi,B->size_N1,A->LU_left->r,A->LU_left->UQ,A->LU_left->ldUQ,B->left,RY,B->size_N1);
-            
-            X = new RRgen(Fi, A->size_N2, B->size_N1,B->LU_left->r,LX,B->LU_left->r,RX,B->size_N1);
-            Y = new RRgen(Fi, A->size_N2, B->size_N1,A->LU_left->r,LY,A->LU_left->r,RY,B->size_N1);
-            
-            // C21 < RR+RR(X,Y)
-            RRgen<Field> C21 = RRaddRR(Fi,X,Y);
-            delete X;
-            delete Y;
+        // LY < LA21 ; RY < TSxRRR(RA21,B11)
+        LY = fflas_new (Fi, A->size_N2, A->LU_left->r);
+        fassign(Fi,A->size_N2,A->LU_left->r,
+            A->LU_left->PL,A->LU_left->ldPL,
+            LY,A->LU_left->r);
+        
+        RY = fflas_new (Fi, A->LU_left->r, B->size_N1);
+        TSxRRR(Fi,B->size_N1,A->LU_left->r,A->LU_left->UQ,A->LU_left->ldUQ,B->left,RY,B->size_N1);
+        
+        X = new RRgen(Fi, A->size_N2, B->size_N1,B->LU_left->r,LX,B->LU_left->r,RX,B->size_N1,true);
+        Y = new RRgen(Fi, A->size_N2, B->size_N1,A->LU_left->r,LY,A->LU_left->r,RY,B->size_N1,true);
+        
+        // C21 < RR+RR(X,Y)
+        RRgen<Field> C21 = RRaddRR(Fi,X,Y);
+        delete X;
+        delete Y;
 
-            // RETURN C =   [C11    C12]
-            //              [C12    C21]
-            return new RRRgen(C12,C21,A->size_N1,B->size_N2,A->t+B->t,C11,C22);
+        // RETURN C =   [C11    C12]
+        //              [C12    C21]
+        return new RRRgen(C12,C21,A->size_N1,B->size_N2,A->t+B->t,C11,C22);
+    }
 
-        }
-
-        }
+}
 
 
 /// @brief Compute the inverse in RRR representation
@@ -728,27 +830,31 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi,
 /// @param Fi 
 /// @param A    in RRR representation
 template<class Field>
-inline void RRRinvert (const Field& Fi,
-            const RRRgen<Field>& A)
-    {
-        RRRinvertrec(Fi, A);
-    }
-
-template<class Field>
-inline void RRRinvertrec (const Field& Fi,
-            const RRRgen<Field>& A)
+inline RRRgen<Field>* RRRinvert (const Field& Fi,
+            const RRRgen<Field>* A)
     {
         if (!A.left){
             // Y < RRRExpand(A)
-            // return invert(Y)
+            size_t N1 = A->size_N1;
+            typename Field::Element_ptr Y = fflas_new (Fi, N1, N1);
+            RRRExpand(Fi,A->LU_right,Y,N1);
+
+            // return Invert(Y)
+            int nullity;
+            Invert (Fi, N1,Y, N1, nullity);
+            RRRgen<Field>* Y_RRR = new RRRgen(Fi,Y,N1,A->t);
+            FFLAS::fflas_delete(Y);
+            return  Y_RRR;
         }
 
         // split the matrix as A =  [A11 A12] and   X = [X11 X12]
         //                          [A21 A22]           [X21 X22]
 
         // Y11 < RRRinvertrec(A11)
+        RRRgen<Field>* Y11 = RRRinvert(Fi,A->left);
 
         // Y12 < RRRxRR(Y11,A12)
+        RRgen<Field>* Y12 = RRRxRR(Fi,Y11,A->LU_right);
 
         // Y21 < RRRxRR(A21,Y11)
 
