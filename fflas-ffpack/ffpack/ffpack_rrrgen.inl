@@ -483,6 +483,98 @@ inline void RRRxTS (const Field& Fi, size_t n, size_t t,
     }
 
 
+/// @brief (algo 8) Multiplies a tall and skinny matrix with a quasiseparable matric in RRR representation
+/// @tparam Field 
+/// @param Fi 
+/// @param n 
+/// @param t 
+/// @param B        size t*n
+/// @param ldB      leading dimension of B
+/// @param A        size n*n in RRR representation
+/// @param C        size t*n
+/// @param ldC      leading dimension of C
+template<class Field>
+inline void TSxRRR (const Field& Fi, size_t n, size_t t,
+     typename Field::ConstElement_ptr B, size_t ldB, const RRRgen<Field>* A, 
+     typename Field::ConstElement_ptr C, size_t ldC)
+    {
+        if (n<=A->t+t){
+            typename Field::Element_ptr Adense = fflas_new (Fi, n, n);
+            RRRExpand(Fi, A, Adense, n);
+            fgemm(Fi, 
+                FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t, n, n,
+                Fi.one,B, ldB, 
+                Adense, n,
+                0, C, ldC);
+                delete Adense;
+            return;
+        }
+
+        else {
+            
+            size_t N1 = A->size_N1;
+            size_t N2 = A->size_N2;
+
+            // split the matrices as                     [A11 A12] 
+            //                          [C1 C2] = [B1 B2][A12 A22] 
+            typename Field::Element_ptr C1 = C;
+            typename Field::Element_ptr C2 = C1 + N1;
+
+            typename Field::Element_ptr B1 = B;
+            typename Field::Element_ptr B2 = B1 + N1;
+
+            // C1 < TSxRRR(A11,B1)
+            TSxRRR(Fi, N1, t, B1, ldB, A->left, C1, ldC);
+
+            // C2 < RRRxTS(A22,B2)
+            TSxRRR(Fi, N1, t, B2, ldB, A->right, C2, ldC);
+            
+
+            // X < B2*A21->PL
+            // X of size t*r
+            typename Field::Element_ptr X = fflas_new (Fi, t, A->LU_right->r);
+            fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t, A->LU_right->r, N2,
+                Fi.one,B2, ldB ,
+                A->LU_right->PL, A->LU_right->ldPL,
+                0, X,A->LU_right->r);
+
+            // C1 < C1 + X*A21->UQ 
+            fgemm(Fi,
+                FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t, N1 , A->LU_right->r ,
+                Fi.one, X, A->LU_right->r,
+                A->LU_right->UQ, A->LU_right->ldUQ,
+                Fi.one, C1, ldC);
+
+            FFLAS::fflas_delete(X);
+
+            // Y < B1*A12->PL
+            // Y of size t*r
+            typename Field::Element_ptr Y = fflas_new (Fi, t, A->LU_left->r);
+            fgemm(Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t, A->LU_left->r, N1,
+                Fi.one,B1, ldB ,
+                A->LU_left->PL, A->LU_left->ldPL,
+                0, Y,A->LU_left->r);
+
+            // C2 < C2 + Y*A12->UQ 
+            fgemm(Fi,
+                FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t, N2 , A->LU_left->r ,
+                Fi.one, Y, A->LU_left->r,
+                A->LU_left->UQ, A->LU_left->ldUQ,
+                Fi.one, C2, ldC);
+
+            FFLAS::fflas_delete(Y);
+
+
+            // C =   [C1 C2]
+
+        }
+    }
+
 
 /// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
 ///                 Computes C = A*B
@@ -543,7 +635,7 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi,
                 0, C, n);
             FFLAS::fflas_delete(A_expanded);
             FFLAS::fflas_delete(B_expanded);
-            RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t);
+            RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t+B->t);
             FFLAS::fflas_delete(C);
             return D;
         }
@@ -566,26 +658,66 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi,
 
             // C22 < RRR+RR(C22,Y)
             C22 = RRRaddRR(Fi,C22,Y);
+            
+            delete X;
+            delete Y;
 
             // LX < RRRxTS(A11,LB12) ; RX < RB12
             typename Field::Element_ptr LX = fflas_new (Fi, A->size_N1, B->LU_right->r);
-            RRRxTS(Fi,A->size_N1,B->LU_right->r,A->left,B->LU_right->UQ,B->LU_right->ldUQ,LX,r);
+            RRRxTS(Fi,A->size_N1,B->LU_right->r,A->left,B->LU_right->PL,B->LU_right->ldPL,LX,B->LU_right->r);
             
-            typename Field::Element_ptr RX = fflas_new (Fi, B->LU_right->r, A->size_N2);
-            fassign(Fi,size_N1,size_N2,B->LU_right->UQ,B->LU_right->ldUQ,RX,A->size_N2);
+            typename Field::Element_ptr RX = fflas_new (Fi, B->LU_right->r, B->size_N2);
+            fassign(Fi,B->LU_right->r,B->size_N2,
+                B->LU_right->UQ,B->LU_right->ldUQ,
+                RX,B->size_N2);
 
-            // LY < LA12 ; RY < TSxRRR(RA12,B22) ATTENTION ON APPLIQUE à GAUCHE
+            // LY < LA12 ; RY < TSxRRR(RA12,B22) 
+            typename Field::Element_ptr LY = fflas_new (Fi, A->size_N1, A->LU_right->r);
+            fassign(Fi,A->size_N1,A->LU_right->r,
+                A->LU_right->PL,A->LU_right->ldPL,
+                LY,A->LU_right->r);
+            
+            typename Field::Element_ptr RY = fflas_new (Fi, A->LU_right->r, B->size_N2);
+            TSxRRR(Fi,B->size_N2,A->LU_right->r,A->LU_right->UQ,A->LU_right->ldUQ,B->right,RY,B->size_N2);
+            
+            X = new RRgen(Fi, A->size_N1, B->size_N2,B->LU_right->r,LX,B->LU_right->r,RX,B->size_N2);
+            Y = new RRgen(Fi, A->size_N1, B->size_N2,A->LU_right->r,LY,A->LU_right->r,RY,B->size_N2);
 
             // C12 < RR+RR(X,Y)
+            RRgen<Field> C12 = RRaddRR(Fi,X,Y);
+            delete X;
+            delete Y;
 
-            // LX < RRRxTS(A11,LB21) ; RX <  RB21
+            // LX < RRRxTS(A22,LB21) ; RX <  RB21
+            LX = fflas_new (Fi, A->size_N2, B->LU_left->r);
+            RRRxTS(Fi,A->size_N2,B->LU_left->r,A->right,B->LU_left->PL,B->LU_left->ldPL,LX,B->LU_left->r);
+            
+            RX = fflas_new (Fi, B->LU_left->r, B->size_N1);
+            fassign(Fi,B->LU_left->r,B->size_N1,
+                B->LU_left->UQ,B->LU_left->ldUQ,
+                RX,B->size_N1);
 
-            // LY < LA21 ; RY < TSxRRR(RA21,B22)
-
+            // LY < LA21 ; RY < TSxRRR(RA21,B11)
+            LY = fflas_new (Fi, A->size_N2, A->LU_left->r);
+            fassign(Fi,A->size_N2,A->LU_left->r,
+                A->LU_left->PL,A->LU_left->ldPL,
+                LY,A->LU_left->r);
+            
+            RY = fflas_new (Fi, A->LU_left->r, B->size_N1);
+            TSxRRR(Fi,B->size_N1,A->LU_left->r,A->LU_left->UQ,A->LU_left->ldUQ,B->left,RY,B->size_N1);
+            
+            X = new RRgen(Fi, A->size_N2, B->size_N1,B->LU_left->r,LX,B->LU_left->r,RX,B->size_N1);
+            Y = new RRgen(Fi, A->size_N2, B->size_N1,A->LU_left->r,LY,A->LU_left->r,RY,B->size_N1);
+            
             // C21 < RR+RR(X,Y)
+            RRgen<Field> C21 = RRaddRR(Fi,X,Y);
+            delete X;
+            delete Y;
 
             // RETURN C =   [C11    C12]
             //              [C12    C21]
+            return new RRRgen(C12,C21,A->size_N1,B->size_N2,A->t+B->t,C11,C22);
+
         }
 
         }
