@@ -363,28 +363,28 @@ inline RRgen<Field>* RRaddRR (const Field& Fi, RRgen<Field>* A, RRgen<Field>*B)
 /// @param A        size n*n in RRR representation
 /// @param B        size n*n in RR representation
 template<class Field>
-inline RRRgen<Field>* RRRaddRR (const Field& Fi, const RRRgen<Field>* A, const RRgen<Field>* B)
+inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field>* B)
     {
         if (A->size_N1 <= A->t + B->r){
             // C = RRRexpand(A)
-            typename Field::Element_ptr C = FFLAS::fflas_new(Fi, A->size_N1, A->size_N1);
+            typename Field::Element_ptr C = FFLAS::fflas_new(Fi, A->size_N1, A->size_N2);
             RRRExpand(Fi, A, C, A->size_N1);
             // B_expanded = RRexpand(B)
-            typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->n);
-            B.RRExpand(Fi,B_expanded,B->n);
+            typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->m);
+            B->RRExpand(Fi,B_expanded,B->n);
 
             // C = B+C
-            faddin(Fi,A->size_N1,A->size_N1,B_expanded,B->n,C,A->n);
+            FFLAS::faddin(Fi,A->size_N1,A->size_N1,B_expanded,B->n,C,A->size_N1);
             FFLAS::fflas_delete(B_expanded);
-            return new RRRgen(Fi,C,A->n,A->t);
+            return new RRRgen(Fi,C,A->size_N1,A->t);
         }
         else {
             // B_expanded = [RR_B11 RR_B12]
             //              [RR_B21 RR_B22]
             typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->n);
-            B.RRExpand(Fi,B_expanded,B->n);
+            B->RRExpand(Fi,B_expanded,B->n);
             
-            typename Field::Element_ptr B11 = B;
+            typename Field::Element_ptr B11 = B_expanded;
             typename Field::Element_ptr B12 = B11 + A->size_N1;
             typename Field::Element_ptr B21 = B11 + (A->size_N1)*(B->n);
             typename Field::Element_ptr B22 = B21 + A->size_N1;

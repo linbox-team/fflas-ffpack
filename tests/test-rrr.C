@@ -130,6 +130,44 @@ bool test_RRaddRR  (const Field & F, size_t n_A, size_t m_A,
     return ok;
 }
 
+/**
+ * \brief test equality between a C = A+B with fadd and C = A+B with RRRaddRR.
+ */
+template<class Field>
+bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t, 
+                        typename Field::Element_ptr A, size_t lda,
+                        typename Field::Element_ptr B, size_t ldb)
+{
+    // C_check = A+B
+    typename Field::Element_ptr C_init = fflas_new (F, n_A, m_A);
+    typename Field::Element_ptr C_check = fflas_new (F, n_A, m_A);
+
+    fadd(F, 
+            n_A, m_A,
+            A, lda,
+            B, ldb,
+            C_init, m_A);
+    
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda);
+    RRgen<Field>* RRB = new RRgen(F, n_A, m_A, B, ldb);
+    RRRgen<Field>* RRRC = RRRaddRR(F,RRRA,RRB);
+    RRRExpand<Field>(F, RRRC, C_check, n_A);
+
+    bool ok = fequal (F, n_A, m_A, C_init, m_A, C_check, m_A);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for RRaddRR  and fadd "<<std::endl;
+            WriteMatrix(std::cout << "fadd : A+B = " << std::endl, F, n_A, m_A, C_init, m_A);            
+            WriteMatrix(std::cout << "RRaddRR : A+B = " << std::endl, F, n_A, m_A, C_check, m_A);
+        }
+    FFLAS::fflas_delete(C_init);
+    FFLAS::fflas_delete(C_check);
+    FFLAS::fflas_delete(RRRA);
+    FFLAS::fflas_delete(RRB);
+    FFLAS::fflas_delete(RRRC);
+    return ok;
+}
+
 template<class Field>
 bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t r, typename Field::RandIter& G)
 {
@@ -143,13 +181,14 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     FFLAS::fflas_delete(A3);
 
 
-    //test product and addition with random matrixes
+    //test operations with random matrixes
     Element_ptr A = fflas_new (F, n, n);
     FFLAS::frand(F,G,n,n,A,n);
     Element_ptr B = fflas_new (F, n, n);
     FFLAS::frand(F,G,n,n,B,n);
     ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
     ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
+    ok = ok && test_RRRaddRR(F,n,n,t,A,n,B,n);
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(B);
 
