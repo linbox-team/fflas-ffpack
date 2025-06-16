@@ -27,6 +27,36 @@ using namespace FFLAS;
  * \brief test equality between a dense RRR matrix and the result of compressing and reconstructing it.
  */
 template<class Field>
+bool test_compression_RR  (const Field & F, size_t n, size_t t,
+                        typename Field::Element_ptr A, size_t lda)
+{
+    typename Field::Element_ptr Acheck = fflas_new (F, n, n);
+    RRgen<Field>* RRA = new RRgen<Field>(F, n, n, A, lda);
+    
+    RRA->RRExpand(F, Acheck, n);
+
+    bool ok = fequal (F, n, n, A, lda, Acheck, n);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
+            WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, A, lda);
+            WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
+        //     WriteMatrix(std::cout << "U_u = " << std::endl, F, RRRA->LU_right->r, RRRA->size_N2, RRRA->LU_right->UQ, RRRA->size_N2);
+        //     WriteMatrix(std::cout << "L_u = " << std::endl, F, RRRA->size_N1, RRRA->LU_right->r, RRRA->LU_right->PL, RRRA->LU_right->r);
+        //     WriteMatrix(std::cout << "U_l = " << std::endl, F, RRRA->LU_left->r, RRRA->size_N1, RRRA->LU_left->UQ, RRRA->size_N1);
+        //     WriteMatrix(std::cout << "L_l = " << std::endl, F, RRRA->size_N2, RRRA->LU_left->r, RRRA->LU_left->PL, RRRA->LU_left->r);
+        }
+        
+    FFLAS::fflas_delete(Acheck);
+    delete(RRA);
+    return ok;
+    
+}
+
+/**
+ * \brief test equality between a dense RRR matrix and the result of compressing and reconstructing it.
+ */
+template<class Field>
 bool test_compression  (const Field & F, size_t n, size_t t,
                         typename Field::Element_ptr A, size_t lda)
 {
@@ -179,7 +209,8 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // test compression with a random t qs-order matrix
     Element_ptr A3 = fflas_new (F, n, n);
     FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A3,n,G);
-    ok = ok && test_compression(F,n,2,A3,n);
+    ok = ok && test_compression(F,n,t,A3,n);
+    ok = ok && test_compression_RR(F,n,t,A3,n);
     FFLAS::fflas_delete(A3);
 
 
@@ -227,7 +258,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t t, size_t m,
                 std::cout << "PASSED "<<std::endl;
             
 
-            FFLAS::fflas_delete(F);
+            delete(F);
             iters--;
         }
     return ok;
@@ -238,12 +269,12 @@ int main(int argc, char** argv)
     cerr<<setprecision(20); // In order to print integers as integers even on float types, could be done once for all fflas
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=21;
+    size_t n=23;
     size_t t=7;
     size_t m=42;
     size_t r = 10;
     int iters=3;
-    bool loop=true;
+    bool loop=false;
     uint64_t seed = getSeed();
 
     Argument as[] = {
@@ -271,13 +302,10 @@ int main(int argc, char** argv)
         ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
-                                                                     seed); // Valgrind does not like this one 
+        // ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,seed); // Valgrind does not like this one 
         // ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
-        //                                                             seed);
-        // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),
-        //                                                             iters,seed);
+        // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,seed);
+        // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:224), ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.),iters,seed);
         seed++;
     } while (loop && ok);
 
