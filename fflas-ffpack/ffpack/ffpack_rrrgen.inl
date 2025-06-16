@@ -89,10 +89,6 @@ public:
         FFLAS::fassign(Fi, n_A, m_A, A, ldA, A_copy, m_A);
 
         
-        // std::cout << "n = "<< n_A << std::endl;
-        // std::cout << "m = "<< m_A << std::endl;
-        // std::cout << "lda = "<< ldA << std::endl;
-        
         r = PLUQ(Fi, FFLAS::FflasNonUnit, n_A, m_A, A_copy, m_A, P, Q);
 
 
@@ -389,7 +385,7 @@ inline RRgen<Field>* RRaddRR (const Field& Fi, RRgen<Field>* A, RRgen<Field>*B)
 template<class Field>
 inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field>* B)
     {   
-        
+        std::cout << "n et rank " <<A->size_N1+A->size_N2 << " " << A->t + B->r << std::endl;
         if (A->size_N1+A->size_N2 <= A->t + B->r){
             
             // C = RRRexpand(A)
@@ -419,6 +415,8 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
             RRgen<Field>* RR_B22 = new RRgen(Fi, A->size_N2, A->size_N2, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ + A->size_N1,B->ldUQ);
 
             
+        
+            std::cout << "Je passe par la " << std::endl;
 
             // C11 = RRR+RR(A11,B11)
             RRRgen<Field>* C11 = RRRaddRR(Fi, A->left,RR_B11);
@@ -465,7 +463,7 @@ inline void RRRxTS (const Field& Fi, size_t n, size_t t,
                 Fi.one, Adense, n,
                 B, ldB,
                 0, C, ldC);
-                FFLAS::fflas_delete(Adense); 
+            FFLAS::fflas_delete(Adense); 
             return;
         }
 

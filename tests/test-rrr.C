@@ -178,9 +178,11 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
             B, ldb,
             C_init, m_A);
 
+    std::cout << "A->t = "<< t<<std::endl;
     RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda);
     RRgen<Field>* RRB = new RRgen(F, n_A, m_A, B, ldb);
-
+    std::cout << "B->r = "<< RRB->r<<std::endl;
+    WriteMatrix(std::cout << "PL of B " << std::endl, F, n_A, RRB->r, RRB->PL, RRB->ldPL);
     RRRgen<Field>* RRRC = RRRaddRR(F,RRRA,RRB);
 
     RRRExpand<Field>(F, RRRC, C_check, n_A);
@@ -218,7 +220,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     Element_ptr A = fflas_new (F, n, n);
     FFLAS::frand(F,G,n,n,A,n);
     Element_ptr B = fflas_new (F, n, n);
-    FFLAS::frand(F,G,n,n,B,n);
+    FFPACK::RandomMatrixWithRank(F,n,n,r,B,n,G);
     ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
     ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
     ok = ok && test_RRRaddRR(F,n,n,t,A,n,B,n);
