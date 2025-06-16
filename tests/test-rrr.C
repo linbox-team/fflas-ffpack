@@ -24,7 +24,7 @@ using namespace FFPACK;
 using namespace FFLAS;
 
 /**
- * \brief test equality between a dense sss matrix and the result of compressing and reconstructing it.
+ * \brief test equality between a dense RRR matrix and the result of compressing and reconstructing it.
  */
 template<class Field>
 bool test_compression  (const Field & F, size_t n, size_t t,
@@ -48,13 +48,13 @@ bool test_compression  (const Field & F, size_t n, size_t t,
         }
         
     FFLAS::fflas_delete(Acheck);
-    FFLAS::fflas_delete(RRRA);
+    delete(RRRA);
     return ok;
 }
 
-/**
- * \brief test equality between a C = A*B with fgemm and C = A*B with RRgen.
- */
+// /**
+//  * \brief test equality between a C = A*B with fgemm and C = A*B with RRgen.
+//  */
 template<class Field>
 bool test_RRxRR  (const Field & F, size_t n_A,size_t n_B, size_t m_B, 
                         typename Field::Element_ptr A, size_t lda,
@@ -86,15 +86,15 @@ bool test_RRxRR  (const Field & F, size_t n_A,size_t n_B, size_t m_B,
         }
     FFLAS::fflas_delete(C_init);
     FFLAS::fflas_delete(C_check);
-    FFLAS::fflas_delete(RRA);
-    FFLAS::fflas_delete(RRB);
-    FFLAS::fflas_delete(RRC);
+    delete(RRA);
+    delete(RRB);
+    delete(RRC);
     return ok;
 }
 
-/**
- * \brief test equality between a C = A+B with fadd and C = A+B with RRgen.
- */
+// /**
+//  * \brief test equality between a C = A+B with fadd and C = A+B with RRgen.
+//  */
 template<class Field>
 bool test_RRaddRR  (const Field & F, size_t n_A, size_t m_A, 
                         typename Field::Element_ptr A, size_t lda,
@@ -124,20 +124,21 @@ bool test_RRaddRR  (const Field & F, size_t n_A, size_t m_A,
         }
     FFLAS::fflas_delete(C_init);
     FFLAS::fflas_delete(C_check);
-    FFLAS::fflas_delete(RRA);
-    FFLAS::fflas_delete(RRB);
-    FFLAS::fflas_delete(RRC);
+    delete(RRA);
+    delete(RRB);
+    delete(RRC);
     return ok;
 }
 
-/**
- * \brief test equality between a C = A+B with fadd and C = A+B with RRRaddRR.
- */
+// /**
+//  * \brief test equality between a C = A+B with fadd and C = A+B with RRRaddRR.
+//  */
 template<class Field>
 bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t, 
                         typename Field::Element_ptr A, size_t lda,
                         typename Field::Element_ptr B, size_t ldb)
 {
+    std::cout << "RRRaddRR " << std::endl;
     // C_check = A+B
     typename Field::Element_ptr C_init = fflas_new (F, n_A, m_A);
     typename Field::Element_ptr C_check = fflas_new (F, n_A, m_A);
@@ -147,24 +148,29 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
             A, lda,
             B, ldb,
             C_init, m_A);
-    
+    std::cout << "RRRaddRR 2 " << std::endl;
+
     RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda);
     RRgen<Field>* RRB = new RRgen(F, n_A, m_A, B, ldb);
+    std::cout << "RRRaddRR 3 " << std::endl;
+
     RRRgen<Field>* RRRC = RRRaddRR(F,RRRA,RRB);
+    std::cout << "RRRaddRR 4 " << std::endl;
+
     RRRExpand<Field>(F, RRRC, C_check, n_A);
 
     bool ok = fequal (F, n_A, m_A, C_init, m_A, C_check, m_A);
     if ( !ok )
         {
-            std::cout << "ERROR: different results for RRaddRR  and fadd "<<std::endl;
+            std::cout << "ERROR: different results for RRRaddRR  and fadd "<<std::endl;
             WriteMatrix(std::cout << "fadd : A+B = " << std::endl, F, n_A, m_A, C_init, m_A);            
-            WriteMatrix(std::cout << "RRaddRR : A+B = " << std::endl, F, n_A, m_A, C_check, m_A);
+            WriteMatrix(std::cout << "RRRaddRR : A+B = " << std::endl, F, n_A, m_A, C_check, m_A);
         }
     FFLAS::fflas_delete(C_init);
     FFLAS::fflas_delete(C_check);
-    FFLAS::fflas_delete(RRRA);
-    FFLAS::fflas_delete(RRB);
-    FFLAS::fflas_delete(RRRC);
+    delete(RRRA);
+    delete(RRB);
+    delete(RRRC);
     return ok;
 }
 
@@ -241,7 +247,7 @@ int main(int argc, char** argv)
     size_t m=42;
     size_t r = 10;
     int iters=3;
-    bool loop=true;
+    bool loop=false;
     uint64_t seed = getSeed();
 
     Argument as[] = {
@@ -265,12 +271,12 @@ int main(int argc, char** argv)
         std::cerr<<"Random matrixes tests"<<std::endl;
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
-                                                                    //  seed); // Valgrind does not like this one 
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,
+                                                                     seed); // Valgrind does not like this one 
         // ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
         // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,
         //                                                             seed);

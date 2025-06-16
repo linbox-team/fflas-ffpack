@@ -299,7 +299,7 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B, boo
         
         
         RRgen<Field>* C = new RRgen(Fi,n,m,RR_X->r,L_C,RR_X->r,R_C,m,true);
-        FFLAS::fflas_delete(RR_X);
+        delete(RR_X);
         
         return  C;
     }
@@ -351,8 +351,8 @@ inline RRgen<Field>* RRaddRR (const Field& Fi, RRgen<Field>* A, RRgen<Field>*B)
         
         FFLAS::fflas_delete(Y);
         FFLAS::fflas_delete(X);
-        FFLAS::fflas_delete(X_fact);
-        FFLAS::fflas_delete(Y_fact);
+        delete(X_fact);
+        delete(Y_fact);
 
         return D;
     }
@@ -367,23 +367,33 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
     {
         if (A->size_N1 <= A->t + B->r){
             // C = RRRexpand(A)
+            std::cout << "RRRaddRR test expand " << std::endl;
+
             typename Field::Element_ptr C = FFLAS::fflas_new(Fi, A->size_N1, A->size_N2);
             RRRExpand(Fi, A, C, A->size_N1);
             // B_expanded = RRexpand(B)
+            std::cout << "RRRaddRR mid expand " << std::endl;
+
             typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->m);
             B->RRExpand(Fi,B_expanded,B->n);
-
+            std::cout << "RRRaddRR fin expand " << std::endl;
             // C = B+C
-            FFLAS::faddin(Fi,A->size_N1,A->size_N1,B_expanded,B->n,C,A->size_N1);
+            FFLAS::faddin(Fi,A->size_N1,A->size_N1,B_expanded,B->n,C,A->size_N2);
             FFLAS::fflas_delete(B_expanded);
-            return new RRRgen(Fi,C,A->size_N1,A->t);
+            RRRgen<Field>* D = new RRRgen(Fi,C,A->size_N1,A->t);
+            FFLAS::fflas_delete(C);
+            
+            return D;
         }
         else {
             // B_expanded = [RR_B11 RR_B12]
             //              [RR_B21 RR_B22]
+            std::cout << "RRRaddRR test " << std::endl;
+
             typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->n);
             B->RRExpand(Fi,B_expanded,B->n);
-            
+            std::cout << "RRRaddRR 0 " << std::endl;
+
             typename Field::Element_ptr B11 = B_expanded;
             typename Field::Element_ptr B12 = B11 + A->size_N1;
             typename Field::Element_ptr B21 = B11 + (A->size_N1)*(B->n);
@@ -395,6 +405,7 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
             RRgen<Field>* RR_B22 = new RRgen(Fi,  A->size_N2,  A->size_N2,  B22,  B->n);
             
             FFLAS::fflas_delete(B_expanded);
+            std::cout << "RRRaddRR 4 " << std::endl;
 
             // C11 = RRR+RR(A11,B11)
             RRRgen<Field>* C11 = RRRaddRR(Fi, A->left,RR_B11);
@@ -438,7 +449,7 @@ inline void RRRxTS (const Field& Fi, size_t n, size_t t,
                 Fi.one, Adense, n,
                 B, ldB,
                 0, C, ldC);
-                delete Adense;
+                FFLAS::fflas_delete(Adense); 
             return;
         }
 
@@ -527,7 +538,7 @@ inline void TSxRRR (const Field& Fi, size_t n, size_t t,
                 Fi.one,B, ldB, 
                 Adense, n,
                 0, C, ldC);
-                delete Adense;
+                FFLAS::fflas_delete(Adense);
             return;
         }
 
