@@ -367,16 +367,13 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
     {
         if (A->size_N1 <= A->t + B->r){
             // C = RRRexpand(A)
-            std::cout << "RRRaddRR test expand " << std::endl;
 
             typename Field::Element_ptr C = FFLAS::fflas_new(Fi, A->size_N1, A->size_N2);
             RRRExpand(Fi, A, C, A->size_N1);
             // B_expanded = RRexpand(B)
-            std::cout << "RRRaddRR mid expand " << std::endl;
 
             typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->m);
             B->RRExpand(Fi,B_expanded,B->n);
-            std::cout << "RRRaddRR fin expand " << std::endl;
             // C = B+C
             FFLAS::faddin(Fi,A->size_N1,A->size_N1,B_expanded,B->n,C,A->size_N2);
             FFLAS::fflas_delete(B_expanded);
@@ -388,11 +385,9 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
         else {
             // B_expanded = [RR_B11 RR_B12]
             //              [RR_B21 RR_B22]
-            std::cout << "RRRaddRR test " << std::endl;
 
             typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->n);
             B->RRExpand(Fi,B_expanded,B->n);
-            std::cout << "RRRaddRR 0 " << std::endl;
 
             typename Field::Element_ptr B11 = B_expanded;
             typename Field::Element_ptr B12 = B11 + A->size_N1;
@@ -538,7 +533,7 @@ inline void TSxRRR (const Field& Fi, size_t n, size_t t,
                 Fi.one,B, ldB, 
                 Adense, n,
                 0, C, ldC);
-                FFLAS::fflas_delete(Adense);
+            FFLAS::fflas_delete(Adense);
             return;
         }
 

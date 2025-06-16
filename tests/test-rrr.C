@@ -138,7 +138,6 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
                         typename Field::Element_ptr A, size_t lda,
                         typename Field::Element_ptr B, size_t ldb)
 {
-    std::cout << "RRRaddRR " << std::endl;
     // C_check = A+B
     typename Field::Element_ptr C_init = fflas_new (F, n_A, m_A);
     typename Field::Element_ptr C_check = fflas_new (F, n_A, m_A);
@@ -148,14 +147,11 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
             A, lda,
             B, ldb,
             C_init, m_A);
-    std::cout << "RRRaddRR 2 " << std::endl;
 
     RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda);
     RRgen<Field>* RRB = new RRgen(F, n_A, m_A, B, ldb);
-    std::cout << "RRRaddRR 3 " << std::endl;
 
     RRRgen<Field>* RRRC = RRRaddRR(F,RRRA,RRB);
-    std::cout << "RRRaddRR 4 " << std::endl;
 
     RRRExpand<Field>(F, RRRC, C_check, n_A);
 
@@ -247,7 +243,7 @@ int main(int argc, char** argv)
     size_t m=42;
     size_t r = 10;
     int iters=3;
-    bool loop=false;
+    bool loop=true;
     uint64_t seed = getSeed();
 
     Argument as[] = {
