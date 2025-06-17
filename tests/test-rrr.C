@@ -178,11 +178,11 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
             B, ldb,
             C_init, m_A);
 
-    std::cout << "A->t = "<< t<<std::endl;
+    // std::cout << "A->t = "<< t<<std::endl;
     RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda,true,true);
     RRgen<Field>* RRB = new RRgen(F, n_A, m_A, (typename Field::ConstElement_ptr)B, ldb);
-    std::cout << "B->r = "<< RRB->r<<std::endl;
-    WriteMatrix(std::cout << "PL of B " << std::endl, F, n_A, RRB->r, RRB->PL, RRB->ldPL);
+    // std::cout << "B->r = "<< RRB->r<<std::endl;
+    // WriteMatrix(std::cout << "PL of B " << std::endl, F, n_A, RRB->r, RRB->PL, RRB->ldPL);
     RRRgen<Field>* RRRC = RRRaddRR(F,RRRA,RRB);
 
     RRRExpand<Field>(F, RRRC, C_check, n_A);
@@ -199,6 +199,42 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
     delete(RRRA);
     delete(RRB);
     delete(RRRC);
+    return ok;
+}
+
+// /**
+//  * \brief test equality between a C = A+B with fadd and C = A+B with RRRaddRR.
+//  */
+template<class Field>
+bool test_RRRxTS  (const Field & F, size_t n_A, size_t t, size_t m_B, 
+                        typename Field::Element_ptr A, size_t lda,
+                        typename Field::Element_ptr B, size_t ldb)
+{
+    // C_check = A+B
+    typename Field::Element_ptr C_init = fflas_new (F, n_A, m_B);
+    typename Field::Element_ptr C_check = fflas_new (F, n_A, m_B);
+
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            n_A, m_B,n_A ,
+            F.one, A, lda,
+            B, ldb,
+            0, C_init, m_B);
+
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda,true,true);
+
+    RRRxTS(F,n_A,m_B,RRRA,B,ldb,C_check,m_B);
+
+    bool ok = fequal (F, n_A, m_B, C_init, m_B, C_check, m_B);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for RRRxTS  and fgemm "<<std::endl;
+            WriteMatrix(std::cout << "fgemm : A*B = " << std::endl, F, n_A, m_B, C_init, m_B);            
+            WriteMatrix(std::cout << "RRRxTS : A*B = " << std::endl, F, n_A, m_B, C_check, m_B);
+        }
+    FFLAS::fflas_delete(C_init);
+    FFLAS::fflas_delete(C_check);
+    delete(RRRA);
+
     return ok;
 }
 
@@ -224,9 +260,14 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     FFPACK::RandomMatrixWithRank(F,n,n,r,B,n,G);
     typename Field::Element_ptr A_copy = FFLAS::fflas_new(F, n, n);
     FFLAS::fassign(F, n, n, A, n, A_copy, n);
+    Element_ptr C = fflas_new (F, n, m);
+    FFLAS::frand(F,G,n,m,C,m);
+
+
     ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
     ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
     ok = ok && test_RRRaddRR(F,n,n,t,A,n,B,n);
+    ok = ok && test_RRRxTS(F,n,t,m,A,n,C,m);
 
     bool test = fequal (F, n, n, A_copy, n, A, n);
     if ( !test )
@@ -235,6 +276,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
         }
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(B);
+    FFLAS::fflas_delete(C);
     FFLAS::fflas_delete(A_copy);
 
     return ok;
@@ -282,7 +324,7 @@ int main(int argc, char** argv)
     size_t b=0;
     size_t n=23;
     size_t t=7;
-    size_t m=42;
+    size_t m=10;
     size_t r = 10;
     int iters=3;
     bool loop=false;
