@@ -16,54 +16,41 @@ public:
     typename Field::Element_ptr PL;     // PL from PLUQ (n,r)
     size_t ldPL;                        
     typename Field::Element_ptr UQ;     // UQ from PLUQ (r*m)
-    size_t ldUQ;                        
-    
+    size_t ldUQ;
+    bool modify;                        // if PL or UQ can be modified. If true, it can be modified and destroyed
 
-    // RRgen(const Field& Fi, size_t n, size_t m, size_t r,
-    //         typename Field::Element_ptr PL, size_t ldPL, 
-    //         typename Field::Element_ptr UQ,size_t ldUQ)
-    //     : n(n), m(m), r(r), PL(PL), ldPL(ldPL), UQ(UQ), ldUQ(ldUQ) {}
-    RRgen(const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
+    RRgen(const Field& Fi, size_t n, size_t m, size_t r,
+            typename Field::Element_ptr PL, size_t ldPL, 
+            typename Field::Element_ptr UQ,size_t ldUQ, bool modify)
+        : n(n), m(m), r(r), PL(PL), ldPL(ldPL), UQ(UQ), ldUQ(ldUQ), modify(modify) {}
+    
+    RRgen( const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
         typename Field::Element_ptr PL_A, size_t ldPL_A, 
         typename Field::Element_ptr UQ_A,size_t ldUQ_A){
+        std::cout << "JE PENSE QUE JE SUIS EN ARTEFACT " << std::endl;
         n = n_A;
         m = m_A;
         r = r_A;
-        PL = FFLAS::fflas_new(Fi, n_A, r_A);
-        FFLAS::fassign(Fi,n_A,r_A,PL_A,ldPL_A,PL,r_A);
-        ldPL = r_A;
-        if (UQ_A){
-            UQ = FFLAS::fflas_new(Fi, r_A, m_A);
-            FFLAS::fassign(Fi,r_A,m_A,UQ_A,ldUQ_A,UQ,m_A);
-            ldUQ = m_A;
+        PL = PL_A;
+        ldPL = ldPL_A;
+        modify = true;
+        UQ = UQ_A;
+        ldUQ = ldUQ_A;
 
-        }
-        else {
-            UQ = UQ_A;
-            ldUQ = 0;
-        }
+        
     }
     
     RRgen(const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
         typename Field::Element_ptr PL_A, size_t ldPL_A, 
-        typename Field::Element_ptr UQ_A,size_t ldUQ_A, bool noCopy){
-        
-        if (noCopy){
-            n = n_A;
-            m = m_A;
-            r = r_A;
-            ldPL = ldPL_A;
-            ldUQ = ldUQ_A;
-            PL = PL_A;
-            UQ = UQ_A;
-        }
-        else{
+        typename Field::Element_ptr UQ_A,size_t ldUQ_A, bool mod, bool copy){
+        if (copy){
             n = n_A;
             m = m_A;
             r = r_A;
             PL = FFLAS::fflas_new(Fi, n_A, r_A);
             FFLAS::fassign(Fi,n_A,r_A,PL_A,ldPL_A,PL,r_A);
             ldPL = r_A;
+            modify = true;
             if (UQ_A){
                 UQ = FFLAS::fflas_new(Fi, r_A, m_A);
                 FFLAS::fassign(Fi,r_A,m_A,UQ_A,ldUQ_A,UQ,m_A);
@@ -75,10 +62,20 @@ public:
                 ldUQ = 0;
             }
         }
+        else {
+            n = n_A;
+            m = m_A;
+            r = r_A;
+            ldPL = ldPL_A;
+            ldUQ = ldUQ_A;
+            PL = PL_A;
+            UQ = UQ_A;
+            modify = mod;
+        }
     }
     
     
-    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::Element_ptr A, size_t ldA){
+    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::ConstElement_ptr A, size_t ldA){
         n = n_A;
         m = m_A;
         size_t* P = FFLAS::fflas_new<size_t>(n_A);
@@ -111,6 +108,39 @@ public:
 
         FFLAS::fflas_delete(A_copy);
         FFLAS::fflas_delete(P,Q);
+        modify = true;
+    }
+
+    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::Element_ptr A, size_t ldA){
+        n = n_A;
+        m = m_A;
+        size_t* P = FFLAS::fflas_new<size_t>(n_A);
+        size_t* Q = FFLAS::fflas_new<size_t>(m_A);
+
+
+        
+        r = PLUQ(Fi, FFLAS::FflasNonUnit, n_A, m_A, A, m_A, P, Q);
+
+
+        PL = FFLAS::fflas_new(Fi, n_A, r);
+        UQ = FFLAS::fflas_new(Fi, r, m_A);
+        ldPL = r;
+        ldUQ = m_A;
+
+        // extraction of U
+        getTriangular<Field>(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n_A, m_A, r, A, m_A, UQ, m_A, true);
+
+        // extraction of L
+        getTriangular<Field>(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, n_A, m_A, r, A, m_A, PL, r, true);
+
+        // apply the permutations (P on L and Q on U)
+        applyP<Field>(Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0, n_A, PL, r, P);
+        
+
+        applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, m_A, UQ, m_A, Q);
+
+        FFLAS::fflas_delete(P,Q);
+        modify = true;
     }
     
     void RRExpand( const Field& Fi, typename Field::Element_ptr A, size_t ldA){
@@ -124,9 +154,11 @@ public:
     }
 
     ~RRgen() {
-        FFLAS::fflas_delete(PL);
-        if (UQ){
-            FFLAS::fflas_delete(UQ);
+        if (modify){
+            FFLAS::fflas_delete(PL);
+            if (UQ){
+                FFLAS::fflas_delete(UQ);
+            }
         }
     }
 };
@@ -137,41 +169,44 @@ template<class Field>
 class RRRgen {
 
 public:
-    RRgen<Field>* LU_right;          // PLUQ representation of the top right submatrix (N2*rr)*(rr*N1) = A12
-    RRgen<Field>* LU_left;           // PLUQ representation of the down left submatrix (N1*rl)*(rl*N2) = A21        
-    size_t size_N1;                  // size of N/2 (N is the size of the matrix represented by the RRRgen)
-    size_t size_N2;                  // size of N-N1
-    size_t t;                        // threshold for recursive representation : when N1+N2 < t, the matrix is stored completly
-    RRRgen<Field>* left;             // recursively pointing on the same representation of the up left submatrix = A11
-    RRRgen<Field>* right;            // recursively pointing on the same representation of the down right submatrix = A22
+    RRgen<Field>* LU_right;             // PLUQ representation of the top right submatrix (N2*rr)*(rr*N1) = A12
+    RRgen<Field>* LU_left;              // PLUQ representation of the down left submatrix (N1*rl)*(rl*N2) = A21        
+    size_t size_N1;                     // size of N/2 (N is the size of the matrix represented by the RRRgen)
+    size_t size_N2;                     // size of N-N1
+    size_t t;                           // threshold for recursive representation : when N1+N2 < t, the matrix is stored completly
+    RRRgen<Field>* left;                // recursively pointing on the same representation of the up left submatrix = A11
+    RRRgen<Field>* right;               // recursively pointing on the same representation of the down right submatrix = A22
+    bool modify;                        // if it can be modified or not. If true, it can be modified or it can delete left/right/LU_left/LU_right.
 
 
-    RRRgen(RRgen<Field>* LU_right, RRgen<Field>* LU_left, size_t size_N1, size_t size_N2,size_t t, RRRgen* left, RRRgen* right)
-        :  LU_right(LU_right), LU_left(LU_left), size_N1(size_N1), size_N2(size_N2),t(t), left(left), right(right){}
+    RRRgen(RRgen<Field>* LU_right, RRgen<Field>* LU_left, size_t size_N1, size_t size_N2,size_t t, RRRgen* left, RRRgen* right,bool modify)
+        :  LU_right(LU_right), LU_left(LU_left), size_N1(size_N1), size_N2(size_N2),t(t), left(left), right(right),modify(modify){}
     
     
-    RRRgen(   const Field& F,typename Field::Element_ptr leaf, size_t n,size_t threshold){
+    RRRgen( const Field& F,typename Field::Element_ptr leaf, size_t n,size_t threshold,bool mod,bool copy){
 
-        LU_right = new RRgen<Field>(F,n,n,n,leaf,n,nullptr,0);
+        LU_right = new RRgen<Field>(F,n,n,n,leaf,n,nullptr,0,mod,copy);
         LU_left = nullptr;
         size_N1 = n;
         size_N2 = 0;
         t = threshold;
         left = nullptr;
-        right = nullptr; 
+        right = nullptr;
+        modify = true;
     }
 
-    RRRgen( const Field& Fi,const size_t N, const size_t threshold,typename Field::Element_ptr A, const size_t lda)
+    RRRgen( const Field& Fi,const size_t N, const size_t threshold,typename Field::Element_ptr A, const size_t lda, bool mod, bool copy)
     {
         if (N <= threshold) { 
             // leaf
-            LU_right = new RRgen<Field>(Fi,N,N,N,A,lda,nullptr,0);
+            LU_right = new RRgen<Field>(Fi,N,N,N,A,lda,nullptr,0,mod,copy);
             LU_left = nullptr;
             size_N1 = N;
             size_N2 = 0;
             t = threshold;
             left = nullptr;
             right = nullptr;
+            modify = true;
             return;
         }
 
@@ -181,9 +216,9 @@ public:
         // cut the matrix A in four parts
         // in case of odd N, A12 and A21 are rectangles and not squares
         typename Field::Element_ptr A11 = A;
-        typename Field::Element_ptr A12 = A + size_N1;
-        typename Field::Element_ptr A21 = A + lda*size_N1;
-        typename Field::Element_ptr A22 = A21 + size_N1;
+        typename Field::ConstElement_ptr A12 = A + size_N1;
+        typename Field::ConstElement_ptr A21 = A + lda*size_N1;
+        typename Field::Element_ptr A22 = (typename Field::Element_ptr)A21 + size_N1;
 
         ///////// PLUQ Factorisation for A12 and A21
         // std::cout << "A12 : N1 = "<< size_N1 << std::endl;
@@ -194,25 +229,69 @@ public:
 
 
         // recursion on A11 and A22   
-        left = new RRRgen( Fi, size_N1, threshold, A11, lda);
+        left = new RRRgen( Fi, size_N1, threshold, A11, lda, mod,copy);
 
-        right = new RRRgen( Fi, size_N2, threshold, A22, lda);
+        right = new RRRgen( Fi, size_N2, threshold, A22, lda, mod,copy);
+        modify = true;
+        return;
+    }
+
+    RRRgen( const Field& Fi,const size_t N, const size_t threshold,typename Field::Element_ptr A, const size_t lda, bool mod)
+    {
+        if (N <= threshold) { 
+            // leaf
+            LU_right = new RRgen<Field>(Fi,N,N,N,A,lda,nullptr,0,mod,false);
+            LU_left = nullptr;
+            size_N1 = N;
+            size_N2 = 0;
+            t = threshold;
+            left = nullptr;
+            right = nullptr;
+            modify = true;
+            return;
+        }
+
+        size_N1 = N/2;
+        size_N2 = N - size_N1;
+        t = threshold;
+        // cut the matrix A in four parts
+        // in case of odd N, A12 and A21 are rectangles and not squares
+        typename Field::Element_ptr A11 = A;
+        typename Field::ConstElement_ptr A12 = A + size_N1;
+        typename Field::ConstElement_ptr A21 = A + lda*size_N1;
+        typename Field::Element_ptr A22 = (typename Field::Element_ptr)A21 + size_N1;
+
+        ///////// PLUQ Factorisation for A12 and A21
+        // std::cout << "A12 : N1 = "<< size_N1 << std::endl;
+        // std::cout << "A12 : N2 = "<< size_N2 << std::endl;
+        LU_right = new RRgen(Fi, size_N1,  size_N2, A12, lda);
+
+        LU_left = new RRgen(Fi, size_N2,  size_N1, A21, lda);
+
+
+        // recursion on A11 and A22   
+        left = new RRRgen( Fi, size_N1, threshold, A11, lda, mod,false);
+
+        right = new RRRgen( Fi, size_N2, threshold, A22, lda, mod,false);
+        modify = true;
         return;
     }
 
     ~RRRgen() {
-        delete LU_right;
-        
-        if (LU_left) {
-            delete (LU_left);
-        }
-
-        if (left) {
-            delete left;
-        }
-
-        if (right) {
-            delete right;
+        if (modify){
+            delete LU_right;
+            
+            if (LU_left) {
+                delete (LU_left);
+            }
+    
+            if (left) {
+                delete left;
+            }
+    
+            if (right) {
+                delete right;
+            }
         }
     }
 };
@@ -295,7 +374,7 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B, boo
             B->PL, B->ldPL,
             Fi.zero, X, B->r);
         
-        RRgen<Field>* RR_X = new RRgen(Fi,A->r,B->r,X,B->r);
+        RRgen<Field>* RR_X = new RRgen(Fi,A->r,B->r,X,B->r); // X will be modified
         FFLAS::fflas_delete(X);
         
         // LC < LA*LX
@@ -315,10 +394,10 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B, boo
             RR_X->r, m, B->r, Fi.one,
             RR_X->UQ, RR_X->ldUQ,
             B->UQ, B->ldUQ,
-            Fi.zero, R_C, RR_X->r);
+            Fi.zero, R_C, m);
         
         
-        RRgen<Field>* C = new RRgen(Fi,n,m,RR_X->r,L_C,RR_X->r,R_C,m,true);
+        RRgen<Field>* C = new RRgen(Fi,n,m,RR_X->r,L_C,RR_X->r,R_C,m,true); // can be modifed
         delete(RR_X);
         
         return  C;
@@ -385,7 +464,7 @@ inline RRgen<Field>* RRaddRR (const Field& Fi, RRgen<Field>* A, RRgen<Field>*B)
 template<class Field>
 inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field>* B)
     {   
-        std::cout << "n et rank " <<A->size_N1+A->size_N2 << " " << A->t + B->r << std::endl;
+        // std::cout << "n et rank " <<A->size_N1+A->size_N2 << " " << A->t + B->r << std::endl;
         if (A->size_N1+A->size_N2 <= A->t + B->r){
             
             // C = RRRexpand(A)
@@ -400,7 +479,7 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
             // C = B+C
             FFLAS::faddin(Fi,A->size_N1+ A->size_N2,A->size_N1 +A->size_N2,B_expanded,B->n,C,A->size_N1 +A->size_N2);
             FFLAS::fflas_delete(B_expanded);
-            RRRgen<Field>* D = new RRRgen(Fi,C,A->size_N1 + A->size_N2,A->t + B->r);
+            RRRgen<Field>* D = new RRRgen(Fi,C,A->size_N1 + A->size_N2,A->t + B->r,true,true);
             FFLAS::fflas_delete(C);
             
             return D;
@@ -409,14 +488,14 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
             // B_expanded = [RR_B11 RR_B12]
             //              [RR_B21 RR_B22]
 
-            RRgen<Field>* RR_B11 = new RRgen(Fi, A->size_N1, A->size_N1, B->r, B->PL, B->ldPL, B->UQ,B->ldUQ);
-            RRgen<Field>* RR_B12 = new RRgen(Fi, A->size_N1, A->size_N2, B->r, B->PL, B->ldPL, B->UQ + A->size_N1,B->ldUQ);
-            RRgen<Field>* RR_B21 = new RRgen(Fi, A->size_N2, A->size_N1, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ ,B->ldUQ);
-            RRgen<Field>* RR_B22 = new RRgen(Fi, A->size_N2, A->size_N2, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ + A->size_N1,B->ldUQ);
+            RRgen<Field>* RR_B11 = new RRgen(Fi, A->size_N1, A->size_N1, B->r, B->PL, B->ldPL, B->UQ,B->ldUQ,false);
+            RRgen<Field>* RR_B12 = new RRgen(Fi, A->size_N1, A->size_N2, B->r, B->PL, B->ldPL, B->UQ + A->size_N1,B->ldUQ,false);
+            RRgen<Field>* RR_B21 = new RRgen(Fi, A->size_N2, A->size_N1, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ ,B->ldUQ,false);
+            RRgen<Field>* RR_B22 = new RRgen(Fi, A->size_N2, A->size_N2, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ + A->size_N1,B->ldUQ,false);
 
             
-        
             std::cout << "Je passe par la " << std::endl;
+
 
             // C11 = RRR+RR(A11,B11)
             RRRgen<Field>* C11 = RRRaddRR(Fi, A->left,RR_B11);
@@ -435,7 +514,7 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
             delete RR_B21;
             delete RR_B22;
             
-            return new RRRgen(C12,C21,A->size_N1,A->size_N2,A->t + B->r,C11,C22);
+            return new RRRgen(C12,C21,A->size_N1,A->size_N2,A->t + B->r,C11,C22,true);
         }
     }
 
@@ -638,6 +717,7 @@ inline RRgen<Field>* RRxRRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
 
         // (LX, RX) < RRF(X)
         RRgen<Field>* RR_X = new RRgen(Fi,  B->r,  n,  X,  n);
+        FFLAS::fflas_delete(X);
 
         // RD < RX
         typename Field::Element_ptr UQ_D = fflas_new (Fi, RR_X->r, n);
@@ -674,6 +754,7 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
 
         // (LX, RX) < RRF(X)
         RRgen<Field>* RR_X = new RRgen(Fi,  n,  B->r,  X,  B->r);
+        FFLAS::fflas_delete(X);
 
         // LD < LX
         typename Field::Element_ptr PL_D = fflas_new (Fi, n, RR_X->r);
@@ -736,8 +817,7 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RR
             0, C, n);
         FFLAS::fflas_delete(A_expanded);
         FFLAS::fflas_delete(B_expanded);
-        RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t+B->t);
-        FFLAS::fflas_delete(C);
+        RRRgen<Field>* D = new RRRgen(Fi,C,n,A->t+B->t,true,false); // C is now in D and when D will be freed C will be freed also. 
         return D;
     }
 
@@ -817,7 +897,7 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RR
 
         // RETURN C =   [C11    C12]
         //              [C12    C21]
-        return new RRRgen(C12,C21,A->size_N1,B->size_N2,A->t+B->t,C11,C22);
+        return new RRRgen(C12,C21,A->size_N1,B->size_N2,A->t+B->t,C11,C22,true);
     }
 
 }
@@ -882,7 +962,7 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,
         delete W;
 
         // return X
-        RRRgen<Field>* X = new RRRgen(X12,X21,A->size_N1,A->size_N2,A->t,X11,X22);  
+        RRRgen<Field>* X = new RRRgen(X12,X21,A->size_N1,A->size_N2,A->t,X11,X22,true);  
     }
 }
 

@@ -24,14 +24,17 @@ using namespace FFPACK;
 using namespace FFLAS;
 
 /**
- * \brief test equality between a dense RRR matrix and the result of compressing and reconstructing it.
+ * \brief test equality between a dense matrix and the result of compressing with RR and reconstructing it.
  */
 template<class Field>
 bool test_compression_RR  (const Field & F, size_t n, size_t t,
                         typename Field::Element_ptr A, size_t lda)
 {
     typename Field::Element_ptr Acheck = fflas_new (F, n, n);
-    RRgen<Field>* RRA = new RRgen<Field>(F, n, n, A, lda);
+    
+    typename Field::Element_ptr A_copy = FFLAS::fflas_new(F, n, n);
+    FFLAS::fassign(F, n, n, A, lda, A_copy, n);
+    RRgen<Field>* RRA = new RRgen<Field>(F, n, n, A_copy, n);
     
     RRA->RRExpand(F, Acheck, n);
 
@@ -41,31 +44,28 @@ bool test_compression_RR  (const Field & F, size_t n, size_t t,
             std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
             WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, A, lda);
             WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
-        //     WriteMatrix(std::cout << "U_u = " << std::endl, F, RRRA->LU_right->r, RRRA->size_N2, RRRA->LU_right->UQ, RRRA->size_N2);
-        //     WriteMatrix(std::cout << "L_u = " << std::endl, F, RRRA->size_N1, RRRA->LU_right->r, RRRA->LU_right->PL, RRRA->LU_right->r);
-        //     WriteMatrix(std::cout << "U_l = " << std::endl, F, RRRA->LU_left->r, RRRA->size_N1, RRRA->LU_left->UQ, RRRA->size_N1);
-        //     WriteMatrix(std::cout << "L_l = " << std::endl, F, RRRA->size_N2, RRRA->LU_left->r, RRRA->LU_left->PL, RRRA->LU_left->r);
         }
-        
+    
+    FFLAS::fflas_delete(A_copy);
     FFLAS::fflas_delete(Acheck);
     delete(RRA);
     return ok;
-    
 }
 
 /**
- * \brief test equality between a dense RRR matrix and the result of compressing and reconstructing it.
+ * \brief test equality between a dense matrix and the result of compressing with RRR and reconstructing it.
  */
 template<class Field>
 bool test_compression  (const Field & F, size_t n, size_t t,
                         typename Field::Element_ptr A, size_t lda)
-{
+{   
     typename Field::Element_ptr Acheck = fflas_new (F, n, n);
-    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, lda);
+    
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
     
     RRRExpand<Field>(F, RRRA, Acheck, n);
 
-    bool ok = fequal (F, n, n, A, lda, Acheck, n);
+    bool ok = fequal (F, n, n, A, n, Acheck, n);
     if ( !ok )
         {
             std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
@@ -76,7 +76,7 @@ bool test_compression  (const Field & F, size_t n, size_t t,
             WriteMatrix(std::cout << "U_l = " << std::endl, F, RRRA->LU_left->r, RRRA->size_N1, RRRA->LU_left->UQ, RRRA->size_N1);
             WriteMatrix(std::cout << "L_l = " << std::endl, F, RRRA->size_N2, RRRA->LU_left->r, RRRA->LU_left->PL, RRRA->LU_left->r);
         }
-        
+    
     FFLAS::fflas_delete(Acheck);
     delete(RRRA);
     return ok;
@@ -101,8 +101,8 @@ bool test_RRxRR  (const Field & F, size_t n_A,size_t n_B, size_t m_B,
     
     typename Field::Element_ptr C_check = fflas_new (F, n_A, m_B);
     
-    RRgen<Field>* RRA = new RRgen(F, n_A, n_B, A, lda);
-    RRgen<Field>* RRB = new RRgen(F, n_B, m_B, B, ldb);
+    RRgen<Field>* RRA = new RRgen(F, n_A, n_B, (typename Field::ConstElement_ptr)A, lda);
+    RRgen<Field>* RRB = new RRgen(F, n_B, m_B, (typename Field::ConstElement_ptr)B, ldb);
     RRgen<Field>* RRC = RRxRR(F,RRA,RRB);
 
     RRC->RRExpand(F,C_check,m_B);
@@ -140,8 +140,8 @@ bool test_RRaddRR  (const Field & F, size_t n_A, size_t m_A,
             B, ldb,
             C_init, m_A);
     
-    RRgen<Field>* RRA = new RRgen(F, n_A, m_A, A, lda);
-    RRgen<Field>* RRB = new RRgen(F, n_A, m_A, B, ldb);
+    RRgen<Field>* RRA = new RRgen(F, n_A, m_A, (typename Field::ConstElement_ptr)A, lda);
+    RRgen<Field>* RRB = new RRgen(F, n_A, m_A, (typename Field::ConstElement_ptr)B, ldb);
     RRgen<Field>* RRC = RRaddRR(F,RRA,RRB);
     RRC->RRExpand(F,C_check,m_A);
 
@@ -179,8 +179,8 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
             C_init, m_A);
 
     std::cout << "A->t = "<< t<<std::endl;
-    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda);
-    RRgen<Field>* RRB = new RRgen(F, n_A, m_A, B, ldb);
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda,true,true);
+    RRgen<Field>* RRB = new RRgen(F, n_A, m_A, (typename Field::ConstElement_ptr)B, ldb);
     std::cout << "B->r = "<< RRB->r<<std::endl;
     WriteMatrix(std::cout << "PL of B " << std::endl, F, n_A, RRB->r, RRB->PL, RRB->ldPL);
     RRRgen<Field>* RRRC = RRRaddRR(F,RRRA,RRB);
@@ -211,8 +211,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // test compression with a random t qs-order matrix
     Element_ptr A3 = fflas_new (F, n, n);
     FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A3,n,G);
-    ok = ok && test_compression(F,n,t,A3,n);
     ok = ok && test_compression_RR(F,n,t,A3,n);
+    ok = ok && test_compression(F,n,t,A3,n);
+
     FFLAS::fflas_delete(A3);
 
 
@@ -221,12 +222,20 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     FFLAS::frand(F,G,n,n,A,n);
     Element_ptr B = fflas_new (F, n, n);
     FFPACK::RandomMatrixWithRank(F,n,n,r,B,n,G);
+    typename Field::Element_ptr A_copy = FFLAS::fflas_new(F, n, n);
+    FFLAS::fassign(F, n, n, A, n, A_copy, n);
     ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
     ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
     ok = ok && test_RRRaddRR(F,n,n,t,A,n,B,n);
+
+    bool test = fequal (F, n, n, A_copy, n, A, n);
+    if ( !test )
+        {
+            std::cout << "ERROR: different A before and after operations "<<std::endl;
+        }
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(B);
-
+    FFLAS::fflas_delete(A_copy);
 
     return ok;
 }
