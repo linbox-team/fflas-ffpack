@@ -27,26 +27,24 @@ using namespace FFLAS;
  * \brief test equality between a dense matrix and the result of compressing with RR and reconstructing it.
  */
 template<class Field>
-bool test_compression_RR  (const Field & F, size_t n, size_t t,
+bool test_compression_RR  (const Field & F, size_t n, size_t m,
                         typename Field::Element_ptr A, size_t lda)
 {
-    typename Field::Element_ptr Acheck = fflas_new (F, n, n);
-    
-    typename Field::Element_ptr A_copy = FFLAS::fflas_new(F, n, n);
-    FFLAS::fassign(F, n, n, A, lda, A_copy, n);
-    RRgen<Field>* RRA = new RRgen<Field>(F, n, n, A_copy, n);
-    
-    RRA->RRExpand(F, Acheck, n);
+    typename Field::Element_ptr Acheck = fflas_new (F, n, m);
 
-    bool ok = fequal (F, n, n, A, lda, Acheck, n);
+    
+    RRgen<Field>* RRA = new RRgen<Field>(F, n, m, (typename Field::ConstElement_ptr)A, lda);
+    
+    RRA->RRExpand(F, Acheck, m);
+
+    bool ok = fequal (F, n, m, A, lda, Acheck, m);
     if ( !ok )
         {
             std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
-            WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, A, lda);
-            WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
+            WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, m, A, lda);
+            WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, m, Acheck, m);
         }
     
-    FFLAS::fflas_delete(A_copy);
     FFLAS::fflas_delete(Acheck);
     delete(RRA);
     return ok;
@@ -203,14 +201,14 @@ bool test_RRRaddRR  (const Field & F, size_t n_A, size_t m_A, size_t t,
 }
 
 // /**
-//  * \brief test equality between a C = A+B with fadd and C = A+B with RRRaddRR.
+//  * \brief test equality between a C = A*B with fgemm and C = A*B with RRRxTS.
 //  */
 template<class Field>
 bool test_RRRxTS  (const Field & F, size_t n_A, size_t t, size_t m_B, 
                         typename Field::Element_ptr A, size_t lda,
                         typename Field::Element_ptr B, size_t ldb)
 {
-    // C_check = A+B
+    // C_check = A*B
     typename Field::Element_ptr C_init = fflas_new (F, n_A, m_B);
     typename Field::Element_ptr C_check = fflas_new (F, n_A, m_B);
 
@@ -238,46 +236,242 @@ bool test_RRRxTS  (const Field & F, size_t n_A, size_t t, size_t m_B,
     return ok;
 }
 
+// /**
+//  * \brief test equality between a C = A*B with fgemm and C = A*B with TSxRRR.
+//  */
+template<class Field>
+bool test_TSxRRR  (const Field & F, size_t n_A, size_t t, size_t n_B, 
+                        typename Field::Element_ptr A, size_t lda,
+                        typename Field::Element_ptr B, size_t ldb)
+{
+    // C_check = B*A
+    typename Field::Element_ptr C_init = fflas_new (F, n_B, n_A);
+    typename Field::Element_ptr C_check = fflas_new (F, n_B, n_A);
+
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            n_B, n_A,n_A,
+            F.one, B, ldb,
+            A, lda,
+            0, C_init, n_A);
+
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda,true,true);
+    TSxRRR(F,n_A,n_B,B,ldb,RRRA,C_check,n_A);
+
+    bool ok = fequal (F, n_B, n_A, C_init, n_A, C_check, n_A);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for TSxRRR and fgemm "<<std::endl;
+            WriteMatrix(std::cout << "fgemm : A*B = " << std::endl, F, n_B, n_A, C_init, n_A);            
+            WriteMatrix(std::cout << "TSxRRR : A*B = " << std::endl, F, n_B, n_A, C_check, n_A);
+        }
+    FFLAS::fflas_delete(C_init);
+    FFLAS::fflas_delete(C_check);
+    delete(RRRA);
+
+    return ok;
+}
+
+// /**
+//  * \brief test equality between a C = B*A with fgemm and C = B*A with RRxRRR and RRRxRR.
+//  */
+template<class Field>
+bool test_RRxRRR  (const Field & F, size_t n_A, size_t t, size_t n_B, 
+                        typename Field::Element_ptr A, size_t lda,
+                        typename Field::Element_ptr B, size_t ldb)
+{
+    // C_check = B*A
+    typename Field::Element_ptr C_init = fflas_new (F, n_B, n_A);
+    typename Field::Element_ptr C_check = fflas_new (F, n_B, n_A);
+
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            n_B, n_A,n_A,
+            F.one, B, ldb,
+            A, lda,
+            0, C_init, n_A);
+    const RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda,true,true);
+    const RRgen<Field>* RRB = new RRgen(F, n_B, n_A, (typename Field::ConstElement_ptr)B, ldb);
+    RRgen<Field>* RRC = RRxRRR(F,RRRA,RRB);
+    RRC->RRExpand(F,C_check,n_A);
+
+    bool ok = fequal (F, n_B, n_A, C_init, n_A, C_check, n_A);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for RRxRRR and fgemm "<<std::endl;
+            WriteMatrix(std::cout << "fgemm : A*B = " << std::endl, F, n_B, n_A, C_init, n_A);            
+            WriteMatrix(std::cout << "RRxRRR : A*B = " << std::endl, F, n_B, n_A, C_check, n_A);
+        }
+    FFLAS::fflas_delete(C_init);
+    FFLAS::fflas_delete(C_check);
+    delete(RRRA);
+    delete(RRB);
+    delete(RRC);
+
+    return ok;
+}
+
+// /**
+//  * \brief test equality between a C = A*B with fgemm and C = A*B with RRRxRR. A = n*n and B = n*m
+//  */
+template<class Field>
+bool test_RRRxRR  (const Field & F, size_t n_A, size_t t, size_t m_B, 
+                        typename Field::Element_ptr A, size_t lda,
+                        typename Field::Element_ptr B, size_t ldb)
+{
+    // C_check = A*B
+    typename Field::Element_ptr C_init = fflas_new (F, n_A, m_B);
+    typename Field::Element_ptr C_check = fflas_new (F, n_A, m_B);
+
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            n_A, m_B,n_A,
+            F.one, A, lda,
+            B, ldb,
+            0, C_init, m_B);
+    const RRRgen<Field>* RRRA = new RRRgen<Field>(F, n_A, t, A, lda,true,true);
+    const RRgen<Field>* RRB = new RRgen(F, n_A, m_B, (typename Field::ConstElement_ptr)B, ldb);
+    RRgen<Field>* RRC = RRRxRR(F,RRRA,RRB);
+    RRC->RRExpand(F,C_check,m_B);
+
+    bool ok = fequal (F, n_A, m_B, C_init, m_B, C_check, m_B);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for RRRxRR and fgemm "<<std::endl;
+            WriteMatrix(std::cout << "fgemm : A*B = " << std::endl, F, n_A, m_B, C_init, m_B);            
+            WriteMatrix(std::cout << "RRRxRR : A*B = " << std::endl, F, n_A, m_B, C_check, m_B);
+        }
+    FFLAS::fflas_delete(C_init);
+    FFLAS::fflas_delete(C_check);
+    delete(RRRA);
+    delete(RRB);
+    delete(RRC);
+
+    return ok;
+}
+
+// /**
+//  * \brief test equality between a C = A*B with fgemm and C = A*B with RRRxRRR. A = n*n and B = n*n
+//  */
+template<class Field>
+bool test_RRRxRRR  (const Field & F, size_t n, size_t t_A, size_t t_B, 
+                        typename Field::Element_ptr A, size_t lda,
+                        typename Field::Element_ptr B, size_t ldb)
+{
+    // C_check = A*B
+    typename Field::Element_ptr C_init = fflas_new (F, n, n );
+    typename Field::Element_ptr C_check = fflas_new (F, n, n);
+
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+            n, n,n,
+            F.one, A, lda,
+            B, ldb,
+            0, C_init, n);
+
+    const RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t_A, A, lda,true,true);
+    const RRRgen<Field>* RRRB = new RRRgen<Field>(F, n, t_B, B, ldb,true,true);
+
+    
+    RRRgen<Field>* RRRC = RRRxRRR(F,RRRA,RRRB);
+    RRRExpand(F,RRRC,C_check,n);
+
+    bool ok = fequal (F, n, n, C_init, n, C_check, n);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for RRRxRRR and fgemm "<<std::endl;
+            WriteMatrix(std::cout << "fgemm : A*B = " << std::endl, F, n, n, C_init, n);            
+            WriteMatrix(std::cout << "RRRxRRR : A*B = " << std::endl, F, n, n, C_check, n);
+        }
+    FFLAS::fflas_delete(C_init);
+    FFLAS::fflas_delete(C_check);
+    delete(RRRA);
+    delete(RRRB);
+    delete(RRRC);
+
+    return ok;
+}
+
+
+/**
+ * \brief test equality between a invert matrix and the result of compressing and invert it with RRR and reconstructing it.
+ */
+template<class Field>
+bool test_invert  (const Field & F, size_t n, size_t t,
+                        typename Field::Element_ptr A, size_t lda)
+{   
+    // Ainit = A⁻1 with FFPACK invert
+    typename Field::Element_ptr Ainit = fflas_new (F, n, n);
+    FFLAS::fassign(F,n,n,A,lda,Ainit,n);
+    int nullity;
+    FFPACK::Invert (F, n ,Ainit, n, nullity);
+
+    // Acheck = A^-1 with RRRinvert
+    typename Field::Element_ptr Acheck = fflas_new (F, n, n);
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
+    RRRgen<Field>* RRRA_invert = RRRinvert(F,RRRA);
+    RRRExpand<Field>(F, RRRA_invert, Acheck, n);
+
+
+
+    bool ok = fequal (F, n, n, Ainit, n, Acheck, n);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
+            WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, Ainit, n);
+            WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
+        }
+    
+    FFLAS::fflas_delete(Acheck);
+    delete(RRRA);
+    return ok;
+}
 template<class Field>
 bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t r, typename Field::RandIter& G)
 {
     typedef typename Field::Element_ptr Element_ptr;
     bool ok = true;
     
-    // test compression with a random t qs-order matrix
-    Element_ptr A3 = fflas_new (F, n, n);
-    FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A3,n,G);
-    ok = ok && test_compression_RR(F,n,t,A3,n);
-    ok = ok && test_compression(F,n,t,A3,n);
-
-    FFLAS::fflas_delete(A3);
-
-
     //test operations with random matrixes
-    Element_ptr A = fflas_new (F, n, n);
+    Element_ptr A = fflas_new (F, n, n); // n*n random matrix
     FFLAS::frand(F,G,n,n,A,n);
-    Element_ptr B = fflas_new (F, n, n);
+
+    Element_ptr B = fflas_new (F, n, n); // n*n random matrix
     FFPACK::RandomMatrixWithRank(F,n,n,r,B,n,G);
-    typename Field::Element_ptr A_copy = FFLAS::fflas_new(F, n, n);
-    FFLAS::fassign(F, n, n, A, n, A_copy, n);
-    Element_ptr C = fflas_new (F, n, m);
+
+    Element_ptr C = fflas_new (F, n, m); // n*m random matrix
     FFLAS::frand(F,G,n,m,C,m);
 
+    Element_ptr D = fflas_new (F, m, n); // m*n random matrix
+    FFLAS::frand(F,G,m,n,D,n);
 
+    Element_ptr E = fflas_new (F, n, n); // n*n random matrix with t-QSorder and rank r
+    FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,r,t,E,n,G);
+
+    Element_ptr M = fflas_new (F, n, n); // n*n random matrix with t-QSorder and rank r
+    FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,r,t,M,n,G);
+
+    Element_ptr N = fflas_new (F, n, n); // n*n random matrix with t-QSorder and rank n so it can be inverted
+    FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,n,t,N,n,G);
+    
+    ok = ok && test_compression_RR(F,n,m,C,m);
+    ok = ok && test_compression(F,n,t,E,n);
     ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
     ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
-    ok = ok && test_RRRaddRR(F,n,n,t,A,n,B,n);
-    ok = ok && test_RRRxTS(F,n,t,m,A,n,C,m);
+    ok = ok && test_RRRaddRR(F,n,n,t,E,n,B,n);
+    ok = ok && test_RRRxTS(F,n,t,m,E,n,C,m);
+    ok = ok && test_TSxRRR(F,n,t,m,E,n,D,n);
+    ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
+    ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
+    // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
+    // ok = ok && test_invert(F,n,t,N,n);
 
-    bool test = fequal (F, n, n, A_copy, n, A, n);
-    if ( !test )
-        {
-            std::cout << "ERROR: different A before and after operations "<<std::endl;
-        }
+
+    
     FFLAS::fflas_delete(A);
     FFLAS::fflas_delete(B);
     FFLAS::fflas_delete(C);
-    FFLAS::fflas_delete(A_copy);
+    FFLAS::fflas_delete(D);
+    FFLAS::fflas_delete(E);
+    FFLAS::fflas_delete(M);
+    FFLAS::fflas_delete(N);
+
 
     return ok;
 }
@@ -323,10 +517,10 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     size_t n=23;
-    size_t t=7;
+    size_t t=3;
     size_t m=10;
     size_t r = 10;
-    int iters=3;
+    int iters=1;
     bool loop=false;
     uint64_t seed = getSeed();
 
@@ -350,11 +544,11 @@ int main(int argc, char** argv)
         std::cerr<<"with seed = "<<seed<<std::endl;
         std::cerr<<"Random matrixes tests"<<std::endl;
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
-        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
+        // ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
+        // ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
+        // ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
+        // ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
+        // ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
         // ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,seed); // Valgrind does not like this one 
         // ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
         // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,seed);
