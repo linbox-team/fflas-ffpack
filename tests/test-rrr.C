@@ -459,8 +459,8 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     ok = ok && test_TSxRRR(F,n,t,m,E,n,D,n);
     ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
     ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
-    // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
-    // ok = ok && test_invert(F,n,t,N,n);
+    ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
+    // ok = ok && test_invert(F,n,t,A,n);
 
 
     
@@ -520,7 +520,7 @@ int main(int argc, char** argv)
     size_t t=3;
     size_t m=10;
     size_t r = 10;
-    int iters=1;
+    int iters=3;
     bool loop=false;
     uint64_t seed = getSeed();
 
@@ -544,11 +544,11 @@ int main(int argc, char** argv)
         std::cerr<<"with seed = "<<seed<<std::endl;
         std::cerr<<"Random matrixes tests"<<std::endl;
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
-        // ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
-        // ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,n,t,m, r, iters,seed);
+        ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,n,t,m, r, iters,seed);
         // ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,n,t,m, r, iters,seed); // Valgrind does not like this one 
         // ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,n,t,m, r, iters,seed);
         // ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,9, ceil(n/4.), ceil(t / 4.), ceil(m / 4.), ceil(r / 4.), iters,seed);

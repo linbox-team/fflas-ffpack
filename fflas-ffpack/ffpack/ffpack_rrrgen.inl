@@ -716,13 +716,23 @@ inline RRgen<Field>* RRxRRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
             return nullptr;
         }
 
+        if (B->UQ == nullptr){
+            // if B is a leaf of the RRRgen then UQ is empty !
+            // and the dense matrix is stored in PL
+            typename Field::Element_ptr X = FFLAS::fflas_new (Fi, B->n, n);
+            TSxRRR(Fi,n,B->n,B->PL,B->ldPL,A,X,n);
+            RRgen<Field>* RR_X = new RRgen(Fi,  B->r,  n,  X,  n);
+            FFLAS::fflas_delete(X);
+            return RR_X;
+        }
+
         typename Field::Element_ptr X = FFLAS::fflas_new (Fi, B->r, n);
         TSxRRR(Fi,n,B->r,B->UQ,B->ldUQ,A,X,n);
 
         // (LX, RX) < RRF(X)
         RRgen<Field>* RR_X = new RRgen(Fi,  B->r,  n,  X,  n);
         FFLAS::fflas_delete(X);
-
+        
         // RD < RX
         typename Field::Element_ptr UQ_D = FFLAS::fflas_new (Fi, RR_X->r, n);
         FFLAS::fassign(Fi,RR_X->r,n,RR_X->UQ,RR_X->ldUQ,UQ_D,n);
@@ -757,9 +767,13 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
         RRRxTS(Fi,n,B->r,A,B->PL,B->ldPL,X,B->r);
 
         // (LX, RX) < RRF(X)
+        FFLAS::WriteMatrix(std::cout << "X = " << std::endl, Fi, n, B->r, X, B->r);
+        FFLAS::WriteMatrix(std::cout << "UQ = " << B->UQ <<std::endl, Fi, n, B->r, B->UQ, B->r);
         RRgen<Field>* RR_X = new RRgen(Fi,  n,  B->r,  X,  B->r);
         FFLAS::fflas_delete(X);
-
+        if (B->UQ == nullptr){
+            return RR_X;
+        }
         // LD < LX
         typename Field::Element_ptr PL_D = FFLAS::fflas_new (Fi, n, RR_X->r);
         FFLAS::fassign(Fi,n,RR_X->r,RR_X->PL,RR_X->ldPL,PL_D,RR_X->r);
@@ -829,10 +843,10 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RR
 
     else {
         // C11 < RRRxRRR(A11,B11)
-        RRRgen<Field>* C11 = RRRxRRR(Fi,A->left,B->left);
+        RRRgen<Field>* C11_ = RRRxRRR(Fi,A->left,B->left);
 
         // C22 < RRxRRR(A22,B22)
-        RRRgen<Field>* C22 = RRRxRRR(Fi,A->right,B->right);
+        RRRgen<Field>* C22_ = RRRxRRR(Fi,A->right,B->right);
 
         // X < RRxRR(A12,B21)
         RRgen<Field>* X = RRxRR(Fi,A->LU_right,B->LU_left);
@@ -841,11 +855,13 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RR
         RRgen<Field>* Y = RRxRR(Fi,A->LU_left,B->LU_right);
 
         // C11 < RRR+RR(C11,X)
-        C11 = RRRaddRR(Fi,C11,X);
+        RRRgen<Field>* C11 = RRRaddRR(Fi,C11_,X);
 
         // C22 < RRR+RR(C22,Y)
-        C22 = RRRaddRR(Fi,C22,Y);
-        
+        RRRgen<Field>* C22 = RRRaddRR(Fi,C22_,Y);
+
+        delete C11_;
+        delete C22_;
         delete X;
         delete Y;
 
@@ -879,7 +895,7 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RR
         LX = FFLAS::fflas_new (Fi, A->size_N2, B->LU_left->r);
         RRRxTS(Fi,A->size_N2,B->LU_left->r,A->right,B->LU_left->PL,B->LU_left->ldPL,LX,B->LU_left->r);
         
-        RX =FFLAS::fflas_new (Fi, B->LU_left->r, B->size_N1);
+        RX = FFLAS::fflas_new (Fi, B->LU_left->r, B->size_N1);
         FFLAS::fassign(Fi,B->LU_left->r,B->size_N1,
             B->LU_left->UQ,B->LU_left->ldUQ,
             RX,B->size_N1);
@@ -918,6 +934,7 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,
             const RRRgen<Field>* A)
     {
         if (!A->left){
+            // leaf
             // Y < RRRExpand(A)
             size_t N1 = A->size_N1;
             typename Field::Element_ptr Y =FFLAS::fflas_new (Fi, N1, N1);
@@ -926,6 +943,7 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,
             int nullity;
             FFPACK::Invert (Fi, N1,Y, N1, nullity);
             RRRgen<Field>* Y_RRR = new RRRgen(Fi,N1,A->t,Y,N1,true,true);
+            FFLAS::WriteMatrix(std::cout << "A = " << std::endl, Fi, N1, N1, Y, N1);
             FFLAS::fflas_delete(Y);
             return  Y_RRR;
         }
@@ -934,7 +952,7 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,
         //                          [A21 A22]           [X21 X22]
 
         // Y11 < RRRinvertrec(A11)
-        RRRgen<Field>* Y11 = RRRinvert(Fi,A->left);
+        RRRgen<Field>* Y11 = RRRinvert(Fi,A->left); //can be a leaf
 
         // Y12 < RRRxRR(Y11,A12)
         RRgen<Field>* Y12 = RRRxRR(Fi,Y11,A->LU_right);
