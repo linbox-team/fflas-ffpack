@@ -408,18 +408,29 @@ bool test_invert  (const Field & F, size_t n, size_t t,
     RRRgen<Field>* RRRA_invert = RRRinvert(F,RRRA);
     RRRExpand<Field>(F, RRRA_invert, Acheck, n);
 
+    // I = Acheck x A
+    typename Field::Element_ptr In = fflas_new (F, n, n);
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+        n, n,n,
+        F.one, Acheck, lda,
+        A, n,
+        0, In, n);
 
 
     bool ok = fequal (F, n, n, Ainit, n, Acheck, n);
     if ( !ok )
         {
-            std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
+            std::cout << "ERROR: different results for dense A⁻1 and RRR A⁻1"<<std::endl;
             WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, Ainit, n);
             WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
+            WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, In, n);
         }
-    
+    FFLAS::fflas_delete(Ainit);
     FFLAS::fflas_delete(Acheck);
+    FFLAS::fflas_delete(In);
     delete(RRRA);
+    delete(RRRA_invert);
+
     return ok;
 }
 template<class Field>
@@ -448,7 +459,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,r,t,M,n,G);
 
     Element_ptr N = fflas_new (F, n, n); // n*n random matrix with t-QSorder and rank n so it can be inverted
-    FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,n,t,N,n,G);
+    // FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,n,t,N,n,G);
     
     ok = ok && test_compression_RR(F,n,m,C,m);
     ok = ok && test_compression(F,n,t,E,n);
@@ -460,7 +471,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
     ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
     ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
-    // ok = ok && test_invert(F,n,t,A,n);
+    ok = ok && test_invert(F,n,t,A,n);
 
 
     

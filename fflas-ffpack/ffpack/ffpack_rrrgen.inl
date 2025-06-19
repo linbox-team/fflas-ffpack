@@ -767,8 +767,6 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
         RRRxTS(Fi,n,B->r,A,B->PL,B->ldPL,X,B->r);
 
         // (LX, RX) < RRF(X)
-        FFLAS::WriteMatrix(std::cout << "X = " << std::endl, Fi, n, B->r, X, B->r);
-        FFLAS::WriteMatrix(std::cout << "UQ = " << B->UQ <<std::endl, Fi, n, B->r, B->UQ, B->r);
         RRgen<Field>* RR_X = new RRgen(Fi,  n,  B->r,  X,  B->r);
         FFLAS::fflas_delete(X);
         if (B->UQ == nullptr){
@@ -784,7 +782,7 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
                 RR_X->r, B->m, B->r,
                 minus ? Fi.mOne : Fi.one , RR_X->UQ, RR_X->ldUQ,
                 B->UQ, B->ldUQ,
-                Fi.zero, UQ_D, RR_X->r);
+                Fi.zero, UQ_D, B->m);
         
 
         RRgen<Field>* D = new RRgen(Fi,n,B->m,RR_X->r,PL_D,RR_X->ldPL,UQ_D,B->m,true);
@@ -943,8 +941,8 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,
             int nullity;
             FFPACK::Invert (Fi, N1,Y, N1, nullity);
             RRRgen<Field>* Y_RRR = new RRRgen(Fi,N1,A->t,Y,N1,true,true);
-            FFLAS::WriteMatrix(std::cout << "A = " << std::endl, Fi, N1, N1, Y, N1);
             FFLAS::fflas_delete(Y);
+
             return  Y_RRR;
         }
 
@@ -960,8 +958,8 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,
         // Y21 < RRxRRR(A21,Y11)
         RRgen<Field>* Y21 = RRxRRR(Fi,Y11,A->LU_left);
 
-        // Z < RRxRR(A21,Y12)
-        RRgen<Field>* Z = RRxRR(Fi,A->LU_left,Y12);
+        // Z < -RRxRR(A21,Y12)
+        RRgen<Field>* Z = RRxRR(Fi,A->LU_left,Y12,true);
 
         // D < RRRaddRR(A22,Z)
         RRRgen<Field>* D = RRRaddRR(Fi,A->right,Z);
