@@ -17,44 +17,26 @@ public:
     size_t ldPL;                        
     typename Field::Element_ptr UQ;     // UQ from PLUQ (r*m)
     size_t ldUQ;
-    bool modify;                        // if PL or UQ can be modified. If true, it can be modified and destroyed
+    bool memory_owner;                  // whether the structure owns the memory or whether it is a view on memory area. Used in destructors
 
     RRgen(const Field& Fi, size_t n, size_t m, size_t r,
             typename Field::Element_ptr PL, size_t ldPL, 
-            typename Field::Element_ptr UQ,size_t ldUQ, bool modify)
-        : n(n), m(m), r(r), PL(PL), ldPL(ldPL), UQ(UQ), ldUQ(ldUQ), modify(modify) {}
+            typename Field::Element_ptr UQ,size_t ldUQ, bool memory_owner = true)
+        : n(n), m(m), r(r), PL(PL), ldPL(ldPL), UQ(UQ), ldUQ(ldUQ), memory_owner(memory_owner) {}
     
-    RRgen( const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
-        typename Field::Element_ptr PL_A, size_t ldPL_A, 
-        typename Field::Element_ptr UQ_A,size_t ldUQ_A){
-        n = n_A;
-        m = m_A;
-        r = r_A;
-        PL = PL_A;
-        ldPL = ldPL_A;
-        modify = true;
-        UQ = UQ_A;
-        ldUQ = ldUQ_A;
-
-        
-    }
     
     RRgen(const Field& Fi, size_t n_A, size_t m_A, size_t r_A,
         typename Field::Element_ptr PL_A, size_t ldPL_A, 
-        typename Field::Element_ptr UQ_A,size_t ldUQ_A, bool mod, bool copy){
+        typename Field::Element_ptr UQ_A,size_t ldUQ_A, bool mem_owner, bool copy):n(n_A),m(m_A),r(r_A){
         if (copy){
-            n = n_A;
-            m = m_A;
-            r = r_A;
             PL = FFLAS::fflas_new(Fi, n_A, r_A);
             FFLAS::fassign(Fi,n_A,r_A,PL_A,ldPL_A,PL,r_A);
             ldPL = r_A;
-            modify = true;
+            memory_owner = true;
             if (UQ_A){
                 UQ = FFLAS::fflas_new(Fi, r_A, m_A);
                 FFLAS::fassign(Fi,r_A,m_A,UQ_A,ldUQ_A,UQ,m_A);
                 ldUQ = m_A;
-
             }
             else {
                 UQ = UQ_A;
@@ -62,21 +44,16 @@ public:
             }
         }
         else {
-            n = n_A;
-            m = m_A;
-            r = r_A;
             ldPL = ldPL_A;
             ldUQ = ldUQ_A;
             PL = PL_A;
             UQ = UQ_A;
-            modify = mod;
+            memory_owner = mem_owner;
         }
     }
     
     
-    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::ConstElement_ptr A, size_t ldA){
-        n = n_A;
-        m = m_A;
+    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::ConstElement_ptr A, size_t ldA):n(n_A),m(m_A){
         size_t* P = FFLAS::fflas_new<size_t>(n_A);
         size_t* Q = FFLAS::fflas_new<size_t>(m_A);
 
@@ -107,12 +84,11 @@ public:
 
         FFLAS::fflas_delete(A_copy);
         FFLAS::fflas_delete(P,Q);
-        modify = true;
+        memory_owner = true;
     }
 
-    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::Element_ptr A, size_t ldA){
-        n = n_A;
-        m = m_A;
+    RRgen(const Field& Fi, size_t n_A, size_t m_A, typename Field::Element_ptr A, size_t ldA):n(n_A),m(m_A){
+
         size_t* P = FFLAS::fflas_new<size_t>(n_A);
         size_t* Q = FFLAS::fflas_new<size_t>(m_A);
 
@@ -139,7 +115,7 @@ public:
         applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, m_A, UQ, m_A, Q);
 
         FFLAS::fflas_delete(P,Q);
-        modify = true;
+        memory_owner = true;
     }
     
     void RRExpand( const Field& Fi, typename Field::Element_ptr A, size_t ldA){
@@ -153,7 +129,7 @@ public:
     }
 
     ~RRgen() {
-        if (modify){
+        if (memory_owner){
 
             FFLAS::fflas_delete(PL);
             if (UQ){
@@ -176,43 +152,41 @@ public:
     size_t t;                           // threshold for recursive representation : when N1+N2 < t, the matrix is stored completly
     RRRgen<Field>* left;                // recursively pointing on the same representation of the up left submatrix = A11
     RRRgen<Field>* right;               // recursively pointing on the same representation of the down right submatrix = A22
-    bool modify;                        // if it can be modified or not. If true, it can be modified or it can delete left/right/LU_left/LU_right.
+    bool memory_owner;                  // whether the structure owns the memory or whether it is a view on memory area. Used in destructors
 
 
-    RRRgen(RRgen<Field>* LU_right, RRgen<Field>* LU_left, size_t size_N1, size_t size_N2,size_t t, RRRgen* left, RRRgen* right,bool modify)
-        :  LU_right(LU_right), LU_left(LU_left), size_N1(size_N1), size_N2(size_N2),t(t), left(left), right(right),modify(modify){}
+    RRRgen(RRgen<Field>* LU_right, RRgen<Field>* LU_left, size_t size_N1, size_t size_N2,size_t t, RRRgen* left, RRRgen* right,bool memory_owner)
+        :  LU_right(LU_right), LU_left(LU_left), size_N1(size_N1), size_N2(size_N2),t(t), left(left), right(right),memory_owner(memory_owner){}
     
     
-    RRRgen( const Field& F,typename Field::Element_ptr leaf, size_t n,size_t threshold,bool mod,bool copy){
+    RRRgen( const Field& F,typename Field::Element_ptr leaf, size_t n,size_t threshold,bool mem_owner,bool copy){
 
-        LU_right = new RRgen<Field>(F,n,n,n,leaf,n,nullptr,0,mod,copy);
+        LU_right = new RRgen<Field>(F,n,n,n,leaf,n,nullptr,0,mem_owner,copy);
         LU_left = nullptr;
         size_N1 = n;
         size_N2 = 0;
         t = threshold;
         left = nullptr;
         right = nullptr;
-        modify = true;
+        memory_owner = true;
     }
 
-    RRRgen( const Field& Fi,const size_t N, const size_t threshold,typename Field::Element_ptr A, const size_t lda, bool mod, bool copy)
+    RRRgen( const Field& Fi,const size_t N, const size_t threshold,typename Field::Element_ptr A, const size_t lda, bool mem_owner, bool copy = false): t (threshold)
     {
         if (N <= threshold) { 
             // leaf
-            LU_right = new RRgen<Field>(Fi,N,N,N,A,lda,nullptr,0,mod,copy);
+            LU_right = new RRgen<Field>(Fi,N,N,N,A,lda,nullptr,0,mem_owner,copy);
             LU_left = nullptr;
             size_N1 = N;
             size_N2 = 0;
-            t = threshold;
             left = nullptr;
             right = nullptr;
-            modify = true;
+            memory_owner = true;
             return;
         }
 
         size_N1 = N/2;
         size_N2 = N - size_N1;
-        t = threshold;
         // cut the matrix A in four parts
         // in case of odd N, A12 and A21 are rectangles and not squares
         typename Field::Element_ptr A11 = A;
@@ -229,56 +203,16 @@ public:
 
 
         // recursion on A11 and A22   
-        left = new RRRgen( Fi, size_N1, threshold, A11, lda, mod,copy);
+        left = new RRRgen( Fi, size_N1, threshold, A11, lda, mem_owner,copy);
 
-        right = new RRRgen( Fi, size_N2, threshold, A22, lda, mod,copy);
-        modify = true;
+        right = new RRRgen( Fi, size_N2, threshold, A22, lda, mem_owner,copy);
+        memory_owner = true;
         return;
     }
 
-    RRRgen( const Field& Fi,const size_t N, const size_t threshold,typename Field::Element_ptr A, const size_t lda, bool mod)
-    {
-        if (N <= threshold) { 
-            // leaf
-            LU_right = new RRgen<Field>(Fi,N,N,N,A,lda,nullptr,0,mod,false);
-            LU_left = nullptr;
-            size_N1 = N;
-            size_N2 = 0;
-            t = threshold;
-            left = nullptr;
-            right = nullptr;
-            modify = true;
-            return;
-        }
-
-        size_N1 = N/2;
-        size_N2 = N - size_N1;
-        t = threshold;
-        // cut the matrix A in four parts
-        // in case of odd N, A12 and A21 are rectangles and not squares
-        typename Field::Element_ptr A11 = A;
-        typename Field::ConstElement_ptr A12 = A + size_N1;
-        typename Field::ConstElement_ptr A21 = A + lda*size_N1;
-        typename Field::Element_ptr A22 = (typename Field::Element_ptr)A21 + size_N1;
-
-        ///////// PLUQ Factorisation for A12 and A21
-        // std::cout << "A12 : N1 = "<< size_N1 << std::endl;
-        // std::cout << "A12 : N2 = "<< size_N2 << std::endl;
-        LU_right = new RRgen(Fi, size_N1,  size_N2, A12, lda);
-
-        LU_left = new RRgen(Fi, size_N2,  size_N1, A21, lda);
-
-
-        // recursion on A11 and A22   
-        left = new RRRgen( Fi, size_N1, threshold, A11, lda, mod,false);
-
-        right = new RRRgen( Fi, size_N2, threshold, A22, lda, mod,false);
-        modify = true;
-        return;
-    }
 
     ~RRRgen() {
-        if (modify){
+        if (memory_owner){
             delete LU_right;
             
             if (LU_left) {
@@ -297,7 +231,7 @@ public:
 };
 
 
-/// @brief (algo 4) Compute the dense matrix of RRR(A) in B recursive part
+/// @brief Computes the dense matrix of RRR(A) in B. B needs to be at least (A->sizeN1 + A->sizeN2) x (A->sizeN1 + A->sizeN2) preallocated.
 /// @tparam Field 
 /// @param Fi 
 /// @param A 
@@ -354,7 +288,7 @@ inline void RRRExpand (const Field& Fi,
 
 
 
-/// @brief (algo 5) multiplies two matrices stored as rank revealing factorization. C = minus ? -1 : 1 A*B
+/// @brief  Multiplies two matrices stored as rank revealing factorization. C = minus ? -1 : 1 A*B
 /// @tparam Field 
 /// @param Fi 
 /// @param A stored with an RRgen
@@ -403,7 +337,7 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B, boo
         return  C;
     }
 
-/// @brief (algo 5) multiplies two matrices stored as rank revealing factorization.
+/// @brief multiplies two matrices stored as rank revealing factorization.
 /// @tparam Field 
 /// @param Fi 
 /// @param A stored with an RRgen
@@ -414,7 +348,7 @@ inline RRgen<Field>* RRxRR (const Field& Fi,RRgen<Field>* A, RRgen<Field>*B){
 }
 
 
-/// @brief (algo 6) add two matrices stored as rank revealing factorization
+/// @brief add two matrices stored as rank revealing factorization
 /// @tparam Field 
 /// @param Fi 
 /// @param A stored with an RRgen
@@ -456,7 +390,7 @@ inline RRgen<Field>* RRaddRR (const Field& Fi, RRgen<Field>* A, RRgen<Field>*B)
         return D;
     }
 
-/// @brief (algo 7) Adds a quasiseparable matrix in RRR representation and a rank revealing factorization.
+/// @brief Adds a quasiseparable matrix in RRR representation and a rank revealing factorization.
 /// @tparam Field 
 /// @param Fi 
 /// @param A        size n*n in RRR representation
@@ -516,7 +450,7 @@ inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field
         }
     }
 
-/// @brief (algo 8) Multiplies a quasiseparable matric in RRR representation with a tall and skinny matrix
+/// @brief Multiplies a quasiseparable matric in RRR representation with a tall and skinny matrix
 /// @tparam Field 
 /// @param Fi 
 /// @param n 
@@ -605,7 +539,7 @@ inline void RRRxTS (const Field& Fi, size_t n, size_t m_B,
     }
 
 
-/// @brief (algo 8) Multiplies a tall and skinny matrix with a quasiseparable matric in RRR representation
+/// @brief  Multiplies a tall and skinny matrix with a quasiseparable matric in RRR representation
 /// @tparam Field 
 /// @param Fi 
 /// @param n 
@@ -699,7 +633,7 @@ inline void TSxRRR (const Field& Fi, size_t n, size_t t,
 
 
 
-/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+/// @brief Multiplies a QS matrix in RRR representation with a rank revealing factorization
 ///                 Computes C = A*B if minus == false , else computes C = -A*B
 /// @tparam Field 
 /// @param Fi
@@ -758,6 +692,7 @@ inline RRgen<Field>* RRxRRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
 /// @param Fi
 /// @param A        size n*n in a RRR representation     
 /// @param B        size n*m in RR representation
+/// @param minus    boolean in order to compute C = -A*B if true.
 template<class Field>
 inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<Field>* B,bool minus)
     {
@@ -791,7 +726,7 @@ inline RRgen<Field>* RRRxRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
     }
 
 
-/// @brief (algo 9) Multiplies a QS matrix in RRR representation with a rank revealing factorization
+/// @brief Multiplies a QS matrix in RRR representation with a rank revealing factorization
 ///                 Computes C = A*B
 /// @tparam Field 
 /// @param Fi
@@ -812,7 +747,7 @@ inline RRgen<Field>* RRxRRR (const Field& Fi,const RRRgen<Field>* A,const RRgen<
     return RRxRRR(Fi,A,B,false);
 }
 
-/// @brief multiplies two QS matrices (algo 10)
+/// @brief multiplies two QS matrices 
 /// @tparam Field 
 /// @param Fi 
 /// @param A        size n*n
@@ -923,10 +858,10 @@ inline RRRgen<Field>* RRRxRRR (const Field& Fi, const RRRgen<Field>* A, const RR
 }
 
 
-/// @brief Compute the inverse in RRR representation
+/// @brief Computes the inverse in RRR representation adn returns it in RRRgen.
 /// @tparam Field 
 /// @param Fi 
-/// @param A    in RRR representation
+/// @param A in RRR representation
 template<class Field>
 inline RRRgen<Field>* RRRinvert (const Field& Fi,
             const RRRgen<Field>* A)

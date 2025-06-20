@@ -33,6 +33,7 @@
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/ffpack/ffpack_rrrgen.inl"
 
 
 
@@ -60,7 +61,6 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
 
         typename Field::RandIter G (F, seed);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A,lda,G);
-        RandomLTQSMatrixWithRankandQSorder (F,n,r,t,B,lda,G);
         RandomMatrix(F, n, m, TS, ldts, G);
 
         
@@ -80,6 +80,7 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         // product of matrix RRRxTS 
         RRRxTS(F,n,m,RRRA,TS,m,B,m);
         chrono.stop();
+        delete RRRA;
 
         time_RRRxTS += chrono.usertime();
     }
