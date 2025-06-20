@@ -109,6 +109,7 @@ tests/test-charpoly
 tests/test-maxdelayeddim
 tests/test-quasisep
 tests/test-sss
+tests/test-rrr
 test-det-check
 test-fdot
 test-fspmm-recint
