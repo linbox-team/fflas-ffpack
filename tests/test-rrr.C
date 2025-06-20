@@ -439,7 +439,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     typedef typename Field::Element_ptr Element_ptr;
     bool ok = true;
     
-    //test operations with random matrixes
+    //test operations with random matrices
     Element_ptr A = fflas_new (F, n, n); // n*n random matrix
     FFLAS::frand(F,G,n,n,A,n);
 
@@ -553,7 +553,7 @@ int main(int argc, char** argv)
     bool ok=true;
     do{
         std::cerr<<"with seed = "<<seed<<std::endl;
-        std::cerr<<"Random matrixes tests"<<std::endl;
+        std::cerr<<"Random matrices tests"<<std::endl;
         ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,n,t,m, r,iters,seed);
         ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,n,t,m, r, iters,seed);
         ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,t,m, r, iters,seed);
