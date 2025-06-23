@@ -51,6 +51,39 @@ bool test_compression_RR  (const Field & F, size_t n, size_t m,
 }
 
 /**
+ * \brief test equality between a dense matrix and the result of compressing with RR and reconstructing it.
+ */
+template<class Field>
+bool test_QS_order  (const Field & F, RRRgen<Field>* RRRA, size_t t)
+{
+    if (RRRA->left){
+        if (RRRA->LU_left->r > t) {
+            typename Field::Element_ptr A = fflas_new (F, RRRA->size_N2, RRRA->size_N1);
+            RRRA->LU_left->RRExpand(F,A,RRRA->size_N1);
+            WriteMatrix(std::cout << "A_current = " << std::endl, F, RRRA->size_N2, RRRA->size_N1, A, RRRA->size_N1);
+            FFLAS::fflas_delete(A);  
+            return false; 
+        }    
+        if (RRRA->LU_right->r > t) {
+            typename Field::Element_ptr A = fflas_new (F, RRRA->size_N1, RRRA->size_N2);
+            RRRA->LU_left->RRExpand(F,A,RRRA->size_N2);
+            WriteMatrix(std::cout << "A_current = " << std::endl, F, RRRA->size_N1, RRRA->size_N2, A, RRRA->size_N2);
+            FFLAS::fflas_delete(A); 
+            return false;
+        } 
+        return test_QS_order(F,RRRA->left,t) &&  test_QS_order(F,RRRA->right,t);
+
+    }
+    else {
+        //return true if the rank of RRRA->right->PL is lower than t
+        //else return false
+        //usually it's true as the dimension of the matrix is lower than t  
+        return true;
+    }
+}
+
+
+/**
  * \brief test equality between a dense matrix and the result of compressing with RRR and reconstructing it.
  */
 template<class Field>
@@ -75,6 +108,14 @@ bool test_compression  (const Field & F, size_t n, size_t t,
             WriteMatrix(std::cout << "L_l = " << std::endl, F, RRRA->size_N2, RRRA->LU_left->r, RRRA->LU_left->PL, RRRA->LU_left->r);
         }
     
+    ok = ok && test_QS_order(F,RRRA,t);
+    if ( !ok )
+        {
+            std::cout << "ERROR: QS order too high"<<std::endl;
+            WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, A, lda);
+        }
+
+
     FFLAS::fflas_delete(Acheck);
     delete(RRRA);
     return ok;
@@ -439,6 +480,22 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     typedef typename Field::Element_ptr Element_ptr;
     bool ok = true;
     
+    // Generation of a dense QS matrix with RandomLTQSMatrixWithRankandQSorder
+    Element_ptr T = fflas_new (F, n, n);
+    Element_ptr A2 = fflas_new (F, n, n);
+    RandomLTQSMatrixWithRankandQSorder (F,n,r,t,T, n,G);
+    RandomLTQSMatrixWithRankandQSorder (F,n,r,t, A2, n,G);
+    size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
+    for (size_t i = 0; i < ceil(n/2.); i++)
+        {
+            p[i] = n - i - 1;
+        }
+    applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), T, n, p);
+    applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
+    faddin (F, n, n, A2, n, T, n);
+    FFLAS::fflas_delete(A2, p);
+
+
     //test operations with random matrices
     Element_ptr A = fflas_new (F, n, n); // n*n random matrix
     FFLAS::frand(F,G,n,n,A,n);
@@ -462,7 +519,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,n,t,N,n,G);
     
     ok = ok && test_compression_RR(F,n,m,C,m);
-    ok = ok && test_compression(F,n,t,E,n);
+    ok = ok && test_compression(F,n,t,T,n);
     ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
     ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
     ok = ok && test_RRRaddRR(F,n,n,t,E,n,B,n);
@@ -482,6 +539,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     FFLAS::fflas_delete(E);
     FFLAS::fflas_delete(M);
     FFLAS::fflas_delete(N);
+    FFLAS::fflas_delete(T);
 
 
     return ok;
@@ -528,7 +586,7 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     size_t n=23;
-    size_t t=3;
+    size_t t=10;
     size_t m=10;
     size_t r = 10;
     int iters=3;
