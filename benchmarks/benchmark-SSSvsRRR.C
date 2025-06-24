@@ -48,123 +48,86 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     typedef typename Field::Element_ptr Element_ptr;
     typename Field::RandIter G (F, seed);
     FFLAS::Timer chrono;
-    Element_ptr A, B;
+    
+    size_t lda = n;
+    size_t ldts = m;
+    size_t rs = n%t;           // Size of the partial block
+    size_t ls = (rs)? rs: t;   // Size of the last block
+
+    Element_ptr A, B, TS;
     A = FFLAS::fflas_new (F, n, n);
-    B = FFLAS::fflas_new (F, n, n);
-
-    RRgen<Field>* RRA;
-    RRgen<Field>* RRB;
-    RRgen<Field>* RRres;
-
+    B = FFLAS::fflas_new (F, n, m);
+    TS = FFLAS::fflas_new (F, n, m);
+    Element_ptr D = fflas_new (F, n, t);
+    Element_ptr P = fflas_new (F, n - t, t);
+    Element_ptr Q = fflas_new (F, n - ls, t);
+    Element_ptr R = fflas_new (F, ((n > (t + ls))? (n - t - ls): 0), t);
+    Element_ptr U = fflas_new (F, n - ls, t);
+    Element_ptr V = fflas_new (F, n - ls, t);
+    Element_ptr W = fflas_new (F, ((n > (t + ls))? (n - t - ls): 0), t);
+    Element_ptr Res = fflas_new(F, n, m); // Inadequate name
     RRRgen<Field>* RRRA;
-    RRRgen<Field>* RRRB;
-    RRRgen<Field>* RRRres;
+
 
     Element_ptr A2 = fflas_new (F, n, n);
-    Element_ptr B2 = fflas_new (F, n, n);
 
-    size_t lda=n;
-    size_t ldb = n;
 
-    double time_rrxrr = 0, time_rraddrr = 0, time_rrraddrr = 0, time_rrrxrr = 0, time_rrrxrrr = 0, time_invert = 0;
-    for (size_t i=0;i<iter;++i){
+    double time_RRRxTS = 0, time_SSSxTS = 0;
+    size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
+    for (size_t i = 0; i < ceil(n/2.); i++)
+    {
+        p[i] = n - i - 1;
+    }
+    
+    for (size_t i=0; i<iter;++i){
+
+        std::cout << "Generation start"<< std::endl;
+        // generates random matrices
+        typename Field::RandIter G (F, seed);
+        RandomMatrix(F, n, m, TS, ldts, G);
+        
         // generate A a t qsmatrix
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A, n,G);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t, A2, n,G);
-        size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
-        for (size_t i = 0; i < ceil(n/2.); i++)
-        {
-            p[i] = n - i - 1;
-        }
         applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A, n, p);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
         faddin (F, n, n, A2, n, A, n);
-        FFLAS::fflas_delete(A2, p);
+        
+        std::cout << "Generation ended"<< std::endl;
 
-        // generate B a t qsmatrix
-        RandomLTQSMatrixWithRankandQSorder (F,n,r,t,B, n,G);
-        RandomLTQSMatrixWithRankandQSorder (F,n,r,t, B2, n,G);
-        p = FFLAS::fflas_new<size_t> (ceil(n/2.));
-        for (size_t i = 0; i < ceil(n/2.); i++)
-        {
-            p[i] = n - i - 1;
-        }
-        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B, n, p);
-        applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B2, n, p);
-        faddin (F, n, n, B2, n, B, n);
-        FFLAS::fflas_delete(B2, p);
-        
-        // Computes the RRgen of A and B
-        RRA = new RRgen<Field>(F, n, n, A, lda);
-        RRB = new RRgen<Field>(F, n, n, B, ldb);
-        
-        // Computes the RRRgen of A and B
+        // create RRR
         RRRA = new RRRgen<Field>(F, n, t, A, lda,true,true);
-        RRRB = new RRRgen<Field>(F, n, t, B, lda,true,true);
         
-
-        // RRxRR
+        // RRRxTS product
         chrono.clear();
-        chrono.start();
-        RRres = RRxRR(F,RRA,RRB);
+        chrono.start(); 
+        RRRxTS(F,n,m,RRRA,TS,m,B,m);
         chrono.stop();
-        delete  RRres;
-        time_rrxrr+=chrono.usertime();
-
-        // RRaddRR
-        chrono.clear();
-        chrono.start();
-        RRres = RRaddRR(F,RRA,RRB);
-        chrono.stop();
-        delete  RRres;
-        time_rraddrr+=chrono.usertime();
-        
-        // RRRaddRR
-        chrono.clear();
-        chrono.start();
-        RRRres = RRRaddRR(F,RRRA,RRB);
-        chrono.stop();
-        delete  RRRres;
-        time_rrraddrr+=chrono.usertime();
-
-        // RRRxRR
-        chrono.clear();
-        chrono.start();
-        RRres = RRRxRR(F,RRRA,RRB);
-        chrono.stop();
-        delete  RRres;
-        time_rrrxrr+=chrono.usertime();
-
-        // RRRxRRR
-        chrono.clear();
-        chrono.start();
-        RRRres = RRRxRRR(F,RRRA,RRRB);
-        chrono.stop();
-        delete  RRRres;
-        time_rrrxrrr+=chrono.usertime();
-
-        // RRR invert
-        chrono.clear();
-        chrono.start();
-        RRRres = RRRinvert(F,RRRA);
-        chrono.stop();
-        delete  RRRres;
-        time_invert+=chrono.usertime();
-
-        
-        delete RRA;
-        delete RRB;
+        time_RRRxTS += chrono.usertime();
         delete RRRA;
-        delete RRRB;
+        
+        
+        
+        
+        // create SSS
+        DenseToSSS (F, n, t, P, t, Q, t, R, t, U, t, V, t, W, t, D, t, A, n);
+        
+        // SSSxTS product
+        chrono.clear();
+        chrono.start();
+        productSSSxTS(F, n, m, t, F.one, P, t, Q, t, R, t, U, t, V, t, W, t,
+            D, t, TS, m, F.zero, Res, m);
+            chrono.stop();
+            
+        time_SSSxTS += chrono.usertime();
     }
-    FFLAS::fflas_delete(A, B); 
-    std::cout << "Total Time: " << (time_rrxrr + time_rraddrr + time_rrraddrr + time_rrrxrr + time_rrrxrrr + time_invert) / double(iter) << std::endl
-              << " RRxRR : " << time_rrxrr / double(iter) << std::endl
-              << " RR+RR : " << time_rraddrr / double(iter) << std::endl
-              << " RRR+RR : " << time_rrraddrr / double(iter) << std::endl
-              << " RRRxRR : " << time_rrrxrr / double(iter) << std::endl
-              << " RRRxRRR : " << time_rrrxrrr / double(iter) << std::endl
-              << " RRR invert : " << time_invert / double(iter) << std::endl;
+    
+    FFLAS::fflas_delete(A, D, P, Q, R, U, V, W, B,TS, Res); 
+    FFLAS::fflas_delete(A2, p);
+    
+    double mean_time_RRRxTS = time_RRRxTS / double(iter);
+    double mean_time_SSSxTS = time_SSSxTS / double(iter);
+    std::cout << "Finished for n = " << n << " for RRR product took " << mean_time_RRRxTS << " and SSS product took " << mean_time_SSSxTS << std::endl;
 }
 
 int main(int argc, char** argv) {

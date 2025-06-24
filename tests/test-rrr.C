@@ -40,7 +40,7 @@ bool test_compression_RR  (const Field & F, size_t n, size_t m,
     bool ok = fequal (F, n, m, A, lda, Acheck, m);
     if ( !ok )
         {
-            std::cout << "ERROR: different results for dense to RRR and RRR to dense (RRRGen and Expand)"<<std::endl;
+            std::cout << "ERROR: different results for dense to RR and RR to dense (RRGen and RRExpand)"<<std::endl;
             WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, m, A, lda);
             WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, m, Acheck, m);
         }
