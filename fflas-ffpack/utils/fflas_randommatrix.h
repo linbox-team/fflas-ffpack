@@ -392,7 +392,7 @@ namespace FFPACK{
         FFLAS::fflas_delete(rr,cc);
     }
 
-    inline void RandomLTQSRankProfileMatrix (size_t n, size_t r, size_t t, size_t * rows, size_t *cols){
+    inline void RandomLTQSRankProfileMatrix_deprecated (size_t n, size_t r, size_t t, size_t * rows, size_t *cols){
 
         size_t * leadingRk = FFLAS::fflas_new<size_t>(n-1); //leadingRk[i] = rank of the leading (i+1) x (n-i-1) submatrix
         size_t fullRkBlocks, p, max_t;
@@ -500,34 +500,34 @@ namespace FFPACK{
                         std::min(n - (i + 1) - nb_pivot_after_i, nb_pivot_before_i_not_moved - Is_pivot_not_moved);
     }
 
-    /** @brief genenration of an Rank Profile Matrix randomly
+    /** @brief generation of an Left Triangular Rank Profile Matrix with quasiseparability order t randomly
      * @param n        Dimension
      * @param r        rank of the n*n matrix
      * @param t        quasi-separability order
-     * @param rows
-     * @param cols
+     * @param [out] rows
+     * @param [out] cols
     */
-    void RandomLTQSRankProfileMatrix_Tom(size_t n, size_t r, size_t t, size_t* rows, size_t* cols) {
+    void RandomLTQSRankProfileMatrix (size_t n, size_t r, size_t t, size_t* rows, size_t* cols) {
 
-        if (r <= 0 || n <= 0 || t <= 0) {
-            std::cout << "care, all the arguments must be positive" << std::endl;
-            return;
-        }
+        // if (r <= 0 || n <= 0 || t <= 0) {
+        //     std::cout << "care, all the arguments must be positive" << std::endl;
+        //     return;
+        // }
 
-        if (r >= n) {
-            std::cout << "care, you called the function with invalid arguments : r >= n IMPOSSIBLE" << std::endl;
-            return;
-        }
+        // if (r >= n) {
+        //     std::cout << "care, you called the function with invalid arguments : r >= n IMPOSSIBLE" << std::endl;
+        //     return;
+        // }
 
-        if (t > r) {
-            std::cout << "care, you called the function with invalid arguments : t >= r IMPOSSIBLE" << std::endl;
-            return;
-        }
+        // if (t > r) {
+        //     std::cout << "care, you called the function with invalid arguments : t >= r IMPOSSIBLE" << std::endl;
+        //     return;
+        // }
 
-        if (r + t > n) {
-            std::cout << "care, you called the function with invalid arguments : r+t > n IMPOSSIBLE" << std::endl;
-            return;
-        }
+        // if (r + t > n) {
+        //     std::cout << "care, you called the function with invalid arguments : r+t > n IMPOSSIBLE" << std::endl;
+        //     return;
+        // }
 
         /// Initialisation
 
@@ -572,7 +572,7 @@ namespace FFPACK{
         /// loop initialisation
         size_t loop = 0;
         std::vector<size_t> valid_moves;
-        size_t start_up;
+        size_t start_up=0;
         int ilim, jlim;
         int h = 0;
         int prev_h = -1;
@@ -1033,7 +1033,7 @@ namespace FFPACK{
         size_t * pivot_r = FFLAS::fflas_new<size_t> (r);
         size_t * pivot_c = FFLAS::fflas_new<size_t> (r);
 
-        RandomLTQSRankProfileMatrix_Tom (n, r, t, pivot_r, pivot_c);
+        RandomLTQSRankProfileMatrix (n, r, t, pivot_r, pivot_c);
         // typename Field::Element_ptr R =FFLAS::fflas_new(F,n,n);
         // getLTBruhatGen(F, n, r, pivot_r, pivot_c, R, n);
         // FFLAS:: WriteMatrix (std::cerr<<"R = "<<std::endl,F,n,n,R,n);
