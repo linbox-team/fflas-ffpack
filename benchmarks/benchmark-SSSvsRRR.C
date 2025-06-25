@@ -26,6 +26,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
+#include <fstream>
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -41,8 +42,11 @@ using namespace std;
 using namespace FFLAS;
 using namespace FFPACK;
 
+
+
+
 template<class Field>
-void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, uint64_t seed){
+void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, uint64_t seed, fstream& my_file){
 
     Field F(q);
     typedef typename Field::Element_ptr Element_ptr;
@@ -78,10 +82,10 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     {
         p[i] = n - i - 1;
     }
-    
+    cout << "Temps de calcul pour les produits de RRRxTS et SSSxTS et avec n : " << n << endl;
     for (size_t i=0; i<iter;++i){
 
-        std::cout << "Generation start"<< std::endl;
+        cout << "Generation start"<< endl;
         // generates random matrices
         typename Field::RandIter G (F, seed);
         RandomMatrix(F, n, m, TS, ldts, G);
@@ -93,7 +97,7 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
         faddin (F, n, n, A2, n, A, n);
         
-        std::cout << "Generation ended"<< std::endl;
+        cout << "Generation ended"<< endl;
 
         // create RRR
         RRRA = new RRRgen<Field>(F, n, t, A, lda,true,true);
@@ -127,7 +131,8 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     
     double mean_time_RRRxTS = time_RRRxTS / double(iter);
     double mean_time_SSSxTS = time_SSSxTS / double(iter);
-    std::cout << "Finished for n = " << n << " for RRR product took " << mean_time_RRRxTS << " and SSS product took " << mean_time_SSSxTS << std::endl;
+    cout << "n : " << n << ",  RRR : " << mean_time_RRRxTS << ", SSS : " << mean_time_SSSxTS << endl;
+    my_file << "n : " << n << ",  RRR : " << mean_time_RRRxTS << ", SSS : " << mean_time_SSSxTS << endl;
 }
 
 int main(int argc, char** argv) {
@@ -155,12 +160,23 @@ int main(int argc, char** argv) {
                      END_OF_ARGUMENTS
     };
 
+    fstream my_file;
+	my_file.open("my_file", ios::out);
+	if (!my_file) {
+		cout << "File not created!"<< std::endl;
+	}
+	else {
+		cout << "File created successfully!"<< std::endl;
+	}
+
     FFLAS::parseArguments(argc,argv,as);
-
-    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed);
-
-    std::cout << "( ";
-    FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
+    for (n = 6000; n<=10001;n = n+1000){
+        
+        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
+    }
+    my_file.close();
+    // std::cout << "( ";
+    // FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
     return 0;
 }
 
