@@ -169,7 +169,7 @@ bool testLTQSRPM (const Field & F,size_t n, size_t r, size_t t, RandGen& G){
 
     size_t * rows = FFLAS::fflas_new<size_t>(r);
     size_t * cols = FFLAS::fflas_new<size_t>(r);
-    RandomLTQSRankProfileMatrix (n, r,  t, rows, cols);
+    RandomLTQSRankProfileMatrix_Tom (n, r,  t, rows, cols);
 
     typename Field::Element_ptr A = fflas_new(F,n,n);
     getLTBruhatGen(F, n, r, rows, cols, A, n);

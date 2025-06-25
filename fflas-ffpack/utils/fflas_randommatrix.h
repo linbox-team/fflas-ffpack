@@ -467,6 +467,264 @@ namespace FFPACK{
         FFLAS::fflas_delete (randcols,randrows);
     }
 
+    // O(l*len(L)+M*len(M))
+    // compute all the valid moves in the array valid_moves depending on the free areas described in L and M 
+    inline void compute_valid_moves(std::vector<size_t>* valid_moves, size_t* start_up, size_t l, size_t* L, size_t lengthL, int llim, size_t m, size_t* M, size_t lengthM, int mlim, std::vector<bool> availrows, std::vector<bool> availcols) {
+        valid_moves->clear();
+
+        // Base case: Identity
+        valid_moves->push_back(l);
+
+        // Compute all the empty columns/lines
+        for (size_t j = (size_t) llim+1; j < l; ++j) {
+            if (availcols[j]) {
+                valid_moves->push_back(j);
+            }
+        }
+
+        // start_up point where the valid moves change direction
+        *start_up = valid_moves->size();
+
+        for (size_t i = (size_t) mlim+1; i < m; ++i) {
+            if (availrows[i]) {
+                valid_moves->push_back(i);
+            }
+        }
+    }
+
+    // O(1)
+    // estimate what rank a submatrix is able to reach given the current configuration of the algorithm
+    size_t valuate(int ti, int r, int n, int i, int Is_pivot_not_moved,int nb_pivot_after_i, int nb_pivot_bf_i, int nb_pivot_after_i_not_moved, int nb_pivot_before_i_not_moved) {
+        // Compute the valuation of a given leading submatrix ti
+            return ti + std::min(i + 1 - nb_pivot_bf_i, nb_pivot_after_i_not_moved - Is_pivot_not_moved) +
+                        std::min(n - (i + 1) - nb_pivot_after_i, nb_pivot_before_i_not_moved - Is_pivot_not_moved);
+    }
+
+    /** @brief genenration of an Rank Profile Matrix randomly
+     * @param n        Dimension
+     * @param r        rank of the n*n matrix
+     * @param t        quasi-separability order
+     * @param rows
+     * @param cols
+    */
+    void RandomLTQSRankProfileMatrix_Tom(size_t n, size_t r, size_t t, size_t* rows, size_t* cols) {
+
+        if (r <= 0 || n <= 0 || t <= 0) {
+            std::cout << "care, all the arguments must be positive" << std::endl;
+            return;
+        }
+
+        if (r >= n) {
+            std::cout << "care, you called the function with invalid arguments : r >= n IMPOSSIBLE" << std::endl;
+            return;
+        }
+
+        if (t > r) {
+            std::cout << "care, you called the function with invalid arguments : t >= r IMPOSSIBLE" << std::endl;
+            return;
+        }
+
+        if (r + t > n) {
+            std::cout << "care, you called the function with invalid arguments : r+t > n IMPOSSIBLE" << std::endl;
+            return;
+        }
+
+        /// Initialisation
+
+        size_t* H = FFLAS::fflas_new<size_t>(n-1);
+        size_t* T = FFLAS::fflas_new<size_t>(n-1);
+        size_t* nb_pivot_before_index = FFLAS::fflas_new<size_t>(n-1); // pivots that are on lines before line i
+        size_t* nb_pivot_after_index = FFLAS::fflas_new<size_t>(n-1); // pivots that are on columns before the last column of the line i
+        size_t* nb_pivot_before_index_not_moved = FFLAS::fflas_new<size_t>(n-1);  // same idea with pivots that didn't move yet
+        size_t* nb_pivot_after_index_not_moved = FFLAS::fflas_new<size_t>(n-1);
+
+        std::vector<bool> availablerows (n-1, true); // indicate wether the row i is available or not
+        std::vector<bool> availablecols (n-1, true); // same idea with col j
+
+        for (size_t i = 0; i<n-1; ++i) {
+            H[i]=0;
+            T[i]=0;
+        }
+
+        RandomIndexSubset(n-1,r,rows);
+
+        for (size_t i = 0; i < r; ++i) {
+            cols[i] = n - rows[i] - 2;
+            T[rows[i]] = 1;
+            H[rows[i]] = 1;
+
+            availablerows[rows[i]] = false;
+            availablecols[cols[i]] = false;
+        }
+
+
+        nb_pivot_before_index[0] = H[0];
+        nb_pivot_after_index[0] = r;
+        nb_pivot_after_index_not_moved[0]=r;
+        nb_pivot_before_index_not_moved[0]=H[0];
+        for (size_t i = 1; i < n - 1; ++i) {
+            nb_pivot_before_index[i] = nb_pivot_before_index[i - 1] + H[i];
+            nb_pivot_after_index[i] = r-nb_pivot_before_index[i-1];
+            nb_pivot_after_index_not_moved[i] = r-nb_pivot_before_index[i-1];
+            nb_pivot_before_index_not_moved[i] = nb_pivot_before_index[i];
+        }
+
+        /// loop initialisation
+        size_t loop = 0;
+        std::vector<size_t> valid_moves;
+        size_t start_up;
+        int ilim, jlim;
+        int h = 0;
+        int prev_h = -1;
+
+        while ((size_t) h < r) {
+            size_t prev_i = rows[h];
+            size_t prev_j = cols[h];
+
+            size_t new_i = prev_i;
+            size_t new_j = prev_j;
+
+
+            /// computating valid_moves
+            // complex : 2n
+            if (prev_h != h) {
+                // compute impossible ones (those which make the configuration having a greater t than asked)
+                ilim = -1;
+                jlim = -1;
+                int k = rows[h]+1;
+                while ((size_t) k <= n-2) {
+                    if (T[k] == t) {
+                        jlim = n-k-2;
+                        break;
+                    }
+                    ++k;
+                }
+                k = rows[h]-1;
+                while (k >= 0) {
+                    if (T[k] == t) {
+                        ilim = k;
+                        break;
+                    }
+                    --k;
+                }
+                compute_valid_moves(& valid_moves, & start_up, prev_j, cols, r, jlim, prev_i, rows, r, ilim, availablerows, availablecols);
+            }
+
+            /// choose and make the chosen move
+            size_t rand_index;
+            if (valid_moves.size()>1){
+                rand_index = RandInt(0, valid_moves.size());
+            }
+            else {
+                rand_index = 0;
+            }
+
+            if (rand_index < start_up) {
+                new_j = valid_moves[rand_index];
+                cols[h] = new_j;
+                // updates of the arrays for the valuation function
+                for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
+                    T[k] += 1;
+                    nb_pivot_after_index[k] += 1;
+                }
+            } else {
+                new_i = valid_moves[rand_index];
+                rows[h] = new_i;
+                // updates of the arrays for the valuation function
+                for (size_t k = new_i; k < prev_i; ++k) {
+                    T[k] += 1;
+                    nb_pivot_before_index[k] += 1;
+                }
+            }
+
+            // updates of the arrays for the valuation function
+            // O(n)
+            for (size_t k = 0; k<n-1; k++){
+                if (k <= prev_i) {
+                    nb_pivot_after_index_not_moved[k]--;
+                }
+                if (k >= prev_i) {
+                    nb_pivot_before_index_not_moved[k]--;
+                }
+            }
+
+            H[prev_i] = 0;
+
+            /// valutation
+            // O(n)
+            bool undo = true;
+            for (size_t k = 0; k < n - 1; ++k) {
+                if (valuate(T[k], r, n, k, H[k], nb_pivot_after_index[k], nb_pivot_before_index[k], nb_pivot_after_index_not_moved[k], nb_pivot_before_index_not_moved[k]) >= t) {
+                    undo = false;
+                    break;
+                }
+            }
+
+            /// undo if needed
+            if (undo) {
+                if (rand_index >= start_up) {
+                    // undo the move and erase it from the valid moves
+                    rows[h] = prev_i;
+                    valid_moves.erase(valid_moves.begin()+rand_index);
+                    // undo of the arrays for valuation func
+                    for (size_t k = new_i; k < prev_i; ++k) {
+                        T[k] -= 1;
+                        nb_pivot_before_index[k] -= 1;
+                    }
+                } else {
+                    // undo the move and erase it from the valid moves
+                    cols[h] = prev_j;
+                    valid_moves.erase(valid_moves.begin()+rand_index);
+                    // undo of the arrays for valuation func
+                    start_up--;
+                    for (size_t k = prev_i + 1; k <= prev_i + (prev_j - new_j); ++k) {
+                        T[k] -= 1;
+                        nb_pivot_after_index[k] -= 1;
+                    }
+                }
+
+                // undo of the arrays for valuation func
+                // O(n)
+                for (size_t k = 0; k<n-1; k++){
+                    if (k <= prev_i) {
+                        nb_pivot_after_index_not_moved[k]--;
+                    }
+                    if (k >= prev_i) {
+                        nb_pivot_before_index_not_moved[k]--;
+                    }
+                }
+
+                H[prev_i] = 0;
+
+                ++loop;
+                if (prev_h != h) {
+                    prev_h = h;
+                }
+                // let's try another move
+                continue;
+            }
+
+            /// set up for next loop turn
+            if (prev_j != new_j){
+                availablecols[prev_j] = true;
+                availablecols[new_j] = false;
+            }
+            else if (prev_i != new_i){
+                availablerows[prev_i] = true;
+                availablerows[new_i] = false;
+            }
+            ++loop;
+            ++h;
+        }
+        FFLAS::fflas_delete (H);
+        FFLAS::fflas_delete (T);
+        FFLAS::fflas_delete(nb_pivot_before_index);
+        FFLAS::fflas_delete(nb_pivot_after_index);
+        FFLAS::fflas_delete(nb_pivot_before_index_not_moved);
+        FFLAS::fflas_delete(nb_pivot_after_index_not_moved);
+    }
+
+
     /** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
@@ -775,7 +1033,7 @@ namespace FFPACK{
         size_t * pivot_r = FFLAS::fflas_new<size_t> (r);
         size_t * pivot_c = FFLAS::fflas_new<size_t> (r);
 
-        RandomLTQSRankProfileMatrix (n, r, t, pivot_r, pivot_c);
+        RandomLTQSRankProfileMatrix_Tom (n, r, t, pivot_r, pivot_c);
         // typename Field::Element_ptr R =FFLAS::fflas_new(F,n,n);
         // getLTBruhatGen(F, n, r, pivot_r, pivot_c, R, n);
         // FFLAS:: WriteMatrix (std::cerr<<"R = "<<std::endl,F,n,n,R,n);
