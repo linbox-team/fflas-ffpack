@@ -76,7 +76,7 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     Element_ptr A2 = fflas_new (F, n, n);
 
 
-    double time_RRRxTS = 0, time_SSSxTS = 0;
+    double time_RRRxTS = 0, time_SSSxTS = 0,time_gen_qs = 0, time_gen_rrr = 0, time_gen_sss = 0;
     size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
     for (size_t i = 0; i < ceil(n/2.); i++)
     {
@@ -91,17 +91,26 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         RandomMatrix(F, n, m, TS, ldts, G);
         
         // generate A a t qsmatrix
+        chrono.clear();
+        chrono.start(); 
+
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A, n,G);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t, A2, n,G);
         applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A, n, p);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
         faddin (F, n, n, A2, n, A, n);
+        chrono.stop();
+        time_gen_qs = chrono.usertime();
         
-        cout << "Generation ended"<< endl;
+        cout << "Generation ended in "<< time_gen_qs << endl;
 
         // create RRR
+        chrono.clear();
+        chrono.start(); 
         RRRA = new RRRgen<Field>(F, n, t, A, lda,true,true);
-        
+        chrono.stop();
+        time_gen_rrr += chrono.usertime();
+
         // RRRxTS product
         chrono.clear();
         chrono.start(); 
@@ -114,14 +123,18 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         
         
         // create SSS
+        chrono.clear();
+        chrono.start();
         DenseToSSS (F, n, t, P, t, Q, t, R, t, U, t, V, t, W, t, D, t, A, n);
-        
+        chrono.stop();
+        time_gen_sss += chrono.usertime();
+
         // SSSxTS product
         chrono.clear();
         chrono.start();
         productSSSxTS(F, n, m, t, F.one, P, t, Q, t, R, t, U, t, V, t, W, t,
             D, t, TS, m, F.zero, Res, m);
-            chrono.stop();
+        chrono.stop();
             
         time_SSSxTS += chrono.usertime();
     }
@@ -131,8 +144,10 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     
     double mean_time_RRRxTS = time_RRRxTS / double(iter);
     double mean_time_SSSxTS = time_SSSxTS / double(iter);
-    cout << "n : " << n << ",  RRR : " << mean_time_RRRxTS << ", SSS : " << mean_time_SSSxTS << endl;
-    my_file << "n : " << n << ",  RRR : " << mean_time_RRRxTS << ", SSS : " << mean_time_SSSxTS << endl;
+    double mean_time_gen_SSS = time_gen_sss / double(iter);
+    double mean_time_gen_RRR = time_gen_rrr / double(iter);
+    // cout<< "n : " << n << ", m : " << m << ", r : " << endl;
+    my_file << "t : " << t << ",  RRRxTS : " << mean_time_RRRxTS << ", SSSxTS : " << mean_time_SSSxTS <<",  RRR gen  : " << mean_time_gen_RRR << ",  SSS gen  : " << mean_time_gen_SSS << endl;
 }
 
 int main(int argc, char** argv) {
@@ -161,7 +176,7 @@ int main(int argc, char** argv) {
     };
 
     fstream my_file;
-	my_file.open("my_file", ios::out);
+	my_file.open("comparaison_ordre_qs", ios::out);
 	if (!my_file) {
 		cout << "File not created!"<< std::endl;
 	}
@@ -169,11 +184,20 @@ int main(int argc, char** argv) {
 		cout << "File created successfully!"<< std::endl;
 	}
 
-    FFLAS::parseArguments(argc,argv,as);
-    for (n = 6000; n<=10001;n = n+1000){
+    // FFLAS::parseArguments(argc,argv,as);
+    // for (n = 500; n<6000;n = n+100){
         
-        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
+    //     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
+    // }
+    // for (n = 6000; n<=10001;n = n+1000){
+        
+    //     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
+    // }
+    for (t = 50; t < r; t+=10){
+        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed,my_file);
     }
+    my_file << "n : " << n << ", m : " << m << ", r : " << r << endl;
+
     my_file.close();
     // std::cout << "( ";
     // FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
