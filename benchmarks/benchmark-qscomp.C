@@ -96,7 +96,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     size_t * Mlb= fflas_new<size_t> (n);
     size_t * Tlb= fflas_new<size_t>(r);
     size_t r2;
-        size_t r3;
+    size_t r3;
     Element_ptr CBruhat = fflas_new(F, n, m);
     
     for (size_t i=0;i<iter;++i){
