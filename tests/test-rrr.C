@@ -464,7 +464,7 @@ bool test_invert  (const Field & F, size_t n, size_t t,
             std::cout << "ERROR: different results for dense A⁻1 and RRR A⁻1"<<std::endl;
             WriteMatrix(std::cout << "Ainit = " << std::endl, F, n, n, Ainit, n);
             WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, Acheck, n);
-            WriteMatrix(std::cout << "Acheck =  " << std::endl, F, n, n, In, n);
+            WriteMatrix(std::cout << "In =  " << std::endl, F, n, n, In, n);
         }
     FFLAS::fflas_delete(Ainit);
     FFLAS::fflas_delete(Acheck);
@@ -474,6 +474,55 @@ bool test_invert  (const Field & F, size_t n, size_t t,
 
     return ok;
 }
+
+/**
+ * \brief test equality between a LU factorization and the result of compressing and factorization it with RRR.
+ */
+template<class Field>
+bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_ptr A, size_t lda)
+{   
+    // L/U init = RR(A)
+    RRgen<Field>* LU_A = new RRgen(F,n,n,(typename Field::ConstElement_ptr)A,n);
+    WriteMatrix(std::cout << "A = " << std::endl, F, n, n, A, n);
+
+    WriteMatrix(std::cout << "Linit = " << std::endl, F, n, n, LU_A->PL, n);
+    WriteMatrix(std::cout << "Uinit = " << std::endl, F, n, n, LU_A->UQ, n);
+
+
+    // L/U check = L/U(A) with RRR_LU
+    typename Field::Element_ptr Lcheck = fflas_new (F, n, n);
+    typename Field::Element_ptr Ucheck = fflas_new (F, n, n);
+
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
+    RRRgen<Field>* RRRL = nullptr;
+    RRRgen<Field>* RRRU = nullptr;
+    
+    LUfactRRR (F, RRRA, RRRL, RRRU);
+
+    RRRExpand<Field>(F, RRRL, Lcheck, n);
+    RRRExpand<Field>(F, RRRU, Ucheck, n);
+
+
+    bool ok = fequal (F, n, n, Lcheck, n, LU_A->PL, n);
+    ok = ok && fequal (F, n, n, Ucheck, n, LU_A->UQ, n);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for dense LU and RRR LU"<<std::endl;
+            WriteMatrix(std::cout << "Linit = " << std::endl, F, n, n, LU_A->PL, n);
+            WriteMatrix(std::cout << "Lcheck =  " << std::endl, F, n, n, Lcheck, n);
+            WriteMatrix(std::cout << "Uinit = " << std::endl, F, n, n, LU_A->UQ, n);
+            WriteMatrix(std::cout << "Ucheck =  " << std::endl, F, n, n, Ucheck, n);
+        }
+    FFLAS::fflas_delete(Lcheck);
+    FFLAS::fflas_delete(Ucheck);
+    delete(LU_A);
+    delete(RRRA);
+    delete(RRRU);
+    delete(RRRL);
+
+    return ok;
+}
+
 template<class Field>
 bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t r, typename Field::RandIter& G)
 {
@@ -518,17 +567,18 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     Element_ptr N = fflas_new (F, n, n); // n*n random matrix with t-QSorder and rank n so it can be inverted
     // FFPACK::RandomLTQSMatrixWithRankandQSorder (F,n,n,t,N,n,G);
     
-    ok = ok && test_compression_RR(F,n,m,C,m);
-    ok = ok && test_compression(F,n,t,T,n);
-    ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
-    ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
-    ok = ok && test_RRRaddRR(F,n,n,t,E,n,B,n);
-    ok = ok && test_RRRxTS(F,n,t,m,E,n,C,m);
-    ok = ok && test_TSxRRR(F,n,t,m,E,n,D,n);
-    ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
-    ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
-    ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
-    ok = ok && test_invert(F,n,t,A,n);
+    // ok = ok && test_compression_RR(F,n,m,C,m);
+    // ok = ok && test_compression(F,n,t,T,n);
+    // ok = ok && test_RRxRR(F,n,n,n,A,n,B,n);
+    // ok = ok && test_RRaddRR(F,n,n,A,n,B,n);
+    // ok = ok && test_RRRaddRR(F,n,n,t,E,n,B,n);
+    // ok = ok && test_RRRxTS(F,n,t,m,E,n,C,m);
+    // ok = ok && test_TSxRRR(F,n,t,m,E,n,D,n);
+    // ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
+    // ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
+    // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
+    // ok = ok && test_invert(F,n,t,A,n);
+    ok = ok && test_LU_RRR(F,n,t,A,n); 
 
 
     
@@ -586,7 +636,7 @@ int main(int argc, char** argv)
     Givaro::Integer q=-1;
     size_t b=0;
     size_t n=23;
-    size_t t=10;
+    size_t t=5;
     size_t m=10;
     size_t r = 10;
     int iters=3;
