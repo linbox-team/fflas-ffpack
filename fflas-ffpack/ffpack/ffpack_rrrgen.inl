@@ -998,8 +998,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
         
         FFLAS::fassign(Fi,N,RR_A->r,RR_A->PL,RR_A->ldPL,L_dense,N);
         FFLAS::fassign(Fi,RR_A->r,N,RR_A->UQ,RR_A->ldUQ,U_dense,N);
-        FFLAS::WriteMatrix(std::cout << A->t << "Ldense =  " << std::endl, Fi, N, N, L_dense, N);
-        FFLAS::WriteMatrix(std::cout << "Udense =  " << std::endl, Fi, N, N, U_dense, N);
+
         
         delete RR_A;
         
@@ -1036,13 +1035,14 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     typename Field::Element_ptr D1_expand = FFLAS::fflas_new(Fi,size_N1,size_N2);
     D2->RRExpand(Fi,D1_expand,size_N2);
 
-    FFLAS::WriteMatrix(std::cout << "D2 =  " << std::endl, Fi, size_N1, size_N2, D1_expand, size_N2);
 
 
     
     // X22 = A22 - D1*D2
     RRgen<Field>* D1xD2 = RRxRR(Fi,D1,D2,true);
-    RRRgen<Field>* X22 = RRRaddRR(Fi,A->right,D1xD2);
+    RRRgen<Field>* X22_int = RRRaddRR(Fi,A->right,D1xD2);
+    RRRgen<Field>* X22 = new RRRgen(Fi,size_N2,A->t,X22_int->LU_right->PL,X22_int->LU_right->ldPL,false,true);
+    delete X22_int;
     delete D1xD2;
     
     
@@ -1061,7 +1061,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     typename Field::Element_ptr L12_UQ = FFLAS::fflas_new(Fi, 1, size_N2);
     FFLAS::fzero(Fi,1, size_N2,L12_UQ,size_N2);
     RRgen<Field>* L12 = new RRgen(Fi,size_N1,size_N2,1, L12_PL,1,L12_UQ,size_N2,true);
-    L = new RRRgen(D1,L12,size_N1,size_N2,A->t,L11,L22,true);
+    L = new RRRgen(L12,D1,size_N1,size_N2,A->t,L11,L22,true);
     
 
     
@@ -1071,7 +1071,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     typename Field::Element_ptr U21_UQ = FFLAS::fflas_new(Fi, 1, size_N1);
     FFLAS::fzero(Fi,1, size_N1,U21_UQ,size_N1);
     RRgen<Field>* U21 = new RRgen(Fi,size_N2,size_N1,1, U21_PL,1,U21_UQ,size_N1,true);
-    U = new RRRgen(U21,D2,size_N1,size_N2,A->t,U11,U22,true);
+    U = new RRRgen(D2,U21,size_N1,size_N2,A->t,U11,U22,true);
 
     
     //  L_inv = [       L11_inv               0    ]            U_inv = [ U11_inv    -U11_inv*D2*U22_inv]
@@ -1083,7 +1083,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     RRgen<Field>* L12_inv = new RRgen(Fi,size_N1,size_N2,1, L12_PL_inv,1,L12_UQ_inv,size_N2,true);
     RRgen<Field>* X = RRxRRR(Fi,L11_inv,D1);
     RRgen<Field>* D1_inv = RRRxRR(Fi,L22_inv,X,true);
-    L_inv = new RRRgen(D1_inv,L12_inv,size_N1,size_N2,A->t,L11_inv,L22_inv,true);
+    L_inv = new RRRgen(L12_inv,D1_inv,size_N1,size_N2,A->t,L11_inv,L22_inv,true);
     delete X;
 
     typename Field::Element_ptr U21_PL_inv = FFLAS::fflas_new(Fi, size_N2, 1);
@@ -1093,7 +1093,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     RRgen<Field>* U21_inv = new RRgen(Fi,size_N2,size_N1,1, U21_PL_inv,1,U21_UQ_inv,size_N1,true);
     RRgen<Field>* Y = RRxRRR(Fi,U22_inv,D2);
     RRgen<Field>* D2_inv = RRRxRR(Fi,U11_inv,Y,true);
-    U_inv = new RRRgen(U21_inv,D2_inv,size_N1,size_N2,A->t,U11_inv,U22_inv,true);
+    U_inv = new RRRgen(D2_inv,U21_inv,size_N1,size_N2,A->t,U11_inv,U22_inv,true);
     delete Y;
 }
 
@@ -1119,8 +1119,6 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
         
         FFLAS::fassign(Fi,N,RR_A->r,RR_A->PL,RR_A->ldPL,L_dense,N);
         FFLAS::fassign(Fi,RR_A->r,N,RR_A->UQ,RR_A->ldUQ,U_dense,N);
-        FFLAS::WriteMatrix(std::cout << A->t << "Ldense =  " << std::endl, Fi, N, N, L_dense, N);
-        FFLAS::WriteMatrix(std::cout << "Udense =  " << std::endl, Fi, N, N, U_dense, N);
         delete RR_A;
         
         L = new RRRgen(Fi, L_dense,N,A->t,true,false);
@@ -1146,7 +1144,9 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     
     // X22 = A22 - D1*D2
     RRgen<Field>* D1xD2 = RRxRR(Fi,D1,D2,true);
-    RRRgen<Field>* X22 = RRRaddRR(Fi,A->right,D1xD2);
+    RRRgen<Field>* X22_int = RRRaddRR(Fi,A->right,D1xD2);
+    RRRgen<Field>* X22 = new RRRgen(Fi,size_N2,A->t,X22_int->LU_right->PL,X22_int->LU_right->ldPL,false,true);
+    delete X22_int;
     delete D1xD2;
 
     
@@ -1163,8 +1163,7 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     typename Field::Element_ptr L12_UQ = FFLAS::fflas_new(Fi, 1, size_N2);
     FFLAS::fzero(Fi,1, size_N2,L12_UQ,size_N2);
     RRgen<Field>* L12 = new RRgen(Fi,size_N1,size_N2,1, L12_PL,1,L12_UQ,size_N2,true);
-    L = new RRRgen(D1,L12,size_N1,size_N2,A->t,L11,L22,true);
-    
+    L = new RRRgen(L12,D1,size_N1,size_N2,A->t,L11,L22,true);    
 
     
     
@@ -1173,7 +1172,7 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     typename Field::Element_ptr U21_UQ = FFLAS::fflas_new(Fi, 1, size_N1);
     FFLAS::fzero(Fi,1, size_N1,U21_UQ,size_N1);
     RRgen<Field>* U21 = new RRgen(Fi,size_N2,size_N1,1, U21_PL,1,U21_UQ,size_N1,true);
-    U = new RRRgen(U21,D2,size_N1,size_N2,A->t,U11,U22,true);
+    U = new RRRgen(D2,U21,size_N1,size_N2,A->t,U11,U22,true);
 }
 
 

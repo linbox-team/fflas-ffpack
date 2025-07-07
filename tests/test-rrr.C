@@ -483,10 +483,6 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
 {   
     // L/U init = RR(A)
     RRgen<Field>* LU_A = new RRgen(F,n,n,(typename Field::ConstElement_ptr)A,n);
-    WriteMatrix(std::cout << "A = " << std::endl, F, n, n, A, n);
-
-    WriteMatrix(std::cout << "Linit = " << std::endl, F, n, n, LU_A->PL, n);
-    WriteMatrix(std::cout << "Uinit = " << std::endl, F, n, n, LU_A->UQ, n);
 
 
     // L/U check = L/U(A) with RRR_LU
