@@ -1032,9 +1032,6 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     RRgen<Field>* D2 = A->LU_right->RRcopy(Fi);
     RRRxTS(Fi, size_N1, A->LU_right->r, L11_inv, A->LU_right->PL, A->LU_right->ldPL, D2->PL, D2->ldPL);
 
-    typename Field::Element_ptr D1_expand = FFLAS::fflas_new(Fi,size_N1,size_N2);
-    D2->RRExpand(Fi,D1_expand,size_N2);
-
 
 
     
@@ -1053,7 +1050,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
     RRRgen<Field>* L22_inv = nullptr;
     RRRgen<Field>* U22_inv = nullptr;
     LUfactRRRwInverse(Fi,X22,L22,U22,L22_inv,U22_inv);
-    
+    delete X22;
     //  L =     [L11  0 ]                                       U   =   [U11  D2]
     //          [D1  L22]                                               [ 0  U22]
     typename Field::Element_ptr L12_PL = FFLAS::fflas_new(Fi, size_N1, 1);
@@ -1141,7 +1138,9 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     // D2 = L11^{-1}*L12 / U12
     RRgen<Field>* D2 = A->LU_right->RRcopy(Fi);
     RRRxTS(Fi, size_N1, A->LU_right->r, L11_inv, A->LU_right->PL, A->LU_right->ldPL, D2->PL, D2->ldPL);
-    
+    delete L11_inv;
+    delete U11_inv;
+
     // X22 = A22 - D1*D2
     RRgen<Field>* D1xD2 = RRxRR(Fi,D1,D2,true);
     RRRgen<Field>* X22_int = RRRaddRR(Fi,A->right,D1xD2);
@@ -1154,7 +1153,7 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     RRRgen<Field>* L22 = nullptr;
     RRRgen<Field>* U22 = nullptr;
     LUfactRRR(Fi,X22,L22,U22);
-    
+    delete X22;
 
     //  L = [L11   0]     U = [U11  D2]
     //      [D1  L22]         [0   U22]
@@ -1175,6 +1174,113 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     U = new RRRgen(D2,U21,size_N1,size_N2,A->t,U11,U22,true);
 }
 
+/// @brief Computes B = U^-1*B.
+/// @tparam Field 
+/// @param Fi 
+/// @param U in RRR representation, must be inversible
+/// @param B TS n*t
+/// @param ldb 
+/// @param t number of columns of B 
+template<class Field>
+inline void TRSM_RRR_TS (const Field& Fi,const FFLAS_SIDE Side, const FFLAS_UPLO Uplo,  const RRRgen<Field>* M, typename Field::Element_ptr B, size_t ldb, size_t t)
+{ 
+    if (!(M->left)){
+        FFLAS::ftrsm(F,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasUnit, M->size_N1,t,Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+        return;
+    }
+    
+    
+    size_t size_N1 = M->size_N1;
+    size_t size_N2 = M->size_N2;
+    
+    
+    // B = M^-1*B.
+    if ((Side == FFLAS::FflasLeft && Uplo == FFLAS::FflasUpper) || (Side == FFLAS::FflasRight && Uplo == FFLAS::FflasLower))
+    {
+        if (Uplo == FFLAS::FflasUpper){
+            // B2 = TRSM_RRR_TS(M2,B2)
+            typename Field::Element_ptr B2 = B + size_N1 * ldb;
+            TRSM_RRR_TS(Fi,M->right,B2,ldb,t);
+            
+            // B1 = B1 - M12*B2
+            typename Field::Element_ptr M12 = fflas_new(Fi,size_N1,size_N2);
+            M->LU_right->RRExpand(Fi,M12,size_N2);
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                size_N1,t,size_N2,Fi.mOne,
+                M12,size_N2,
+                B2,ldb,
+                Fi.one, B, ldb); 
+            delete M12;
+            // B1 = TRSM_RRR_TS(M1,B1)
+            TRSM_RRR_TS(Fi,M->left,B,ldb,t);
+        }
+        
+        else {
+            // B2 = TRSM_RRR_TS(M2,B2)
+            typename Field::Element_ptr B2 = B + size_N1;
+            TRSM_RRR_TS(Fi,M->right,B2,ldb,t);
+            
+            // B1 = B1 - B2*M21
+            typename Field::Element_ptr M21 = fflas_new(Fi,size_N2,size_N1);
+            M->LU_right->RRExpand(Fi,M21,size_N1);
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t,size_N1,size_N2,Fi.mOne,
+                B2,ldb,
+                M21,size_N2,
+                Fi.one, B, ldb);
+            delete M21;
+            // B1 = TRSM_RRR_TS(M1,B1)
+            TRSM_RRR_TS(Fi,M->left,B,ldb,t);
+        }
+    }
+
+    
+    else{
+        // B1 = TRSM_RRR_TS(M1,B1) 
+        TRSM_RRR_TS(Fi,M->left,B1,ldb,t);
+        
+        // B2 = B2 - (B1*M12 / M21*B1)
+        // B2 = B2 - B1*M12
+        if (Uplo == FFLAS::FflasUpper){
+            typename Field::Element_ptr B2 = B + size_N1 * ldb;
+            typename Field::Element_ptr M12 = fflas_new(Fi,size_N1,size_N2);
+            M->LU_right->RRExpand(Fi,M12,size_N2);
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t,size_N2,size_N1,Fi.mOne,
+                B,ldb,
+                M12,size_N2,
+                Fi.one, B2, ldb); 
+            delete M12;
+        }
+        // B2 = B2 - M21*B1
+        else {
+            typename Field::Element_ptr B2 = B + size_N1;
+            typename Field::Element_ptr M21 = fflas_new(Fi,size_N2,size_N1);
+            M->LU_left->RRExpand(Fi,M21,size_N1);
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t,size_N1,size_N2,Fi.mOne,
+                M21,size_N1,
+                B,ldb,
+                Fi.one, B2, ldb); 
+            delete M21;
+        }
+        // B2 = TRSM_RRR_TS(M2,B2) 
+        TRSM_RRR_TS(Fi,M->right,B2,ldb,t);
+    }
+    
+}
+
+/// @brief Computes 
+/// @tparam Field 
+/// @param Fi 
+/// @param U in RRR representation, must be inversible
+/// @param B RRgen uninitialized
+template<class Field>
+inline void TRSM_RRR_RR (const Field& Fi,const FFLAS_SIDE Side, const FFLAS_UPLO Uplo, const RRRgen<Field>* U, RRgen<Field>* B)
+{
+    // TODO faire en fonction de side
+    // TRSM_RRR_TS(Fi,U,B->PL,B->ldPL,B->r);
+}
 
     
     

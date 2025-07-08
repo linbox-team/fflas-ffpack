@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
     };
 
     fstream my_file;
-	my_file.open("fin RRR measures ", ios::out);
+	my_file.open("test RRR measures ", ios::out);
 	if (!my_file) {
 		cout << "File not created!"<< std::endl;
 	}
@@ -204,11 +204,11 @@ int main(int argc, char** argv) {
 		cout << "File created successfully!"<< std::endl;
 	}
 
-    // FFLAS::parseArguments(argc,argv,as);
-    // for (n = 500; n<6000;n = n+100){
+    FFLAS::parseArguments(argc,argv,as);
+    for (n = 500; n<6000;n = n+100){
         
-    //     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
-    // }
+        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
+    }
     for (n = 9000; n<=10001;n = n+1000){
         
         run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
