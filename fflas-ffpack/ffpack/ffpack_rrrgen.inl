@@ -1101,7 +1101,7 @@ inline void LUfactRRRwInverse (const Field& Fi, const RRRgen<Field>* A, RRRgen<F
 /// @param L RRRgen uninitialized
 /// @param U RRRgen uninitialized
 template<class Field>
-inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& L, RRRgen<Field>*& U)
+inline void LUfactRRR_ (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& L, RRRgen<Field>*& U)
 {   
     size_t size_N1 = A->size_N1;
     size_t size_N2 = A->size_N2;
@@ -1152,7 +1152,7 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     // L2/U2 = LUfactRRR(X22)
     RRRgen<Field>* L22 = nullptr;
     RRRgen<Field>* U22 = nullptr;
-    LUfactRRR(Fi,X22,L22,U22);
+    LUfactRRR_(Fi,X22,L22,U22);
     delete X22;
 
     //  L = [L11   0]     U = [U11  D2]
@@ -1182,15 +1182,24 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
 /// @param ldb 
 /// @param t number of columns of B 
 template<class Field>
-inline void TRSM_RRR_TS (const Field& Fi,const FFLAS_SIDE Side, const FFLAS_UPLO Uplo,  const RRRgen<Field>* M, typename Field::Element_ptr B, size_t ldb, size_t t)
+inline void TRSM_RRR_TS (const Field& Fi,const FFLAS::FFLAS_SIDE Side, const FFLAS::FFLAS_UPLO Uplo,  const RRRgen<Field>* M, typename Field::Element_ptr B, size_t ldb, size_t t)
 { 
+    size_t size_N1 = M->size_N1;
     if (!(M->left)){
-        FFLAS::ftrsm(F,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasUnit, M->size_N1,t,Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+
+        // FFLAS::WriteMatrix(std::cout << "B avant ftrsm = " << std::endl, Fi ,size_N1 , size_N1, B, ldb);
+        if (Side == FFLAS::FflasRight){
+            FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, t, M->size_N1, Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+        }
+        else {
+            FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, M->size_N1,t,Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+        }
+        // FFLAS::WriteMatrix(std::cout << "B apres ftrsm = " << std::endl, Fi ,size_N1 , size_N1, B, ldb);
+
         return;
     }
     
     
-    size_t size_N1 = M->size_N1;
     size_t size_N2 = M->size_N2;
     
     
@@ -1200,87 +1209,176 @@ inline void TRSM_RRR_TS (const Field& Fi,const FFLAS_SIDE Side, const FFLAS_UPLO
         if (Uplo == FFLAS::FflasUpper){
             // B2 = TRSM_RRR_TS(M2,B2)
             typename Field::Element_ptr B2 = B + size_N1 * ldb;
-            TRSM_RRR_TS(Fi,M->right,B2,ldb,t);
+            TRSM_RRR_TS(Fi, Side, Uplo, M->right,B2,ldb,t);
             
             // B1 = B1 - M12*B2
-            typename Field::Element_ptr M12 = fflas_new(Fi,size_N1,size_N2);
+            typename Field::Element_ptr M12 = FFLAS::fflas_new(Fi,size_N1,size_N2);
             M->LU_right->RRExpand(Fi,M12,size_N2);
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                 size_N1,t,size_N2,Fi.mOne,
                 M12,size_N2,
                 B2,ldb,
                 Fi.one, B, ldb); 
-            delete M12;
+            FFLAS::fflas_delete(M12);
             // B1 = TRSM_RRR_TS(M1,B1)
-            TRSM_RRR_TS(Fi,M->left,B,ldb,t);
+            TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
         }
         
         else {
             // B2 = TRSM_RRR_TS(M2,B2)
             typename Field::Element_ptr B2 = B + size_N1;
-            TRSM_RRR_TS(Fi,M->right,B2,ldb,t);
+            TRSM_RRR_TS(Fi, Side, Uplo, M->right,B2,ldb,t);
             
             // B1 = B1 - B2*M21
-            typename Field::Element_ptr M21 = fflas_new(Fi,size_N2,size_N1);
-            M->LU_right->RRExpand(Fi,M21,size_N1);
+            typename Field::Element_ptr M21 = FFLAS::fflas_new(Fi,size_N2,size_N1);
+            M->LU_left->RRExpand(Fi,M21,size_N1);
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                 t,size_N1,size_N2,Fi.mOne,
                 B2,ldb,
-                M21,size_N2,
+                M21,size_N1,
                 Fi.one, B, ldb);
-            delete M21;
+            FFLAS::fflas_delete(M21);
             // B1 = TRSM_RRR_TS(M1,B1)
-            TRSM_RRR_TS(Fi,M->left,B,ldb,t);
+            TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
         }
     }
 
     
     else{
         // B1 = TRSM_RRR_TS(M1,B1) 
-        TRSM_RRR_TS(Fi,M->left,B1,ldb,t);
-        
+        TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
+        typename Field::Element_ptr B2;
         // B2 = B2 - (B1*M12 / M21*B1)
         // B2 = B2 - B1*M12
         if (Uplo == FFLAS::FflasUpper){
-            typename Field::Element_ptr B2 = B + size_N1 * ldb;
-            typename Field::Element_ptr M12 = fflas_new(Fi,size_N1,size_N2);
+            B2 =  B + size_N1;
+            typename Field::Element_ptr M12 = FFLAS::fflas_new(Fi,size_N1,size_N2);
             M->LU_right->RRExpand(Fi,M12,size_N2);
+            // FFLAS::WriteMatrix(std::cout << "M21 " << std::endl, Fi ,size_N1 , size_N2, M12, size_N2);
+            // FFLAS::WriteMatrix(std::cout << "B " << std::endl, Fi ,t , size_N1, B, ldb);
+            // FFLAS::WriteMatrix(std::cout << "B2 " << std::endl, Fi , t, size_N2, B2, ldb);
+
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                 t,size_N2,size_N1,Fi.mOne,
                 B,ldb,
                 M12,size_N2,
                 Fi.one, B2, ldb); 
-            delete M12;
+            FFLAS::fflas_delete(M12);
         }
         // B2 = B2 - M21*B1
         else {
-            typename Field::Element_ptr B2 = B + size_N1;
-            typename Field::Element_ptr M21 = fflas_new(Fi,size_N2,size_N1);
+            B2 = B + size_N1*ldb;
+            typename Field::Element_ptr M21 = FFLAS::fflas_new(Fi,size_N2,size_N1);
             M->LU_left->RRExpand(Fi,M21,size_N1);
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                t,size_N1,size_N2,Fi.mOne,
+                size_N2,t,size_N1,Fi.mOne,
                 M21,size_N1,
                 B,ldb,
                 Fi.one, B2, ldb); 
-            delete M21;
+            FFLAS::fflas_delete(M21);
         }
         // B2 = TRSM_RRR_TS(M2,B2) 
-        TRSM_RRR_TS(Fi,M->right,B2,ldb,t);
+        TRSM_RRR_TS(Fi, Side, Uplo, M->right,B2,ldb,t);
     }
     
 }
 
-/// @brief Computes 
+/// @brief Computes X = M^-1*B or X = B*M^-1
 /// @tparam Field 
 /// @param Fi 
-/// @param U in RRR representation, must be inversible
-/// @param B RRgen uninitialized
+/// @param Side Side to apply TRSM 
+/// @param Uplo Whether the matrix M is lower triangular or upper triangular
+/// @param U in RRR representation and triangular, must be inversible
+/// @param B RRgen
 template<class Field>
-inline void TRSM_RRR_RR (const Field& Fi,const FFLAS_SIDE Side, const FFLAS_UPLO Uplo, const RRRgen<Field>* U, RRgen<Field>* B)
+inline void TRSM_RRR_RR (const Field& Fi,const FFLAS::FFLAS_SIDE Side, const FFLAS::FFLAS_UPLO Uplo, const RRRgen<Field>* M, RRgen<Field>* B)
 {
-    // TODO faire en fonction de side
-    // TRSM_RRR_TS(Fi,U,B->PL,B->ldPL,B->r);
+    // if X = M^-1*B
+    if (Side == FFLAS::FflasLeft){
+        return TRSM_RRR_TS(Fi,Side,Uplo,M,B->PL,B->ldPL,B->r);
+    }
+    // if X = B*M^-1
+    return TRSM_RRR_TS(Fi,Side,Uplo,M,B->UQ,B->ldUQ,B->r);
 }
+
+/// @brief Computes the L U factorization in RRR representation and returns it in RRRgen.
+/// @tparam Field 
+/// @param Fi 
+/// @param A in RRR representation
+/// @param L RRRgen uninitialized
+/// @param U RRRgen uninitialized
+template<class Field>
+inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& L, RRRgen<Field>*& U)
+{   
+    size_t size_N1 = A->size_N1;
+    size_t size_N2 = A->size_N2;
+    size_t N = size_N1 + size_N2;
+    if (N <= A->t){
+        // L/U = LU(Adense)
+        RRgen<Field>* RR_A = new RRgen(Fi,N,N,(typename Field::ConstElement_ptr)A->LU_right->PL,A->LU_right->ldPL);
+        typename Field::Element_ptr L_dense = FFLAS::fflas_new(Fi,N,N);
+        FFLAS::fzero(Fi,N,N,L_dense,N);
+        typename Field::Element_ptr U_dense = FFLAS::fflas_new(Fi,N,N);
+        FFLAS::fzero(Fi,N,N,U_dense,N);
+        
+        FFLAS::fassign(Fi,N,RR_A->r,RR_A->PL,RR_A->ldPL,L_dense,N);
+        FFLAS::fassign(Fi,RR_A->r,N,RR_A->UQ,RR_A->ldUQ,U_dense,N);
+        delete RR_A;
+        
+        L = new RRRgen(Fi, L_dense,N,A->t,true,false);
+        U = new RRRgen(Fi, U_dense,N,A->t,true,false);
+        
+        return;
+    }
+    
+    // L11/U11 = LUfactRRR(A11)
+    RRRgen<Field>* L11 = nullptr;
+    RRRgen<Field>* U11 = nullptr;
+    LUfactRRR(Fi,A->left,L11,U11);
+    
+    // D2 = L11^{-1}*L12 / U12
+    RRgen<Field>* D2 = A->LU_right->RRcopy(Fi);
+    TRSM_RRR_RR(Fi,FFLAS::FflasLeft, FFLAS::FflasLower,L11,D2);
+
+    // D1 = L21 / U21xU11^{-1}
+    RRgen<Field>* D1 = A->LU_left->RRcopy(Fi);
+    TRSM_RRR_RR(Fi,FFLAS::FflasRight, FFLAS::FflasUpper,U11,D1);
+    
+
+    // X22 = A22 - D1*D2
+    RRgen<Field>* D1xD2 = RRxRR(Fi,D1,D2,true);
+    RRRgen<Field>* X22_int = RRRaddRR(Fi,A->right,D1xD2);
+    RRRgen<Field>* X22 = new RRRgen(Fi,size_N2,A->t,X22_int->LU_right->PL,X22_int->LU_right->ldPL,false,true);
+    delete X22_int;
+    delete D1xD2;
+
+    
+    // L2/U2 = LUfactRRR(X22)
+    RRRgen<Field>* L22 = nullptr;
+    RRRgen<Field>* U22 = nullptr;
+    LUfactRRR(Fi,X22,L22,U22);
+    delete X22;
+
+    //  L = [L11   0]     U = [U11  D2]
+    //      [D1  L22]         [0   U22]
+    typename Field::Element_ptr L12_PL = FFLAS::fflas_new(Fi, size_N1, 1);
+    FFLAS::fzero(Fi, size_N1, 1,L12_PL,1);
+    typename Field::Element_ptr L12_UQ = FFLAS::fflas_new(Fi, 1, size_N2);
+    FFLAS::fzero(Fi,1, size_N2,L12_UQ,size_N2);
+    RRgen<Field>* L12 = new RRgen(Fi,size_N1,size_N2,1, L12_PL,1,L12_UQ,size_N2,true);
+    L = new RRRgen(L12,D1,size_N1,size_N2,A->t,L11,L22,true);    
+
+    
+    
+    typename Field::Element_ptr U21_PL = FFLAS::fflas_new(Fi, size_N2, 1);
+    FFLAS::fzero(Fi,size_N2, 1,U21_PL,1);
+    typename Field::Element_ptr U21_UQ = FFLAS::fflas_new(Fi, 1, size_N1);
+    FFLAS::fzero(Fi,1, size_N1,U21_UQ,size_N1);
+    RRgen<Field>* U21 = new RRgen(Fi,size_N2,size_N1,1, U21_PL,1,U21_UQ,size_N1,true);
+    U = new RRRgen(D2,U21,size_N1,size_N2,A->t,U11,U22,true);
+}
+
+
 
     
     

@@ -476,6 +476,48 @@ bool test_invert  (const Field & F, size_t n, size_t t,
 }
 
 /**
+ * \brief test equality between a FTRSM and the result of compressing and FRSTM it with RRR.
+ */
+template<class Field>
+bool test_FRTSM_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr B, size_t ldb)
+{   
+    // L/U init = RR(A)
+    // RRgen<Field>* LU_A = new RRgen(F,n,n,(typename Field::ConstElement_ptr)A,n);
+    RRgen<Field>* RRB = new RRgen(F, n, n, (typename Field::ConstElement_ptr)B, ldb);
+    // WriteMatrix(std::cout << "B =  " << std::endl, F, RRB->n, RRB->r, RRB->PL, RRB->ldPL);
+    
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
+    RRRgen<Field>* RRRL = nullptr;
+    RRRgen<Field>* RRRU = nullptr;
+    
+    LUfactRRR_ (F, RRRA, RRRL, RRRU);
+
+    TRSM_RRR_RR (F, FflasRight, FflasLower, (const RRRgen<Field>*) RRRU, RRB);
+    // TRSM_RRR_RR (Fi, FflasLeft, FflasLower, RRRU, RRB);
+
+
+    
+
+    bool ok = true;
+    // ok = ok && fequal (F, n, n, Ucheck, n, LU_A->UQ, n);
+    if ( !ok )
+        {
+            std::cout << "ERROR: different results for dense LU and RRR LU"<<std::endl;
+            // WriteMatrix(std::cout << "Lcheck =  " << std::endl, F, n, n, Lcheck, n);
+            // WriteMatrix(std::cout << "Ucheck =  " << std::endl, F, n, n, Ucheck, n);
+        }
+
+    
+    delete(RRRA);
+    delete(RRB);
+    delete(RRRU);
+    delete(RRRL);
+
+    return ok;
+}
+
+
+/**
  * \brief test equality between a LU factorization and the result of compressing and factorization it with RRR.
  */
 template<class Field>
@@ -531,12 +573,18 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     RandomLTQSMatrixWithRankandQSorder (F,n,r,t,T, n,G);
     RandomLTQSMatrixWithRankandQSorder (F,n,r,t, A2, n,G);
     size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
-    for (size_t i = 0; i < ceil(n/2.); i++)
-        {
-            p[i] = n - i - 1;
-        }
+    
+    for (size_t i = 0; i < ceil(n/2.); i++){
+        p[i] = n - i - 1;
+    }
     applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), T, n, p);
     applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
+    // Givaro::Element* r;
+    // for (size_t i = 0; i < ceil(n/2.); i++)
+    // {
+    //     F.random(G,r);
+    //     F.assign(A2[i*(n+1)], *r);
+    // }
     faddin (F, n, n, A2, n, T, n);
     FFLAS::fflas_delete(A2, p);
 
@@ -574,6 +622,7 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
     // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
     // ok = ok && test_invert(F,n,t,A,n);
+    // ok = ok && test_FRTSM_RRR(F,n,t,A,n,B,n); 
     ok = ok && test_LU_RRR(F,n,t,A,n); 
 
 
