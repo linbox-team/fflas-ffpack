@@ -1,0 +1,337 @@
+\documentclass{article}
+\usepackage{ifthen}
+\usepackage{epsfig}
+\usepackage[utf8]{inputenc}
+% Packages requested by user
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+
+\usepackage{newunicodechar}
+  \newunicodechar{⁻}{${}^{-}$}% Superscript minus
+  \newunicodechar{²}{${}^{2}$}% Superscript two
+  \newunicodechar{³}{${}^{3}$}% Superscript three
+
+\pagestyle{empty}
+\begin{document}
+$i>j$
+\pagebreak
+
+$T_{i,j} = 0$
+\pagebreak
+
+$i<j$
+\pagebreak
+
+$j>n-i-1$
+\pagebreak
+
+$j<n-i-1$
+\pagebreak
+
+$T_{i,i} = 1$
+\pagebreak
+
+$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B)$
+\pagebreak
+
+$\mathrm{op}(A)=A^t$
+\pagebreak
+
+$\mathrm{op}(A)=A$
+\pagebreak
+
+$\mathrm{op}(A)$
+\pagebreak
+
+$m \times k$
+\pagebreak
+
+$\mathrm{op}(B)$
+\pagebreak
+
+$k \times n$
+\pagebreak
+
+$C$
+\pagebreak
+
+$m \times n$
+\pagebreak
+
+$n$
+\pagebreak
+
+$x \gets  x mod F$
+\pagebreak
+
+$x \gets  y mod F$
+\pagebreak
+
+$x \gets - x$
+\pagebreak
+
+$x \gets - y$
+\pagebreak
+
+$A \gets 0 $
+\pagebreak
+
+$A \gets random $
+\pagebreak
+
+$X = 0 $
+\pagebreak
+
+$X = Y $
+\pagebreak
+
+$x \gets y $
+\pagebreak
+
+$x \gets \alpha \cdot x$
+\pagebreak
+
+$y \gets \alpha \cdot x$
+\pagebreak
+
+$y \gets \alpha \cdot x + y$
+\pagebreak
+
+$y \gets \alpha \cdot x + \beta \cdot y$
+\pagebreak
+
+$x^T  y$
+\pagebreak
+
+$ X \leftrightarrow Y$
+\pagebreak
+
+$n^2$
+\pagebreak
+
+$A \gets B $
+\pagebreak
+
+$A = B $
+\pagebreak
+
+$A = 0 $
+\pagebreak
+
+$A \gets  A mod F$
+\pagebreak
+
+$A \gets  B mod F$
+\pagebreak
+
+$A \gets - A$
+\pagebreak
+
+$A \gets  - B$
+\pagebreak
+
+$A \gets a \cdot A$
+\pagebreak
+
+$B \gets a \cdot A$
+\pagebreak
+
+$ B \gets 0$
+\pagebreak
+
+$Y \gets \alpha \mathrm{op}(A) X + \beta Y $
+\pagebreak
+
+$A \gets \alpha x . y^T + A$
+\pagebreak
+
+$ X \gets \mathrm{op}(A^{-1}) X$
+\pagebreak
+
+$ X \gets \mathrm{op}(A) X$
+\pagebreak
+
+$\mathrm{op}(A)=A^T$
+\pagebreak
+
+$>n^2$
+\pagebreak
+
+$ B \gets \alpha \mathrm{op}(A^{-1}) B$
+\pagebreak
+
+$B \gets \alpha B \mathrm{op}(A^{-1})$
+\pagebreak
+
+$N\times N$
+\pagebreak
+
+$M\times M$
+\pagebreak
+
+$\alpha$
+\pagebreak
+
+$ B \gets \alpha \mathrm{op}(A) B$
+\pagebreak
+
+$B \gets \alpha B \mathrm{op}(A)$
+\pagebreak
+
+$ C \gets \alpha \mathrm{op}(A) B + beta C$
+\pagebreak
+
+$C \gets \alpha B \mathrm{op}(A) + beta C$
+\pagebreak
+
+$C = \alpha A \times A^T + \beta C$
+\pagebreak
+
+$C = \alpha A^T \times A + \beta C$
+\pagebreak
+
+$A$
+\pagebreak
+
+$n \times k$
+\pagebreak
+
+$n \times n$
+\pagebreak
+
+$C = \alpha A \times D \times A^T + \beta C$
+\pagebreak
+
+$C = \alpha A^T \times D \times A + \beta C$
+\pagebreak
+
+$ D\times A$
+\pagebreak
+
+$ A\times D$
+\pagebreak
+
+$D$
+\pagebreak
+
+$k \times k$
+\pagebreak
+
+$C = \alpha A \times Delta D \times A^T + \beta C$
+\pagebreak
+
+$C = \alpha A^T \times Delta D \times A + \beta C$
+\pagebreak
+
+$C = \alpha A Delta D \times A^T + \beta C$
+\pagebreak
+
+$C = \alpha A^T Delta D \times A + \beta C$
+\pagebreak
+
+$C = \alpha ( A \times B^T + B \times A^T) + \beta C$
+\pagebreak
+
+$C = \alpha ( A^T \times B + B^T \times A ) + \beta C$
+\pagebreak
+
+$C = \alpha ( A \times B^T + B \times A^T ) + \beta C$
+\pagebreak
+
+$C = \alpha ( A^T \times B + B^T \times A) + \beta C$
+\pagebreak
+
+$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C$
+\pagebreak
+
+$ C \gets \alpha \mathrm{op}(A) \mathrm{op}(A) + \beta C$
+\pagebreak
+
+$A X = B$
+\pagebreak
+
+$X A = B$
+\pagebreak
+
+$ A = L \times D \times  L^T$
+\pagebreak
+
+$ A = U^T \times D \times  U$
+\pagebreak
+
+$ A = L \times Dinv \times  L^T$
+\pagebreak
+
+$2n^3$
+\pagebreak
+
+$M \times M$
+\pagebreak
+
+$A \gets A^{-1}$
+\pagebreak
+
+$ m \times m$
+\pagebreak
+
+$ \mathtt{nullity} = 0$
+\pagebreak
+
+$X = A^{-1}$
+\pagebreak
+
+$2n^3f$
+\pagebreak
+
+$ N \times N$
+\pagebreak
+
+$(v,Av, ..., A^Nv)$
+\pagebreak
+
+$ N \times (N+1)$
+\pagebreak
+
+$ r\times r$
+\pagebreak
+
+$ C \gets \alpha * A \times B + beta C $
+\pagebreak
+
+$ N \times s$
+\pagebreak
+
+$ (N - s) \times s$
+\pagebreak
+
+$ (N - ls) \times s$
+\pagebreak
+
+$ (N - s - ls) \times s$
+\pagebreak
+
+$ N \times t$
+\pagebreak
+
+$ N \times N $
+\pagebreak
+
+$ C \gets A \times B + beta C $
+\pagebreak
+
+$ Du + Tu  Su$
+\pagebreak
+
+$ Mu (Du + Tu  Su)$
+\pagebreak
+
+$ Dl + Sl  Tl $
+\pagebreak
+
+$(Dl + Tl Sl) Ml $
+\pagebreak
+
+$ \{0,\dots, N-1\}$
+\pagebreak
+
+\end{document}

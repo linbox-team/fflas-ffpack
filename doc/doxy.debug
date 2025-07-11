@@ -1,0 +1,267 @@
+warning: source '../benchmark' is not a readable file or directory... skipping.
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/fgemm_classical.inl:330: warning: Reached end of file while still inside a (nested) comment. Nesting level 1 (probable line reference: 28)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/fgemm_classical.inl:330: warning: reached end of file while inside a 'f$' block!
+The command that should end the block seems to be missing!
+
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/fgemm_winograd.inl:27: warning: the name 'fflas_fgemm/fgemm_winograd.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/schedule_winograd.inl:28: warning: the name 'fflas/fflas_fgemm/winograd.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/schedule_winograd_acc.inl:27: warning: the name 'fflas/fflas_fgemm/winograd_acc.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/schedule_winograd_acc_ip.inl:26: warning: the name 'fflas/fflas_fgemm/winograd_acc2.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fgemm/schedule_winograd_ip.inl:27: warning: the name 'fflas/fflas_fgemm/winograd_ip.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_helpers.inl:27: warning: the name 'fflas/fflas_mmhelper.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_level1.inl:27: warning: the name 'fflas/fflas_level1.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_level2.inl:27: warning: the name 'fflas/fflas_level2.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_level3.inl:28: warning: the name 'fflas/fflas_level3.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/coo.h:27: warning: the name 'fflas/fflas_fspmv_coo.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/csr.h:27: warning: the name 'fflas/fflas_fspmv_CSR.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/csr_hyb.h:27: warning: the name 'fflas/fflas_fspmv_CSR_HYB.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/ell.h:27: warning: the name 'fflas/fflas_fspmv_ell.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/ell_r.h:27: warning: the name 'fflas/fflas_fspmv_ELL_R.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/ell_simd.h:27: warning: the name 'fflas/fflas_fspmv_ELL_simd.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/hyb_zo.h:27: warning: the name 'fflas/fflas_fspmv_HYB_ZO.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_sparse/sell.h:27: warning: the name 'fflas/fflas_fspmv_sell.inl' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/interfaces/libs/fflas_c.h:27: warning: the name 'fflas-c.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/interfaces/libs/ffpack_c.h:27: warning: the name 'ffpack-c.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/test-utils.h:26: warning: the name 'tests/test-utils.h' supplied as the argument in the \file statement is not an input file
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_level3.inl:418: warning: no matching file member found for 
+Field::Element_ptr fsyr2k(const &F, FFLAS::FFLAS_UPLO UpLo, FFLAS::FFLAS_TRANSPOSE trans, size_t n, size_t k, Field::Element alpha, Field::ConstElement_ptr A, size_t lda, Field::ConstElement_ptr B, size_t ldb, Field::Element beta, Field::Element_ptr C, size_t ldc)
+Possible candidates:
+ 'Field::Element_ptr fsyr2k(const Field &F, const FFLAS_UPLO UpLo, const FFLAS_TRANSPOSE trans, const size_t N, const size_t K, const typename Field::Element alpha, typename Field::ConstElement_ptr A, const size_t lda, typename Field::ConstElement_ptr B, const size_t ldb, const typename Field::Element beta, typename Field::Element_ptr C, const size_t ldc)' at line 33 of file /home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/fflas/fflas_fsyr2k.inl
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_krylovelim.inl:39: warning: no matching file member found for 
+size_t KrylovElim(const Givaro::ModularBalanced< double > &F, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, size_t *P, size_t *Q, const size_t deg, size_t *iterates, size_t *inviterates, size_t maxit, size_t virt)
+Possible candidates:
+ 'template INST_OR_DECL size_t KrylovElim(const FFLAS_FIELD< FFLAS_ELT > &F, const size_t M, const size_t N, FFLAS_ELT *A, const size_t lda, size_t *P, size_t *Q, const size_t deg, size_t *iterates, size_t *inviterates, const size_t maxit, size_t virt)' at line 220 of file /home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/interfaces/libs/ffpack_inst_implem.inl
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_krylovelim.inl:151: warning: no matching file member found for 
+size_t SpecRankProfile(const Givaro::ModularBalanced< double > &F, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t deg, size_t *rankProfile)
+Possible candidates:
+ 'template INST_OR_DECL size_t SpecRankProfile(const FFLAS_FIELD< FFLAS_ELT > &F, const size_t M, const size_t N, FFLAS_ELT *A, const size_t lda, const size_t deg, size_t *rankProfile)' at line 225 of file /home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/interfaces/libs/ffpack_inst_implem.inl
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1642: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1671: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1694: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1723: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1750: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1772: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1601: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1625: warning: Found unknown command '\U'
+error: Problems running latex. Check your installation or look for typos in _formulas.tex and check _formulas.log!
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1601: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1625: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1642: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1671: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1694: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1723: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1750: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1772: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:887: warning: The following parameters of FFPACK::Protected::GaussJordan(const Field &F, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t colbeg, const size_t rowbeg, const size_t colsize, size_t *P, size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag) are not documented:
+  parameter 'F'
+  parameter 'colbeg'
+  parameter 'rowbeg'
+  parameter 'colsize'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1601: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1625: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1642: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1671: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1694: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1723: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1750: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1772: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:211: warning: argument 'P1' of command @param is not found in the argument list of FFPACK::applyP(const Field &F, const FFLAS::FFLAS_SIDE Side, const FFLAS::FFLAS_TRANSPOSE Trans, const size_t M, const size_t ibeg, const size_t iend, typename Field::Element_ptr A, const size_t lda, const size_t *P)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:211: warning: argument 'P2' of command @param is not found in the argument list of FFPACK::applyP(const Field &F, const FFLAS::FFLAS_SIDE Side, const FFLAS::FFLAS_TRANSPOSE Trans, const size_t M, const size_t ibeg, const size_t iend, typename Field::Element_ptr A, const size_t lda, const size_t *P)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:211: warning: argument 'psh' of command @param is not found in the argument list of FFPACK::applyP(const Field &F, const FFLAS::FFLAS_SIDE Side, const FFLAS::FFLAS_TRANSPOSE Trans, const size_t M, const size_t ibeg, const size_t iend, typename Field::Element_ptr A, const size_t lda, const size_t *P)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:434: warning: The following parameter of FFPACK::ftrtri(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag, const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t threshold=__FFLASFFPACK_FTRTRI_THRESHOLD) is not documented:
+  parameter 'threshold'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:454: warning: argument 'Side' of command @param is not found in the argument list of FFPACK::ftrtrm(const Field &F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag, const size_t N, typename Field::Element_ptr A, const size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:454: warning: The following parameter of FFPACK::ftrtrm(const Field &F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag, const size_t N, typename Field::Element_ptr A, const size_t lda) is not documented:
+  parameter 'side'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:470: warning: argument 'Side' of command @param is not found in the argument list of FFPACK::ftrstr(const Field &F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr B, const size_t ldb, const size_t threshold=64)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:470: warning: argument 'diag1' of command @param is not found in the argument list of FFPACK::ftrstr(const Field &F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr B, const size_t ldb, const size_t threshold=64)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:470: warning: argument 'diag2' of command @param is not found in the argument list of FFPACK::ftrstr(const Field &F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr B, const size_t ldb, const size_t threshold=64)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:470: warning: The following parameters of FFPACK::ftrstr(const Field &F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr B, const size_t ldb, const size_t threshold=64) are not documented:
+  parameter 'side'
+  parameter 'diagA'
+  parameter 'diagB'
+  parameter 'threshold'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:489: warning: argument 'Side' of command @param is not found in the argument list of FFPACK::ftrssyr2k(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diagA, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr B, const size_t ldb, const size_t threshold=64)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:489: warning: The following parameter of FFPACK::ftrssyr2k(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diagA, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr B, const size_t ldb, const size_t threshold=64) is not documented:
+  parameter 'threshold'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:515: warning: The following parameter of FFPACK::fsytrf(const Field &F, const FFLAS::FFLAS_UPLO UpLo, const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t threshold=__FFLASFFPACK_FSYTRF_THRESHOLD) is not documented:
+  parameter 'threshold'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:549: warning: The following parameters of FFPACK::fsytrf_nonunit(const Field &F, const FFLAS::FFLAS_UPLO UpLo, const size_t N, typename Field::Element_ptr A, const size_t lda, typename Field::Element_ptr D, const size_t incD, const size_t threshold=__FFLASFFPACK_FSYTRF_THRESHOLD) are not documented:
+  parameter 'incD'
+  parameter 'threshold'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:572: warning: argument 'Pt' of command @param is not found in the argument list of FFPACK::PLUQ(const Field &F, const FFLAS::FFLAS_DIAG Diag, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, size_t *P, size_t *Q)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:572: warning: The following parameter of FFPACK::PLUQ(const Field &F, const FFLAS::FFLAS_DIAG Diag, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, size_t *P, size_t *Q) is not documented:
+  parameter 'P'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:620: warning: argument 'Q' of command @param is not found in the argument list of FFPACK::LUdivine(const Field &F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, size_t *P, size_t *Qt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive, const size_t cutoff=__FFLASFFPACK_LUDIVINE_THRESHOLD)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:620: warning: The following parameter of FFPACK::LUdivine(const Field &F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda, size_t *P, size_t *Qt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive, const size_t cutoff=__FFLASFFPACK_LUDIVINE_THRESHOLD) is not documented:
+  parameter 'Qt'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:993: warning: The following parameter of FFPACK::CharPoly(const PolRing &R, std::list< typename PolRing::Element > &charp, const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda, typename PolRing::Domain_t::RandIter &G, const FFPACK_CHARPOLY_TAG CharpTag=FfpackAuto, const size_t degree=__FFLASFFPACK_ARITHPROG_THRESHOLD) is not documented:
+  parameter 'degree'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1011: warning: The following parameter of FFPACK::CharPoly(const PolRing &R, typename PolRing::Element &charp, const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda, typename PolRing::Domain_t::RandIter &G, const FFPACK_CHARPOLY_TAG CharpTag=FfpackAuto, const size_t degree=__FFLASFFPACK_ARITHPROG_THRESHOLD) is not documented:
+  parameter 'degree'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1029: warning: The following parameter of FFPACK::CharPoly(const PolRing &R, typename PolRing::Element &charp, const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda, const FFPACK_CHARPOLY_TAG CharpTag=FfpackAuto, const size_t degree=__FFLASFFPACK_ARITHPROG_THRESHOLD) is not documented:
+  parameter 'degree'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1158: warning: argument 'K' of command @param is not found in the argument list of FFPACK::MatVecMinPoly(const Field &F, Polynomial &minP, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::ConstElement_ptr v, const size_t incv)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1158: warning: argument 'ldk' of command @param is not found in the argument list of FFPACK::MatVecMinPoly(const Field &F, Polynomial &minP, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::ConstElement_ptr v, const size_t incv)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1158: warning: argument 'P' of command @param is not found in the argument list of FFPACK::MatVecMinPoly(const Field &F, Polynomial &minP, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::ConstElement_ptr v, const size_t incv)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1158: warning: The following parameters of FFPACK::MatVecMinPoly(const Field &F, Polynomial &minP, const size_t N, typename Field::ConstElement_ptr A, const size_t lda, typename Field::ConstElement_ptr v, const size_t incv) are not documented:
+  parameter 'v'
+  parameter 'incv'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1217: warning: argument 'psH' of command @param is not found in the argument list of FFPACK::Rank(const Field &F, const size_t M, const size_t N, typename Field::Element_ptr A, const size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1267: warning: argument 'psH' of command @param is not found in the argument list of FFPACK::Det(const Field &F, typename Field::Element &det, const size_t N, typename Field::Element_ptr A, const size_t lda, size_t *P=NULL, size_t *Q=NULL)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1304: warning: Found unknown command '@oaram'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1305: warning: Found unknown command '@oaram'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1304: warning: The following parameters of FFPACK::Solve(const Field &F, const size_t M, typename Field::Element_ptr A, const size_t lda, typename Field::Element_ptr x, const int incx, typename Field::ConstElement_ptr b, const int incb) are not documented:
+  parameter 'F'
+  parameter 'M'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1483: warning: argument 'P' from the argument list of FFPACK::LeadingSubmatrixRankProfiles has multiple @param documentation sections
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1483: warning: The following parameter of FFPACK::LeadingSubmatrixRankProfiles(const size_t M, const size_t N, const size_t R, const size_t LSm, const size_t LSn, const size_t *P, const size_t *Q, size_t *RRP, size_t *CRP) is not documented:
+  parameter 'CRP'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1601: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1602: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getTriangular(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1602: warning: The following parameter of FFPACK::getTriangular(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false) is not documented:
+  parameter 'Uplo'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1625: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1626: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getTriangular(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, typename Field::Element_ptr A, const size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1626: warning: The following parameter of FFPACK::getTriangular(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, typename Field::Element_ptr A, const size_t lda) is not documented:
+  parameter 'Uplo'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1642: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1644: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1644: warning: The following parameter of FFPACK::getEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive) is not documented:
+  parameter 'Uplo'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1671: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1673: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::Element_ptr A, const size_t lda, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1673: warning: The following parameter of FFPACK::getEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::Element_ptr A, const size_t lda, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive) is not documented:
+  parameter 'Uplo'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1694: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1696: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getEchelonTransform(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1696: warning: The following parameters of FFPACK::getEchelonTransform(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG diag, const size_t M, const size_t N, const size_t R, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive) are not documented:
+  parameter 'Uplo'
+  parameter 'Q'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1723: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1725: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getReducedEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1725: warning: argument 'diag' of command @param is not found in the argument list of FFPACK::getReducedEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1725: warning: The following parameters of FFPACK::getReducedEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const bool OnlyNonZeroVectors=false, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive) are not documented:
+  parameter 'Uplo'
+  parameter 'T'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1750: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1752: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getReducedEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::Element_ptr A, const size_t lda, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1752: warning: argument 'diag' of command @param is not found in the argument list of FFPACK::getReducedEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::Element_ptr A, const size_t lda, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1752: warning: The following parameter of FFPACK::getReducedEchelonForm(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, typename Field::Element_ptr A, const size_t lda, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive) is not documented:
+  parameter 'Uplo'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1772: warning: Found unknown command '\U'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1774: warning: argument 'UpLo' of command @param is not found in the argument list of FFPACK::getReducedEchelonTransform(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1774: warning: argument 'diag' of command @param is not found in the argument list of FFPACK::getReducedEchelonTransform(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1774: warning: The following parameters of FFPACK::getReducedEchelonTransform(const Field &F, const FFLAS::FFLAS_UPLO Uplo, const size_t M, const size_t N, const size_t R, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr A, const size_t lda, typename Field::Element_ptr T, const size_t ldt, const FFPACK_LU_TAG LuTag=FfpackSlabRecursive) are not documented:
+  parameter 'Uplo'
+  parameter 'Q'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack.h:1889: warning: The following parameter of FFPACK::ExpandBlockBiDiagonalToBruhat(const Field &Fi, const FFLAS::FFLAS_UPLO Uplo, size_t N, size_t s, size_t r, typename Field::Element_ptr A, size_t lda, typename Field::Element_ptr X, size_t ldx, size_t NbBlocks, size_t *K, size_t *M, size_t *T) is not documented:
+  parameter 'NbBlocks'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'F' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'ldxu' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'Mu' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'ldxl' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'Ml' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'C' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: argument 'ldc' of command @param is not found in the argument list of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_bruhatgen.inl:566: warning: The following parameters of FFPACK::productBruhatxTS(const Field &Fi, size_t N, size_t s, size_t r, size_t t, const size_t *P, const size_t *Q, typename Field::ConstElement_ptr Xu, size_t ldu, size_t NbBlocksU, const size_t *Ku, const size_t *Tu, const size_t *MU, typename Field::ConstElement_ptr Xl, size_t ldl, size_t NbBlocksL, const size_t *Kl, const size_t *Tl, const size_t *ML, typename Field::Element_ptr B, size_t ldb, const typename Field::Element beta, typename Field::Element_ptr D, size_t ldd) are not documented:
+  parameter 'Fi'
+  parameter 'ldu'
+  parameter 'MU'
+  parameter 'ldl'
+  parameter 'ML'
+  parameter 'D'
+  parameter 'ldd'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_permutation.inl:508: warning: The following parameters of FFPACK::composePermutationsLLL(size_t *P1, const size_t *P2, const size_t R, const size_t N) are not documented:
+  parameter 'R'
+  parameter 'N'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_permutation.inl:522: warning: expected whitespace after \param command
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_permutation.inl:522: warning: The following parameters of FFPACK::composePermutationsLLM(size_t *MathP, const size_t *P1, const size_t *P2, const size_t R, const size_t N) are not documented:
+  parameter 'MathP'
+  parameter 'R'
+  parameter 'N'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_permutation.inl:540: warning: The following parameters of FFPACK::composePermutationsMLM(size_t *MathP1, const size_t *P2, const size_t R, const size_t N) are not documented:
+  parameter 'R'
+  parameter 'N'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:373: warning: argument 'lda' of command @param is not found in the argument list of FFPACK::RRxRR(const Field &Fi, size_t r_A, size_t m, size_t r_b, size_t n, size_t k, typename Field::ConstElement_ptr LA, size_t ldLA, typename Field::ConstElement_ptr UA, size_t ldUA, typename Field::ConstElement_ptr LB, size_t ldLB, typename Field::ConstElement_ptr UB, size_t ldUB)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:373: warning: argument 'ldb' of command @param is not found in the argument list of FFPACK::RRxRR(const Field &Fi, size_t r_A, size_t m, size_t r_b, size_t n, size_t k, typename Field::ConstElement_ptr LA, size_t ldLA, typename Field::ConstElement_ptr UA, size_t ldUA, typename Field::ConstElement_ptr LB, size_t ldLB, typename Field::ConstElement_ptr UB, size_t ldUB)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:373: warning: argument 'ldc' of command @param is not found in the argument list of FFPACK::RRxRR(const Field &Fi, size_t r_A, size_t m, size_t r_b, size_t n, size_t k, typename Field::ConstElement_ptr LA, size_t ldLA, typename Field::ConstElement_ptr UA, size_t ldUA, typename Field::ConstElement_ptr LB, size_t ldLB, typename Field::ConstElement_ptr UB, size_t ldUB)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:373: warning: The following parameters of FFPACK::RRxRR(const Field &Fi, size_t r_A, size_t m, size_t r_b, size_t n, size_t k, typename Field::ConstElement_ptr LA, size_t ldLA, typename Field::ConstElement_ptr UA, size_t ldUA, typename Field::ConstElement_ptr LB, size_t ldLB, typename Field::ConstElement_ptr UB, size_t ldUB) are not documented:
+  parameter 'ldLA'
+  parameter 'ldUA'
+  parameter 'ldLB'
+  parameter 'ldUB'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:440: warning: The following parameters of FFPACK::RRRaddRR(const Field &Fi, size_t s, size_t r_b, size_t n, const RRRrep< Field > &A, typename Field::ConstElement_ptr LB, size_t ldLB, typename Field::ConstElement_ptr UB, size_t ldUB) are not documented:
+  parameter 'ldLB'
+  parameter 'ldUB'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:459: warning: argument 'A' of command @param is not found in the argument list of FFPACK::RRRxTSrec(const Field &Fi, size_t s, size_t n, size_t t, const Node< Field > &nodeA, typename Field::ConstElement_ptr B, size_t ldB, typename Field::ConstElement_ptr C, size_t ldC)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:459: warning: The following parameter of FFPACK::RRRxTSrec(const Field &Fi, size_t s, size_t n, size_t t, const Node< Field > &nodeA, typename Field::ConstElement_ptr B, size_t ldB, typename Field::ConstElement_ptr C, size_t ldC) is not documented:
+  parameter 'nodeA'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/ffpack/ffpack_rrrgen.inl:578: warning: The following parameters of FFPACK::RRRxRR(const Field &Fi, size_t s, size_t n, size_t r_b, size_t m, const RRRrep< Field > &A, typename Field::ConstElement_ptr LB, size_t ldLB, typename Field::ConstElement_ptr UB, size_t ldUB, typename Field::Element_ptr LC, size_t ldLC, typename Field::Element_ptr UC, size_t ldUC) are not documented:
+  parameter 'LC'
+  parameter 'ldLC'
+  parameter 'UC'
+  parameter 'ldUC'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:119: warning: The following parameters of FFPACK::RandomTriangularMatrix(const Field &F, size_t m, size_t n, const FFLAS::FFLAS_UPLO UpLo, const FFLAS::FFLAS_DIAG Diag, bool nonsingular, typename Field::Element_ptr A, size_t lda, RandIter &G) are not documented:
+  parameter 'Diag'
+  parameter 'nonsingular'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:161: warning: The following parameters of FFPACK::RandomTriangularMatrix(const Field &F, size_t m, size_t n, const FFLAS::FFLAS_UPLO UpLo, const FFLAS::FFLAS_DIAG Diag, bool nonsingular, typename Field::Element_ptr A, size_t lda) are not documented:
+  parameter 'Diag'
+  parameter 'nonsingular'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:191: warning: The following parameter of FFPACK::RandomSymmetricMatrix(const Field &F, size_t n, bool nonsingular, typename Field::Element_ptr A, size_t lda, RandIter &G) is not documented:
+  parameter 'nonsingular'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:325: warning: The following parameter of FFPACK::RandomRankProfileMatrix(size_t M, size_t N, size_t R, size_t *rows, size_t *cols) is not documented:
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:346: warning: The following parameter of FFPACK::RandomSymmetricRankProfileMatrix(size_t N, size_t R, size_t *rows, size_t *cols) is not documented:
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:472: warning: argument 'm' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:472: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:472: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:472: warning: The following parameters of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G) are not documented:
+  parameter 'M'
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:521: warning: argument 'm' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:521: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:521: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:521: warning: The following parameters of FFPACK::RandomMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP) are not documented:
+  parameter 'M'
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:542: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:542: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:542: warning: The following parameters of FFPACK::RandomSymmetricMatrixWithRankandRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP, RandIter &G) are not documented:
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:579: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:579: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:579: warning: The following parameters of FFPACK::RandomSymmetricMatrixWithRankandRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, const size_t *RRP, const size_t *CRP) are not documented:
+  parameter 'M'
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:600: warning: argument 'm' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:600: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:600: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:600: warning: The following parameters of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G) are not documented:
+  parameter 'M'
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:626: warning: argument 'm' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:626: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:626: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:626: warning: The following parameters of FFPACK::RandomMatrixWithRankandRandomRPM(const Field &F, size_t M, size_t N, size_t R, typename Field::Element_ptr A, size_t lda) are not documented:
+  parameter 'M'
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:645: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRandomRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:645: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRandomRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:645: warning: The following parameters of FFPACK::RandomSymmetricMatrixWithRankandRandomRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda, RandIter &G) are not documented:
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:670: warning: argument 'n' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRandomRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:670: warning: argument 'r' of command @param is not found in the argument list of FFPACK::RandomSymmetricMatrixWithRankandRandomRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda)
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:670: warning: The following parameters of FFPACK::RandomSymmetricMatrixWithRankandRandomRPM(const Field &F, size_t N, size_t R, typename Field::Element_ptr A, size_t lda) are not documented:
+  parameter 'N'
+  parameter 'R'
+/home/francden/Bureau/Travail/fflas-ffpack/fflas-ffpack/utils/fflas_randommatrix.h:702: warning: The following parameter of FFPACK::RandomMatrixWithDet(const Field &F, size_t n, const typename Field::Element d, typename Field::Element_ptr A, size_t lda, RandIter &G) is not documented:
+  parameter 'G'
