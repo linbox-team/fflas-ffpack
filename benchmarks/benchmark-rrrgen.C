@@ -59,31 +59,34 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
 
     Element_ptr A, B, TS;
     A = FFLAS::fflas_new (F, n, n);
-    B = FFLAS::fflas_new (F, n, n);
-    TS = FFLAS::fflas_new (F, n, m);
-    Element_ptr Res = fflas_new(F, n, m); // Inadequate name
+    // B = FFLAS::fflas_new (F, n, n);
+    // TS = FFLAS::fflas_new (F, n, m);
+    // Element_ptr Res = fflas_new(F, n, m); // Inadequate name
     RRRgen<Field>* RRRA;
-    RRRgen<Field>* RRRB;
+    // RRRgen<Field>* RRRB;
     RRRgen<Field>* RRRres;
+    RRRgen<Field>* RRRL;
+    RRRgen<Field>* RRRU;
 
 
     Element_ptr A2 = fflas_new (F, n, n);
-    Element_ptr B2 = fflas_new (F, n, n);
+    // Element_ptr B2 = fflas_new (F, n, n);
 
-
-    double time_RRRxTS = 0, time_RRRxRRR = 0,time_gen_qs = 0, time_gen_rrr = 0;
+    double time_gen_qs = 0,time_invert = 0, time_LU = 0;
+    // double time_RRRxTS = 0, time_RRRxRRR = 0,time_gen_qs = 0, time_gen_rrr = 0;
     size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
     for (size_t i = 0; i < ceil(n/2.); i++)
     {
         p[i] = n - i - 1;
     }
-    cout << "Temps de calcul pour les opérations RRRGen, RRRxTS, RRRxRRR et avec n : " << n << endl;
+    cout << "Temps de calcul pour les opérations RRR_LU_fact, RRRinvert et avec n : " << n << endl;
+    // cout << "Temps de calcul pour les opérations RRRGen, RRRxTS, RRRxRRR et avec n : " << n << endl;
     for (size_t i=0; i<iter;++i){
 
         cout << "Generation start"<< endl;
         // generates random matrices
         typename Field::RandIter G (F, seed);
-        RandomMatrix(F, n, m, TS, ldts, G);
+        // RandomMatrix(F, n, m, TS, ldts, G);
         
         // generate A a t qsmatrix
         
@@ -94,80 +97,99 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t, A2, n,G);
         applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A, n, p);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
+        // for (size_t i = 0; i < n; i ++){
+        //     F.assign(A2[(n+1)*i], i);
+        // }
         faddin (F, n, n, A2, n, A, n);
+
         chrono.stop();
         time_gen_qs = chrono.usertime();
         
         cout << "Generation of A ended in "<< time_gen_qs << endl;
 
-        // generate A a t qsmatrix
-        chrono.clear();
-        chrono.start(); 
-
-        RandomLTQSMatrixWithRankandQSorder (F,n,r,t, B, n,G);
-        RandomLTQSMatrixWithRankandQSorder (F,n,r,t, B2, n,G);
-        applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B, n, p);
-        applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B2, n, p);
-        faddin (F, n, n, B2, n, B, n);
-        chrono.stop();
-        time_gen_qs += chrono.usertime();
-        
-        cout << "Generation of B ended in "<< time_gen_qs << endl;
-
-        // create RRR
-        chrono.clear();
-        chrono.start(); 
-        RRRA = new RRRgen<Field>(F, n, t, A, lda,true,true);
-        chrono.stop();
-        time_gen_rrr += chrono.usertime();
-
-        // create RRR
-        chrono.clear();
-        chrono.start(); 
-        RRRB = new RRRgen<Field>(F, n, t, B, lda,true,true);
-        chrono.stop();
-        time_gen_rrr += chrono.usertime();
-
-        // RRRxTS product
-        chrono.clear();
-        chrono.start(); 
-        RRRxTS(F,n,m,RRRA,TS,m, Res,m);
-        chrono.stop();
-        time_RRRxTS += chrono.usertime();
-        
-        // RRRxRRR
-        chrono.clear();
-        chrono.start(); 
-        RRRres = RRRxRRR(F,RRRA,RRRB);
-        chrono.stop();
-        time_RRRxRRR += chrono.usertime();
-        delete RRRres;
-        
-        // // Could add RRR invert when Matrix with QSorder and full rank can be created. Here some matrix can't be inverted then raise error.
+        // generate B a t qsmatrix
         // chrono.clear();
         // chrono.start(); 
-        // RRRres = RRRinvert(F,RRRA);
-        // // Can add an other inverse operation of B to be more precise on time measure. 
+
+        // RandomLTQSMatrixWithRankandQSorder (F,n,r,t, B, n,G);
+        // RandomLTQSMatrixWithRankandQSorder (F,n,r,t, B2, n,G);
+        // applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B, n, p);
+        // applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), B2, n, p);
+        // faddin (F, n, n, B2, n, B, n);
         // chrono.stop();
-        // time_invert += chrono.usertime();
+        // time_gen_qs += chrono.usertime();
+        
+        // cout << "Generation of B ended in "<< time_gen_qs << endl;
+
+        // create RRR
+        // chrono.clear();
+        // chrono.start(); 
+        RRRA = new RRRgen<Field>(F, n, t, A, lda,true,true);
+        // chrono.stop();
+        // time_gen_rrr += chrono.usertime();
+
+        // create RRR
+        // chrono.clear();
+        // chrono.start(); 
+        // RRRB = new RRRgen<Field>(F, n, t, B, lda,true,true);
+        // chrono.stop();
+        // time_gen_rrr += chrono.usertime();
+
+        // RRRxTS product
+        // chrono.clear();
+        // chrono.start(); 
+        // RRRxTS(F,n,m,RRRA,TS,m, Res,m);
+        // chrono.stop();
+        // time_RRRxTS += chrono.usertime();
+        
+        // RRRxRRR
+        // chrono.clear();
+        // chrono.start(); 
+        // RRRres = RRRxRRR(F,RRRA,RRRB);
+        // chrono.stop();
+        // time_RRRxRRR += chrono.usertime();
         // delete RRRres;
+        
+        // // Could add RRR invert when Matrix with QSorder and full rank can be created. Here some matrix can't be inverted then raise error.
+        chrono.clear();
+        chrono.start(); 
+        RRRres = RRRinvert(F,RRRA);
+        chrono.stop();
+        time_invert += chrono.usertime();
+        delete RRRres;
+
+        RRRL = nullptr;
+        RRRU = nullptr;
+        chrono.clear();
+        chrono.start(); 
+        LUfactRRR(F,RRRA,RRRL,RRRU);
+        chrono.stop();
+        time_LU += chrono.usertime();
+
 
         delete RRRA;
-        delete RRRB;
+        delete RRRU;
+        delete RRRL;
+        // delete RRRB;
     }
     
     FFLAS::fflas_delete(A);
-    FFLAS::fflas_delete(B);
-    FFLAS::fflas_delete(TS);
-    FFLAS::fflas_delete(Res); 
-    FFLAS::fflas_delete(A2,B2, p);
+    // FFLAS::fflas_delete(B);
+    // FFLAS::fflas_delete(TS);
+    // FFLAS::fflas_delete(Res); 
+    // FFLAS::fflas_delete(A2,B2, p);
+    FFLAS::fflas_delete(A2, p);
     
-    double mean_time_RRRxTS = time_RRRxTS / double(iter);
-    double mean_time_gen_RRR = time_gen_rrr / double(2*iter);
-    double mean_time_RRRxRRR = time_RRRxRRR / double(iter);
+    // double mean_time_RRRxTS = time_RRRxTS / double(iter);
+    // double mean_time_gen_RRR = time_gen_rrr / double(2*iter);
+    // double mean_time_RRRxRRR = time_RRRxRRR / double(iter);
+    double mean_time_invert = time_invert / double(iter);
+    double mean_time_LU_fact = time_LU / double(iter);
 
-    cout << "n : " << n << ", t : " << t << ", RRR gen  : " << mean_time_gen_RRR << ", RRRxRRR : " << mean_time_RRRxRRR << ", RRRxTS : " << mean_time_RRRxTS <<endl;
-    my_file << "n : " << n << ", t : " << t << ", RRR gen  : " << mean_time_gen_RRR << ", RRRxRRR : " << mean_time_RRRxRRR << ", RRRxTS : " << mean_time_RRRxTS <<endl;
+    // cout << "n : " << n << ", t : " << t << ", RRR gen  : " << mean_time_gen_RRR << ", RRRxRRR : " << mean_time_RRRxRRR << ", RRRxTS : " << mean_time_RRRxTS <<endl;
+    // my_file << "n : " << n << ", t : " << t << ", RRR gen  : " << mean_time_gen_RRR << ", RRRxRRR : " << mean_time_RRRxRRR << ", RRRxTS : " << mean_time_RRRxTS <<endl;
+    cout << "n : " << n << ", t : " << t << ", RRRinvert  : " << mean_time_invert << ", RRR LU fact : " << mean_time_LU_fact << endl;
+    my_file << "n : " << n << ", t : " << t << ", RRRinvert  : " << mean_time_invert << ", RRR LU fact : " << mean_time_LU_fact << endl;
 }
 
 int main(int argc, char** argv) {
@@ -196,7 +218,7 @@ int main(int argc, char** argv) {
     };
 
     fstream my_file;
-	my_file.open("test RRR measures ", ios::out);
+	my_file.open("comparaison invert/LU ", ios::out);
 	if (!my_file) {
 		cout << "File not created!"<< std::endl;
 	}
@@ -205,7 +227,7 @@ int main(int argc, char** argv) {
 	}
 
     FFLAS::parseArguments(argc,argv,as);
-    for (n = 500; n<6000;n = n+100){
+    for (n = 3000; n<6000;n = n+100){
         
         run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
     }
@@ -221,13 +243,13 @@ int main(int argc, char** argv) {
     my_file << endl;
     my_file << endl;
 
-    // n = 2167;
-    // for (t = 50; t < r; t+=10){
-    //     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed,my_file);
-    // }
-    // my_file << endl;
+    n = 2167;
+    for (t = 50; t < r; t+=10){
+        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed,my_file);
+    }
+    my_file << endl;
 
-    // my_file << "n : " << n << ", m : " << m << ", r : " << r << endl;
+    my_file << "n : " << n << ", m : " << m << ", r : " << r << endl;
 
     my_file.close();
     // std::cout << "( ";

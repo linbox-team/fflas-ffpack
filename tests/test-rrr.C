@@ -621,9 +621,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
     // ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
     // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
-    // ok = ok && test_invert(F,n,t,A,n);
+    ok = ok && test_invert(F,n,t,T,n);
     // ok = ok && test_FRTSM_RRR(F,n,t,A,n,B,n); 
-    ok = ok && test_LU_RRR(F,n,t,A,n); 
+    // ok = ok && test_LU_RRR(F,n,t,A,n); 
 
 
     
