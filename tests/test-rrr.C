@@ -579,6 +579,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     }
     applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), T, n, p);
     applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
+    Givaro::GeneralRingNonZeroRandIter<Field,typename Field::RandIter> nzG (G);
+    for (size_t i=0; i< n; ++i)
+            nzG.random (A2[i*(n+1)]);
     // Givaro::Element* r;
     // for (size_t i = 0; i < ceil(n/2.); i++)
     // {

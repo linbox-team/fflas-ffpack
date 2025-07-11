@@ -52,6 +52,7 @@ namespace FFPACK {
         FFLAS::fflas_delete(P);
         FFLAS::fflas_delete(Q);
 
+        std::cerr<<"nullity = "<<nullity<<std::endl;
         checker.check(A,nullity);
         return A;
     }
