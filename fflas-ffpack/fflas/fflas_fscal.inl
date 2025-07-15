@@ -463,8 +463,8 @@ namespace FFLAS {
             fneg(F,m,n,A,lda,B,ldb);
         }
         else {
-            if (n == lda && m == lda)
-                fscal(F,m*n,a,A,lda,B,ldb);
+            if (n == lda && n == ldb)
+                fscal(F,m*n,a,A,1,B,1);
             else {
                 for (size_t i = 0; i < m ; ++i)
                     fscal(F,n,a,A+i*lda,1,B+i*ldb,1);
