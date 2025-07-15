@@ -490,7 +490,7 @@ bool test_FRTSM_RRR  (const Field & F, size_t n, size_t t, typename Field::Eleme
     RRRgen<Field>* RRRL = nullptr;
     RRRgen<Field>* RRRU = nullptr;
     
-    LUfactRRR_ (F, RRRA, RRRL, RRRU);
+    LUfactRRR (F, RRRA, RRRL, RRRU);
 
     TRSM_RRR_RR (F, FflasRight, FflasLower, (const RRRgen<Field>*) RRRU, RRB);
     // TRSM_RRR_RR (Fi, FflasLeft, FflasLower, RRRU, RRB);
@@ -525,7 +525,7 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
 {   
     // L/U init = RR(A)
     RRgen<Field>* LU_A = new RRgen(F,n,n,(typename Field::ConstElement_ptr)A,n);
-
+    
 
     // L/U check = L/U(A) with RRR_LU
     typename Field::Element_ptr Lcheck = fflas_new (F, n, n);
@@ -539,18 +539,18 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
 
     RRRExpand<Field>(F, RRRL, Lcheck, n);
     RRRExpand<Field>(F, RRRU, Ucheck, n);
-
-
+    
+    
     bool ok = fequal (F, n, n, Lcheck, n, LU_A->PL, n);
     ok = ok && fequal (F, n, n, Ucheck, n, LU_A->UQ, n);
     if ( !ok )
-        {
-            std::cout << "ERROR: different results for dense LU and RRR LU"<<std::endl;
-            WriteMatrix(std::cout << "Linit = " << std::endl, F, n, n, LU_A->PL, n);
-            WriteMatrix(std::cout << "Lcheck =  " << std::endl, F, n, n, Lcheck, n);
-            WriteMatrix(std::cout << "Uinit = " << std::endl, F, n, n, LU_A->UQ, n);
-            WriteMatrix(std::cout << "Ucheck =  " << std::endl, F, n, n, Ucheck, n);
-        }
+    {
+        std::cout << "ERROR: different results for dense LU and RRR LU"<<std::endl;
+        WriteMatrix(std::cout << "Linit = " << std::endl, F, n, n, LU_A->PL, n);
+        WriteMatrix(std::cout << "Lcheck =  " << std::endl, F, n, n, Lcheck, n);
+        WriteMatrix(std::cout << "Uinit = " << std::endl, F, n, n, LU_A->UQ, n);
+        WriteMatrix(std::cout << "Ucheck =  " << std::endl, F, n, n, Ucheck, n);
+    }
     FFLAS::fflas_delete(Lcheck);
     FFLAS::fflas_delete(Ucheck);
     delete(LU_A);
@@ -582,15 +582,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     Givaro::GeneralRingNonZeroRandIter<Field,typename Field::RandIter> nzG (G);
     for (size_t i=0; i< n; ++i)
             nzG.random (A2[i*(n+1)]);
-    // Givaro::Element* r;
-    // for (size_t i = 0; i < ceil(n/2.); i++)
-    // {
-    //     F.random(G,r);
-    //     F.assign(A2[i*(n+1)], *r);
-    // }
     faddin (F, n, n, A2, n, T, n);
     FFLAS::fflas_delete(A2, p);
-
+    // WriteMatrix(std::cout << "A =  " << std::endl, F, n, n, T, n);
 
     //test operations with random matrices
     Element_ptr A = fflas_new (F, n, n); // n*n random matrix
@@ -624,9 +618,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
     // ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
     // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
-    ok = ok && test_invert(F,n,t,T,n);
+    // ok = ok && test_invert(F,n,t,T,n);
     // ok = ok && test_FRTSM_RRR(F,n,t,A,n,B,n); 
-    // ok = ok && test_LU_RRR(F,n,t,A,n); 
+    ok = ok && test_LU_RRR(F,n,t,A,n); 
 
 
     

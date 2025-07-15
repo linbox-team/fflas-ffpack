@@ -204,10 +204,7 @@ public:
         typename Field::Element_ptr A22 = (typename Field::Element_ptr)A21 + size_N1;
 
         ///////// PLUQ Factorisation for A12 and A21
-        // std::cout << "A12 : N1 = "<< size_N1 << std::endl;
-        // std::cout << "A12 : N2 = "<< size_N2 << std::endl;
         LU_right = new RRgen(Fi, size_N1,  size_N2, A12, lda);
-
         LU_left = new RRgen(Fi, size_N2,  size_N1, A21, lda);
 
 
@@ -442,59 +439,65 @@ inline RRgen<Field>* RRaddRR (const Field& Fi, RRgen<Field>* A, RRgen<Field>*B)
 /// @param A        size n*n in RRR representation
 /// @param B        size n*n in RR representation
 template<class Field>
-inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field>* B)
-    {   
-        // std::cout << "n et rank " <<A->size_N1+A->size_N2 << " " << A->t + B->r << std::endl;
-        if (A->size_N1+A->size_N2 <= A->t + B->r){
-            
-            // C = RRRexpand(A)
-            typename Field::Element_ptr C = FFLAS::fflas_new(Fi, A->size_N1+A->size_N2, A->size_N1+A->size_N2);
-            RRRExpand(Fi, A, C, A->size_N1 + A->size_N2);
-            
-            // B_expanded = RRexpand(B)
-
-            typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->m);
-            B->RRExpand(Fi,B_expanded,B->m);
-
-            // C = B+C
-            FFLAS::faddin(Fi,A->size_N1+ A->size_N2,A->size_N1 +A->size_N2,B_expanded,B->n,C,A->size_N1 +A->size_N2);
-            FFLAS::fflas_delete(B_expanded);
-            RRRgen<Field>* D = new RRRgen(Fi,C,A->size_N1 + A->size_N2,A->t + B->r,true,true);
-            FFLAS::fflas_delete(C);
-            
-            return D;
-        }
-        else {
-            // B_expanded = [RR_B11 RR_B12]
-            //              [RR_B21 RR_B22]
-
-            RRgen<Field>* RR_B11 = new RRgen(Fi, A->size_N1, A->size_N1, B->r, B->PL, B->ldPL, B->UQ,B->ldUQ,false);
-            RRgen<Field>* RR_B12 = new RRgen(Fi, A->size_N1, A->size_N2, B->r, B->PL, B->ldPL, B->UQ + A->size_N1,B->ldUQ,false);
-            RRgen<Field>* RR_B21 = new RRgen(Fi, A->size_N2, A->size_N1, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ ,B->ldUQ,false);
-            RRgen<Field>* RR_B22 = new RRgen(Fi, A->size_N2, A->size_N2, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ + A->size_N1,B->ldUQ,false);
-
-            
-
-            // C11 = RRR+RR(A11,B11)
-            RRRgen<Field>* C11 = RRRaddRR(Fi, A->left,RR_B11);
-
-            // C22 = RRR+RR(A22,B22)
-            RRRgen<Field>* C22 = RRRaddRR(Fi, A->right,RR_B22);
-
-            // C12 = RR+RR(A12,B12)
-            RRgen<Field>* C12 = RRaddRR(Fi, A->LU_right,RR_B12);
-
-            // C21 = RR+RR(A21,B21)
-            RRgen<Field>* C21 = RRaddRR(Fi, A->LU_left,RR_B21);
-            
-            delete RR_B11;
-            delete RR_B12;
-            delete RR_B21;
-            delete RR_B22;
-            
-            return new RRRgen(C12,C21,A->size_N1,A->size_N2,A->t + B->r,C11,C22,true);
-        }
+inline RRRgen<Field>* RRRaddRR (const Field& Fi,  RRRgen<Field>* A,  RRgen<Field>* B, bool same_threshold = false)
+{   
+    size_t threshold = A->t + B->r;
+    if (same_threshold){
+        threshold = A->t;
     }
+    // std::cout << "n et rank " <<A->size_N1+A->size_N2 << " " << A->t + B->r << std::endl;
+    if (A->size_N1+A->size_N2 <= threshold ){
+        
+        // C = RRRexpand(A)
+        typename Field::Element_ptr C = FFLAS::fflas_new(Fi, A->size_N1+A->size_N2, A->size_N1+A->size_N2);
+        RRRExpand(Fi, A, C, A->size_N1 + A->size_N2);
+        
+        // B_expanded = RRexpand(B)
+
+        typename Field::Element_ptr B_expanded = FFLAS::fflas_new(Fi,B->n,B->m);
+        B->RRExpand(Fi,B_expanded,B->m);
+
+        // C = B+C
+        FFLAS::faddin(Fi,A->size_N1+ A->size_N2,A->size_N1 +A->size_N2,B_expanded,B->n,C,A->size_N1 +A->size_N2);
+        FFLAS::fflas_delete(B_expanded);
+        RRRgen<Field>* D = new RRRgen(Fi,C,A->size_N1 + A->size_N2,threshold,true,true);
+        FFLAS::fflas_delete(C);
+        
+        return D;
+    }
+    else {
+        // B_expanded = [RR_B11 RR_B12]
+        //              [RR_B21 RR_B22]
+
+        RRgen<Field>* RR_B11 = new RRgen(Fi, A->size_N1, A->size_N1, B->r, B->PL, B->ldPL, B->UQ,B->ldUQ,false);
+        RRgen<Field>* RR_B12 = new RRgen(Fi, A->size_N1, A->size_N2, B->r, B->PL, B->ldPL, B->UQ + A->size_N1,B->ldUQ,false);
+        RRgen<Field>* RR_B21 = new RRgen(Fi, A->size_N2, A->size_N1, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ ,B->ldUQ,false);
+        RRgen<Field>* RR_B22 = new RRgen(Fi, A->size_N2, A->size_N2, B->r, B->PL + (A->size_N1 * B->ldPL), B->ldPL, B->UQ + A->size_N1,B->ldUQ,false);
+
+        
+
+        // C11 = RRR+RR(A11,B11)
+        RRRgen<Field>* C11 = RRRaddRR(Fi, A->left,RR_B11,same_threshold);
+
+        // C22 = RRR+RR(A22,B22)
+        RRRgen<Field>* C22 = RRRaddRR(Fi, A->right,RR_B22,same_threshold);
+
+        // C12 = RR+RR(A12,B12)
+        RRgen<Field>* C12 = RRaddRR(Fi, A->LU_right,RR_B12);
+
+        // C21 = RR+RR(A21,B21)
+        RRgen<Field>* C21 = RRaddRR(Fi, A->LU_left,RR_B21);
+        
+        delete RR_B11;
+        delete RR_B12;
+        delete RR_B21;
+        delete RR_B22;
+        
+        return new RRRgen(C12,C21,A->size_N1,A->size_N2,threshold,C11,C22,true);
+    }
+}
+
+
 
 /// @brief Multiplies a quasiseparable matric in RRR representation with a tall and skinny matrix
 /// @tparam Field 
@@ -1142,9 +1145,7 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
 
     // X22 = A22 - D1*D2
     RRgen<Field>* D1xD2 = RRxRR(Fi,D1,D2,true);
-    RRRgen<Field>* X22_int = RRRaddRR(Fi,A->right,D1xD2);
-    RRRgen<Field>* X22 = new RRRgen(Fi,size_N2,A->t,X22_int->LU_right->PL,X22_int->LU_right->ldPL,false,true);
-    delete X22_int;
+    RRRgen<Field>* X22 = RRRaddRR(Fi,A->right,D1xD2,true);
     delete D1xD2;
 
     

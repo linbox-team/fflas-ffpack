@@ -54,10 +54,11 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     FFLAS::Timer chrono;
     
     size_t lda = n;
-    size_t ldts = m;
+    // size_t ldts = m;
 
 
-    Element_ptr A, B, TS;
+    // Element_ptr A, B, TS;
+    Element_ptr A;
     A = FFLAS::fflas_new (F, n, n);
     // B = FFLAS::fflas_new (F, n, n);
     // TS = FFLAS::fflas_new (F, n, m);
@@ -71,7 +72,6 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
 
     Element_ptr A2 = fflas_new (F, n, n);
     // Element_ptr B2 = fflas_new (F, n, n);
-
     double time_gen_qs = 0,time_invert = 0, time_LU = 0;
     // double time_RRRxTS = 0, time_RRRxRRR = 0,time_gen_qs = 0, time_gen_rrr = 0;
     size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
@@ -79,11 +79,13 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     {
         p[i] = n - i - 1;
     }
+    cout << "t = "<< t << ", n = "<<n <<", r = "<< r<<", q = "<< q << std::endl;
+    Givaro::GeneralRingNonZeroRandIter<Field,typename Field::RandIter> nzG (G);
     cout << "Temps de calcul pour les opérations RRR_LU_fact, RRRinvert et avec n : " << n << endl;
     // cout << "Temps de calcul pour les opérations RRRGen, RRRxTS, RRRxRRR et avec n : " << n << endl;
     for (size_t i=0; i<iter;++i){
 
-        cout << "Generation start"<< endl;
+        // cout << "Generation start"<< endl;
         // generates random matrices
         typename Field::RandIter G (F, seed);
         // RandomMatrix(F, n, m, TS, ldts, G);
@@ -93,19 +95,20 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         chrono.clear();
         chrono.start(); 
 
+
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A, n,G);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t, A2, n,G);
         applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A, n, p);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, n, 0, ceil(n/2.), A2, n, p);
-        // for (size_t i = 0; i < n; i ++){
-        //     F.assign(A2[(n+1)*i], i);
-        // }
+        for (size_t i=0; i< n; ++i)
+                nzG.random (A2[i*(n+1)]);
         faddin (F, n, n, A2, n, A, n);
+
 
         chrono.stop();
         time_gen_qs = chrono.usertime();
         
-        cout << "Generation of A ended in "<< time_gen_qs << endl;
+        // cout << "Generation of A ended in "<< time_gen_qs << endl;
 
         // generate B a t qsmatrix
         // chrono.clear();
@@ -149,6 +152,13 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         // chrono.stop();
         // time_RRRxRRR += chrono.usertime();
         // delete RRRres;
+        RRRL = nullptr;
+        RRRU = nullptr;
+        chrono.clear();
+        chrono.start(); 
+        LUfactRRR(F,RRRA,RRRL,RRRU);
+        chrono.stop();
+        time_LU += chrono.usertime();
         
         // // Could add RRR invert when Matrix with QSorder and full rank can be created. Here some matrix can't be inverted then raise error.
         chrono.clear();
@@ -158,13 +168,6 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         time_invert += chrono.usertime();
         delete RRRres;
 
-        RRRL = nullptr;
-        RRRU = nullptr;
-        chrono.clear();
-        chrono.start(); 
-        LUfactRRR(F,RRRA,RRRL,RRRU);
-        chrono.stop();
-        time_LU += chrono.usertime();
 
 
         delete RRRA;
@@ -218,23 +221,20 @@ int main(int argc, char** argv) {
     };
 
     fstream my_file;
-	my_file.open("comparaison invert/LU ", ios::out);
+	my_file.open("comparaison_invert_LU_3", ios::out);
 	if (!my_file) {
 		cout << "File not created!"<< std::endl;
 	}
 	else {
 		cout << "File created successfully!"<< std::endl;
 	}
-
+    cout << seed << std::endl;
     FFLAS::parseArguments(argc,argv,as);
-    for (n = 3000; n<6000;n = n+100){
+    for (n = 3700; n<10001;n = n+100){
         
         run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
     }
-    for (n = 9000; n<=10001;n = n+1000){
-        
-        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
-    }
+    
     my_file << endl;
 
     my_file << "t : " << t << ", m : " << m << endl;
