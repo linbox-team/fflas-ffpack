@@ -922,6 +922,10 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,const RRRgen<Field>* A){
         // return Invert(Y)
         int nullity;
         FFPACK::Invert (Fi, N1,Y, N1, nullity);
+        if (nullity != 0) {
+            FFLAS::fflas_delete(Y);
+            throw std::runtime_error("RRR Error: non invertible matrix ");
+        }
         RRRgen<Field>* Y_RRR = new RRRgen(Fi,N1,A->t,Y,N1,true,true);
         FFLAS::fflas_delete(Y);
 
@@ -932,7 +936,14 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,const RRRgen<Field>* A){
     //                          [A21 A22]           [X21 X22]
 
     // Y11 < RRRinvertrec(A11)
-    RRRgen<Field>* Y11 = RRRinvert(Fi,A->left); //can be a leaf
+    RRRgen<Field>* Y11 = nullptr;
+    try {
+        Y11 = RRRinvert(Fi,A->left); 
+    }
+    catch(...){
+        delete Y11;
+        throw std::runtime_error("RRR Error: non invertible matrix ");
+    }
 
     // Y12 < RRRxRR(Y11,A12)
     RRgen<Field>* Y12 = RRRxRR(Fi,Y11,A->LU_right);
@@ -946,9 +957,19 @@ inline RRRgen<Field>* RRRinvert (const Field& Fi,const RRRgen<Field>* A){
     // D < RRRaddRR(A22,Z)
     RRRgen<Field>* D = RRRaddRR(Fi,A->right,Z);
     delete Z;
-
+    RRRgen<Field>* X22 = nullptr;
     // X22 < RRRinvert(D)
-    RRRgen<Field>* X22 = RRRinvert(Fi,D);
+    try {
+        X22 = RRRinvert(Fi,D); 
+    }
+    catch(...){
+        delete Y11;
+        delete Y12;
+        delete Y21;
+        delete D;
+        delete X22;
+        throw std::runtime_error("RRR Error: non invertible matrix ");
+    }
     delete D;
 
     // X21 < -RRRxRR(X22,Y21)
@@ -984,16 +1005,30 @@ inline void TRSM_RRR_TS (const Field& Fi,const FFLAS::FFLAS_SIDE Side, const FFL
 { 
     size_t size_N1 = M->size_N1;
     if (!(M->left)){
-
-        // FFLAS::WriteMatrix(std::cout << "B avant ftrsm = " << std::endl, Fi ,size_N1 , size_N1, B, ldb);
         if (Side == FFLAS::FflasRight){
-            FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, t, M->size_N1, Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+            if (M->LU_right->UQ){
+                size_t* Q = reinterpret_cast<size_t*>(M->LU_right->UQ);
+                applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasTrans, size_N1, 0, size_N1, M->LU_right->UQ, M->LU_right->ldUQ, Q);
+                applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasTrans, size_N1, 0, size_N1, B, ldb, Q);
+                FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, t, M->size_N1, Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+                applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, size_N1, 0, size_N1, M->LU_right->UQ, M->LU_right->ldUQ, Q);
+            }
+            else{
+                FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, t, M->size_N1, Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+            }
         }
         else {
-            FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, M->size_N1,t,Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+            if (M->LU_right->UQ){
+                size_t* Q = reinterpret_cast<size_t*>(M->LU_right->UQ);
+                applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasTrans, size_N1, 0, size_N1, M->LU_right->UQ, M->LU_right->ldUQ, Q);
+                FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, M->size_N1,t,Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+                applyP<Field>(Fi, FFLAS::FflasLeft, FFLAS::FflasTrans, size_N1, 0, size_N1, B, ldb, Q);
+                applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, size_N1, 0, size_N1, M->LU_right->UQ, M->LU_right->ldUQ, Q);
+            }
+            else {
+                FFLAS::ftrsm(Fi,Side, Uplo,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, M->size_N1,t,Fi.one,M->LU_right->PL,M->LU_right->ldPL,B,ldb);
+            }   
         }
-        // FFLAS::WriteMatrix(std::cout << "B apres ftrsm = " << std::endl, Fi ,size_N1 , size_N1, B, ldb);
-
         return;
     }
     
@@ -1008,35 +1043,46 @@ inline void TRSM_RRR_TS (const Field& Fi,const FFLAS::FFLAS_SIDE Side, const FFL
             // B2 = TRSM_RRR_TS(M2,B2)
             typename Field::Element_ptr B2 = B + size_N1 * ldb;
             TRSM_RRR_TS(Fi, Side, Uplo, M->right,B2,ldb,t);
-            
+            size_t r = M->LU_right->r;
             // B1 = B1 - M12*B2
-            typename Field::Element_ptr M12 = FFLAS::fflas_new(Fi,size_N1,size_N2);
-            M->LU_right->RRExpand(Fi,M12,size_N2);
+            typename Field::Element_ptr M_int = FFLAS::fflas_new(Fi,r,t);
+            
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                size_N1,t,size_N2,Fi.mOne,
-                M12,size_N2,
+                r,t,size_N2,Fi.one,
+                M->LU_right->UQ,M->LU_right->ldUQ,
                 B2,ldb,
+                Fi.zero, M_int, t);
+
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                size_N1,t,r,Fi.mOne,
+                M->LU_right->PL,M->LU_right->ldPL,
+                M_int,t,
                 Fi.one, B, ldb); 
-            FFLAS::fflas_delete(M12);
+            FFLAS::fflas_delete(M_int);
             // B1 = TRSM_RRR_TS(M1,B1)
             TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
         }
         
         else {
             // B2 = TRSM_RRR_TS(M2,B2)
+            size_t r = M->LU_left->r;
             typename Field::Element_ptr B2 = B + size_N1;
             TRSM_RRR_TS(Fi, Side, Uplo, M->right,B2,ldb,t);
             
             // B1 = B1 - B2*M21
-            typename Field::Element_ptr M21 = FFLAS::fflas_new(Fi,size_N2,size_N1);
-            M->LU_left->RRExpand(Fi,M21,size_N1);
+            typename Field::Element_ptr M_int = FFLAS::fflas_new(Fi,t,r);
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                t,size_N1,size_N2,Fi.mOne,
+                t,r,size_N2,Fi.one,
                 B2,ldb,
-                M21,size_N1,
-                Fi.one, B, ldb);
-            FFLAS::fflas_delete(M21);
-            // B1 = TRSM_RRR_TS(M1,B1)
+                M->LU_left->PL,M->LU_left->ldPL,
+                Fi.zero, M_int, r);
+
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t,size_N1,r,Fi.mOne,
+                M_int,r,
+                M->LU_left->UQ,M->LU_left->ldUQ,
+                Fi.one, B, ldb); 
+            FFLAS::fflas_delete(M_int);
             TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
         }
     }
@@ -1044,36 +1090,49 @@ inline void TRSM_RRR_TS (const Field& Fi,const FFLAS::FFLAS_SIDE Side, const FFL
     
     else{
         // B1 = TRSM_RRR_TS(M1,B1) 
-        TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
         typename Field::Element_ptr B2;
+        TRSM_RRR_TS(Fi, Side, Uplo, M->left,B,ldb,t);
         // B2 = B2 - (B1*M12 / M21*B1)
+        
+        
         // B2 = B2 - B1*M12
         if (Uplo == FFLAS::FflasUpper){
+            size_t r = M->LU_right->r;
             B2 =  B + size_N1;
-            typename Field::Element_ptr M12 = FFLAS::fflas_new(Fi,size_N1,size_N2);
-            M->LU_right->RRExpand(Fi,M12,size_N2);
-            // FFLAS::WriteMatrix(std::cout << "M21 " << std::endl, Fi ,size_N1 , size_N2, M12, size_N2);
-            // FFLAS::WriteMatrix(std::cout << "B " << std::endl, Fi ,t , size_N1, B, ldb);
-            // FFLAS::WriteMatrix(std::cout << "B2 " << std::endl, Fi , t, size_N2, B2, ldb);
+            typename Field::Element_ptr M_int = FFLAS::fflas_new(Fi,t,r);
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                t,r,size_N1,Fi.one,
+                B,ldb,
+                M->LU_right->PL,M->LU_right->ldPL,
+                Fi.zero, M_int, r);
 
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                t,size_N2,size_N1,Fi.mOne,
-                B,ldb,
-                M12,size_N2,
+                t,size_N2,r,Fi.mOne,
+                M_int,r,
+                M->LU_right->UQ,M->LU_right->ldUQ,
                 Fi.one, B2, ldb); 
-            FFLAS::fflas_delete(M12);
+            FFLAS::fflas_delete(M_int);
         }
+
+
+
         // B2 = B2 - M21*B1
         else {
+            size_t r = M->LU_left->r;
             B2 = B + size_N1*ldb;
-            typename Field::Element_ptr M21 = FFLAS::fflas_new(Fi,size_N2,size_N1);
-            M->LU_left->RRExpand(Fi,M21,size_N1);
+            typename Field::Element_ptr M_int = FFLAS::fflas_new(Fi,r,t);
             fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                size_N2,t,size_N1,Fi.mOne,
-                M21,size_N1,
+                r,t,size_N1,Fi.one,
+                M->LU_left->UQ,M->LU_left->ldUQ,
                 B,ldb,
+                Fi.zero, M_int, t);
+
+            fgemm(Fi,FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+                size_N2,t,r,Fi.mOne,
+                M->LU_left->PL,M->LU_left->ldPL,
+                M_int,t,
                 Fi.one, B2, ldb); 
-            FFLAS::fflas_delete(M21);
+            FFLAS::fflas_delete(M_int);
         }
         // B2 = TRSM_RRR_TS(M2,B2) 
         TRSM_RRR_TS(Fi, Side, Uplo, M->right,B2,ldb,t);
@@ -1113,19 +1172,64 @@ inline void LUfactRRR (const Field& Fi, const RRRgen<Field>* A, RRRgen<Field>*& 
     size_t N = size_N1 + size_N2;
     if (N <= A->t){
         // L/U = LU(Adense)
-        RRgen<Field>* RR_A = new RRgen(Fi,N,N,(typename Field::ConstElement_ptr)A->LU_right->PL,A->LU_right->ldPL);
-        typename Field::Element_ptr L_dense = FFLAS::fflas_new(Fi,N,N);
-        FFLAS::fzero(Fi,N,N,L_dense,N);
-        typename Field::Element_ptr U_dense = FFLAS::fflas_new(Fi,N,N);
-        FFLAS::fzero(Fi,N,N,U_dense,N);
+        // RRgen<Field>* RR_A = new RRgen(Fi,N,N,(typename Field::ConstElement_ptr)A->LU_right->PL,A->LU_right->ldPL);
+        // if (RR_A->r < N){
+        //     std::cerr<<" Error : the submatrix is not full rank"<<std::endl;
+        // }
+        // typename Field::Element_ptr L_dense = FFLAS::fflas_new(Fi,N,N);
+        // FFLAS::fzero(Fi,N,N,L_dense,N);
+        // typename Field::Element_ptr U_dense = FFLAS::fflas_new(Fi,N,N);
+        // FFLAS::fzero(Fi,N,N,U_dense,N);
         
-        FFLAS::fassign(Fi,N,RR_A->r,RR_A->PL,RR_A->ldPL,L_dense,N);
-        FFLAS::fassign(Fi,RR_A->r,N,RR_A->UQ,RR_A->ldUQ,U_dense,N);
-        delete RR_A;
+        // FFLAS::fassign(Fi,N,RR_A->r,RR_A->PL,RR_A->ldPL,L_dense,N);
+        // FFLAS::fassign(Fi,RR_A->r,N,RR_A->UQ,RR_A->ldUQ,U_dense,N);
+        // delete RR_A;
         
-        L = new RRRgen(Fi, L_dense,N,A->t,true,false);
-        U = new RRRgen(Fi, U_dense,N,A->t,true,false);
+        // L = new RRRgen(Fi, L_dense,N,A->t,true,false);
+        // U = new RRRgen(Fi, U_dense,N,A->t,true,false);
         
+        size_t* P = FFLAS::fflas_new<size_t>(size_N1);
+        size_t* Q = FFLAS::fflas_new<size_t>(size_N1);
+        typename Field::Element_ptr A_copy = FFLAS::fflas_new(Fi, size_N1, size_N1);
+        FFLAS::fassign(Fi, size_N1, size_N1, A->LU_right->PL, A->LU_right->ldPL, A_copy, size_N1);
+        
+        size_t r = PLUQ(Fi, FFLAS::FflasNonUnit, size_N1, size_N1, A_copy, size_N1, P, Q);
+        if (r<N){
+            FFLAS::fflas_delete(A_copy);
+            FFLAS::fflas_delete(P,Q);
+            throw std::runtime_error("RRR Error: TRSM with non invertible matrix ");
+        }
+
+        typename Field::Element_ptr PL = FFLAS::fflas_new(Fi, size_N1, r);
+        typename Field::Element_ptr UQ = FFLAS::fflas_new(Fi, r, size_N1);
+        
+
+        // extraction of U
+        getTriangular<Field>(Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, size_N1, size_N1, r, A_copy, size_N1, UQ, size_N1, true);
+
+        // extraction of L
+        getTriangular<Field>(Fi, FFLAS::FflasLower, FFLAS::FflasUnit, size_N1, size_N1, r, A_copy, size_N1, PL, r, true);
+
+        // apply the permutations (P on L and Q on U)
+        bool flag = false;
+        for (size_t i = 0; i<N; i ++){
+            if (Q[i]!=i) {
+                flag = true;
+                std::cout<< "INVVVERSSIOOOOIOON" << std::endl;
+                break;
+            }
+        }
+        L = new RRRgen(Fi,PL,N,A->t,true,false);
+        U = new RRRgen(Fi,UQ,N,A->t,true,false);
+        if (flag){
+            applyP<Field>(Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, size_N1, UQ, size_N1, Q);
+            U->LU_right->UQ = reinterpret_cast<typename Field::Element_ptr>(Q);
+        }
+        else {
+            FFLAS::fflas_delete(Q);
+        }
+        FFLAS::fflas_delete(A_copy);
+        FFLAS::fflas_delete(P);
         return;
     }
     

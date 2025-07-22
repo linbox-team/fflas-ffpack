@@ -442,11 +442,20 @@ bool test_invert  (const Field & F, size_t n, size_t t,
     FFLAS::fassign(F,n,n,A,lda,Ainit,n);
     int nullity;
     FFPACK::Invert (F, n ,Ainit, n, nullity);
-
     // Acheck = A^-1 with RRRinvert
     typename Field::Element_ptr Acheck = fflas_new (F, n, n);
     RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
-    RRRgen<Field>* RRRA_invert = RRRinvert(F,RRRA);
+    RRRgen<Field>* RRRA_invert = nullptr;
+    try{
+        RRRA_invert = RRRinvert(F,RRRA);
+    }
+    catch(...){
+        FFLAS::fflas_delete(Ainit);
+        FFLAS::fflas_delete(Acheck);
+        delete RRRA_invert;
+        delete RRRA;
+        return false;
+    }
     RRRExpand<Field>(F, RRRA_invert, Acheck, n);
 
     // I = Acheck x A
@@ -530,6 +539,8 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
     // L/U check = L/U(A) with RRR_LU
     typename Field::Element_ptr Lcheck = fflas_new (F, n, n);
     typename Field::Element_ptr Ucheck = fflas_new (F, n, n);
+    typename Field::Element_ptr Acheck = fflas_new (F, n, n);
+
 
     RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
     RRRgen<Field>* RRRL = nullptr;
@@ -539,10 +550,13 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
 
     RRRExpand<Field>(F, RRRL, Lcheck, n);
     RRRExpand<Field>(F, RRRU, Ucheck, n);
+    fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+        n, n,n,
+        F.one, Lcheck, n,
+        Ucheck, n,
+        0, Acheck, n);
     
-    
-    bool ok = fequal (F, n, n, Lcheck, n, LU_A->PL, n);
-    ok = ok && fequal (F, n, n, Ucheck, n, LU_A->UQ, n);
+    bool ok = fequal (F, n, n, Acheck, n, A, n);
     if ( !ok )
     {
         std::cout << "ERROR: different results for dense LU and RRR LU"<<std::endl;
@@ -618,9 +632,9 @@ bool launch_instance_check (const Field& F, size_t n, size_t t, size_t m, size_t
     // ok = ok && test_RRxRRR(F,n,t,m,E,n,D,n);
     // ok = ok && test_RRRxRR(F,n,t,m,E,n,C,m);
     // ok = ok && test_RRRxRRR(F,n,t,t,E,n,M,n);
-    // ok = ok && test_invert(F,n,t,T,n);
+    // ok = ok && test_invert(F,n,t,A,n);
     // ok = ok && test_FRTSM_RRR(F,n,t,A,n,B,n); 
-    ok = ok && test_LU_RRR(F,n,t,A,n); 
+    ok = ok && test_LU_RRR(F,n,t,T,n); 
 
 
     

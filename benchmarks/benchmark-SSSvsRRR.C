@@ -26,8 +26,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
-#include <fstream>
-
+#include <math.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/test-utils.h"
@@ -46,7 +45,7 @@ using namespace FFPACK;
 
 
 template<class Field>
-void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, uint64_t seed, fstream& my_file){
+void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, uint64_t seed){
     Field F(q);
     typedef typename Field::Element_ptr Element_ptr;
     FFLAS::Timer chrono;
@@ -204,17 +203,35 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     FFLAS::fflas_delete( Ub);
     FFLAS::fflas_delete(Xub);
     FFLAS::fflas_delete(Xlb);
-    
     double mean_time_RRRxTS = time_rrrxts / double(iter);
     double mean_time_CBxTS = time_cbxts / double(iter);
     double mean_time_SSSxTS = time_sssxts / double(iter);
     double mean_time_gen_SSS = time_gens / double(iter);
     double mean_time_gen_RRR = time_genr / double(iter);
     double mean_time_gen_CB = time_genb / double(iter);
-
-    cout << "n : " << n << ", m : " << m << ", r : " << r << ", t : " << s <<",  RRR gen  : " << mean_time_gen_RRR << ",  SSS gen  : " << mean_time_gen_SSS << ",  CB gen  : " << mean_time_gen_CB << ",  RRRxTS : " << mean_time_RRRxTS << ", SSSxTS : " << mean_time_SSSxTS << ", CBxTS : " << mean_time_CBxTS << endl;
-    my_file << "n : " << n << ", m : " << m << ", r : " << r << ", t : " << s <<",  RRR gen  : " << mean_time_gen_RRR << ",  SSS gen  : " << mean_time_gen_SSS << ",  CB gen  : " << mean_time_gen_CB << ",  RRRxTS : " << mean_time_RRRxTS << ", SSSxTS : " << mean_time_SSSxTS << ", CBxTS : " << mean_time_CBxTS << endl;
+    double time = mean_time_RRRxTS + mean_time_CBxTS + mean_time_SSSxTS + mean_time_gen_SSS + mean_time_gen_RRR + mean_time_gen_CB; 
+    
+    #define GFOPS_product(x) (double(2*n*m*s)*log(double(n))/x) //Gfops = C_\omega * n*m*s*log(n/(s+t))
+    #define GFOPS_gen(x) (double(2*n*n*s)/x) //Gfops = C_RF * n*n*s
+    std::cout << "Time: " << time 
+    << " Gfops: " << GFOPS_product(time)  
+    << " | details { Time : " 
+    << "RRRxTS : " << mean_time_RRRxTS << "; " 
+    << "CBxTS : " << mean_time_CBxTS << "; " 
+    << "SSSxTS : " << mean_time_SSSxTS << "; " 
+    << "RRRgen : " << mean_time_gen_RRR << "; " 
+    << "CBgen : " << mean_time_gen_CB << "; " 
+    << "SSSgen : " << mean_time_gen_SSS << "; " 
+    << std::endl << "Gfops : "
+    << "Gfops_RRRxTS : " << GFOPS_product(mean_time_RRRxTS) << "; "
+    << "Gfops_CBxTS : " << GFOPS_product(mean_time_CBxTS) << "; "
+    << "Gfops_SSSxTS : " << GFOPS_product(mean_time_SSSxTS) << "; "
+    << "Gfops_RRRgen : " << GFOPS_gen(mean_time_gen_RRR) << "; "
+    << "Gfops_CBgen : " << GFOPS_gen(mean_time_gen_CB) << "; "
+    << "Gfops_SSSgen : " << GFOPS_gen(mean_time_gen_SSS) << "} ";
+    return ;
 }
+    
 
 int main(int argc, char** argv) {
 
@@ -230,43 +247,23 @@ int main(int argc, char** argv) {
     size_t    r    = 1100;
     uint64_t seed = FFLAS::getSeed();
 
-    // Argument as[] = {
-    //                  { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",     TYPE_INT , &q },
-    //                  { 'n', "-n N", "Set the order of the square matrix A.",                  TYPE_INT , &n },
-    //                  { 'm', "-m M", "Set the column dimension of n x m RHS matrix B.",        TYPE_INT , &m },
-    //                  { 't', "-t T", "Set the quasiseparability order of A.",                  TYPE_INT , &t },
-    //                  { 'r', "-r R", "Set the rank of each upper/lower triangular part of A.", TYPE_INT , &r },
-    //                  { 'i', "-i R", "Set number of repetitions.",                             TYPE_INT , &iter },
-    //                  { 's', "-s S", "Sets seed.",                                             TYPE_INT , &seed },
-    //                  END_OF_ARGUMENTS
-    // };
+    Argument as[] = {
+                     { 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",     TYPE_INT , &q },
+                     { 'n', "-n N", "Set the order of the square matrix A.",                  TYPE_INT , &n },
+                     { 'm', "-m M", "Set the column dimension of n x m RHS matrix B.",        TYPE_INT , &m },
+                     { 't', "-t T", "Set the quasiseparability order of A.",                  TYPE_INT , &t },
+                     { 'r', "-r R", "Set the rank of each upper/lower triangular part of A.", TYPE_INT , &r },
+                     { 'i', "-i R", "Set number of repetitions.",                             TYPE_INT , &iter },
+                     { 's', "-s S", "Sets seed.",                                             TYPE_INT , &seed },
+                     END_OF_ARGUMENTS
+    };
 
-    fstream my_file;
-	my_file.open("comparaison_qs_generators_t_var.txt", ios::out);
-	if (!my_file) {
-		cout << "File not created!"<< std::endl;
-	}
-	else {
-		cout << "File created successfully!"<< std::endl;
-	}
+    
+    FFLAS::parseArguments(argc,argv,as);   
+    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed);
+    FFLAS::writeCommandString(std::cout, as);
+    std::cout<<std::endl;
 
-    // FFLAS::parseArguments(argc,argv,as);
-    // for (n = 500; n<6000;n = n+100){
-        
-    //     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
-    // }
-    // for (n = 6000; n<=10001;n = n+1000){
-    //     // 
-    //     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
-    // }
-    for (t = 50; t < r; t+=10){
-        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed,my_file);
-    }
-    // my_file << "n : " << n << ", m : " << m << ", r : " << r << endl;
-
-    my_file.close();
-    // std::cout << "( ";
-    // FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
     return 0;
 }
 
