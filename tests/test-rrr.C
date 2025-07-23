@@ -532,6 +532,21 @@ bool test_FRTSM_RRR  (const Field & F, size_t n, size_t t, typename Field::Eleme
 template<class Field>
 bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_ptr A, size_t lda)
 {   
+    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
+    RRRgen<Field>* RRRL = nullptr;
+    RRRgen<Field>* RRRU = nullptr;
+    try{
+        LUfactRRR (F, RRRA, RRRL, RRRU);
+    }
+    catch (...){
+        delete RRRA;
+        delete RRRL;
+        delete RRRU;
+        cout<< endl <<"ERROR : Can't compute RRR LU, A does not satisfy full rank on sub matrix"<<endl;
+        return false;
+    }
+
+
     // L/U init = RR(A)
     RRgen<Field>* LU_A = new RRgen(F,n,n,(typename Field::ConstElement_ptr)A,n);
     
@@ -541,21 +556,15 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
     typename Field::Element_ptr Ucheck = fflas_new (F, n, n);
     typename Field::Element_ptr Acheck = fflas_new (F, n, n);
 
-
-    RRRgen<Field>* RRRA = new RRRgen<Field>(F, n, t, A, n,true,true);
-    RRRgen<Field>* RRRL = nullptr;
-    RRRgen<Field>* RRRU = nullptr;
-    
-    LUfactRRR (F, RRRA, RRRL, RRRU);
-
     RRRExpand<Field>(F, RRRL, Lcheck, n);
     RRRExpand<Field>(F, RRRU, Ucheck, n);
+    
     fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
         n, n,n,
         F.one, Lcheck, n,
         Ucheck, n,
         0, Acheck, n);
-    
+        
     bool ok = fequal (F, n, n, Acheck, n, A, n);
     if ( !ok )
     {
@@ -567,6 +576,7 @@ bool test_LU_RRR  (const Field & F, size_t n, size_t t, typename Field::Element_
     }
     FFLAS::fflas_delete(Lcheck);
     FFLAS::fflas_delete(Ucheck);
+    FFLAS::fflas_delete(Acheck);
     delete(LU_A);
     delete(RRRA);
     delete(RRRU);
