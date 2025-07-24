@@ -19,24 +19,30 @@
  * ========LICENCE========
  */
 
-// Template from benchmark-sss.C
+// Template from benchmark-quasisep.C
 
 #define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
-
+#include <math.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/ffpack/ffpack_rrrgen.inl"
+
+
 
 using namespace std;
 using namespace FFLAS;
 using namespace FFPACK;
+
+
+
 
 template<class Field>
 void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, uint64_t seed){
@@ -48,7 +54,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     size_t rs = n%s;           // Size of the partial block
     size_t ls = (rs)? rs: s;   // Size of the last block
     
-    double time_gens = 0, time_cbxtss =0;
+    double time_gens = 0, time_sssxts =0;
     Element_ptr A = FFLAS::fflas_new (F, n, n);
     Element_ptr A2 = FFLAS::fflas_new (F, n, n);
     Element_ptr B = FFLAS::fflas_new (F, n, n);
@@ -68,7 +74,7 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
                 p[i] = n - i - 1;
             }
     
-    double time_genb = 0, time_cbxtsb =0;
+    double time_genb = 0, time_cbxts =0;
     Element_ptr H = FFLAS::fflas_new (F, n, 1);
     Element_ptr TSB = FFLAS::fflas_new (F, n, m);
     size_t * pa = fflas_new<size_t> (n);
@@ -99,8 +105,14 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
     size_t r3;
     Element_ptr CBruhat = fflas_new(F, n, m);
     
+    double time_genr = 0, time_rrrxts =0;
+    RRRgen<Field>* RRRA;
+    Element_ptr Result = fflas_new(F, n, m);
+
     for (size_t i=0;i<iter;++i){
-        std::cout << "." <<std::flush;
+
+        // GENERATION TIME
+        // std::cout << "." <<std::flush;
         typename Field::RandIter G (F, seed + i);
         RandomMatrix(F, n, 1, H, 1, G);
         RandomLTQSMatrixWithRankandQSorder (F,n,r,s,A,lda,G);
@@ -114,13 +126,22 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
         faddin (F, n, H, 1, A, n+1);
         RandomMatrix(F, n, m, TSS, ldts, G);
         fassign(F, n, m, TSS, ldts, TSB, ldts);
-                
+
+        // RRR gen
+        chrono.clear();
+        chrono.start();
+        RRRA = new RRRgen<Field>(F, n, s, A, lda,false,true);
+        chrono.stop();
+        time_genr+=chrono.usertime();
+        
+        // SSS generation
         chrono.clear();
         chrono.start();
         DenseToSSS (F, n, s, P, s, Q, s, R, s, U, s, V, s, W, s, D, s, A, n);
         chrono.stop();
         time_gens+=chrono.usertime();
 
+        // CB gen
         chrono.clear();
         chrono.start();
         r2 =  LTBruhatGen (F, FflasNonUnit, n, A2, lda, pa, qa);
@@ -132,14 +153,28 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
                 exit(-1);
             }
         time_genb+=chrono.usertime();
- 
+            
+
+        
+        // PRODUCT TIMER
+
+        // RRRxTS product
+        chrono.clear();
+        chrono.start();
+        RRRxTS(F,n,m,RRRA,TSS,m, Result,m);
+        chrono.stop();
+        time_rrrxts+=chrono.usertime();
+
+
+        // SSSxTS product
         chrono.clear();
         chrono.start();
         productSSSxTS(F, n, m, s, F.one, P, s, Q, s, R, s, U, s, V, s, W, s,
                       D, s, TSS, m, F.zero, Res, m);
         chrono.stop();
-        time_cbxtss += chrono.usertime();
+        time_sssxts += chrono.usertime();
  
+        // CBxTS product
         chrono.clear();
         chrono.start();
         getLTBruhatGen(F, FflasLower, FflasUnit, n, r, pa, qa, A2, lda, L,n);
@@ -159,23 +194,44 @@ void run_with_field(int q, size_t n, size_t m, size_t s, size_t r, size_t iter, 
         productBruhatxTS(F, n, s, r, m, pb, qb, Xub, n, NbBlocksUb, Kub, Tub, Mub,Xlb, 2*s,
                          NbBlocksLb, Klb, Tlb, Mlb,TSB, ldts, F.one, CBruhat, m);
         chrono.stop();
-        time_cbxtsb += chrono.usertime();
+        time_cbxts += chrono.usertime();
+
+        delete RRRA;
     }
-    FFLAS::fflas_delete(A, A2, B, B2, D, P, Q, R, U, V, W, p, H, L, Ua, Lb, Klb, CBruhat, TSS, Res, pa,qa,Xu,Ku);
+    FFLAS::fflas_delete(A, A2, B, B2, D, P, Q, R, U, V, W, p, H, L, Ua, Lb, Klb, CBruhat, TSS, Res, pa,qa,Xu,Ku,Result);
     FFLAS::fflas_delete(Mu,Tu,Xl,Ml,Tl, Kl, TSB,pb,qb, Kub, Mub,Tub, Mlb,Tlb);
     FFLAS::fflas_delete( Ub);
     FFLAS::fflas_delete(Xub);
     FFLAS::fflas_delete(Xlb);
-        // -----------
-    // Standard output for benchmark - Alexis Breust 2014/11/14
-    std::cout << std:: endl << "Time: " << (time_gens + time_genb + time_cbxtss + time_cbxtsb) / double(iter)
-              << " Gfops: Irrelevant. Specific times: "
-              << " DenseToSSS: " << time_gens / double(iter)
-              << "; AppSSS: " << time_cbxtss / double(iter)
-              << " DenseToBruhat: " << time_genb / double(iter)
-              << "; AppBruhat: " << time_cbxtsb / double(iter) << ". r ="
-              << r << " s = " << s << std::endl ;
+    double mean_time_RRRxTS = time_rrrxts / double(iter);
+    double mean_time_CBxTS = time_cbxts / double(iter);
+    double mean_time_SSSxTS = time_sssxts / double(iter);
+    double mean_time_gen_SSS = time_gens / double(iter);
+    double mean_time_gen_RRR = time_genr / double(iter);
+    double mean_time_gen_CB = time_genb / double(iter);
+    double time = mean_time_RRRxTS + mean_time_CBxTS + mean_time_SSSxTS + mean_time_gen_SSS + mean_time_gen_RRR + mean_time_gen_CB; 
+    
+    #define GFOPS_product(x) (double(2*n*m*s)*log(double(n))/x) //Gfops = C_\omega * n*m*s*log(n/(s+t))
+    #define GFOPS_gen(x) (double(2*n*n*s)/x) //Gfops = C_RF * n*n*s
+    std::cout << "Time: " << time 
+    << " Gfops: " << GFOPS_product(time)  
+    << " | details { Time : " 
+    << "RRRxTS : " << mean_time_RRRxTS << "; " 
+    << "CBxTS : " << mean_time_CBxTS << "; " 
+    << "SSSxTS : " << mean_time_SSSxTS << "; " 
+    << "RRRgen : " << mean_time_gen_RRR << "; " 
+    << "CBgen : " << mean_time_gen_CB << "; " 
+    << "SSSgen : " << mean_time_gen_SSS << "; " 
+    << std::endl << "Gfops : "
+    << "Gfops_RRRxTS : " << GFOPS_product(mean_time_RRRxTS) << "; "
+    << "Gfops_CBxTS : " << GFOPS_product(mean_time_CBxTS) << "; "
+    << "Gfops_SSSxTS : " << GFOPS_product(mean_time_SSSxTS) << "; "
+    << "Gfops_RRRgen : " << GFOPS_gen(mean_time_gen_RRR) << "; "
+    << "Gfops_CBgen : " << GFOPS_gen(mean_time_gen_CB) << "; "
+    << "Gfops_SSSgen : " << GFOPS_gen(mean_time_gen_SSS) << "} ";
+    return ;
 }
+    
 
 int main(int argc, char** argv) {
 
@@ -183,12 +239,12 @@ int main(int argc, char** argv) {
     openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 
-    size_t iter = 50;
+    size_t iter = 10;
     int    q    = 131071;
-    size_t    n    = 3000;
-    size_t    m    = 500;
-    size_t    t    = 300;
-    size_t    r    = 1500;
+    size_t    n    = 2167;
+    size_t    m    = 455;
+    size_t    t    = 236;
+    size_t    r    = 1100;
     uint64_t seed = FFLAS::getSeed();
 
     Argument as[] = {
@@ -202,16 +258,12 @@ int main(int argc, char** argv) {
                      END_OF_ARGUMENTS
     };
 
+    
     FFLAS::parseArguments(argc,argv,as);
-    for (size_t rank = r;  rank < 2100; rank += 500)
-        {
-            for (size_t order = t;  order < rank / 2; order += 50)
-                {
-                    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, order, rank, iter, seed);
-                }
-        }
-    std::cout << "( ";
-    FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
+    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed);
+    FFLAS::writeCommandString(std::cout, as);
+    std::cout<<std::endl;
+
     return 0;
 }
 

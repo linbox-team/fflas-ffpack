@@ -46,7 +46,7 @@ namespace FFPACK {
         }
         size_t * P = FFLAS::fflas_new<size_t>(M);
         size_t * Q = FFLAS::fflas_new<size_t>(M);
-        size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordanTile);
+        size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordanSlab);
         nullity = (int)(M - R);
         applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, (int)R, A, lda, P);
         FFLAS::fflas_delete(P);

@@ -2146,6 +2146,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_bruhatgen.inl"
 #include "ffpack_sss.inl"
 #include "ffpack.inl"
+#include "ffpack_rrrgen.inl"
 
 #endif // __FFLASFFPACK_ffpack_H
 
