@@ -259,7 +259,7 @@ int main(int argc, char** argv) {
     };
 
     
-    FFLAS::parseArguments(argc,argv,as);   
+    FFLAS::parseArguments(argc,argv,as);
     run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed);
     FFLAS::writeCommandString(std::cout, as);
     std::cout<<std::endl;

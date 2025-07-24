@@ -46,7 +46,7 @@ using namespace FFPACK;
 
 
 template<class Field>
-void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, uint64_t seed, fstream& my_file){
+void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, uint64_t seed){
 
     Field F(q);
     typedef typename Field::Element_ptr Element_ptr;
@@ -72,17 +72,15 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
 
     Element_ptr A2 = fflas_new (F, n, n);
     // Element_ptr B2 = fflas_new (F, n, n);
-    double time_gen_qs = 0,time_invert = 0, time_LU = 0;
+    double time_invert = 0, time_LU = 0;
     // double time_RRRxTS = 0, time_RRRxRRR = 0,time_gen_qs = 0, time_gen_rrr = 0;
     size_t * p = FFLAS::fflas_new<size_t> (ceil(n/2.));
     for (size_t i = 0; i < ceil(n/2.); i++)
     {
         p[i] = n - i - 1;
     }
-    cout << "t = "<< t << ", n = "<<n <<", r = "<< r<<", q = "<< q << std::endl;
+
     Givaro::GeneralRingNonZeroRandIter<Field,typename Field::RandIter> nzG (G);
-    cout << "Temps de calcul pour les opérations RRR_LU_fact, RRRinvert et avec n : " << n << endl;
-    // cout << "Temps de calcul pour les opérations RRRGen, RRRxTS, RRRxRRR et avec n : " << n << endl;
     for (size_t i=0; i<iter;++i){
 
         // cout << "Generation start"<< endl;
@@ -92,8 +90,8 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         
         // generate A a t qsmatrix
         
-        chrono.clear();
-        chrono.start(); 
+        // chrono.clear();
+        // chrono.start(); 
 
 
         RandomLTQSMatrixWithRankandQSorder (F,n,r,t,A, n,G);
@@ -105,8 +103,8 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         faddin (F, n, n, A2, n, A, n);
 
 
-        chrono.stop();
-        time_gen_qs = chrono.usertime();
+        // chrono.stop();
+        // time_gen_qs = chrono.usertime();
         
         // cout << "Generation of A ended in "<< time_gen_qs << endl;
 
@@ -152,15 +150,27 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
         // chrono.stop();
         // time_RRRxRRR += chrono.usertime();
         // delete RRRres;
+        
+        
+        
         RRRL = nullptr;
         RRRU = nullptr;
         chrono.clear();
-        chrono.start(); 
-        LUfactRRR(F,RRRA,RRRL,RRRU);
-        chrono.stop();
+        try {
+            chrono.start(); 
+            LUfactRRR(F,RRRA,RRRL,RRRU);
+            chrono.stop();
+        }
+        catch(...){
+            delete RRRU;
+            delete RRRL;
+            delete RRRA;
+            FFLAS::fflas_delete(A);
+            FFLAS::fflas_delete(A2, p);
+            throw std::runtime_error("RRR Error: LU with non invertible matrix ");
+        }
         time_LU += chrono.usertime();
         
-        // // Could add RRR invert when Matrix with QSorder and full rank can be created. Here some matrix can't be inverted then raise error.
         chrono.clear();
         chrono.start(); 
         RRRres = RRRinvert(F,RRRA);
@@ -188,11 +198,18 @@ void run_with_field(int q, size_t n, size_t m, size_t t, size_t r, size_t iter, 
     // double mean_time_RRRxRRR = time_RRRxRRR / double(iter);
     double mean_time_invert = time_invert / double(iter);
     double mean_time_LU_fact = time_LU / double(iter);
-
-    // cout << "n : " << n << ", t : " << t << ", RRR gen  : " << mean_time_gen_RRR << ", RRRxRRR : " << mean_time_RRRxRRR << ", RRRxTS : " << mean_time_RRRxTS <<endl;
-    // my_file << "n : " << n << ", t : " << t << ", RRR gen  : " << mean_time_gen_RRR << ", RRRxRRR : " << mean_time_RRRxRRR << ", RRRxTS : " << mean_time_RRRxTS <<endl;
-    cout << "n : " << n << ", t : " << t << ", RRRinvert  : " << mean_time_invert << ", RRR LU fact : " << mean_time_LU_fact << endl;
-    my_file << "n : " << n << ", t : " << t << ", RRRinvert  : " << mean_time_invert << ", RRR LU fact : " << mean_time_LU_fact << endl;
+    double time = mean_time_invert + mean_time_LU_fact;
+    #define GFOPS_LU(x) (double(10*n*t*t)*log(double(n))/x) //Gfops = 10*n*s^2*log(n/s) / Time
+    
+    std::cout << "Time: " << time 
+    << " Gfops: " << GFOPS_LU(time)  
+    << " | details { Time : " 
+    << "LU_RRR : " << mean_time_LU_fact << "; " 
+    << "Invert_RRR : " << mean_time_invert << "; "  
+    << "Gfops : "
+    << "Gfops_LU_RRR : " << GFOPS_LU(mean_time_LU_fact) << "; "
+    << "Gfops_Invert_RRR : " << GFOPS_LU(mean_time_invert) << "} ";
+    return ;
 }
 
 int main(int argc, char** argv) {
@@ -219,41 +236,10 @@ int main(int argc, char** argv) {
                      { 's', "-s S", "Sets seed.",                                             TYPE_INT , &seed },
                      END_OF_ARGUMENTS
     };
-
-    fstream my_file;
-	my_file.open("comparaison_invert_LU_3", ios::out);
-	if (!my_file) {
-		cout << "File not created!"<< std::endl;
-	}
-	else {
-		cout << "File created successfully!"<< std::endl;
-	}
-    cout << seed << std::endl;
-    FFLAS::parseArguments(argc,argv,as);
-    for (n = 3700; n<10001;n = n+100){
-        
-        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, n/9, n/2, iter, seed,my_file);
-    }
     
-    my_file << endl;
-
-    my_file << "t : " << t << ", m : " << m << endl;
-
-    my_file << endl;
-    my_file << endl;
-    my_file << endl;
-
-    n = 2167;
-    for (t = 50; t < r; t+=10){
-        run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed,my_file);
-    }
-    my_file << endl;
-
-    my_file << "n : " << n << ", m : " << m << ", r : " << r << endl;
-
-    my_file.close();
-    // std::cout << "( ";
-    // FFLAS::writeCommandString(std::cout, as) << ")" << std::endl;
+    FFLAS::parseArguments(argc,argv,as);
+    run_with_field<Givaro::ModularBalanced<double> >(q, n, m, t, r, iter, seed);
+    FFLAS::writeCommandString(std::cout, as)  << std::endl;
     return 0;
 }
 
