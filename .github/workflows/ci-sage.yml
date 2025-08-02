@@ -56,13 +56,6 @@ env:
   DIST_PREREQ:      libtool libopenblas-dev libgmp-dev
   # Name of this project in the Sage distribution
   SPKG:             fflas_ffpack
-  # Sage distribution packages to build
-  TARGETS_PRE:      build/make/Makefile
-  TARGETS:          SAGE_CHECK=no SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes fflas_ffpack
-  TARGETS_OPTIONAL: build/make/Makefile
-  # Standard setting: Test the current beta release of Sage:
-  SAGE_REPO:   sagemath/sage
-  SAGE_REF:    develop
   REMOVE_PATCHES: "*"
   EXTRA_CONFIGURE_ARGS: --without-system-givaro --without-system-fflas_ffpack --without-system-linbox
 
@@ -74,16 +67,16 @@ jobs:
       PREFIX: /tmp/build
     steps:
       - name: Check out givaro
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: build/pkgs/givaro/src
           repository: linbox-team/givaro
       - name: Check out ${{ env.SPKG }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: build/pkgs/${{ env.SPKG }}/src
       - name: Check out linbox
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: build/pkgs/linbox/src
           repository: linbox-team/linbox
@@ -107,39 +100,36 @@ jobs:
           && echo "sage-package create linbox --version git --tarball linbox-git.tar.gz --type=standard" >> upstream/update-pkgs.sh \
           && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/linbox/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
           && ls -l upstream/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: upstream
           name: upstream
 
   linux:
-    uses: sagemath/sage/.github/workflows/docker.yml@develop
+    uses: passagemath/passagemath/.github/workflows/docker.yml@main
     with:
       # Extra system packages to install. See available packages at
       # https://github.com/sagemath/sage/tree/develop/build/pkgs
       extra_sage_packages: "info"
       # Sage distribution packages to build
       targets: SAGE_CHECK=no SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes givaro fflas_ffpack linbox
-      # Standard setting: Test the current beta release of Sage:
-      sage_repo: sagemath/sage
-      sage_ref: develop
+      # Standard setting: Test the current HEAD of passagemath:
+      sage_repo: passagemath/passagemath
+      sage_ref: main
       upstream_artifact: upstream
       # Docker targets (stages) to tag
       docker_targets: "with-targets"
-      # We prefix the image name with the SPKG name ("singular_") to avoid the error
+      # We prefix the image name with the SPKG name ("fflas_ffpack_") to avoid the error
       # 'Package "sage-docker-..." is already associated with another repository.'
       docker_push_repository: ghcr.io/${{ github.repository }}/fflas_ffpack_
     needs: [dist]
 
   macos:
-    uses: sagemath/sage/.github/workflows/macos.yml@develop
+    uses: passagemath/passagemath/.github/workflows/macos.yml@main
     with:
-      osversion_xcodeversion_toxenv_tuples: >-
-        [["latest", "",           "homebrew-macos-usrlocal-minimal"],
-         ["latest", "",           "homebrew-macos-usrlocal-standard"],
-         ["13",     "xcode_15.0", "homebrew-macos-usrlocal-standard"]]
       targets: SAGE_CHECK=no SAGE_CHECK_givaro=yes SAGE_CHECK_fflas_ffpack=yes SAGE_CHECK_linbox=yes givaro fflas_ffpack linbox
-      sage_repo:         sagemath/sage
-      sage_ref:          develop
+      # Standard setting: Test the current HEAD of passagemath:
+      sage_repo: passagemath/passagemath
+      sage_ref: main
       upstream_artifact: upstream
     needs: [dist]
