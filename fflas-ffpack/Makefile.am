@@ -32,3 +32,6 @@ pkginclude_HEADERS = config-blas.h   \
 		     fflas-ffpack-config.h \
 		     fflas-ffpack-thresholds.h \
 		     fflas-ffpack-default-thresholds.h
+
+DISTCLEANFILES = config.h \
+		 fflas-ffpack-thresholds.h

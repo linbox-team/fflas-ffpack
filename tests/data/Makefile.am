@@ -24,3 +24,4 @@ SUBDIRS =
 
 EXTRA_DIST= mat11.sms
 
+DISTCLEANFILES = mat.cbin mat.bin mat.dense mat.sms
