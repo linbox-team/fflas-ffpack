@@ -242,7 +242,7 @@ namespace FFLAS {
             Smax = S3max;
         }
         bool reduceA22 = false;
-        if (Protected::NeedPreSubReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
+        if (Protected::AddHelper<true>::needsReduction (Tmin, Tmax, WH.Cmin, WH.Cmax, S2min, S2max, WH)) {
             reduceA22 = true;
                 // TODO: shouldn't we also reduce S2?
         }
@@ -550,7 +550,7 @@ namespace FFLAS {
 
                 // U1 = P1 + P5 in C12
             DFElt U1Min, U1Max;
-            if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H5.Outmin, H5.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H5.Outmin, H5.Outmax, WH)){
                 freduce(F,uplo,N2,C12,ldc);
                 freduce(F,uplo,N2,C11,ldc);
             }
@@ -558,7 +558,7 @@ namespace FFLAS {
 
                 // U2 = U1 + P4 in C12
             DFElt U2Min, U2Max;
-            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
                 freduce(F,uplo,N2,C12,ldc);
                 freduce(F,N2,N2,C22,ldc);
             }
@@ -576,7 +576,7 @@ namespace FFLAS {
 
                 // U4 = U2 + P3 in C21
             DFElt U4Min, U4Max;
-            if (Protected::NeedPreAddReduction (U4Min, U4Max, U2Min, U2Max, H3.Outmin, H3.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U4Min, U4Max, U2Min, U2Max, H3.Outmin, H3.Outmax, WH)){
                 freduce(F,N2,N2,C21,ldc);
                 freduce(F,N2,N2,C12,ldc);
             }
@@ -584,7 +584,7 @@ namespace FFLAS {
 
                 // U5 = U2 + P4^T in C22
             DFElt U5Min, U5Max;
-            if (Protected::NeedPreAddReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
                 freduce(F,uplo,N2,C22,ldc);
                 freduce(F,uplo,N2,C12,ldc);
             }
@@ -596,7 +596,7 @@ namespace FFLAS {
 
                 // U3 = P1 + P2 in C11
             DFElt U3Min, U3Max;
-            if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
                 freduce(F,uplo,N2,C11,ldc);
                 freduce(F,uplo,N2,C12,ldc);
             }
@@ -677,7 +677,7 @@ namespace FFLAS {
 
                 // U1 = P5 + P1  in C12 // Still symmetric
             DFElt U1Min, U1Max;
-            if (Protected::NeedPreAddReduction (U1Min, U1Max, H5.Outmin, H5.Outmax, H1.Outmin, H1.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U1Min, U1Max, H5.Outmin, H5.Outmax, H1.Outmin, H1.Outmax, WH)){
                 freduce(F,uplo,N2,C12,ldc);
                 freduce(F,uplo,N2,T,ldt);
            }
@@ -685,7 +685,7 @@ namespace FFLAS {
 
                 // U2 = U1 + P4 in C12
             DFElt U2Min, U2Max;
-            if (Protected::NeedPreAddReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U2Min, U2Max, U1Min, U1Max, H4.Outmin, H4.Outmax, WH)){
                 freduce(F,uplo,N2,C12,ldc);
                 freduce(F,N2,N2,C22,ldc);
             }
@@ -702,7 +702,7 @@ namespace FFLAS {
 
                 // U4 = U2 + P3 in C21
             DFElt U4Min, U4Max;
-            if (Protected::NeedPreAddReduction (U4Min, U4Max, U2Min, U2Max, H3.Outmin, H3.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U4Min, U4Max, U2Min, U2Max, H3.Outmin, H3.Outmax, WH)){
                 freduce(F,N2,N2,C21,ldc);
                 freduce(F,N2,N2,C12,ldc);
             }
@@ -710,7 +710,7 @@ namespace FFLAS {
 
                 // U5 = U2 + P4^T  in C22 (only the lower triang part)
             DFElt U5Min, U5Max;
-            if (Protected::NeedPreAddReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U5Min, U5Max, U2Min, U2Max, H4.Outmin, H4.Outmax, WH)){
                 freduce(F,uplo,N2,C22,ldc);
                 freduce(F,uplo,N2,C12,ldc);
             }
@@ -742,7 +742,7 @@ namespace FFLAS {
 
                 // U3 = P1 + P2 in C11
             DFElt U3Min, U3Max;
-            if (Protected::NeedPreAddReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
+            if (Protected::AddHelper<false>::needsReduction (U3Min, U3Max, H1.Outmin, H1.Outmax, H2.Outmin, H2.Outmax, WH)){
                 freduce(F,uplo,N2,C11,ldc);
                 freduce(F,uplo,N2,T,ldt);
             }

@@ -11,21 +11,13 @@ Conversion double -> float for small moduli:
 
 
 Simplification of helpers:
-* currently all mmhelpers have Amax,Amin,Bmax,Bmin, Cmax,Cmin,Outmax,
-   Outmin, and all related features for delayed reductions.
-* this is not suited for other FieldTraits (say Generic,
-   Multiprec,...)
-   TODO:
-     - write a by-default minimal mmhelper
-     - specialize the mmhelper with delayedModular trait with all the
-      machinery
-* The NeedPreaddreduction system is error-prone and ugly:
-==> introduce AddHelpers
-- carry max min outmax outmin info when used with a DelayedModular
-   FieldTraits
-- decide when a mod is required in this case
-- empty otherwise.
-- Two bool params: add/sub switch, and inplace switch.
+* [DONE] primary MMHelper template is now minimal (recLevel + parseq only)
+   MMHelperBounded base class provides all bounds tracking machinery
+   Specialized for LazyTag, DelayedTag, DefaultBoundedTag via inheritance
+* [DONE] AddHelper<IsSub> replaces NeedPreAddReduction / NeedPreSubReduction
+   - LazyTag overload: overflow check with bounds tracking
+   - Generic overload: no-op
+   - IsSub template parameter: add/sub switch
 
 CharPoly: How to handle polynomial arithmetic
  * Option 1: generic representation, fixed Poly1Dom domain type, built when needed

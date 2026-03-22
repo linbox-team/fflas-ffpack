@@ -48,37 +48,37 @@ namespace FFPACK {
             typename Field::Element negDiag;
             if (Uplo == FFLAS::FflasUpper){
                 if(Diag == FFLAS::FflasNonUnit)
-                    F.invin(A[(N-1)*(lda+1)]);
-                for(size_t li = N-1; li-->0;){
+                    F.invin(A[(N-1)*(lda+1)]); // last element of the matrix
+                for(size_t li = N-1; li-->0;){ // start at the second to last line
                     if(Diag == FFLAS::FflasNonUnit){
-                        F.invin(A[li*(lda+1)]);
-                        F.neg (negDiag,A[li*(lda+1)]);
+                        F.invin(A[li*(lda+1)]);        // Diagonal element on current line
+                        F.neg (negDiag,A[li*(lda+1)]); // neg of diagonal element
                     }
                     else
                         F.assign (negDiag, F.mOne);
-                    FFLAS::ftrmm(F,FFLAS::FflasRight,
+                    FFLAS::ftrmm(F,FFLAS::FflasRight,  // b <- b dot nDiag * M
                           Uplo,FFLAS::FflasNoTrans,Diag,
-                          1,N-li-1,
-                          negDiag,
-                          (A+(li+1)*(lda+1)),lda,
-                          A+li*(lda+1)+1,lda);
+                          1,N-li-1,                    // Size of vector (1 row and N-li-1 columns)
+                          negDiag,                     // Scalar
+                          (A+(li+1)*(lda+1)),lda,      // Triangular matrix below the vector
+                          A+li*(lda+1)+1,lda);         // Horizontal vector starting after diagonal element of current line
                 }
             }
-            else{
+            else{ // Uplo == FflasLower
                 if(Diag == FFLAS::FflasNonUnit)
-                    F.invin(A[0]);
-                for(size_t li = 1; li < N; li++){
+                    F.invin(A[0]);                     // first element of the matrix
+                for(size_t li = 1; li < N; li++){  // start at the second line
                     if(Diag == FFLAS::FflasNonUnit){
-                        F.invin(A[li*(lda+1)]);
-                        F.neg (negDiag,A[li*(lda+1)]);
+                        F.invin(A[li*(lda+1)]);        // Diagonal element on current line
+                        F.neg (negDiag,A[li*(lda+1)]); // neg of diagonal element
                     } else
                         F.assign (negDiag, F.mOne);
-                    FFLAS::ftrmm(F,FFLAS::FflasRight,
+                    FFLAS::ftrmm(F,FFLAS::FflasRight,  // b <- b dot nDiag * M
                           Uplo,FFLAS::FflasNoTrans,Diag,
-                          1,li,
-                          negDiag,
-                          A,lda,
-                          A+li*lda, lda);
+                          1,li,                        // Size of vector (1 row and li columns)
+                          negDiag,                     // Scalar
+                          A,lda,                       // Triangular matrix above the vector
+                          A+li*lda, lda);              // Horizontal vector ending before diagonal element of current line
                 }
             }
             return;

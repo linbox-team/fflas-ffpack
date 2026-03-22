@@ -97,66 +97,59 @@ namespace FFLAS { namespace Protected{
 }//FFLAS
 
 namespace FFLAS{ namespace Protected{
-    template <class Field, class Element, class AlgoT, class ParSeqTrait>
-    inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
-                                     Element& Op1min, Element& Op1max,
-                                     Element& Op2min, Element& Op2max,
-                                     MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
-    {
-        Outmin = Op1min + Op2min;
-        Outmax = Op1max + Op2max;
-        if (WH.MaxStorableValue - Op1max < Op2max ||
-            WH.MaxStorableValue + Op1min < -Op2min){
-            // Reducing both Op1 and Op2
-            Op1min = Op2min = WH.FieldMin;
-            Op1max = Op2max = WH.FieldMax;
-            Outmin = 2*WH.FieldMin;
-            Outmax = 2*WH.FieldMax;
-            return true;
-        } else return false;
-    }
 
-    template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
-    inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
-                                     Element& Op1min, Element& Op1max,
-                                     Element& Op2min, Element& Op2max,
-                                     MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
-    {
-        Outmin = WH.FieldMin;
-        Outmax = WH.FieldMax;
-        return false;
-    }
+    /*! AddHelper: unified helper for pre-add/sub reduction checks.
+     *  Replaces NeedPreAddReduction (IsSub=false) and NeedPreSubReduction (IsSub=true).
+     *  - For LazyTag: checks overflow and decides when freduce is needed.
+     *  - For other modes: no-op, returns false.
+     */
+    template<bool IsSub = false>
+    struct AddHelper {
+        // LazyTag overload: performs the overflow check
+        template <class Field, class Element, class AlgoT, class ParSeqTrait>
+        static inline bool needsReduction (Element& Outmin, Element& Outmax,
+                                           Element& Op1min, Element& Op1max,
+                                           Element& Op2min, Element& Op2max,
+                                           MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
+        {
+            if (IsSub) {
+                Outmin = Op1min - Op2max;
+                Outmax = Op1max - Op2min;
+                if (WH.MaxStorableValue - Op1max < -Op2min ||
+                    WH.MaxStorableValue - Op2max < -Op1min){
+                    Op1min = Op2min = WH.FieldMin;
+                    Op1max = Op2max = WH.FieldMax;
+                    Outmin = WH.FieldMin-WH.FieldMax;
+                    Outmax = -Outmin;
+                    return true;
+                }
+            } else {
+                Outmin = Op1min + Op2min;
+                Outmax = Op1max + Op2max;
+                if (WH.MaxStorableValue - Op1max < Op2max ||
+                    WH.MaxStorableValue + Op1min < -Op2min){
+                    Op1min = Op2min = WH.FieldMin;
+                    Op1max = Op2max = WH.FieldMax;
+                    Outmin = 2*WH.FieldMin;
+                    Outmax = 2*WH.FieldMax;
+                    return true;
+                }
+            }
+            return false;
+        }
 
-    template <class Field, class Element, class AlgoT, class ParSeqTrait>
-    inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
-                                     Element& Op1min, Element& Op1max,
-                                     Element& Op2min, Element& Op2max,
-                                     MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
-    {
-        Outmin = Op1min - Op2max;
-        Outmax = Op1max - Op2min;
-        if (WH.MaxStorableValue - Op1max < -Op2min ||
-            WH.MaxStorableValue - Op2max < -Op1min){
-            // Reducing both Op1 and Op2
-            Op1min = Op2min = WH.FieldMin;
-            Op1max = Op2max = WH.FieldMax;
-            Outmin = WH.FieldMin-WH.FieldMax;
-            Outmax = -Outmin;
-            return true;
-        } else return false;
-    }
-
-    template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
-    inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
-                                     Element& Op1min, Element& Op1max,
-                                     Element& Op2min, Element& Op2max,
-                                     MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
-    {
-        // Necessary? -> CP: Yes, for generic Mode of op
-        Outmin = WH.FieldMin;
-        Outmax = WH.FieldMax;
-        return false;
-    }
+        // Generic overload: no reduction needed
+        template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
+        static inline bool needsReduction (Element& Outmin, Element& Outmax,
+                                           Element& Op1min, Element& Op1max,
+                                           Element& Op2min, Element& Op2max,
+                                           MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
+        {
+            Outmin = WH.FieldMin;
+            Outmax = WH.FieldMax;
+            return false;
+        }
+    };
 
     //Probable bug here due to overflow of int64_t
     template<class Field, class Element, class AlgoT, class ParSeqTrait>
