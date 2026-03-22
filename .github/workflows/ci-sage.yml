@@ -45,6 +45,7 @@ on:
    push:
      tags:
        - 'SageCI'
+   workflow_dispatch: 
 
 concurrency:
   # Cancel previous runs of this workflow for the same branch
