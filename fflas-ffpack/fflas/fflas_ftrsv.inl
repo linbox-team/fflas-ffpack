@@ -26,6 +26,84 @@
 #ifndef __FFLASFFPACK_ftrsv_INL
 #define __FFLASFFPACK_ftrsv_INL
 
+namespace FFLAS { namespace Protected {
+
+    template <class NewField, class Field>
+    inline void
+    ftrsv_convert (const Field& F,
+                   const FFLAS_UPLO Uplo,
+                   const FFLAS_TRANSPOSE TransA,
+                   const FFLAS_DIAG Diag,
+                   const size_t N,
+                   typename Field::ConstElement_ptr A, size_t lda,
+                   typename Field::Element_ptr X, int incX)
+    {
+        typedef typename NewField::Element FloatElement;
+        NewField G((FloatElement) F.characteristic());
+
+        FloatElement* Af = FFLAS::fflas_new(G, N, N);
+        FloatElement* Xf = FFLAS::fflas_new(G, N, (size_t)1);
+
+        fconvert(F, N, N, Af, N, A, lda);
+        freduce(G, N, N, Af, N);
+
+        // Copy X with stride into contiguous array
+        for (size_t i = 0; i < N; ++i) {
+            F.convert(Xf[i], X[(int)i * incX]);
+            G.init(Xf[i], Xf[i]);
+        }
+
+        ftrsv(G, Uplo, TransA, Diag, N, Af, N, Xf, 1);
+
+        // Copy back with stride
+        for (size_t i = 0; i < N; ++i)
+            F.init(X[(int)i * incX], Xf[i]);
+
+        fflas_delete(Af);
+        fflas_delete(Xf);
+    }
+
+    // SFINAE helper: perform conversion for ConvertTo<MachineFloatTag> fields
+    template<class Field>
+    inline typename std::enable_if<
+        std::is_same<typename ModeTraits<Field>::value,
+                     ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrsv_try_convert (const Field& F, const FFLAS_UPLO Uplo,
+                       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
+                       const size_t N, typename Field::ConstElement_ptr A, size_t lda,
+                       typename Field::Element_ptr X, int incX)
+    {
+        if (!std::is_same<Field,Givaro::Modular<float> >::value){
+            if (F.cardinality() == 2)
+                ftrsv_convert<Givaro::Modular<float>,Field>(F,Uplo,TransA,Diag,N,A,lda,X,incX);
+            else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
+                if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
+                    ftrsv_convert<Givaro::ModularBalanced<float>,Field>(F,Uplo,TransA,Diag,N,A,lda,X,incX);
+                else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+                    ftrsv_convert<Givaro::ModularBalanced<double>,Field>(F,Uplo,TransA,Diag,N,A,lda,X,incX);
+                else
+                    FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
+            }
+        }
+        return true;
+    }
+
+    template<class Field>
+    inline typename std::enable_if<
+        !std::is_same<typename ModeTraits<Field>::value,
+                      ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrsv_try_convert (const Field& F, const FFLAS_UPLO Uplo,
+                       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
+                       const size_t N, typename Field::ConstElement_ptr A, size_t lda,
+                       typename Field::Element_ptr X, int incX)
+    {
+        return false;
+    }
+
+}} // Protected, FFLAS
+
 namespace FFLAS {
     //---------------------------------------------------------------------
     // ftrsv: TRiangular System solve with vector
@@ -39,6 +117,8 @@ namespace FFLAS {
            const size_t N,typename Field::ConstElement_ptr A, size_t lda,
            typename Field::Element_ptr X, int incX)
     {
+        if (Protected::ftrsv_try_convert(F, Uplo, TransA, Diag, N, A, lda, X, incX))
+            return;
 
         typename Field::Element_ptr Xi;
         typename Field::ConstElement_ptr Ai;

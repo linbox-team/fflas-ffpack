@@ -27,6 +27,180 @@
 #ifndef __FFLASFFPACK_ftrmm_INL
 #define __FFLASFFPACK_ftrmm_INL
 
+namespace FFLAS { namespace Protected {
+
+    template <class NewField, class Field>
+    inline void
+    ftrmm_convert (const Field& F,
+                   const FFLAS_SIDE Side,
+                   const FFLAS_UPLO Uplo,
+                   const FFLAS_TRANSPOSE TransA,
+                   const FFLAS_DIAG Diag,
+                   const size_t M, const size_t N,
+                   const typename Field::Element alpha,
+                   typename Field::ConstElement_ptr A, const size_t lda,
+                   typename Field::Element_ptr B, const size_t ldb)
+    {
+        typedef typename NewField::Element FloatElement;
+        NewField G((FloatElement) F.characteristic());
+        FloatElement tmp, alphaf;
+        F.convert (tmp, alpha);
+        G.init(alphaf, tmp);
+
+        size_t K = (Side == FflasLeft) ? M : N;
+        FloatElement* Af = FFLAS::fflas_new(G, K, K);
+        FloatElement* Bf = FFLAS::fflas_new(G, M, N);
+
+        fconvert(F, K, K, Af, K, A, lda);
+        freduce(G, K, K, Af, K);
+        fconvert(F, M, N, Bf, N, B, ldb);
+        freduce(G, M, N, Bf, N);
+
+        ftrmm(G, Side, Uplo, TransA, Diag, M, N, alphaf, Af, K, Bf, N);
+
+        finit(F, M, N, Bf, N, B, ldb);
+
+        fflas_delete(Af);
+        fflas_delete(Bf);
+    }
+
+    template <class NewField, class Field>
+    inline void
+    ftrmm_convert (const Field& F,
+                   const FFLAS_SIDE Side,
+                   const FFLAS_UPLO Uplo,
+                   const FFLAS_TRANSPOSE TransA,
+                   const FFLAS_DIAG Diag,
+                   const size_t M, const size_t N,
+                   const typename Field::Element alpha,
+                   typename Field::ConstElement_ptr A, const size_t lda,
+                   typename Field::ConstElement_ptr B, const size_t ldb,
+                   const typename Field::Element beta,
+                   typename Field::Element_ptr C, const size_t ldc)
+    {
+        typedef typename NewField::Element FloatElement;
+        NewField G((FloatElement) F.characteristic());
+        FloatElement tmp, alphaf, betaf;
+        F.convert (tmp, alpha);
+        G.init(alphaf, tmp);
+        F.convert (tmp, beta);
+        G.init(betaf, tmp);
+
+        size_t K = (Side == FflasLeft) ? M : N;
+        FloatElement* Af = FFLAS::fflas_new(G, K, K);
+        FloatElement* Bf = FFLAS::fflas_new(G, M, N);
+        FloatElement* Cf = FFLAS::fflas_new(G, M, N);
+
+        fconvert(F, K, K, Af, K, A, lda);
+        freduce(G, K, K, Af, K);
+        fconvert(F, M, N, Bf, N, B, ldb);
+        freduce(G, M, N, Bf, N);
+        if (!F.isZero(beta)){
+            fconvert(F, M, N, Cf, N, C, ldc);
+            freduce(G, M, N, Cf, N);
+        }
+
+        ftrmm(G, Side, Uplo, TransA, Diag, M, N, alphaf, Af, K, Bf, N, betaf, Cf, N);
+
+        finit(F, M, N, Cf, N, C, ldc);
+
+        fflas_delete(Af);
+        fflas_delete(Bf);
+        fflas_delete(Cf);
+    }
+
+    // SFINAE helpers for ConvertTo dispatch (in-place)
+    template<class Field>
+    inline typename std::enable_if<
+        std::is_same<typename ModeTraits<Field>::value,
+                     ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrmm_try_convert (const Field& F, const FFLAS_SIDE Side,
+                       const FFLAS_UPLO Uplo, const FFLAS_TRANSPOSE TransA,
+                       const FFLAS_DIAG Diag, const size_t M, const size_t N,
+                       const typename Field::Element alpha,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::Element_ptr B, const size_t ldb)
+    {
+        if (!std::is_same<Field,Givaro::Modular<float> >::value){
+            if (F.cardinality() == 2)
+                ftrmm_convert<Givaro::Modular<float>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb);
+            else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
+                if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
+                    ftrmm_convert<Givaro::ModularBalanced<float>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb);
+                else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+                    ftrmm_convert<Givaro::ModularBalanced<double>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb);
+                else
+                    FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
+            }
+        }
+        return true;
+    }
+
+    template<class Field>
+    inline typename std::enable_if<
+        !std::is_same<typename ModeTraits<Field>::value,
+                      ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrmm_try_convert (const Field& F, const FFLAS_SIDE Side,
+                       const FFLAS_UPLO Uplo, const FFLAS_TRANSPOSE TransA,
+                       const FFLAS_DIAG Diag, const size_t M, const size_t N,
+                       const typename Field::Element alpha,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::Element_ptr B, const size_t ldb)
+    {
+        return false;
+    }
+
+    // SFINAE helpers for ConvertTo dispatch (out-of-place)
+    template<class Field>
+    inline typename std::enable_if<
+        std::is_same<typename ModeTraits<Field>::value,
+                     ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrmm_try_convert (const Field& F, const FFLAS_SIDE Side,
+                       const FFLAS_UPLO Uplo, const FFLAS_TRANSPOSE TransA,
+                       const FFLAS_DIAG Diag, const size_t M, const size_t N,
+                       const typename Field::Element alpha,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::ConstElement_ptr B, const size_t ldb,
+                       const typename Field::Element beta,
+                       typename Field::Element_ptr C, const size_t ldc)
+    {
+        if (!std::is_same<Field,Givaro::Modular<float> >::value){
+            if (F.cardinality() == 2)
+                ftrmm_convert<Givaro::Modular<float>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb,beta,C,ldc);
+            else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
+                if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
+                    ftrmm_convert<Givaro::ModularBalanced<float>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb,beta,C,ldc);
+                else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+                    ftrmm_convert<Givaro::ModularBalanced<double>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb,beta,C,ldc);
+                else
+                    FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
+            }
+        }
+        return true;
+    }
+
+    template<class Field>
+    inline typename std::enable_if<
+        !std::is_same<typename ModeTraits<Field>::value,
+                      ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrmm_try_convert (const Field& F, const FFLAS_SIDE Side,
+                       const FFLAS_UPLO Uplo, const FFLAS_TRANSPOSE TransA,
+                       const FFLAS_DIAG Diag, const size_t M, const size_t N,
+                       const typename Field::Element alpha,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::ConstElement_ptr B, const size_t ldb,
+                       const typename Field::Element beta,
+                       typename Field::Element_ptr C, const size_t ldc)
+    {
+        return false;
+    }
+
+}} // Protected, FFLAS
+
 namespace FFLAS {
 
     //---------------------------------------------------------------------
@@ -46,6 +220,8 @@ namespace FFLAS {
            typename Field::Element_ptr B, const size_t ldb)
     {
         if (!M || !N ) return;
+        if (Protected::ftrmm_try_convert(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb))
+            return;
 
         if ( Side==FflasLeft ){
             if ( Uplo==FflasUpper){
@@ -105,6 +281,7 @@ namespace FFLAS {
 
     }
     // //---------------------------------------------------------------------
+    // //---------------------------------------------------------------------
     template<class Field>
     inline void
     ftrmm (const Field& F, const FFLAS_SIDE Side,
@@ -119,6 +296,9 @@ namespace FFLAS {
            typename Field::Element_ptr C, const size_t ldc)
     {
         if (!M || !N ) return;
+        if (Protected::ftrmm_try_convert(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, beta, C, ldc))
+            return;
+
         typename Field::Element bet;
         F.init(bet);
         F.assign(bet,beta);

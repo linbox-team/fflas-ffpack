@@ -27,6 +27,89 @@
 #ifndef __FFLASFFPACK_ftrsm_INL
 #define __FFLASFFPACK_ftrsm_INL
 
+namespace FFLAS { namespace Protected {
+
+    template <class NewField, class Field>
+    inline void
+    ftrsm_convert (const Field& F,
+                   const FFLAS_SIDE Side,
+                   const FFLAS_UPLO Uplo,
+                   const FFLAS_TRANSPOSE TransA,
+                   const FFLAS_DIAG Diag,
+                   const size_t M, const size_t N,
+                   const typename Field::Element alpha,
+                   typename Field::ConstElement_ptr A, const size_t lda,
+                   typename Field::Element_ptr B, const size_t ldb)
+    {
+        typedef typename NewField::Element FloatElement;
+        NewField G((FloatElement) F.characteristic());
+        FloatElement tmp, alphaf;
+        F.convert (tmp, alpha);
+        G.init(alphaf, tmp);
+
+        size_t K = (Side == FflasLeft) ? M : N;
+        FloatElement* Af = FFLAS::fflas_new(G, K, K);
+        FloatElement* Bf = FFLAS::fflas_new(G, M, N);
+
+        fconvert(F, K, K, Af, K, A, lda);
+        freduce(G, K, K, Af, K);
+        fconvert(F, M, N, Bf, N, B, ldb);
+        freduce(G, M, N, Bf, N);
+
+        ftrsm(G, Side, Uplo, TransA, Diag, M, N, alphaf, Af, K, Bf, N);
+
+        finit(F, M, N, Bf, N, B, ldb);
+
+        fflas_delete(Af);
+        fflas_delete(Bf);
+    }
+
+    // SFINAE helper: perform conversion for ConvertTo<MachineFloatTag> fields
+    template<class Field>
+    inline typename std::enable_if<
+        std::is_same<typename ModeTraits<Field>::value,
+                     ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrsm_try_convert (const Field& F, const FFLAS_SIDE Side,
+                       const FFLAS_UPLO Uplo, const FFLAS_TRANSPOSE TransA,
+                       const FFLAS_DIAG Diag, const size_t M, const size_t N,
+                       const typename Field::Element alpha,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::Element_ptr B, const size_t ldb)
+    {
+        if (!std::is_same<Field,Givaro::Modular<float> >::value){
+            if (F.cardinality() == 2)
+                ftrsm_convert<Givaro::Modular<float>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb);
+            else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
+                if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
+                    ftrsm_convert<Givaro::ModularBalanced<float>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb);
+                else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+                    ftrsm_convert<Givaro::ModularBalanced<double>,Field>(F,Side,Uplo,TransA,Diag,M,N,alpha,A,lda,B,ldb);
+                else
+                    FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
+            }
+        }
+        return true;
+    }
+
+    // Fallback: no conversion for other fields
+    template<class Field>
+    inline typename std::enable_if<
+        !std::is_same<typename ModeTraits<Field>::value,
+                      ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>>::value, bool
+    >::type
+    ftrsm_try_convert (const Field& F, const FFLAS_SIDE Side,
+                       const FFLAS_UPLO Uplo, const FFLAS_TRANSPOSE TransA,
+                       const FFLAS_DIAG Diag, const size_t M, const size_t N,
+                       const typename Field::Element alpha,
+                       typename Field::ConstElement_ptr A, const size_t lda,
+                       typename Field::Element_ptr B, const size_t ldb)
+    {
+        return false;
+    }
+
+}} // Protected, FFLAS
+
 
 namespace FFLAS {
 
@@ -51,6 +134,8 @@ namespace FFLAS {
            A, const size_t lda,
            typename Field::Element_ptr B, const size_t ldb)
     {
+        if (Protected::ftrsm_try_convert(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb))
+            return;
         ParSeqHelper::Sequential PSH;
         TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> H(PSH);
         Checker_ftrsm<Field> checker(F, M, N, alpha, B, ldb);

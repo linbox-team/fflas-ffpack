@@ -32,51 +32,96 @@
 
 namespace FFPACK {
 
+    // Blocked base case for FTRTRI: processes blocks of rows at a time
+    // instead of single rows, reducing ftrmm call overhead and improving cache locality
+    template<class Field>
+    void
+    ftrtri_basecase (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
+                     const size_t N, typename Field::Element_ptr A, const size_t lda)
+    {
+        if (!N) return;
+        // Block size for the base case: process this many rows at a time
+        const size_t BLOCK = 4;
+
+        if (N <= BLOCK) {
+            // Micro base case: row-by-row (original algorithm)
+            typename Field::Element negDiag;
+            if (Uplo == FFLAS::FflasUpper){
+                if(Diag == FFLAS::FflasNonUnit)
+                    F.invin(A[(N-1)*(lda+1)]);
+                for(size_t li = N-1; li-->0;){
+                    if(Diag == FFLAS::FflasNonUnit){
+                        F.invin(A[li*(lda+1)]);
+                        F.neg (negDiag,A[li*(lda+1)]);
+                    }
+                    else
+                        F.assign (negDiag, F.mOne);
+                    FFLAS::ftrmm(F,FFLAS::FflasRight,
+                          Uplo,FFLAS::FflasNoTrans,Diag,
+                          1,N-li-1,
+                          negDiag,
+                          (A+(li+1)*(lda+1)),lda,
+                          A+li*(lda+1)+1,lda);
+                }
+            }
+            else{
+                if(Diag == FFLAS::FflasNonUnit)
+                    F.invin(A[0]);
+                for(size_t li = 1; li < N; li++){
+                    if(Diag == FFLAS::FflasNonUnit){
+                        F.invin(A[li*(lda+1)]);
+                        F.neg (negDiag,A[li*(lda+1)]);
+                    } else
+                        F.assign (negDiag, F.mOne);
+                    FFLAS::ftrmm(F,FFLAS::FflasRight,
+                          Uplo,FFLAS::FflasNoTrans,Diag,
+                          1,li,
+                          negDiag,
+                          A,lda,
+                          A+li*lda, lda);
+                }
+            }
+            return;
+        }
+
+        // Blocked base case: split into a small block and remainder
+        size_t B1 = std::min(BLOCK, N/2);
+        size_t B2 = N - B1;
+
+        if (Uplo == FFLAS::FflasUpper){
+            // Invert the bottom-right block first
+            ftrtri_basecase (F, Uplo, Diag, B2, A + B1*(lda+1), lda);
+            // Invert the top-left block
+            ftrtri_basecase (F, Uplo, Diag, B1, A, lda);
+            // Update off-diagonal: A12 <- A11^{-1} * A12
+            FFLAS::ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, B1, B2,
+                   F.one, A, lda, A + B1, lda);
+            // A12 <- A12 * (-A22^{-1})
+            FFLAS::ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, B1, B2,
+                   F.mOne, A + B1*(lda+1), lda, A + B1, lda);
+        }
+        else{
+            // Invert the top-left block first
+            ftrtri_basecase (F, Uplo, Diag, B1, A, lda);
+            // Invert the bottom-right block
+            ftrtri_basecase (F, Uplo, Diag, B2, A + B1*(lda+1), lda);
+            // Update off-diagonal: A21 <- A22^{-1} * A21
+            FFLAS::ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, B2, B1,
+                   F.one, A + B1*(lda+1), lda, A + B1*lda, lda);
+            // A21 <- A21 * (-A11^{-1})
+            FFLAS::ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, B2, B1,
+                   F.mOne, A, lda, A + B1*lda, lda);
+        }
+    }
 
     template<class Field>
     void
     ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
             const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t threshold)
     {
-        typename Field::Element negDiag;
         if (!N) return;
         if (N <= threshold){ // base case
-
-            if (Uplo == FFLAS::FflasUpper){
-                if(Diag == FFLAS::FflasNonUnit)
-                    F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix
-                for(size_t li = N-1; li-->0;){      // start at the second to last line
-                    if(Diag == FFLAS::FflasNonUnit){
-                        F.invin(A[li*(lda+1)]);     // Diagonal element on current line
-                        F.neg (negDiag,A[li*(lda+1)]);   // neg of diagonal element
-                    }
-                    else
-                        F.assign (negDiag, F.mOne);
-                    ftrmm(F,FFLAS::FflasRight,       // b <- b dot nDiag * M
-                          Uplo,FFLAS::FflasNoTrans,Diag,
-                          1,N-li-1,                 // Size of vector (1 row and N-li-1 columns)
-                          negDiag,                  // Scalar
-                          (A+(li+1)*(lda+1)),lda,   // Triangular matrix below the vector
-                          A+li*(lda+1)+1,lda);        // Horizontal vector starting after diagonal element of current line
-                }
-            }
-            else{ // Uplo == FflasLower
-                if(Diag == FFLAS::FflasNonUnit)
-                    F.invin(A[0]);                      // first element of the matrix
-                for(size_t li = 1; li < N; li++){   // start at the second line
-                    if(Diag == FFLAS::FflasNonUnit){
-                        F.invin(A[li*(lda+1)]);     // Diagonal element on current line
-                        F.neg (negDiag,A[li*(lda+1)]);  // neg of diagonal element
-                    } else
-                        F.assign (negDiag, F.mOne);
-                    ftrmm(F,FFLAS::FflasRight,       // b <- b dot nDiag * M
-                          Uplo,FFLAS::FflasNoTrans,Diag,
-                          1,li,                     // Size of vector (1 row and N-li-1 columns)
-                          negDiag,                  // Scalar
-                          A,lda,                    // Triangular matrix above the vector
-                          A+li*lda, lda);             // Horizontal vector ending before diagonal element of current line
-                }
-            }
+            ftrtri_basecase (F, Uplo, Diag, N, A, lda);
         }
         else { // recursive case
             size_t N1 = N/2;
@@ -84,15 +129,15 @@ namespace FFPACK {
             ftrtri (F, Uplo, Diag, N1, A, lda, threshold);
             ftrtri (F, Uplo, Diag, N2, A + N1*(lda+1), lda, threshold);
             if (Uplo == FFLAS::FflasUpper){
-                ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
+                FFLAS::ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
                        F.one, A, lda, A + N1, lda);
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
+                FFLAS::ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
                        F.mOne, A + N1*(lda+1), lda, A + N1, lda);
             }
             else {
-                ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
+                FFLAS::ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
                        F.one, A + N1*(lda+1), lda, A + N1*lda, lda);
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
+                FFLAS::ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
                        F.mOne, A, lda, A + N1*lda, lda);
             }
         }

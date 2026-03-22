@@ -658,7 +658,7 @@ namespace FFPACK {
                 FFLAS::fflas_delete(b);
             } else if (n != 0) {
                 Element_ptr Ai=A+mun*lda;
-                Element_ptr d = *Ai;
+                Element d = *Ai;
                 for(; Ai != A; Ai-=lda) *Ai= *(Ai-lda);
                 *A=d;
             }

@@ -28,6 +28,7 @@
 #define __FFLASFFPACK_ffpack_ludivine_INL
 
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
+#include <type_traits>
 
 namespace FFPACK {
     template<class Field>
@@ -69,11 +70,6 @@ namespace FFPACK {
         return r;
     }
 
-    template<class Element>
-    class callLUdivine_small;
-
-
-
     template<class Field>
     inline size_t
     LUdivine_small( const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
@@ -85,7 +81,7 @@ namespace FFPACK {
         (F, Diag, trans, M, N, A, lda, P, Q, LuTag);
     }
 
-    template<class Element>
+    template<class Element, class Enable>
     class callLUdivine_small {
     public:
         template <class Field>
@@ -183,8 +179,10 @@ namespace FFPACK {
         }
     };
 
-    template<>
-    class callLUdivine_small<double> {
+    // Unified specialization for floating-point element types (double/float)
+    // Uses delayed modular reduction for better performance
+    template<class Element>
+    class callLUdivine_small<Element, typename std::enable_if<std::is_floating_point<Element>::value>::type> {
     public:
         template <class Field>
         inline size_t
@@ -243,141 +241,20 @@ namespace FFPACK {
 
 
                 if (Diag == FFLAS::FflasUnit) {
-                    // for (size_t j=1; j<N-k; ++j)
-                    // if (!F.isZero(*(Aini+j)))
-                    // F.mulin (*(Aini+j),invpiv);
                     FFLAS::fscalin(F,N-k-1,invpiv,Aini+1,1);
                 }
                 else {
-                    // for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
-                    // if (!F.isZero(*(Aini+i)))
-                    // F.mulin (*(Aini+i),invpiv);
                     FFLAS::fscalin(F,M-rowp-1,invpiv,Aini+lda,lda);
                 }
 
                 if (delay++ >= kmax){ // Reduction has to be done
                     delay = 0;
                     FFLAS::freduce (F, M-rowp-1,N-k-1, Aini+lda+1, lda);
-                    // for (size_t i=1; i<M-rowp; ++i)
-                    // 	for (size_t j=1; j<N-k; ++j)
-                    // 		F.init(	*(Aini+i*lda+j),*(Aini+i*lda+j));
                 }
-                //Elimination
+                //Elimination with delayed reduction
                 for (size_t i=1; i<M-rowp; ++i)
                     for (size_t j=1; j<N-k; ++j)
                         *(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
-                //Or equivalently, but without delayed ops :
-                //FFLAS::fger (F, M-rowp-1, N-k-1, F.mOne, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
-
-                Aini += lda+1; ++rowp; ++k;
-            }
-
-            // Compression the U matrix
-            size_t l;
-            if (Diag == FFLAS::FflasNonUnit){
-                Aini = A;
-                l = N;
-            }
-            else {
-                Aini = A+1;
-                l=N-1;
-            }
-            for (size_t i=0; i<R; ++i, Aini += lda+1) {
-                if (Q[i] > i){
-                    FFLAS::fassign (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
-                    for (size_t j=0; j<l-i; ++j)
-                        F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
-                }
-            }
-            return R;
-        }
-    };
-
-    template<>
-    class callLUdivine_small<float> {
-    public:
-        template <class Field>
-        inline size_t
-        operator()( const Field& F,
-                    const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
-                    const size_t M, const size_t N,
-                    typename Field::Element_ptr A, const size_t lda, size_t*P,
-                    size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag)
-        {
-
-            if ( !(M && N) ) return 0;
-            typedef typename Field::Element elt;
-            elt * Aini = A;
-            elt * Acurr;
-            size_t rowp = 0;
-            size_t R = 0;
-            size_t k = 0;
-            size_t delay =0;
-            size_t kmax = FFLAS::Protected::DotProdBoundClassic (F, F.one) -1; // the max number of delayed operations
-            while ((rowp<M) && (k<N)){
-                size_t colp;
-
-                //Find non zero pivot
-                colp = k;
-                Acurr = Aini;
-                while ((F.isZero(*Acurr)) || (F.isZero (F.reduce (*Acurr))))
-                    if (++colp == N){
-                        if (rowp==M-1)
-                            break;
-                        colp=k; ++rowp;
-                        Acurr = Aini += lda;
-                    }
-                    else
-                        ++Acurr;
-
-                if ((rowp == M-1)&&(colp == N))
-                    break;
-                R++;
-                P[k] = colp;
-                Q[k] = rowp;
-
-                // Permutation of the pivot column
-                FFLAS::fswap (F, M, A+k, lda, A + colp , lda);
-
-                //Normalization
-                elt invpiv;
-                F.init(invpiv);
-                F.reduce (*Aini);
-                F.inv (invpiv,*Aini);
-
-                for (size_t j=1; j<N-k; ++j)
-                    if (!F.isZero(*(Aini+j)))
-                        F.reduce (*(Aini+j));
-                for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
-                    if (!F.isZero(*(Aini+i)))
-                        F.reduce (*(Aini+i));
-
-                if (Diag == FFLAS::FflasUnit) {
-                    // for (size_t j=1; j<N-k; ++j)
-                    // if (!F.isZero(*(Aini+j)))
-                    // F.mulin (*(Aini+j),invpiv);
-                    FFLAS::fscalin(F,N-k-1,invpiv,Aini+1,1);
-                }
-                else {
-                    // for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
-                    // if (!F.isZero(*(Aini+i)))
-                    // F.mulin (*(Aini+i),invpiv);
-                    FFLAS::fscalin(F,M-rowp-1,invpiv,Aini+lda,lda);
-                }
-
-                if (delay++ >= kmax){ // Reduction has to be done
-                    delay = 0;
-                    FFLAS::freduce (F, M-rowp-1, N-k-1, Aini+lda+1, lda);
-                    // for (size_t i=1; i<M-rowp; ++i)
-                    // 	for (size_t j=1; j<N-k; ++j)
-                    // 		F.reduce (*(Aini+i*lda+j));
-                }
-                //Elimination
-                for (size_t i=1; i<M-rowp; ++i)
-                    for (size_t j=1; j<N-k; ++j)
-                        *(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
-                //Or equivalently, but without delayed ops :
-                //FFLAS::fger (F, M-rowp-1, N-k-1, F.mOne, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
                 Aini += lda+1; ++rowp; ++k;
             }

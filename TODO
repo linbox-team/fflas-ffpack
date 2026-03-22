@@ -1,12 +1,13 @@
 LUdivine-PLUQ
-  * Clean up of all base cases 
-  * Only one routine, and automated switch to all implementations
+  * [DONE] Clean up of all base cases
+  * [DONE] Only one routine, and automated switch to all implementations
 
 FTRTRI/FTRTRM
-  * Optimize base cases
- 
+  * [DONE] Optimize base cases
+
 Conversion double -> float for small moduli:
-  * should be done in each routine, not only gemm
+  * [DONE] should be done in each routine, not only gemm
+    (added to ftrsm, ftrmm, ftrsv)
 
 
 Simplification of helpers:
