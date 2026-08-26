@@ -59,7 +59,7 @@ libfflas_la_LDFLAGS= -version-info 1:0:0 -no-undefined
 
 libffpack_la_SOURCES= ffpack_inst.C \
 		      ffpack_inst_implem.inl
-libffpack_la_LIBADD= libfflas.la
+libffpack_la_LIBADD= libfflas.la $(GIVARO_LIBS) $(BLAS_LIBS) $(PARLIBS)
 libffpack_la_LDFLAGS= -version-info 1:0:0 -no-undefined
 
 libfflas_c_la_SOURCES=fflas_lvl1.C \
@@ -67,12 +67,12 @@ libfflas_c_la_SOURCES=fflas_lvl1.C \
 		    fflas_lvl3.C \
 		    fflas_sparse.C
 #libfflas_c_la_CPPFLAGS=$(AM_CPPFLAGS) -DFFLAS_COMPILED -DFFPACK_COMPILED
-libfflas_c_la_LIBADD= libfflas.la
+libfflas_c_la_LIBADD= libfflas.la $(GIVARO_LIBS) $(BLAS_LIBS) $(PARLIBS)
 libfflas_c_la_LDFLAGS= -version-info 1:0:0 -no-undefined
 
 libffpack_c_la_SOURCES=ffpack.C
 #libffpack_c_la_CPPFLAGS=$(AM_CPPFLAGS) -DFFLAS_COMPILED -DFFPACK_COMPILED
-libffpack_c_la_LIBADD= libffpack.la
+libffpack_c_la_LIBADD= libffpack.la $(GIVARO_LIBS) $(BLAS_LIBS) $(PARLIBS)
 libffpack_c_la_LDFLAGS= -version-info 1:0:0 -no-undefined
 
 EXTRA_DIST=c_libs.doxy
