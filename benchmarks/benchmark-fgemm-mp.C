@@ -28,7 +28,8 @@
 // everywhere in the call stack
 #define __FFLASFFPACK_OPENBLAS_NT_ALREADY_SET 1
 
-#define INTEGER_NO_RNS 1
+//#define INTEGER_NO_RNS 1
+#define PROFILE_FGEMM_MP
 
 #if not defined(MG_DEFAULT)
 #define MG_DEFAULT MG_ACTIVE
@@ -88,7 +89,7 @@ static Argument as[] = {
 };
 
 template<typename Ints>
-int tmain(){
+int tmain(){ 
     srand( (int)seed);
     srand48(seed);
     Givaro::Integer::seeding(seed);
@@ -183,17 +184,16 @@ int tmain(){
         fmpz_mat_clear(BB);
 #endif
         //END FLINT CODE //
-        using  FFLAS::CuttingStrategy::Recursive;
-        using  FFLAS::StrategyParameter::TwoDAdaptive;
+        //using  FFLAS::CuttingStrategy::Recursive;
+        //using  FFLAS::StrategyParameter::TwoDAdaptive;
         // RNS MUL_LA
         chrono.clear();chrono.start();
         // 		PAR_BLOCK{
         //             FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc, SPLITTER(NUM_THREADS,Recursive,TwoDAdaptive) );
         // 		}
         {
-            FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+          FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
         }
-
         chrono.stop();
         time+=chrono.realtime();
 
@@ -234,7 +234,7 @@ int tmain(){
 int main(int argc, char** argv){
   
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
-    openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+   openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 
     FFLAS::parseArguments(argc,argv,as);

@@ -322,7 +322,8 @@ namespace FFLAS {
            Givaro::Integer* C, const size_t ldc,
            MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
     {
-        //std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
+      //std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
+      //std::cerr<<A<<" "<<B<<std::endl;
 #ifdef PROFILE_FGEMM_MP
         Timer chrono;
         chrono.start();
@@ -376,7 +377,7 @@ namespace FFLAS {
 #ifdef PROFILE_FGEMM_MP
         chrono.stop();
         std::cout<<"-------------------------------"<<std::endl;
-        std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
+        std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<< " (bitsize<"<<prime_bitsize<<")"<<std::endl;
         std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
         chrono.start();
 #endif
@@ -510,7 +511,7 @@ namespace FFLAS {
                                    MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
     {
         // compute the product over Z
-        //std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
+      //std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
         typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
         Givaro::Integer p;
         F.cardinality(p);

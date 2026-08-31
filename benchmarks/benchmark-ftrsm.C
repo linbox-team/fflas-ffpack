@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         FFLAS::ReadMatrix (file1.c_str(),F,m,m,A);
     }
     else{
-        A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
+      A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
         PAR_BLOCK{ FFLAS::pfrand(F,G,m,m,A,m/NBK); }
 
         for (size_t k=0;k<(size_t)m;++k)
@@ -102,10 +102,10 @@ for (size_t i=0;i<=iter;++i){
     if (i) chrono.start();
 
     if (!p){
-        FFLAS::ParSeqHelper::Sequential H;
-        FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower,
-                      FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-                      m,n, F.one, A, m, B, n, H);
+      FFLAS::ParSeqHelper::Sequential H;
+      FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower,
+                    FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
+                    m,n, F.one, A, m, B, n, H);
     }
     else{
         FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH(t);

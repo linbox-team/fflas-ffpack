@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
             if (slab)
                 R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
             else
-                R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
+              R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
         }
         if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 

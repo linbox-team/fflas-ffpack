@@ -103,6 +103,7 @@
 #include "fflas_fadd.h"
 #include "fflas_fscal.h"
 #include "fflas_fassign.h"
+#include "fflas_transpose.h"
 
 #include "fflas_fgemm.inl"
 #include "fflas_pfgemm.inl"
@@ -120,6 +121,7 @@
 #include "fflas_ftrsv.inl"
 #include "fflas_faxpy.inl"
 #include "fflas_fdot.inl"
+
 
 //---------------------------------------------------------------------
 // MultiPrecision routines
