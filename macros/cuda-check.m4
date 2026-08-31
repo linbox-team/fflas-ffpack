@@ -32,7 +32,7 @@ dnl Defines HAVE_CUDA
 AC_DEFUN([FF_CHECK_CUDA], [
 
 		AC_ARG_WITH(cuda,
-			[AC_HELP_STRING([--with-cuda=<path>|yes|no],[
+			[AS_HELP_STRING([--with-cuda=<path>|yes|no],[
 				Use CUDA library.
 				If argument is no, you do not have the library installed on your machine.
 				If argument is yes or <empty> that means the library is reachable with the standard
@@ -79,14 +79,11 @@ do
 	LIBS="${LIBS} ${CUDA_LIBS}"
 	CODE_CUDA=`cat macros/CodeChunk/cuda.C`
 
-	AC_TRY_LINK(
-		[
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 		#include <cuda.h>
-		],
-		[ CUresult a;],
-		[
+		]], [[ CUresult a;]])],[
 		dnl  # See if we are running CUDA 4.0 with --enable-cxx
-		AC_TRY_RUN(
+		_au_m4_changequote([,])AC_TRY_RUN(
 			[ ${CODE_CUDA} ],
 			[
 			AC_MSG_RESULT(found)

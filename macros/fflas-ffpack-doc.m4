@@ -28,7 +28,7 @@ AC_MSG_CHECKING(whether to build documentation)
 
 
 AC_ARG_WITH(docdir,
-[AC_HELP_STRING([--with-docdir=<path>], [Where the FFLAS-FFPACK documentation should be installed])],
+[AS_HELP_STRING([--with-docdir=<path>],[Where the FFLAS-FFPACK documentation should be installed])],
             [
 		FFLASFFPACK_DOC_PATH="$withval"
 	    ],
@@ -39,7 +39,7 @@ AC_ARG_WITH(docdir,
 AC_SUBST(FFLASFFPACK_DOC_PATH)
 
 AC_ARG_WITH(doxygen,
-[AC_HELP_STRING([--with-doxygen=<path>], [Give the path to Doxygen. Note: --enable-doc needed])],
+[AS_HELP_STRING([--with-doxygen=<path>],[Give the path to Doxygen. Note: --enable-doc needed])],
             [
 		DOXYGEN_PATH="$PATH $withval"
 	    ],
@@ -47,7 +47,7 @@ AC_ARG_WITH(doxygen,
 		DOXYGEN_PATH="$PATH"
 	    ])
 
-AC_ARG_ENABLE(doc,[AC_HELP_STRING([--enable-doc], [Enable building documentation])],
+AC_ARG_ENABLE(doc,[AS_HELP_STRING([--enable-doc],[Enable building documentation])],
 [
 AC_MSG_RESULT(yes)
 AC_MSG_CHECKING(whether doxygen works)
