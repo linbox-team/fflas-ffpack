@@ -184,18 +184,19 @@ namespace FFLAS { namespace BLAS3 {
     } // WinogradAccOld
 
     // 3 temps and 21 ops
+    // Specialization for Delayed or Lazy fields, requiring management of bounds
     template < class Field, class FieldTrait>
-    inline void WinogradAcc_3_21 (const Field& F,
-                                  const FFLAS_TRANSPOSE ta,
-                                  const FFLAS_TRANSPOSE tb,
-                                  const size_t mr, const size_t nr, const size_t kr,
-                                  const typename Field::Element alpha,
-                                  typename Field::ConstElement_ptr A,const size_t lda,
-                                  typename Field::ConstElement_ptr B,const size_t ldb,
-                                  const typename Field::Element  beta,
-                                  typename Field::Element_ptr C, const size_t ldc,
-                                  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
-                                 )
+    inline  typename std::enable_if<FFLAS::hasBounds<FieldTrait>::value, void>::type
+    WinogradAcc_3_21 (const Field& F,
+                      const FFLAS_TRANSPOSE ta,
+                      const FFLAS_TRANSPOSE tb,
+                      const size_t mr, const size_t nr, const size_t kr,
+                      const typename Field::Element alpha,
+                      typename Field::ConstElement_ptr A,const size_t lda,
+                      typename Field::ConstElement_ptr B,const size_t ldb,
+                      const typename Field::Element  beta,
+                      typename Field::Element_ptr C, const size_t ldc,
+                      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH)
     {
         typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
         typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
@@ -205,7 +206,6 @@ namespace FFLAS { namespace BLAS3 {
         const typename MMH_t::DelayedField & DF = WH.delayedField;
 
         FFLASFFPACK_check(!DF.isZero(beta));
-
         size_t lb, cb, la, ca;
         size_t x3rd = std::max(mr,kr);
         typename Field::ConstElement_ptr A11=A, A12, A21, A22;
@@ -221,7 +221,6 @@ namespace FFLAS { namespace BLAS3 {
         } else {
             DF.assign(betadf, beta);
         }
-
         size_t ldX3;
 
         if (ta == FflasTrans) {
@@ -271,21 +270,33 @@ namespace FFLAS { namespace BLAS3 {
                  WH.Bmax-WH.Bmin,
                  0, 0);
         fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H5);
-
-        DFElt C22Min, C22Max;
-        DFElt C12Min, C12Max;
+        
+        DFElt C22Min=0, C22Max=0;
+        DFElt C12Min=0, C12Max=0;
         // This test will be optimized out
-        if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
-            freduce(F,mr,nr,X1,nr);
-            H5.initOut();
+        switch (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
+        case 2:
+                freduce(F,mr,nr,X1,nr);
+                H5.initOut();
+                C22Min = C12Min; C22Max = C12Max;
+                // C22 = P5 + beta C22 in C22
+                fadd(F,mr,nr,X1,nr,beta,C22,ldc,C22,ldc);
+                
+                // C12 = P5 + beta C12 in C12
+                fadd(F,mr,nr,X1,nr,beta,C12,ldc,C12,ldc);
+                break;
+        case 1: 
+                freduce(F,mr,nr,X1,nr);
+                H5.initOut();
+        case 0:
+                C22Min = C12Min; C22Max = C12Max;
+                // C22 = P5 + beta C22 in C22
+                fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C22,ldc,(DFEptr)C22,ldc);
+                
+                // C12 = P5 + beta C12 in C12
+                fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
+                break;
         }
-        C22Min = C12Min; C22Max = C12Max;
-
-        // C22 = P5 + beta C22 in C22
-        fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C22,ldc,(DFEptr)C22,ldc);
-
-        // C12 = P5 + beta C12 in C12
-        fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
 
         // P1 = alpha . A11 * B11 in X1
         MMH_t H1(F, WH.recLevel-1,
@@ -388,7 +399,144 @@ namespace FFLAS { namespace BLAS3 {
         WH.Outmin = min4 (U1Min, H3.Outmin, U6Min, U7Min);
         WH.Outmax = max4 (U1Max, H3.Outmax, U6Max, U7Max);
     } // WinogradAcc
+                
+    // 3 temps and 21 ops
+    // Specialization other fields not requiring management of bounds
+    template < class Field, class FieldTrait>
+    inline  typename std::enable_if<!FFLAS::hasBounds<FieldTrait>::value, void>::type
+    WinogradAcc_3_21 (const Field& F,
+                      const FFLAS_TRANSPOSE ta,
+                      const FFLAS_TRANSPOSE tb,
+                      const size_t mr, const size_t nr, const size_t kr,
+                      const typename Field::Element alpha,
+                      typename Field::ConstElement_ptr A,const size_t lda,
+                      typename Field::ConstElement_ptr B,const size_t ldb,
+                      const typename Field::Element  beta,
+                      typename Field::Element_ptr C, const size_t ldc,
+                      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH)
+    {
+        typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
 
+        FFLASFFPACK_check(!F.isZero(beta));
+        MMH_t H = WH ;
+        H.recLevel--;
+
+        typename Field::Element mbeta;
+        F.neg(mbeta,beta);
+
+        size_t lb, cb, la, ca;
+        size_t x3rd = std::max(mr,kr);
+        typename Field::ConstElement_ptr A11=A, A12, A21, A22;
+        typename Field::ConstElement_ptr B11=B, B12, B21, B22;
+        typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
+
+        size_t ldX3;
+
+        if (ta == FflasTrans) {
+            A21 = A + mr;
+            A12 = A + kr*lda;
+            A22 = A12 + mr;
+            la = kr;
+            ca = mr;
+        } else { // ta == FflasNoTrans
+            A12 = A + kr;
+            A21 = A + mr*lda;
+            A22 = A21 + kr;
+            la = mr;
+            ca = kr;
+        }
+        if (tb == FflasTrans) {
+            B21 = B + kr;
+            B12 = B + nr*ldb;
+            B22 = B12 + kr;
+            lb = nr;
+            cb = kr;
+            ldX3 = x3rd;
+        } else { // ta == FflasNoTrans
+            B12 = B + nr;
+            B21 = B + kr*ldb;
+            B22 = B21 + nr;
+            lb = kr;
+            ldX3 = cb = nr;
+        }
+
+        // Three temporary submatrices are required
+        typename Field::Element_ptr X3 = fflas_new (F, x3rd, nr);
+
+        // T1 = B12 - B11 in X3
+        fsub(F,lb,cb,B12,ldb,B11,ldb,X3,ldX3);
+
+        typename Field::Element_ptr X2 = fflas_new(F,mr,kr);
+
+        // S1 = A21 + A22 in X2
+        fadd(F,la,ca,A21,lda,A22,lda,X2,ca);
+
+        typename Field::Element_ptr X1 = fflas_new(F,mr,nr);
+        // P5 = alpha . S1*T1  in X1
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H);
+
+        // C22 = P5 + beta C22 in C22
+        fadd(F,mr,nr,X1,nr,beta,C22,ldc,C22,ldc);
+
+        // C12 = P5 + beta C12 in C12
+        fadd(F,mr,nr,X1,nr,beta,C12,ldc,C12,ldc);
+
+        // P1 = alpha . A11 * B11 in X1
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H);
+
+        // P2 = alpha . A12 * B21 + beta . C11  in C11
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, H);
+
+        //  U1 = P2 + P1 in C11
+        faddin(F,mr,nr,X1,nr,C11,ldc);
+
+        // T2 = B22 - T1 in X3
+        fsub(F,lb,cb,B22,ldb,X3,ldX3,X3,ldX3);
+
+        // S2 = S1 - A11 in X2
+        fsubin(F,la,ca,A11,lda,X2,ca);
+
+        // U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H);
+
+        // U4 = U2 + C12 in C12
+        faddin(F,mr,nr,X1,nr,C12,ldc);
+
+        // T4 = T2 - B21 in X3
+        fsubin(F,lb,cb,B21,ldb,X3,ldX3);
+
+        // S4 = A12 -S2 in X2
+        fsub(F,la,ca,A12,lda,X2,ca,X2,ca);
+
+        // P4 = alpha . A22 * T4 - beta . C21 in C21
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, H);
+
+        // U5 = P3 + U4 = alpha . S4*B22 + U4 in C12
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, H);
+
+        // T3 = B22 - B12 in X3
+        fsub(F,lb,cb,B22,ldb,B12,ldb,X3,ldX3);
+
+        // S3 = A11 - A21 in X2
+        fsub(F,la,ca,A11,lda,A21,lda,X2,ca);
+
+        // U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H);
+
+        fflas_delete (X2);
+        fflas_delete (X3);
+
+        // U7 =  U3 + C22 in C22
+        faddin(F,mr,nr,X1,nr,C22,ldc);
+
+        // U6 = U3 - P4 in C21
+        fsub(F,mr,nr,X1,nr,C21,ldc,C21,ldc);
+
+        fflas_delete (X1);
+
+    } // WinogradAcc
+
+                
 
     // 2 temps and 24 ops
     // TODO: Add check for modular reductions before final additions

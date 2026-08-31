@@ -339,20 +339,20 @@ namespace FFLAS { namespace BLAS3 {
                     return C;
     } //wino parallel
 
-
+    // Specialization for Delayed or Lazy fields, requiring management of bounds
     template < class Field, class FieldTrait >
-    inline void Winograd (const Field& F,
-                          const FFLAS_TRANSPOSE ta,
-                          const FFLAS_TRANSPOSE tb,
-                          const size_t mr, const size_t nr, const size_t kr,
-                          const typename Field::Element alpha,
-                          typename Field::ConstElement_ptr A,const size_t lda,
-                          typename Field::ConstElement_ptr B,const size_t ldb,
-                          const typename Field::Element  beta,
-                          typename Field::Element_ptr C, const size_t ldc,
-                          // const size_t kmax, const size_t w, const FFLAS_BASE base
-                          MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
-                         )
+    inline typename std::enable_if<FFLAS::hasBounds<FieldTrait>::value, void>::type
+    Winograd (const Field& F,
+              const FFLAS_TRANSPOSE ta,
+              const FFLAS_TRANSPOSE tb,
+              const size_t mr, const size_t nr, const size_t kr,
+              const typename Field::Element alpha,
+              typename Field::ConstElement_ptr A,const size_t lda,
+              typename Field::ConstElement_ptr B,const size_t ldb,
+              const typename Field::Element  beta,
+              typename Field::Element_ptr C, const size_t ldc,
+              // const size_t kmax, const size_t w, const FFLAS_BASE base
+              MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH)
     {
         FFLASFFPACK_check(F.isZero(beta));
 
@@ -535,6 +535,143 @@ namespace FFLAS { namespace BLAS3 {
 
     } // Winograd
 
+
+    // Case for fields not requiring management of bounds
+    template < class Field, class FieldTrait >
+    inline typename std::enable_if<!FFLAS::hasBounds<FieldTrait>::value, void>::type
+    Winograd (const Field& F,
+              const FFLAS_TRANSPOSE ta,
+              const FFLAS_TRANSPOSE tb,
+              const size_t mr, const size_t nr, const size_t kr,
+              const typename Field::Element alpha,
+              typename Field::ConstElement_ptr A,const size_t lda,
+              typename Field::ConstElement_ptr B,const size_t ldb,
+              const typename Field::Element  beta,
+              typename Field::Element_ptr C, const size_t ldc,
+              // const size_t kmax, const size_t w, const FFLAS_BASE base
+              MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
+            )
+    {
+            FFLASFFPACK_check(F.isZero(beta));
+            
+        typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
+        MMH_t H = WH ;
+        H.recLevel--;
+        
+        size_t lb, cb, la, ca, ldX2;
+        // size_t x3rd = std::max(mr,kr);
+        typename Field::ConstElement_ptr A11=A, A12, A21, A22;
+        typename Field::ConstElement_ptr B11=B, B12, B21, B22;
+        
+        typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
+        
+        size_t x1rd = std::max(nr,kr);
+        size_t ldX1;
+        if (ta == FflasTrans) {
+            A21 = A + mr;
+            A12 = A + kr*lda;
+            A22 = A12 + mr;
+            la = kr;
+            ca = mr;
+            ldX1 = mr;
+        } else {
+            A12 = A + kr;
+            A21 = A + mr*lda;
+            A22 = A21 + kr;
+            la = mr;
+            ca = kr;
+            ldX1  = x1rd;
+        }
+        if (tb == FflasTrans) {
+            B21 = B + kr;
+            B12 = B + nr*ldb;
+            B22 = B12 + kr;
+            lb = nr;
+            cb = kr;
+            ldX2 = kr;
+        } else {
+            B12 = B + nr;
+            B21 = B + kr*ldb;
+            B22 = B21 + nr;
+            lb = kr;
+            ldX2 = cb = nr;
+        }
+        // Two temporary submatrices are required
+        typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
+
+        // T3 = B22 - B12 in X2
+        fsub(F,lb,cb,  B22,ldb,  B12,ldb, X2,ldX2);
+
+        // S3 = A11 - A21 in X1
+        typename Field::Element_ptr X1 = fflas_new (F,mr,x1rd);
+        fsub(F,la,ca,A11,lda,A21,lda,X1,ldX1);
+
+        // P7 = alpha . S3 * T3  in C21
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H);
+
+        // T1 = B12 - B11 in X2
+        fsub(F,lb,cb,B12,ldb,B11,ldb,X2,ldX2);
+
+        // S1 = A21 + A22 in X1
+        fadd(F,la,ca,A21,lda,A22,lda,X1,ldX1);
+
+        // P5 = alpha . S1*T1 in C22
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H);
+
+        // T2 = B22 - T1 in X2
+        fsub(F,lb,cb,B22,ldb,X2,ldX2,X2,ldX2);
+
+        // S2 = S1 - A11 in X1
+        fsubin(F,la,ca,A11,lda,X1,ldX1);
+
+        // P6 = alpha . S2 * T2 in C12
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H);
+
+        // S4 = A12 -S2 in X1
+        fsub(F,la,ca,A12,lda,X1,ldX1,X1,ldX1);
+
+        // P3 = alpha . S4*B22 in C11
+        fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, B22, ldb, F.zero, C11, ldc, H);
+
+        // P1 = alpha . A11 * B11 in X1
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H);
+
+        // U2 = P1 + P6 in C12  and
+        faddin(F,mr,nr,X1,nr,C12,ldc);
+
+        // U3 = P7 + U2 in C21  and
+        faddin(F,mr,nr,C12,ldc,C21,ldc);
+
+
+        // U4 = P5 + U2 in C12    and
+        faddin(F,mr,nr,C22,ldc,C12,ldc);
+
+        // U7 = P5 + U3 in C22    and
+        faddin(F,mr,nr,C21,ldc,C22,ldc);
+
+        // U5 = P3 + U4 in C12
+        faddin(F,mr,nr,C11,ldc,C12,ldc);
+
+        // T4 = T2 - B21 in X2
+        fsubin(F,lb,cb,B21,ldb,X2,ldX2);
+
+        // P4 = alpha . A22 * T4 in C11
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H);
+
+        fflas_delete (X2);
+
+        // U6 = U3 - P4 in C21
+        fsubin(F,mr,nr,C11,ldc,C21,ldc);
+
+        // P2 = alpha . A12 * B21  in C11
+        fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H);
+
+        //  U1 = P2 + P1 in C11
+        faddin(F,mr,nr,X1,nr,C11,ldc);
+
+        fflas_delete (X1);
+    } // Winograd
+                
 } // BLAS3
 
 

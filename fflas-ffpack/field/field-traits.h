@@ -39,6 +39,7 @@
 
 #include "recint/rmint.h"
 #include "givaro/modular-general.h"
+#include "givaro/modular-extended.h"
 #include "givaro/zring.h"
 
 namespace RecInt {
@@ -163,13 +164,24 @@ namespace FFLAS { /*  Traits */
 
 
     /*! ModeTraits
-    */
+     */
+    template <class ModeT>
+    class hasBounds : public std::false_type{};
+        
+    template <>
+    class hasBounds<ModeCategories::LazyTag> : public std::true_type{};
+    template <>
+    class hasBounds<ModeCategories::DelayedTag> : public std::true_type{};
+    template <>
+    class hasBounds<ModeCategories::DefaultBoundedTag> : public std::true_type{};
+
     template <class Field>
     struct ModeTraits {typedef typename ModeCategories::DefaultTag value;};
 
     template <typename Element, typename Compute>
     struct ModeTraits<Givaro::Modular<Element,Compute> >{typedef typename ModeCategories::DelayedTag value;};
     template<> struct ModeTraits<Givaro::Modular<int64_t,uint64_t> > {typedef typename ModeCategories::DefaultTag value;};
+    template<> struct ModeTraits<Givaro::ModularExtended<double> > {typedef typename ModeCategories::DelayedTag value;};
 
     template<typename Compute> struct ModeTraits<Givaro::Modular<int8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
     template<typename Compute> struct ModeTraits<Givaro::Modular<int16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
@@ -323,6 +335,11 @@ namespace FFLAS { /* associatedDelayedField */
     };
     template <typename T,typename X>
     struct associatedDelayedField<const Givaro::Modular<T,X>> {
+        typedef Givaro::ZRing<T> field;
+        typedef Givaro::ZRing<T> type;
+    };
+    template <typename T>
+    struct associatedDelayedField<const Givaro::ModularExtended<T>> {
         typedef Givaro::ZRing<T> field;
         typedef Givaro::ZRing<T> type;
     };

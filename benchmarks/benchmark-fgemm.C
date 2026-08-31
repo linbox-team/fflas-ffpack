@@ -82,6 +82,7 @@ int main(int argc, char** argv) {
     //  typedef Givaro::Modular<Givaro::Integer> Field;
     // typedef Givaro::Modular<int64_t> Field;
     typedef Givaro::Modular<double> Field;
+//    typedef Givaro::ModularExtended<double> Field;
     //  typedef Givaro::Modular<float> Field;
     //  typedef Givaro::ModularBalanced<float> Field;
     //  typedef Givaro::ModularBalanced<double> Field;
@@ -115,95 +116,95 @@ int main(int argc, char** argv) {
     for (size_t i=0;i<=iter;++i){
 
         chrono.clear();
-        if (p && p!=7){
-            // CuttingStrategy meth = RECURSIVE;
-            // StrategyParameter strat = THREADS;
+        // if (p && p!=7){
+        //     // CuttingStrategy meth = RECURSIVE;
+        //     // StrategyParameter strat = THREADS;
 
-            typedef CuttingStrategy::Block block;
-            typedef CuttingStrategy::Recursive rec;
-            typedef StrategyParameter::Threads threads;
-            typedef StrategyParameter::TwoD  twod;
-            typedef StrategyParameter::TwoDAdaptive  twoda;
-            typedef StrategyParameter::ThreeD  threed;
-            typedef StrategyParameter::ThreeDAdaptive  threeda;
-            typedef StrategyParameter::ThreeDInPlace  threedip;
-            PAR_BLOCK{
-                if (i) { chrono.start(); }
+        //     typedef CuttingStrategy::Block block;
+        //     typedef CuttingStrategy::Recursive rec;
+        //     typedef StrategyParameter::Threads threads;
+        //     typedef StrategyParameter::TwoD  twod;
+        //     typedef StrategyParameter::TwoDAdaptive  twoda;
+        //     typedef StrategyParameter::ThreeD  threed;
+        //     typedef StrategyParameter::ThreeDAdaptive  threeda;
+        //     typedef StrategyParameter::ThreeDInPlace  threedip;
+        //     PAR_BLOCK{
+        //         if (i) { chrono.start(); }
 
-                switch (p){
-                case 1:{
-                           MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
-                           fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                           break;}
-                case 2:{
-                           MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twod> > WH(F,nbw, SPLITTER(t,rec,twod));
-                           fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                           break;
-                       }
-                case 3:{
-                           MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twoda> > WH(F,nbw, SPLITTER(t,rec,twoda));
-                           fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                           break;
-                       }
-                case 4:{
-                           MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threedip> > WH(F,nbw, SPLITTER(t,rec,threedip));
-                           fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                           break;
-                       }
-                case 5:{
-                           MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threed> > WH(F,nbw, SPLITTER(t,rec,threed));
-                           fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                           break;
-                       }
-                case 6:{
-                           MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threeda> > WH(F,nbw, SPLITTER(t,rec,threeda));
-                           fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                           break;
-                       }
-                default:{
-                            MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
-                            fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
-                            break;
-                        }
-                }
-            }
-            if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
-        }else{
-            if(p==7){
+        //         switch (p){
+        //         case 1:{
+        //                    MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
+        //                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                    break;}
+        //         case 2:{
+        //                    MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twod> > WH(F,nbw, SPLITTER(t,rec,twod));
+        //                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                    break;
+        //                }
+        //         case 3:{
+        //                    MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twoda> > WH(F,nbw, SPLITTER(t,rec,twoda));
+        //                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                    break;
+        //                }
+        //         case 4:{
+        //                    MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threedip> > WH(F,nbw, SPLITTER(t,rec,threedip));
+        //                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                    break;
+        //                }
+        //         case 5:{
+        //                    MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threed> > WH(F,nbw, SPLITTER(t,rec,threed));
+        //                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                    break;
+        //                }
+        //         case 6:{
+        //                    MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threeda> > WH(F,nbw, SPLITTER(t,rec,threeda));
+        //                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                    break;
+        //                }
+        //         default:{
+        //                     MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
+        //                     fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+        //                     break;
+        //                 }
+        //         }
+        //     }
+        //     if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
+        // }else{
+        //     if(p==7){
 
-                int nrec = 0;
-                int dim = m;
-                //                      if(dim < 19000)
-                nrec--;
-                while(dim >= __FFLASFFPACK_WINOTHRESHOLD*2){
-                    dim=dim/2;
-                    nrec++;
-                }
-                nrec=std::max(1,nrec);
-                //              std::cout<<" WINO_THREShold"<<__FFLASFFPACK_WINOTHRESHOLD<<" nrec = "<<nrec<<" dim = "<<dim<<std::endl;
-                if(nbw != -1)
-                    nrec=nbw;
-                nbw=nrec;
-                if (i) chrono.start();
-                PAR_BLOCK
-                {
-                    MMHelper<Field, MMHelperAlgo::WinogradPar,ModeTraits<Field>::value,ParSeqHelper::Parallel<> >  WH (F, nrec, ParSeqHelper::Parallel<>(t));
-                    fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-                }
-                if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
+        //         int nrec = 0;
+        //         int dim = m;
+        //         //                      if(dim < 19000)
+        //         nrec--;
+        //         while(dim >= __FFLASFFPACK_WINOTHRESHOLD*2){
+        //             dim=dim/2;
+        //             nrec++;
+        //         }
+        //         nrec=std::max(1,nrec);
+        //         //              std::cout<<" WINO_THREShold"<<__FFLASFFPACK_WINOTHRESHOLD<<" nrec = "<<nrec<<" dim = "<<dim<<std::endl;
+        //         if(nbw != -1)
+        //             nrec=nbw;
+        //         nbw=nrec;
+        //         if (i) chrono.start();
+        //         PAR_BLOCK
+        //         {
+        //             MMHelper<Field, MMHelperAlgo::WinogradPar,ModeTraits<Field>::value,ParSeqHelper::Parallel<> >  WH (F, nrec, ParSeqHelper::Parallel<>(t));
+        //             fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+        //         }
+        //         if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 
 
-                // MMHelper<Field, MMHelperAlgo::WinogradPar>
-                //          WH (F, nbw, ParSeqHelper::Sequential());
-                //      //              cout<<"wino parallel"<<endl;
-                // if (i) chrono.start();
-                // PAR_BLOCK
-                // {
-                //          fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-                // }
-                // if (i) {chrono.stop(); time+=chrono.realtime();}
-            }
-            else{
+        //         // MMHelper<Field, MMHelperAlgo::WinogradPar>
+        //         //          WH (F, nbw, ParSeqHelper::Sequential());
+        //         //      //              cout<<"wino parallel"<<endl;
+        //         // if (i) chrono.start();
+        //         // PAR_BLOCK
+        //         // {
+        //         //          fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+        //         // }
+        //         // if (i) {chrono.stop(); time+=chrono.realtime();}
+        //     }
+        //     else{
 
                 MMHelper<Field,MMHelperAlgo::Winograd>//,
                 //typename FieldTraits<Field>::value,
@@ -212,10 +213,10 @@ int main(int argc, char** argv) {
                 if (i) chrono.start();
                 fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
                 if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
-            }
-        }
+                //}
+    
 
-        TimFreivalds.clear();
+                TimFreivalds.clear();
         TimFreivalds.start();
 
         bool pass = freivalds(F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
