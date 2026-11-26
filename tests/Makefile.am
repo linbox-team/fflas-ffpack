@@ -85,6 +85,9 @@ BASIC_TESTS =               \
 if FFLASFFPACK_HAVE_METAL
 METAL_TESTS= test-fgemm-metal
 endif
+if FFLASFFPACK_HAVE_SME
+SME_TESTS= test-fadd-sme
+endif
 
 if FFLASFFPACK_PRECOMPILED
 INTERFACE_TESTS= test-interfaces-c
@@ -109,7 +112,7 @@ INFINITE_TEST= \
 
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS) $(METAL_TESTS)
+		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS) $(METAL_TESTS) $(SME_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)
@@ -162,6 +165,7 @@ test_fgesv_SOURCES             = test-fgesv.C
 test_nullspace_SOURCES = test-nullspace.C
 test_fdot_SOURCES = test-fdot.C
 test_fadd_SOURCES = test-fadd.C
+test_fadd_sme_SOURCES = test-fadd-sme.C
 test_fgemm_metal_SOURCES = test-fgemm-metal.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C

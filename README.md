@@ -30,6 +30,7 @@ FFLAS-FFPACK is distributed unded the terms of the GNU LGPL v2.1 or later (see C
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
 - `--enable-precompilation` : to precompile the standard templates specializations (and gain some compilation time later on)
 - `--enable-metal` : on an Apple-silicon Mac, to share the single precision matrix products with the GPU (see below)
+- `--enable-sme` : to use Arm SME kernels for the additions of float and double vectors (see below)
 
 Type `./configure --help` to list all options available.
 Note that `givaro` is automatically detected by pkg-config, so you no longer need to pass a `--with-givaro=...` option.
@@ -62,9 +63,9 @@ Note that running the `autotune` target is optional but recommended as it will t
 
 see INSTALL for further details.
 
-### Apple silicon: the GPU
+### Apple silicon: the GPU and SME
 
-An option, off by default, for Macs with Apple silicon (it changes nothing on other machines):
+Two options, both off by default, for Macs with Apple silicon (they change nothing on other machines):
 
 - `--enable-metal` shares every large single precision matrix product between the GPU (Metal Performance Shaders)
   and the BLAS: the product is cut into strips of rows, the GPU takes strips from one end and the BLAS from the
@@ -74,9 +75,14 @@ An option, off by default, for Macs with Apple silicon (it changes nothing on ot
   Foundation, Metal and MetalPerformanceShaders frameworks: `fflas-ffpack-config --libs` and the pkg-config file
   list them. At run time, `FFLAS_METAL=0` switches it off and `FFLAS_METAL_MIN` sets the smallest dimension
   shared (default 2000). See `fflas-ffpack/fflas/fflas_metal/fflas_metal.h`.
+- `--enable-sme` uses streaming SVE (the vector mode of Arm's Scalable Matrix Extension) for the additions and
+  subtractions of float and double vectors that are aligned whole vectors, as in the Winograd recursion. It is
+  header-only and checks for SME at run time; `FFLAS_SME=0` switches it off. See
+  `fflas-ffpack/fflas/fflas_sme/fflas_sme.h`. (The matrix products already run on the SME units when the BLAS is
+  Accelerate.)
 
 With Accelerate, whose BLAS is multi-threaded on its own, run `./configure --with-blas-libs="-framework Accelerate"
---enable-metal`.
+--enable-metal --enable-sme`.
 
 ### Homebrew install on Mac OSX
 

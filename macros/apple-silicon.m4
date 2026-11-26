@@ -63,3 +63,49 @@ AC_DEFUN([FF_CHECK_METAL],
 	  AM_CONDITIONAL(FFLASFFPACK_HAVE_METAL, test "x$metal_found" = "xyes")
 	]
 )
+
+dnl FF_CHECK_SME
+dnl
+dnl --enable-sme: additions and subtractions of float and double vectors in streaming SVE,
+dnl the vector mode of Arm's Scalable Matrix Extension; see
+dnl fflas-ffpack/fflas/fflas_sme/fflas_sme.h.  Defines HAVE_SME if the compiler can build the
+dnl kernels; whether the processor has SME is checked at run time.
+
+AC_DEFUN([FF_CHECK_SME],
+	[ AC_ARG_ENABLE(sme,
+		[AC_HELP_STRING([--enable-sme],
+				[ Use Arm SME (streaming SVE) kernels for additions of float and double vectors ])
+		],
+		[ avec_sme=$enable_sme ],
+		[ avec_sme=no ]
+		)
+	  AC_MSG_CHECKING(whether to use Arm SME kernels)
+	  sme_found=no
+	  AS_IF([ test "x$avec_sme" = "xyes" ],
+		[
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <arm_sme.h>
+__arm_locally_streaming __attribute__((target("sme")))
+static void add (float* c, const float* a, const float* b, unsigned long n) {
+	const svbool_t g = svptrue_b32();
+	for (unsigned long i = 0; i < n; i += svcntw())
+		svst1_f32 (g, c + i, svadd_f32_x (g, svld1_f32 (g, a + i), svld1_f32 (g, b + i)));
+}
+			]], [[ float a[64], b[64], c[64]; add (c, a, b, 0); return 0; ]])],
+			[ sme_found=yes ],
+			[ sme_found=no ])
+		AS_IF([ test "x$sme_found" = "xyes" ],
+			[
+				AC_DEFINE(HAVE_SME,1,[Define if the Arm SME kernels are compiled in])
+				AC_MSG_RESULT(yes)
+			],
+			[
+				AC_MSG_RESULT(no)
+				AC_MSG_ERROR([--enable-sme needs a compiler with the Arm SME intrinsics (arm_sme.h)])
+			])
+		],
+		[ AC_MSG_RESULT(no) ]
+	  )
+	  AM_CONDITIONAL(FFLASFFPACK_HAVE_SME, test "x$sme_found" = "xyes")
+	]
+)

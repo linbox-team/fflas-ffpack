@@ -28,6 +28,9 @@
 #define __FFLASFFPACK_fadd_H
 
 #include "fflas-ffpack/fflas/fflas_simd.h"
+#ifdef __FFLASFFPACK_HAVE_SME
+#include "fflas-ffpack/fflas/fflas_sme/fflas_sme.h"
+#endif
 
 namespace FFLAS {
 

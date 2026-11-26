@@ -380,6 +380,11 @@ namespace FFLAS { namespace details {
           , FieldCategories::UnparametricTag
          )
     {
+#ifdef __FFLASFFPACK_HAVE_SME
+        // Arm SME: aligned vectors of whole SVE vectors go to the streaming kernels (fflas_sme.h)
+        if (inca == 1 && incb == 1 && incc == 1 && FFLAS::sme::addsub (ADD, C, A, B, N))
+            return;
+#endif
         typename Field::ConstElement_ptr Ai=A, Bi=B;
         typename Field::Element_ptr Ci=C;
         for (size_t i=0; i<N; i++, Ai+=inca,Bi+=incb,Ci+=incc)
