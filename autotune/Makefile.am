@@ -23,6 +23,9 @@
 AM_CXXFLAGS = $(FFLASFFPACK_CXXFLAGS) $(GIVARO_CFLAGS) $(BLAS_CFLAGS) $(PARFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)
 LDADD = $(GIVARO_LIBS) $(BLAS_LIBS) $(PARLIBS)
+if FFLASFFPACK_HAVE_METAL
+LDADD += $(top_builddir)/fflas-ffpack/fflas/fflas_metal/libfflas_metal.a $(METAL_FRAMEWORKS)
+endif
 
 AUTOTUNE_FGEMM = winograd-modular-float winograd-modular-double winograd-modularbalanced-float winograd-modularbalanced-double
 AUTOTUNE_PLUQ = pluq

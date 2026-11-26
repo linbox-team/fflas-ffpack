@@ -86,6 +86,8 @@ tests/test-compressQ
 tests/test-det
 tests/test-echelon
 tests/test-fadd
+tests/test-fadd-sme
+tests/test-fgemm-metal
 tests/test-fgemm
 tests/test-fger
 tests/test-finit
@@ -132,3 +134,4 @@ tutorials/fflas_101
 tutorials/fflas_101_lvl1
 tutorials/ffpack-fgesv
 tutorials/ffpack-solve
+fflas-ffpack/fflas/fflas_metal/libfflas_metal.a

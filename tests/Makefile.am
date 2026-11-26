@@ -31,6 +31,9 @@ if FFLASFFPACK_PRECOMPILED
 LDADD += $(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
 LDADD += $(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 endif
+if FFLASFFPACK_HAVE_METAL
+LDADD += $(top_builddir)/fflas-ffpack/fflas/fflas_metal/libfflas_metal.a $(METAL_FRAMEWORKS)
+endif
 
 PERFPUBLISHERFILE=tests-report.xml
 
@@ -79,6 +82,13 @@ BASIC_TESTS =               \
 		test-storage-transpose	\
 		regression-check
 
+if FFLASFFPACK_HAVE_METAL
+METAL_TESTS= test-fgemm-metal
+endif
+if FFLASFFPACK_HAVE_SME
+SME_TESTS= test-fadd-sme
+endif
+
 if FFLASFFPACK_PRECOMPILED
 INTERFACE_TESTS= test-interfaces-c
 #test_interfaces_c_CFLAGS = $(AM_CXXFLAGS)
@@ -102,7 +112,7 @@ INFINITE_TEST= \
 
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS)
+		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS) $(METAL_TESTS) $(SME_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)
@@ -155,6 +165,8 @@ test_fgesv_SOURCES             = test-fgesv.C
 test_nullspace_SOURCES = test-nullspace.C
 test_fdot_SOURCES = test-fdot.C
 test_fadd_SOURCES = test-fadd.C
+test_fadd_sme_SOURCES = test-fadd-sme.C
+test_fgemm_metal_SOURCES = test-fgemm-metal.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
 #test_sparse_SOURCES = test-sparse.C
