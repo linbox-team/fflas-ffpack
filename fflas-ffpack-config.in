@@ -106,7 +106,7 @@ while test $# -gt 0; do
 			;;
 
 		--libs)
-			echo @PARLIBS@ @PRECOMPILE_LIBS@ @BLAS_LIBS@ @GIVARO_LIBS@
+			echo @PARLIBS@ @PRECOMPILE_LIBS@ @METAL_LIBS@ @BLAS_LIBS@ @GIVARO_LIBS@
 			;;
 
 		--blas-libs)

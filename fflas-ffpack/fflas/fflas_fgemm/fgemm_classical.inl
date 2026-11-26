@@ -41,6 +41,10 @@
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 
+#ifdef __FFLASFFPACK_HAVE_METAL
+#include "fflas-ffpack/fflas/fflas_metal/fflas_metal.h"
+#endif
+
 namespace FFLAS {
 
     // F is a field supporting delayed reductions
@@ -281,6 +285,12 @@ namespace FFLAS {
         FFLASFFPACK_check(ldb);
         FFLASFFPACK_check(ldc);
 
+#ifdef __FFLASFFPACK_HAVE_METAL
+        // Apple silicon: a large product is shared between the GPU and the BLAS (fflas_metal.h)
+        if (ta == FflasNoTrans && tb == FflasNoTrans
+            && FFLAS::metal::sgemm (m, n, k, alpha, Ad, lda, Bd, ldb, beta, Cd, ldc))
+            return;
+#endif
 #if defined(__FFLASFFPACK_OPENBLAS_NUM_THREADS) and not defined (__FFLASFFPACK_OPENBLAS_NT_ALREADY_SET)
         openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif

@@ -24,7 +24,7 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas
 
-SUBDIRS=fflas_fgemm fflas_igemm fflas_simd fflas_sparse
+SUBDIRS=fflas_fgemm fflas_igemm fflas_simd fflas_sparse fflas_metal
 
 sparse=fflas_sparse.h \
        fflas_sparse.inl

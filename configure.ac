@@ -146,6 +146,9 @@ FF_OPENBLAS_NUM_THREADS
 
 # FF_CHECK_CUDA
 
+# Apple silicon: the GPU for single precision products (Metal)
+FF_CHECK_METAL
+
 AS_ECHO([---------------------------------------])
 
 FF_DOC
@@ -181,6 +184,7 @@ fflas-ffpack/fflas/fflas_sparse/sell/Makefile
 fflas-ffpack/fflas/fflas_sparse/hyb_zo/Makefile
 fflas-ffpack/fflas/fflas_igemm/Makefile
 fflas-ffpack/fflas/fflas_simd/Makefile
+fflas-ffpack/fflas/fflas_metal/Makefile
 fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
